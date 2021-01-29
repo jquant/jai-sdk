@@ -32,7 +32,7 @@ def load_npy_from_stream(stream_) -> np.ndarray:
     return array
 
 
-def connect_azure_blob_storage(db_name: str):
+def connect_azure_blob_storage(db_name: str, company_id: str, conn_strin: str):
         """
 
         Args
@@ -45,9 +45,6 @@ def connect_azure_blob_storage(db_name: str):
         ----------
 
         """
-        company_id = 'z5fb6c8fe89881ad5840ec145'
-        conn_string = "DefaultEndpointsProtocol=https;AccountName=jquantappstorage;AccountKey=7rEO7wy16hwgbdtMPNoobchlk/BHeF4lyeIZTAO8jmvZLyDwp/rEUmGKuhH7cHlQHXQr6uWyTOsKsmRpWPRQJA==;EndpointSuffix=core.windows.net"
-
         blob_service_client = BlobServiceClient.from_connection_string(conn_str=conn_string)
         container_name = company_id + '-' + db_name
         container_client = blob_service_client.get_container_client(container_name)
