@@ -8,9 +8,7 @@ from azure.storage.blob import BlobServiceClient
 from brain_plasma import Brain
 import io
 import json
-import numpy as np
 import pandas as pd
-import re
 import requests
 
 
@@ -20,8 +18,10 @@ class Mycelia():
     base_api_url = 'https://mycelia.azure-api.net'
     brain = Brain(path='/mnt/socket/plasma')
 
-    def __init__(self, auth_key: str):
+    def __init__(self, auth_key: str, company_id: str, conn_strin: str):
         self.header = {'Auth': auth_key}
+        self.company_id = company_id
+        self.conn_strin = conn_strin 
 
         
     def get_databases(self):
@@ -59,7 +59,7 @@ class Mycelia():
         ----------
 
         """
-        blob_client = auxiliar.connect_azure_blob_storage(db_name)
+        blob_client = auxiliar.connect_azure_blob_storage(db_name=db_name, company_id=self.company_id, conn_strin=self.conn_strin)
 
         try:
             stream = io.BytesIO()
