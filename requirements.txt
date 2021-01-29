@@ -1,4 +1,4 @@
 azure-storage-blob
-brin-plasma
+brain-plasma
 numpy
 pandas
