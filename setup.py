@@ -6,7 +6,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="mycelia-sdk",
-    version="0.1.0",
+    version="0.1.1",
     author="rogerio.guicampos",
     author_email="rogerio.campos@jquant.com.br",
     license="MIT",
@@ -17,5 +17,5 @@ setup(
     ],
     packages=find_packages(exclude=("tests",)),
     include_package_data=True,
-    install_requires=["azure-storage-blob", "brain-plasma", "numpy", "pandas"]
+    install_requires=["azure-storage-blob", "brain-plasma", "numpy", "pandas"],
 )
