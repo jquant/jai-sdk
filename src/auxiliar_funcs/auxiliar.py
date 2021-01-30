@@ -32,7 +32,7 @@ def load_npy_from_stream(stream_) -> np.ndarray:
     return array
 
 
-def connect_azure_blob_storage(db_name: str, company_id: str, conn_strin: str):
+def connect_azure_blob_storage(db_name: str, company_id: str, conn_str: str):
         """
 
         Args
@@ -45,7 +45,7 @@ def connect_azure_blob_storage(db_name: str, company_id: str, conn_strin: str):
         ----------
 
         """
-        blob_service_client = BlobServiceClient.from_connection_string(conn_str=conn_string)
+        blob_service_client = BlobServiceClient.from_connection_string(conn_str=conn_str)
         container_name = company_id + '-' + db_name
         container_client = blob_service_client.get_container_client(container_name)
 
