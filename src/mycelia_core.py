@@ -8,6 +8,7 @@ from azure.storage.blob import BlobServiceClient
 from brain_plasma import Brain
 import io
 import json
+import numpy as np
 import pandas as pd
 import requests
 
@@ -18,14 +19,14 @@ class Mycelia():
     base_api_url = 'https://mycelia.azure-api.net'
     brain = Brain(path='/mnt/socket/plasma')
 
-    def __init__(self, auth_key: str, company_id: str, conn_strin: str):
+    def __init__(self, auth_key: str, company_id: str, conn_str: str):
         self.header = {'Auth': auth_key}
         self.company_id = company_id
-        self.conn_strin = conn_strin 
+        self.conn_str = conn_str 
 
         
     def get_databases(self):
-        """Retrieves collections already created for the provided Auth Key
+        """Retrieves collections already created for the provided Auth Key.
 
         Args
         ----------
@@ -33,18 +34,18 @@ class Mycelia():
 
         Return
         ----------
-        collections_json (json): dict with the collections created so far
+        collections_json (json): dict with the collections created so far.
 
         Examples
         ----------
 
         """
-        r = requests.get(url=self.base_api_url+f'/names', headers=self.header)
+        r = requests.get(url=self.base_api_url+f'/info', headers=self.header)
         databases_json = sorted(r.json())
         return databases_json
     
 
-    def get_collection_to_memory(self, db_name: str) -> bool: 
+    def get_collection_to_memory(self, db_name: str) -> np.ndarray: 
         """Downloads mycelia collections into memory
 
         Args
@@ -59,7 +60,7 @@ class Mycelia():
         ----------
 
         """
-        blob_client = auxiliar.connect_azure_blob_storage(db_name=db_name, company_id=self.company_id, conn_strin=self.conn_strin)
+        blob_client = auxiliar.connect_azure_blob_storage(db_name=db_name, company_id=self.company_id, conn_str=self.conn_str)
 
         try:
             stream = io.BytesIO()
@@ -102,7 +103,7 @@ class Mycelia():
         45568  6995.6
         8382   7293.2
         """
-        url = base_api_url + f"/similar/id/{db_name}?id={id_item}&top_k={top_k}"
+        url = self.base_api_url + f"/similar/id/{db_name}?id={id_item}&top_k={top_k}"
         dict_result_query = requests.get(url, headers=self.header).json()
-        df_index_distance = pd.DataFrame(dict_result_query['similarity'][0]['results'])
-        return df_index_distance, dict_result_query 
+        # df_index_distance = pd.DataFrame(dict_result_query['similarity'])
+        return dict_result_query# df_index_distance, dict_result_query 
