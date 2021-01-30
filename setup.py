@@ -5,7 +5,7 @@ from setuptools import find_packages, setup
 
 
 setup(
-    name="mycelia-sdk",
+    name="mycelia_core",
     version="0.1.2",
     author="rogerio.guicampos",
     author_email="rogerio.campos@jquant.com.br",
