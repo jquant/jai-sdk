@@ -48,8 +48,8 @@ results = mycelia.similar_list(name, data.index, top_k=100, batch_size=1024)
 
 - Using new data to be processed
 ```python
-# Find the 100 most similar values for every inputed value
-results = mycelia.similar_data(name, data, top_k=100, batch_size=1024)
+# Find the 100 most similar values for every new_data
+results = mycelia.similar_data(name, new_data, top_k=100, batch_size=1024)
 ```
 
 # Removing data
