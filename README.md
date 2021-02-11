@@ -10,7 +10,7 @@ mycelia = Mycelia(AUTH_KEY)
 ## Setting up your databases
 
 Aplication using the model NLP FastText
-```
+```python
 ### fasttext implementation
 # generate a random name for identification of the base, can be a user input
 # save this if you wish to work in the same database later
