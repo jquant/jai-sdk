@@ -8,6 +8,7 @@ Created on Wed Feb 10 16:00:58 2021
 
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
 
 
 def list2json(data_list, name='text'):
@@ -40,7 +41,7 @@ def data2json(data, name='text'):
 def process_similar(results, threshold=5):
     map_duplicate = {}
 
-    for k in results:
+    for k in tqdm(results, desc="Processing Similar"):
         i = k['query_id']
         df = pd.DataFrame(k['results'])
         similar = df.loc[df['distance'] < threshold, 'id'].values

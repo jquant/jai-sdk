@@ -1,4 +1,4 @@
 azure-storage-blob
-brain-plasma
 numpy
 pandas
+tqdm

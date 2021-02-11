@@ -8,6 +8,7 @@ import json
 import pandas as pd
 import requests
 import time
+from tqdm import trange
 
 from auxiliar_funcs.utils_funcs import data2json
 
@@ -110,7 +111,7 @@ class Mycelia():
 
     def similar_list(self, name, list_id, top_k=5, batch_size=1024):
         results = []
-        for i in range(0, len(list_id), batch_size):
+        for i in trange(0, len(list_id), batch_size, desc="Similar List Id"):
             _list = list_id[i:i+batch_size].tolist()
             res = self.similar_id(name, _list, top_k=top_k)
             results.extend(res['similarity'])
@@ -163,7 +164,7 @@ class Mycelia():
 
     def similar_data(self, name, data, top_k=5, batch_size=1024):
         results = []
-        for i in range(0, len(data), batch_size):
+        for i in trange(0, len(data), batch_size, desc="Similar Data"):
             if isinstance(data, (pd.Series, pd.DataFrame)):
                 _batch = data.iloc[i:i+batch_size]
             else:
@@ -206,7 +207,7 @@ class Mycelia():
             return self.assert_status_code(response)
 
     def insert_data(self, name, data, batch_size=1024):
-        for i in range(0, len(data), batch_size):
+        for i in trange(0, len(data), batch_size, desc="Insert Data"):
             if isinstance(data, (pd.Series, pd.DataFrame)):
                 _batch = data.iloc[i:i+batch_size]
             else:
