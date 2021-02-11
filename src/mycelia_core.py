@@ -3,29 +3,30 @@
 
 created by @dionisio
 """
-from auxiliar_funcs import auxiliar
-from azure.storage.blob import BlobServiceClient
-from brain_plasma import Brain
-import io
+import secrets
 import json
-import numpy as np
 import pandas as pd
 import requests
+import time
+from tqdm import trange
+from typing import List
+
+from auxiliar_funcs.utils_funcs import data2json
 
 
 class Mycelia():
-    """
-    """
-    base_api_url = 'https://mycelia.azure-api.net'
-    brain = Brain(path='/mnt/socket/plasma')
+    def __init__(self, auth_key: str, url=None):
+        if url is None:
+            self.base_api_url = 'https://mycelia.azure-api.net'
+            self.header = {'Auth': auth_key}
+        else:
+            if url.endswith('/'):
+                url = url[:-1]
+            self.base_api_url = url
+            self.header = {'company-key': auth_key}
 
-    def __init__(self, auth_key: str, company_id: str, conn_str: str):
-        self.header = {'Auth': auth_key}
-        self.company_id = company_id
-        self.conn_str = conn_str 
-
-        
-    def get_databases(self):
+    @property
+    def names(self):
         """Retrieves collections already created for the provided Auth Key.
 
         Args
@@ -34,54 +35,79 @@ class Mycelia():
 
         Return
         ----------
-        collections_json (json): dict with the collections created so far.
+        collections_json (list): list with the collections created so far.
 
         Examples
         ----------
 
         """
-        r = requests.get(url=self.base_api_url+f'/info', headers=self.header)
-        databases_json = sorted(r.json())
-        return databases_json
-    
+        response = requests.get(url=self.base_api_url +
+                                '/info?mode=names', headers=self.header)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
 
-    def get_collection_to_memory(self, db_name: str) -> np.ndarray: 
-        """Downloads mycelia collections into memory
+    @property
+    def info(self):
+        response = requests.get(url=self.base_api_url +
+                                '/info?mode=complete', headers=self.header)
+        if response.status_code == 200:
+            df = pd.DataFrame(response.json()).rename({'db_name': 'name',
+                                                       'db_type': 'type'})
+            return df
+        else:
+            return self.assert_status_code(response)
 
-        Args
-        ----------
-        db_name (str): string with the name of the database you created on the mycelia platform.
-        
-        Return
-        ----------
-        collections_json (json): dict with the collections created so far
+    @property
+    def status(self):
+        response = requests.get(
+            self.base_api_url + '/status', headers=self.header)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
 
-        Examples
-        ----------
+    def generate_name(self, length: int = 8, prefix: str = '', suffix: str = ''):
+        len_prefix = len(prefix)
+        len_suffix = len(suffix)
 
-        """
-        blob_client = auxiliar.connect_azure_blob_storage(db_name=db_name, company_id=self.company_id, conn_str=self.conn_str)
+        if length <= len_prefix + len_suffix:
+            raise ValueError(
+                f"length {length} is should be larger than {len_prefix+len_suffix} for prefix and suffix inputed.")
 
-        try:
-            stream = io.BytesIO()
-            downloader = blob_client.download_blob()
-            info = downloader.download_to_stream(stream)
-            
-        except ResourceNotFoundError:
-            print("No blob found.")
-        
-        arr = auxiliar.load_npy_from_stream(stream)
-        brain[db_name] = arr
-        
-        return True
+        length -= (len_prefix + len_suffix)
+        code = secrets.token_hex(length)[:length].lower()
+        name = str(prefix) + str(code) + str(suffix)
+        names = self.names
 
+        while name in names:
+            code = secrets.token_hex(length)[:length].lower()
+            name = str(prefix) + str(code) + str(suffix)
 
-    def list_k_similar_distance(self, db_name: str, id_item: int, top_k: int=5) -> pd.DataFrame:
+        return name
+
+    def assert_status_code(self, response):
+        # find a way to process this
+        # what errors to raise, etc.
+        # raise ValueError(response.content)
+        print(response.json())
+        return response
+
+    def similar_list(self, name: str, list_id: List[int], top_k: int = 5, batch_size: int = 1024):
+        results = []
+        for i in trange(0, len(list_id), batch_size, desc="Similar List Id"):
+            _list = list_id[i:i+batch_size].tolist()
+            res = self.similar_id(name, _list, top_k=top_k)
+            results.extend(res['similarity'])
+        return results
+
+    def similar_id(self, name: str, id_item: int, top_k: int = 5):
         """Creates a list of dicts, with the index and distance of the k itens most similars.
 
         Args
         ----------
-        db_name (str): string with the name of the database you created on the mycelia platform.
+        name (str): string with the name of the database you created on the mycelia platform.
 
         idx_tem (int): index of the item the customer is looking for at the moment.
 
@@ -89,21 +115,167 @@ class Mycelia():
 
         Return
         ----------
-        df_index_distance (pd.DataFrame): dataframe with the index and distance of the k most similar items.
+        response (dict): dict with the index and distance of the k most similar items.
 
         Examples
         ----------
-        >>> DB_NAME = 'chosen_name'
+        >>> name = 'chosen_name'
         >>> ID_ITEM = 10007
         >>> TOP_K = 3
-        >>> df_index_distance = list_k_similar_distance(DB_NAME, ID_ITEM, TOP_K)
-        >>> print(df_index_distance)
+        >>> mycelia = Mycelia(AUTH_KEY)
+        >>> df_index_distance = mycelia.similar_id(name, ID_ITEM, TOP_K)
+        >>> print(pd.DataFrame(df_index_distance['similarity']))
         index  distance
         10007  0.0
         45568  6995.6
         8382   7293.2
         """
-        url = self.base_api_url + f"/similar/id/{db_name}?id={id_item}&top_k={top_k}"
-        dict_result_query = requests.get(url, headers=self.header).json()
-        # df_index_distance = pd.DataFrame(dict_result_query['similarity'])
-        return dict_result_query# df_index_distance, dict_result_query 
+        if isinstance(id_item, list):
+            id_req = '&'.join(['id=' + str(i) for i in id_item])
+            url = self.base_api_url + \
+                f"/similar/id/{name}?{id_req}&top_k={top_k}"
+        elif isinstance(id_item, int):
+            url = self.base_api_url + \
+                f"/similar/id/{name}?id={id_item}&top_k={top_k}"
+        else:
+            raise TypeError(
+                f"id_item param must be int or list, {type(id_item)} found.")
+
+        response = requests.get(url, headers=self.header)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
+
+    def similar_data(self, name: str, data, top_k: int = 5, batch_size: int = 1024):
+        """
+
+
+        Parameters
+        ----------
+        name : str
+            string with the name of the database you created on the mycelia platform.
+        data : list, pd.Series or pd.DataFrame
+            data to be processed to search similiar in the inputed data.
+        top_k : int, optional
+            number of k similar items that we want to return. The default is 5.
+        batch_size : int, optional
+            size of batches to send the data. The default is 1024.
+
+        Returns
+        -------
+        results : dict
+            dict with the index and distance of the k most similar items.
+
+        Examples
+        ----------
+        >>> name = 'chosen_name'
+        >>> DATA_ITEM = # data in the format of the database
+        >>> TOP_K = 3
+        >>> mycelia = Mycelia(AUTH_KEY)
+        >>> df_index_distance = mycelia.similar_id(name, DATA_ITEM, TOP_K)
+        >>> print(pd.DataFrame(df_index_distance['similarity']))
+        index  distance
+        10007  0.0
+        45568  6995.6
+        8382   7293.2
+
+        """
+        results = []
+        for i in trange(0, len(data), batch_size, desc="Similar Data"):
+            if isinstance(data, (pd.Series, pd.DataFrame)):
+                _batch = data.iloc[i:i+batch_size]
+            else:
+                _batch = data[i:i+batch_size]
+            res = self.similar_json(name, data2json(_batch), top_k=top_k)
+            results.extend(res['similarity'])
+        return results
+
+    def similar_json(self, name: str, data_json, top_k: int = 5):
+        url = self.base_api_url + f"/similar/data/{name}?top_k={top_k}"
+
+        response = requests.put(url, headers=self.header, data=data_json)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
+
+    def ids(self, name: str, mode='summarized'):
+        response = requests.get(
+            self.base_api_url + f'/id/{name}?mode={mode}', headers=self.header)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
+
+    def is_valid(self, name: str):
+        response = requests.get(
+            self.base_api_url + f'/validation/{name}', headers=self.header)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
+
+    def inserted_ids(self, name: str, mode='summarized'):
+        response = requests.get(
+            self.base_api_url + f'/setup/ids/{name}?mode={mode}', headers=self.header)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
+
+    def insert_data(self, name: str, data, batch_size: int = 1024):
+        for i in trange(0, len(data), batch_size, desc="Insert Data"):
+            if isinstance(data, (pd.Series, pd.DataFrame)):
+                _batch = data.iloc[i:i+batch_size]
+            else:
+                _batch = data[i:i+batch_size]
+            self.insert_json(name, data2json(_batch))
+
+    def insert_json(self, name: str, df_json):
+        response = requests.post(self.base_api_url + f'/data/{name}',
+                                 headers=self.header, data=df_json)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
+
+    def setup_database(self, name: str, **kwargs):
+        response = requests.post(self.base_api_url + f'/setup/{name}',
+                                 headers=self.header, data=json.dumps(kwargs))
+        if response.status_code == 201:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
+
+    def wait_setup(self, frequency_seconds=5):
+        status = self.status
+        while status['Status'] != 'Task ended successfully.':
+            if status['Status'] == 'Something went wrong.':
+                raise BaseException(status['Description'])
+            time.sleep(frequency_seconds)
+            status = self.status
+
+    def append_data(self, name: str):
+        response = requests.patch(
+            self.base_api_url + f'/data/{name}', headers=self.header)
+        if response.status_code == 202:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
+
+    def delete_raw_data(self, name: str):
+        response = requests.delete(
+            self.base_api_url + f'/data/{name}', headers=self.header)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
+
+    def delete_database(self, name: str):
+        response = requests.delete(
+            self.base_api_url + f'/database/{name}', headers=self.header)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
