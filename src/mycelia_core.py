@@ -9,14 +9,12 @@ import pandas as pd
 import requests
 import time
 from tqdm import trange
+from typing import List
 
 from auxiliar_funcs.utils_funcs import data2json
 
 
 class Mycelia():
-    """
-    """
-
     def __init__(self, auth_key: str, url=None):
         if url is None:
             self.base_api_url = 'https://mycelia.azure-api.net'
@@ -52,20 +50,6 @@ class Mycelia():
 
     @property
     def info(self):
-        """Retrieves collections already created for the provided Auth Key.
-
-        Args
-        ----------
-        header (dict): dict with the authentication key from mycelia platform. Example {'Auth': 'auth_key_mycelia'}.
-
-        Return
-        ----------
-        collections_json (list): list with the collections created so far.
-
-        Examples
-        ----------
-
-        """
         response = requests.get(url=self.base_api_url +
                                 '/info?mode=complete', headers=self.header)
         if response.status_code == 200:
@@ -84,7 +68,7 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
-    def generate_name(self, length=8, prefix='', suffix=''):
+    def generate_name(self, length: int = 8, prefix: str = '', suffix: str = ''):
         len_prefix = len(prefix)
         len_suffix = len(suffix)
 
@@ -110,7 +94,7 @@ class Mycelia():
         print(response.json())
         return response
 
-    def similar_list(self, name, list_id, top_k=5, batch_size=1024):
+    def similar_list(self, name: str, list_id: List[int], top_k: int = 5, batch_size: int = 1024):
         results = []
         for i in trange(0, len(list_id), batch_size, desc="Similar List Id"):
             _list = list_id[i:i+batch_size].tolist()
@@ -131,7 +115,7 @@ class Mycelia():
 
         Return
         ----------
-        df_index_distance (dict): dataframe with the index and distance of the k most similar items.
+        response (dict): dict with the index and distance of the k most similar items.
 
         Examples
         ----------
@@ -163,7 +147,40 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
-    def similar_data(self, name, data, top_k=5, batch_size=1024):
+    def similar_data(self, name: str, data, top_k: int = 5, batch_size: int = 1024):
+        """
+
+
+        Parameters
+        ----------
+        name : str
+            string with the name of the database you created on the mycelia platform.
+        data : list, pd.Series or pd.DataFrame
+            data to be processed to search similiar in the inputed data.
+        top_k : int, optional
+            number of k similar items that we want to return. The default is 5.
+        batch_size : int, optional
+            size of batches to send the data. The default is 1024.
+
+        Returns
+        -------
+        results : dict
+            dict with the index and distance of the k most similar items.
+
+        Examples
+        ----------
+        >>> name = 'chosen_name'
+        >>> DATA_ITEM = # data in the format of the database
+        >>> TOP_K = 3
+        >>> mycelia = Mycelia(AUTH_KEY)
+        >>> df_index_distance = mycelia.similar_id(name, DATA_ITEM, TOP_K)
+        >>> print(pd.DataFrame(df_index_distance['similarity']))
+        index  distance
+        10007  0.0
+        45568  6995.6
+        8382   7293.2
+
+        """
         results = []
         for i in trange(0, len(data), batch_size, desc="Similar Data"):
             if isinstance(data, (pd.Series, pd.DataFrame)):
@@ -183,7 +200,7 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
-    def ids(self, name, mode='summarized'):
+    def ids(self, name: str, mode='summarized'):
         response = requests.get(
             self.base_api_url + f'/id/{name}?mode={mode}', headers=self.header)
         if response.status_code == 200:
@@ -191,7 +208,7 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
-    def is_valid(self, name):
+    def is_valid(self, name: str):
         response = requests.get(
             self.base_api_url + f'/validation/{name}', headers=self.header)
         if response.status_code == 200:
@@ -199,7 +216,7 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
-    def inserted_ids(self, name, mode='summarized'):
+    def inserted_ids(self, name: str, mode='summarized'):
         response = requests.get(
             self.base_api_url + f'/setup/ids/{name}?mode={mode}', headers=self.header)
         if response.status_code == 200:
@@ -207,7 +224,7 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
-    def insert_data(self, name, data, batch_size=1024):
+    def insert_data(self, name: str, data, batch_size: int = 1024):
         for i in trange(0, len(data), batch_size, desc="Insert Data"):
             if isinstance(data, (pd.Series, pd.DataFrame)):
                 _batch = data.iloc[i:i+batch_size]
@@ -215,7 +232,7 @@ class Mycelia():
                 _batch = data[i:i+batch_size]
             self.insert_json(name, data2json(_batch))
 
-    def insert_json(self, name, df_json):
+    def insert_json(self, name: str, df_json):
         response = requests.post(self.base_api_url + f'/data/{name}',
                                  headers=self.header, data=df_json)
         if response.status_code == 200:
@@ -223,7 +240,7 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
-    def setup_database(self, name, **kwargs):
+    def setup_database(self, name: str, **kwargs):
         response = requests.post(self.base_api_url + f'/setup/{name}',
                                  headers=self.header, data=json.dumps(kwargs))
         if response.status_code == 201:
@@ -239,7 +256,7 @@ class Mycelia():
             time.sleep(frequency_seconds)
             status = self.status
 
-    def append_data(self, name):
+    def append_data(self, name: str):
         response = requests.patch(
             self.base_api_url + f'/data/{name}', headers=self.header)
         if response.status_code == 202:
@@ -247,7 +264,7 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
-    def delete_raw_data(self, name):
+    def delete_raw_data(self, name: str):
         response = requests.delete(
             self.base_api_url + f'/data/{name}', headers=self.header)
         if response.status_code == 200:
@@ -255,7 +272,7 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
-    def delete_database(self, name):
+    def delete_database(self, name: str):
         response = requests.delete(
             self.base_api_url + f'/database/{name}', headers=self.header)
         if response.status_code == 200:
