@@ -2,6 +2,7 @@
 Mycelia SDKs
 
 # Examples
+Instanciating your base class
 ```python
 mycelia = Mycelia(AUTH_KEY)
 ```
