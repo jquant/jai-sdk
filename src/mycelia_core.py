@@ -3,9 +3,13 @@
 
 created by @dionisio
 """
+import secrets
 import json
 import pandas as pd
 import requests
+import time
+
+from auxiliar_funcs.utils_funcs import data2json
 
 
 class Mycelia():
@@ -79,10 +83,38 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
+    def generate_name(self, length=8, prefix='', suffix=''):
+        len_prefix = len(prefix)
+        len_suffix = len(suffix)
+
+        if length <= len_prefix + len_suffix:
+            raise ValueError(
+                f"length {length} is should be larger than {len_prefix+len_suffix} for prefix and suffix inputed.")
+
+        length -= (len_prefix + len_suffix)
+        code = secrets.token_hex(length)[:length].lower()
+        name = str(prefix) + str(code) + str(suffix)
+        names = self.names
+
+        while name in names:
+            code = secrets.token_hex(length)[:length].lower()
+            name = str(prefix) + str(code) + str(suffix)
+
+        return name
+
     def assert_status_code(self, response):
         # find a way to process this
         # what errors to raise, etc.
+        raise ValueError("Oh no.")
         return response
+
+    def similar_list(self, name, list_id, top_k=5, batch_size=1024):
+        results = []
+        for i in range(0, len(list_id), batch_size):
+            _list = list_id[i:i+batch_size].tolist()
+            res = self.similar_id(name, _list, top_k=top_k)
+            results.extend(res['similarity'])
+        return results
 
     def similar_id(self, name: str, id_item: int, top_k: int = 5):
         """Creates a list of dicts, with the index and distance of the k itens most similars.
@@ -129,8 +161,25 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
-    def similar_data(self):
-        raise NotImplementedError("This method is not implemented yet.")
+    def similar_data(self, name, data, top_k=5, batch_size=1024):
+        results = []
+        for i in range(0, len(data), batch_size):
+            if isinstance(data, (pd.Series, pd.DataFrame)):
+                _batch = data.iloc[i:i+batch_size]
+            else:
+                _batch = data[i:i+batch_size]
+            res = self.similar_json(name, _batch, top_k=top_k)
+            results.extend(res['similarity'])
+        return results
+
+    def similar_json(self, name: str, data_json, top_k: int = 5):
+        url = self.base_api_url + f"/similar/data/{name}?top_k={top_k}"
+
+        response = requests.put(url, headers=self.header, data=data_json)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
 
     def ids(self, name, mode='summarized'):
         response = requests.get(
@@ -140,7 +189,7 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
-    def validate_name(self, name):
+    def is_valid(self, name):
         response = requests.get(
             self.base_api_url + f'/validation/{name}', headers=self.header)
         if response.status_code == 200:
@@ -156,22 +205,37 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
-    def insert_data(self, name, df_json):
-        response = requests.post(
-            self.base_api_url + f'/data/{name}', headers=self.header, data=df_json)
+    def insert_data(self, name, data, batch_size=1024):
+        for i in range(0, len(data), batch_size):
+            if isinstance(data, (pd.Series, pd.DataFrame)):
+                _batch = data.iloc[i:i+batch_size]
+            else:
+                _batch = data[i:i+batch_size]
+            self.insert_json(name, data2json(_batch))
+
+    def insert_json(self, name, df_json):
+        response = requests.post(self.base_api_url + f'/data/{name}',
+                                 headers=self.header, data=df_json)
         if response.status_code == 200:
             return response.json()
         else:
             return self.assert_status_code(response)
 
-    def setup_database(self, name, dtype):
-        body = {"db_type": dtype}
-        response = requests.post(
-            self.base_api_url + f'/setup/{name}', headers=self.header, data=json.dumps(body))
+    def setup_database(self, name, **kwargs):
+        response = requests.post(self.base_api_url + f'/setup/{name}',
+                                 headers=self.header, data=json.dumps(kwargs))
         if response.status_code == 201:
             return response.json()
         else:
             return self.assert_status_code(response)
+
+    def wait_setup(self, frequency_seconds=5):
+        status = self.status
+        while status['Status'] != 'Task ended successfully.':
+            if status['Status'] == 'Something went wrong.':
+                raise BaseException(status['Description'])
+            time.sleep(frequency_seconds)
+            status = self.status
 
     def append_data(self, name):
         response = requests.patch(
