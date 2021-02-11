@@ -52,6 +52,23 @@ results = mycelia.similar_list(name, data.index, top_k=100, batch_size=1024)
 # Find the 100 most similar values for every new_data
 results = mycelia.similar_data(name, new_data, top_k=100, batch_size=1024)
 ```
+The output will be a list of dictionaries with ("query_id") the id of the value you want to find similars and ("results") a list with `top_k` dictionaries with the "id" and the "distance" between "query_id" and "id".
+```
+[{'query_id': 0,
+  'results': [{'id': 0, 'distance': 0.0},
+   {'id': 3836, 'distance': 2.298321008682251},
+   {'id': 9193, 'distance': 2.545339584350586},
+   {'id': 832, 'distance': 2.5819168090820312},
+   {'id': 6162, 'distance': 2.638622283935547},
+   ...]},
+   ....,
+{'query_id': 9,
+  'results': [{'id': 9, 'distance': 0.0},
+   {'id': 54, 'distance': 5.262974262237549},
+   {'id': 101, 'distance': 5.634262561798096},
+   ...},
+   ....]
+```
 
 # Removing data
 
