@@ -106,7 +106,8 @@ class Mycelia():
     def assert_status_code(self, response):
         # find a way to process this
         # what errors to raise, etc.
-        raise ValueError("Oh no.")
+        # raise ValueError(response.content)
+        print(response.json())
         return response
 
     def similar_list(self, name, list_id, top_k=5, batch_size=1024):
@@ -169,7 +170,7 @@ class Mycelia():
                 _batch = data.iloc[i:i+batch_size]
             else:
                 _batch = data[i:i+batch_size]
-            res = self.similar_json(name, _batch, top_k=top_k)
+            res = self.similar_json(name, data2json(_batch), top_k=top_k)
             results.extend(res['similarity'])
         return results
 
