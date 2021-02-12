@@ -12,9 +12,8 @@ mycelia = Mycelia(AUTH_KEY)
 Aplication using the model NLP FastText
 ```python
 ### fasttext implementation
-# generate a random name for identification of the base, can be a user input
 # save this if you wish to work in the same database later
-name = mycelia.generate_name(20, prefix='sdk_', suffix='_fasttext')
+name = 'text_data'
 
 ### Data insertion and train the unsupervised FastText model
 # data can be a list of texts, pandas Series or DataFrame.
@@ -29,7 +28,7 @@ mycelia.wait_setup(10)
 Aplication using the model NLP BERT
 ```python
 ### bert implementation
-# Same initial steps
+# generate a random name for identification of the base, can be a user input
 name = mycelia.generate_name(20, prefix='sdk_', suffix='_text')
 
 # this time we choose db_type="Text", applying the pre-trained BERT model
