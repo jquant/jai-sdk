@@ -12,6 +12,7 @@ from tqdm import trange
 from typing import List
 
 from auxiliar_funcs.utils_funcs import data2json
+from auxiliar_funcs.classes import Mode
 
 
 class Mycelia():
@@ -203,7 +204,7 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
-    def ids(self, name: str, mode='summarized'):
+    def ids(self, name: str, mode: Mode = 'summarized'):
         response = requests.get(
             self.base_api_url + f'/id/{name}?mode={mode}', headers=self.header)
         if response.status_code == 200:
@@ -219,7 +220,7 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
-    def inserted_ids(self, name: str, mode='summarized'):
+    def inserted_ids(self, name: str, mode: Mode = 'summarized'):
         response = requests.get(
             self.base_api_url + f'/setup/ids/{name}?mode={mode}', headers=self.header)
         if response.status_code == 200:

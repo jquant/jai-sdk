@@ -12,13 +12,12 @@ from tqdm import tqdm
 from typing import Callable, List
 from pathlib import Path
 from PIL import Image
+from auxiliar_funcs.classes import FieldName, PossibleDtypes
 
 
 def read_image_folder(image_folder: str = None, images: List = None, ignore_corrupt=False,
                       extentions=["*.png", "*.jpg", "*.jpeg"]):
 
-    temp_img = []
-    ids = []
     if image_folder is not None:
         images = Path(image_folder).iterdir()
     elif images is not None:
@@ -26,6 +25,10 @@ def read_image_folder(image_folder: str = None, images: List = None, ignore_corr
     else:
         raise ValueError(
             "must pass the folder of the images or a list with the paths of each image.")
+
+    temp_img = []
+    ids = []
+    corrupted_files = []
     for i, filename in enumerate(tqdm(images)):
         if filename.suffix in extentions:
             try:
@@ -44,9 +47,13 @@ def read_image_folder(image_folder: str = None, images: List = None, ignore_corr
                 raise KeyboardInterrupt
             except:
                 if ignore_corrupt:
+                    corrupted_files.append(filename)
                     continue
                 else:
                     raise ValueError(f"file {filename} seems to be corrupted.")
+    if len(corrupted_files) > 0:
+        print("Here are the files that seem to be corrupted:")
+        [print(f"{f}") for f in corrupted_files]
     index = pd.Index(ids, name='id')
     return pd.Series(temp_img, index=index, name='image_base64')
 
@@ -77,19 +84,21 @@ def df2json(dataframe):
 
 
 def data2json(data, dtype):
-    if dtype == 'Text' or dtype == 'FastText':
+    if dtype == PossibleDtypes.text or dtype == PossibleDtypes.fasttext:
         if isinstance(data, (set, list, tuple, np.ndarray)):
-            return list2json(data, name='text')
+            return list2json(data, name=FieldName.text)
         elif isinstance(data, pd.Series):
-            return series2json(data, name='text')
+            return series2json(data, name=FieldName.text)
         else:
             raise NotImplementedError(f"type {type(data)} is not implemented.")
-    elif dtype == "Image":
+    elif dtype == PossibleDtypes.image:
+        if isinstance(data, (set, list, tuple, np.ndarray)):
+            return list2json(data, name=FieldName.image)
         if isinstance(data, pd.Series):
-            return series2json(data, name='image_base64')
+            return series2json(data, name=FieldName.image)
         else:
             raise NotImplementedError(f"type {type(data)} is not implemented.")
-    elif dtype == "Supervised" or dtype == "Unsupervised":
+    elif dtype == PossibleDtypes.supervised or dtype == PossibleDtypes.unsupervised:
         if isinstance(data, pd.DataFrame):
             return df2json(data)
         else:
