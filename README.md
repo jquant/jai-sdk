@@ -16,14 +16,14 @@ Aplication using the model NLP FastText
 # save this if you wish to work in the same database later
 name = mycelia.generate_name(20, prefix='sdk_', suffix='_fasttext')
 
-# Data insertion, data can be a list of texts, pandas Series or DataFrame.
+### Data insertion and train the unsupervised FastText model
+# data can be a list of texts, pandas Series or DataFrame.
 # if data is a list, then ids will be set with range(len(data_list))
 # if data is a pandas type, then the ids will be the index values, index must not contain duplicated values
-mycelia.insert_data(name, data)
+mycelia.insert_setup(name, data, db_type='FastText')
 
-# Train the unsupervised FastText model
-mycelia.setup_database(name, db_type='FastText')
-mycelia.wait_setup(10)  # wait for the train to finish
+# wait for the train to finish
+mycelia.wait_setup(10)
 ```
 
 Aplication using the model NLP BERT
@@ -31,10 +31,9 @@ Aplication using the model NLP BERT
 ### bert implementation
 # Same initial steps
 name = mycelia.generate_name(20, prefix='sdk_', suffix='_text')
-mycelia.insert_data(name, data, batch_size=1024)
 
 # this time we choose db_type="Text", applying the pre-trained BERT model
-mycelia.setup_database(name, db_type='Text')
+mycelia.insert_setup(name, data, db_type='Text', batch_size=1024)
 mycelia.wait_setup(10)
 ```
 
@@ -43,6 +42,13 @@ After you're done with setting up your database, you can find similarity:
 
 - Using the indexes of the inputed data
 ```python
+# Find the 5 most similar values for the ids 0 and 1
+results = mycelia.similar_list(name, [0, 1], top_k=5, batch_size=1024)
+
+# Find the 20 most similar values for every id in 0 to 100
+ids = list(range(100))
+results = mycelia.similar_list(name, ids, top_k=20, batch_size=1024)
+
 # Find the 100 most similar values for every inputed value
 results = mycelia.similar_list(name, data.index, top_k=100, batch_size=1024)
 ```
@@ -52,6 +58,7 @@ results = mycelia.similar_list(name, data.index, top_k=100, batch_size=1024)
 # Find the 100 most similar values for every new_data
 results = mycelia.similar_data(name, new_data, top_k=100, batch_size=1024)
 ```
+
 The output will be a list of dictionaries with ("query_id") the id of the value you want to find similars and ("results") a list with `top_k` dictionaries with the "id" and the "distance" between "query_id" and "id".
 ```
 [{'query_id': 0,
