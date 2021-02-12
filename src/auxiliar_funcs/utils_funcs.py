@@ -5,38 +5,93 @@ Created on Wed Feb 10 16:00:58 2021
 @author: Kazu
 """
 
-
+import base64
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
-from typing import Callable
+from typing import Callable, List
+from pathlib import Path
+from PIL import Image
 
 
-def list2json(data_list, name='text'):
+def read_image_folder(image_folder: str = None, images: List = None, ignore_corrupt=False,
+                      extentions=["*.png", "*.jpg", "*.jpeg"]):
+
+    temp_img = []
+    ids = []
+    if image_folder is not None:
+        images = Path(image_folder).iterdir()
+    elif images is not None:
+        pass
+    else:
+        raise ValueError(
+            "must pass the folder of the images or a list with the paths of each image.")
+    for i, filename in enumerate(tqdm(images)):
+        if filename.suffix in extentions:
+            try:
+                im = Image.open(filename)
+                im.verify()  # I perform also verify, don't know if he sees other types o defects
+                im.close()  # reload is necessary in my case
+                im = Image.open(filename)
+                im.transpose(Image.FLIP_LEFT_RIGHT)
+                im.close()
+                with open(filename, "rb") as image_file:
+                    encoded_string = base64.b64encode(
+                        image_file.read()).decode("utf-8")
+                temp_img.append(encoded_string)
+                ids.append(i)
+            except KeyboardInterrupt:
+                raise KeyboardInterrupt
+            except:
+                if ignore_corrupt:
+                    continue
+                else:
+                    raise ValueError(f"file {filename} seems to be corrupted.")
+    index = pd.Index(ids, name='id')
+    return pd.Series(temp_img, index=index, name='image_base64')
+
+
+def list2json(data_list, name):
     index = pd.Index(range(len(data_list)), name='id')
     series = pd.Series(data_list, index=index, name=name)
     return series.reset_index().to_json(orient='records')
 
 
-def series2json(data_series, name='text'):
+def series2json(data_series, name):
     data_series.index.name = 'id'
     data_series.name = name
+    if data_series.index.duplicated().any():
+        raise ValueError("Index must not contain duplicated values.")
     return data_series.reset_index().to_json(orient='records')
 
 
-def df2json(dataframe, col, name='text'):
+def df2json(dataframe):
     dataframe.index.name = 'id'
-    series = dataframe[col].rename(columns={col: name})
-    return series.reset_index().to_json(orient='records')
+    if dataframe.index.duplicated().any():
+        raise ValueError("Index must not contain duplicated values.")
+    return dataframe.reset_index().to_json(orient='records')
 
 
-def data2json(data, name='text'):
-    if isinstance(data, (set, list, tuple, np.ndarray)):
-        return list2json(data, name=name)
-    elif isinstance(data, pd.Series):
-        return series2json(data, name=name)
+def data2json(data, dtype):
+    if dtype == 'Text' or dtype == 'FastText':
+        if isinstance(data, (set, list, tuple, np.ndarray)):
+            return list2json(data, name='text')
+        elif isinstance(data, pd.Series):
+            return series2json(data, name='text')
+        else:
+            raise NotImplementedError(f"type {type(data)} is not implemented.")
+    elif dtype == "Image":
+        if isinstance(data, pd.Series):
+            return series2json(data, name='image_base64')
+        else:
+            raise NotImplementedError(f"type {type(data)} is not implemented.")
+    elif dtype == "Supervised" or dtype == "Unsupervised":
+        if isinstance(data, pd.DataFrame):
+            return df2json(data)
+        else:
+            raise NotImplementedError(f"type {type(data)} is not implemented.")
     else:
-        raise NotImplementedError(f"type {type(data)} is not implemented.")
+        raise ValueError(f"dtype {dtype} not recognized.")
 
 
 def process_similar(results, threshold: int = 5, only_duplicated: bool = False,

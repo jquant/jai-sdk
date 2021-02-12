@@ -181,13 +181,16 @@ class Mycelia():
         8382   7293.2
 
         """
+        dtypes = self.info
+        dtype = dtypes.loc[dtypes['db_name'] == name, 'db_type'].values[0]
         results = []
         for i in trange(0, len(data), batch_size, desc="Similar Data"):
             if isinstance(data, (pd.Series, pd.DataFrame)):
                 _batch = data.iloc[i:i+batch_size]
             else:
                 _batch = data[i:i+batch_size]
-            res = self.similar_json(name, data2json(_batch), top_k=top_k)
+            res = self.similar_json(name, data2json(
+                _batch, dtype=dtype), top_k=top_k)
             results.extend(res['similarity'])
         return results
 
@@ -224,13 +227,17 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
-    def insert_data(self, name: str, data, batch_size: int = 1024):
-        for i in trange(0, len(data), batch_size, desc="Insert Data"):
+    def insert_setup(self, name: str, data, db_type: str, batch_size: int = 1024, **kwargs):
+        insert_responses = {}
+        for i, b in enumerate(trange(0, len(data), batch_size, desc="Insert Data")):
             if isinstance(data, (pd.Series, pd.DataFrame)):
-                _batch = data.iloc[i:i+batch_size]
+                _batch = data.iloc[b:b+batch_size]
             else:
-                _batch = data[i:i+batch_size]
-            self.insert_json(name, data2json(_batch))
+                _batch = data[b:b+batch_size]
+            insert_responses[i] = self.insert_json(name,
+                                                   data2json(_batch, dtype=db_type))
+        setup_response = self.setup_database(name, db_type, **kwargs)
+        return insert_responses, setup_response
 
     def insert_json(self, name: str, df_json):
         response = requests.post(self.base_api_url + f'/data/{name}',
@@ -240,7 +247,8 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
-    def setup_database(self, name: str, **kwargs):
+    def setup_database(self, name: str, db_type, **kwargs):
+        kwargs['db_type'] = db_type
         response = requests.post(self.base_api_url + f'/setup/{name}',
                                  headers=self.header, data=json.dumps(kwargs))
         if response.status_code == 201:
@@ -278,4 +286,5 @@ class Mycelia():
         if response.status_code == 200:
             return response.json()
         else:
+            return self.assert_status_code(response)
             return self.assert_status_code(response)
