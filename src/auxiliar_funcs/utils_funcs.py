@@ -58,6 +58,7 @@ def list2json(data_list, name):
 
 
 def series2json(data_series, name):
+    data_series = data_series.copy()
     data_series.index.name = 'id'
     data_series.name = name
     if data_series.index.duplicated().any():
@@ -66,10 +67,13 @@ def series2json(data_series, name):
 
 
 def df2json(dataframe):
-    dataframe.index.name = 'id'
+    dataframe = dataframe.copy()
+    if 'id' not in dataframe.columns:
+        dataframe.index.name = 'id'
+        dataframe = dataframe.reset_index()
     if dataframe.index.duplicated().any():
         raise ValueError("Index must not contain duplicated values.")
-    return dataframe.reset_index().to_json(orient='records')
+    return dataframe.to_json(orient='records')
 
 
 def data2json(data, dtype):
