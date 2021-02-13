@@ -98,7 +98,12 @@ class Mycelia():
     def similar_list(self, name: str, list_id: List[int], top_k: int = 5, batch_size: int = 1024):
         results = []
         for i in trange(0, len(list_id), batch_size, desc="Similar List Id"):
-            _list = list_id[i:i+batch_size].tolist()
+            if isinstance(list_id, (pd.Series, pd.DataFrame)):
+                _list = list_id.iloc[i:i+batch_size].tolist()
+            if isinstance(list_id, pd.Index):
+                _list = list_id[i:i+batch_size].tolist()
+            else:
+                _list = list_id[i:i+batch_size]
             res = self.similar_id(name, _list, top_k=top_k)
             results.extend(res['similarity'])
         return results
@@ -183,7 +188,10 @@ class Mycelia():
 
         """
         dtypes = self.info
-        dtype = dtypes.loc[dtypes['db_name'] == name, 'db_type'].values[0]
+        if any(dtypes['db_name'] == name):
+            dtype = dtypes.loc[dtypes['db_name'] == name, 'db_type'].values[0]
+        else:
+            raise ValueError()
         results = []
         for i in trange(0, len(data), batch_size, desc="Similar Data"):
             if isinstance(data, (pd.Series, pd.DataFrame)):

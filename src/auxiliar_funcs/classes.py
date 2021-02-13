@@ -13,11 +13,16 @@ class PossibleDtypes(str, Enum):
     unsupervised = "Unsupervised"
     supervised = "Supervised"
     text = "Text"
+    edit = "TextEdit"
 
 
 class FieldName(str, Enum):
     text = "text"
     image = "image_base64"
+
+    def __str__(self):
+        return str(self.value)
+
 
 
 class Mode(str, Enum):
