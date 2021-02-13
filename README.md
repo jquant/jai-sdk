@@ -42,11 +42,11 @@ After you're done with setting up your database, you can find similarity:
 - Using the indexes of the inputed data
 ```python
 # Find the 5 most similar values for the ids 0 and 1
-results = mycelia.similar_list(name, [0, 1], top_k=5, batch_size=1024)
+results = mycelia.similar_list(name, [0, 1], top_k=5)
 
 # Find the 20 most similar values for every id in 0 to 100
 ids = list(range(100))
-results = mycelia.similar_list(name, ids, top_k=20, batch_size=1024)
+results = mycelia.similar_list(name, ids, top_k=20)
 
 # Find the 100 most similar values for every inputed value
 results = mycelia.similar_list(name, data.index, top_k=100, batch_size=1024)
