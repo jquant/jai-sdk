@@ -84,7 +84,8 @@ def df2json(dataframe):
 
 
 def data2json(data, dtype):
-    if dtype == PossibleDtypes.text or dtype == PossibleDtypes.fasttext:
+    if (dtype == PossibleDtypes.edit or dtype == PossibleDtypes.text
+        or dtype == PossibleDtypes.fasttext):
         if isinstance(data, (set, list, tuple, np.ndarray)):
             return list2json(data, name=FieldName.text)
         elif isinstance(data, pd.Series):
