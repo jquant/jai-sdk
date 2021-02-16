@@ -95,7 +95,7 @@ class Mycelia():
         print(response.json())
         return response
 
-    def similar_list(self, name: str, list_id: List[int], top_k: int = 5, batch_size: int = 1024):
+    def similar_list(self, name: str, list_id: List[int], top_k: int = 5, batch_size: int = 1024, method="PUT"):
         results = []
         for i in trange(0, len(list_id), batch_size, desc="Similar List Id"):
             if isinstance(list_id, (pd.Series, pd.DataFrame)):
@@ -104,11 +104,11 @@ class Mycelia():
                 _list = list_id[i:i+batch_size].tolist()
             else:
                 _list = list_id[i:i+batch_size]
-            res = self.similar_id(name, _list, top_k=top_k)
+            res = self.similar_id(name, _list, top_k=top_k, method=method)
             results.extend(res['similarity'])
         return results
 
-    def similar_id(self, name: str, id_item: int, top_k: int = 5):
+    def similar_id(self, name: str, id_item: int, top_k: int = 5, method="PUT"):
         """Creates a list of dicts, with the index and distance of the k itens most similars.
 
         Args
@@ -136,18 +136,32 @@ class Mycelia():
         45568  6995.6
         8382   7293.2
         """
-        if isinstance(id_item, list):
-            id_req = '&'.join(['id=' + str(i) for i in id_item])
-            url = self.base_api_url + \
-                f"/similar/id/{name}?{id_req}&top_k={top_k}"
-        elif isinstance(id_item, int):
-            url = self.base_api_url + \
-                f"/similar/id/{name}?id={id_item}&top_k={top_k}"
-        else:
-            raise TypeError(
-                f"id_item param must be int or list, {type(id_item)} found.")
+        if method == "GET":
+            if isinstance(id_item, list):
+                id_req = '&'.join(['id=' + str(i) for i in id_item])
+                url = self.base_api_url + \
+                    f"/similar/id/{name}?{id_req}&top_k={top_k}"
+            elif isinstance(id_item, int):
+                url = self.base_api_url + \
+                    f"/similar/id/{name}?id={id_item}&top_k={top_k}"
+            else:
+                raise TypeError(
+                    f"id_item param must be int or list, {type(id_item)} found.")
 
-        response = requests.get(url, headers=self.header)
+            response = requests.get(url, headers=self.header)
+        elif method == "PUT":
+            if isinstance(id_item, list):
+                pass
+            elif isinstance(id_item, int):
+                id_item = [id_item]
+            else:
+                raise TypeError(
+                    f"id_item param must be int or list, {type(id_item)} found.")
+
+            response = requests.put(self.base_api_url + \
+                    f"/similar/id/{name}?top_k={top_k}", headers=self.header, data=json.dumps(id_item))
+        else:
+            raise ValueError("method must be GET or PUT.")
         if response.status_code == 200:
             return response.json()
         else:
@@ -179,7 +193,7 @@ class Mycelia():
         >>> DATA_ITEM = # data in the format of the database
         >>> TOP_K = 3
         >>> mycelia = Mycelia(AUTH_KEY)
-        >>> df_index_distance = mycelia.similar_id(name, DATA_ITEM, TOP_K)
+        >>> df_index_distance = mycelia.similar_data(name, DATA_ITEM, TOP_K)
         >>> print(pd.DataFrame(df_index_distance['similarity']))
         index  distance
         10007  0.0
@@ -265,13 +279,20 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
-    def wait_setup(self, frequency_seconds=5):
+    def wait_setup(self, name: str, frequency_seconds=5):
+
         status = self.status
-        while status['Status'] != 'Task ended successfully.':
-            if status['Status'] == 'Something went wrong.':
-                raise BaseException(status['Description'])
-            time.sleep(frequency_seconds)
-            status = self.status
+        if len(status) > 0:
+            status = status[name]
+            while status['Status'] != 'Task ended successfully.':
+                if status['Status'] == 'Something went wrong.':
+                    raise BaseException(status['Description'])
+                time.sleep(frequency_seconds)
+                status = self.status
+                if len(status) > 0:
+                    status = status[name]
+                else:
+                    break
 
     def append_data(self, name: str):
         response = requests.patch(
