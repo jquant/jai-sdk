@@ -8,11 +8,11 @@ import json
 import pandas as pd
 import requests
 import time
-from tqdm import trange
-from typing import List
 
 from auxiliar_funcs.utils_funcs import data2json
 from auxiliar_funcs.classes import Mode
+from pandas.api.types import is_integer_dtype
+from tqdm import trange
 
 
 class Mycelia():
@@ -95,20 +95,70 @@ class Mycelia():
         print(response.json())
         return response
 
-    def similar_list(self, name: str, list_id: List[int], top_k: int = 5, batch_size: int = 1024, method="PUT"):
+    def similar(self, name: str, data, top_k: int = 5, batch_size: int = 1024):
+        """
+
+
+        Parameters
+        ----------
+        name : str
+            string with the name of the database you created on the mycelia platform.
+        data : list, pd.Series or pd.DataFrame
+            data to be processed to search similiar in the inputed data.
+        top_k : int, optional
+            number of k similar items that we want to return. The default is 5.
+        batch_size : int, optional
+            size of batches to send the data. The default is 1024.
+
+        Returns
+        -------
+        results : dict
+            dict with the index and distance of the k most similar items.
+
+        Examples
+        ----------
+        >>> name = 'chosen_name'
+        >>> DATA_ITEM = # data in the format of the database
+        >>> TOP_K = 3
+        >>> mycelia = Mycelia(AUTH_KEY)
+        >>> df_index_distance = mycelia.similar(name, DATA_ITEM, TOP_K)
+        >>> print(pd.DataFrame(df_index_distance['similarity']))
+        index  distance
+        10007  0.0
+        45568  6995.6
+        8382   7293.2
+
+        """
+        dtypes = self.info
+        if any(dtypes['db_name'] == name):
+            dtype = dtypes.loc[dtypes['db_name'] == name, 'db_type'].values[0]
+        else:
+            raise ValueError()
+
+        is_id = is_integer_dtype(data)
+
         results = []
-        for i in trange(0, len(list_id), batch_size, desc="Similar List Id"):
-            if isinstance(list_id, (pd.Series, pd.DataFrame)):
-                _list = list_id.iloc[i:i+batch_size].tolist()
-            if isinstance(list_id, pd.Index):
-                _list = list_id[i:i+batch_size].tolist()
+        for i in trange(0, len(data), batch_size, desc="Similar"):
+            if is_id:
+                if isinstance(data, pd.Series):
+                    _batch = data.iloc[i:i+batch_size].tolist()
+                if isinstance(data, pd.Index):
+                    _batch = data[i:i+batch_size].tolist()
+                else:
+                    _batch = data[i:i+batch_size]
+                res = self._similar_id(name, _batch, top_k=top_k)
             else:
-                _list = list_id[i:i+batch_size]
-            res = self.similar_id(name, _list, top_k=top_k, method=method)
+                if isinstance(data, (pd.Series, pd.DataFrame)):
+                    _batch = data.iloc[i:i+batch_size]
+                else:
+                    _batch = data[i:i+batch_size]
+                res = self._similar_json(name, data2json(_batch, dtype=dtype),
+                                        top_k=top_k)
             results.extend(res['similarity'])
         return results
 
-    def similar_id(self, name: str, id_item: int, top_k: int = 5, method="PUT"):
+
+    def _similar_id(self, name: str, id_item: int, top_k: int = 5, method="PUT"):
         """Creates a list of dicts, with the index and distance of the k itens most similars.
 
         Args
@@ -138,7 +188,7 @@ class Mycelia():
         """
         if method == "GET":
             if isinstance(id_item, list):
-                id_req = '&'.join(['id=' + str(i) for i in id_item])
+                id_req = '&'.join(['id=' + str(i) for i in set(id_item)])
                 url = self.base_api_url + \
                     f"/similar/id/{name}?{id_req}&top_k={top_k}"
             elif isinstance(id_item, int):
@@ -167,57 +217,8 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
-    def similar_data(self, name: str, data, top_k: int = 5, batch_size: int = 1024):
-        """
 
-
-        Parameters
-        ----------
-        name : str
-            string with the name of the database you created on the mycelia platform.
-        data : list, pd.Series or pd.DataFrame
-            data to be processed to search similiar in the inputed data.
-        top_k : int, optional
-            number of k similar items that we want to return. The default is 5.
-        batch_size : int, optional
-            size of batches to send the data. The default is 1024.
-
-        Returns
-        -------
-        results : dict
-            dict with the index and distance of the k most similar items.
-
-        Examples
-        ----------
-        >>> name = 'chosen_name'
-        >>> DATA_ITEM = # data in the format of the database
-        >>> TOP_K = 3
-        >>> mycelia = Mycelia(AUTH_KEY)
-        >>> df_index_distance = mycelia.similar_data(name, DATA_ITEM, TOP_K)
-        >>> print(pd.DataFrame(df_index_distance['similarity']))
-        index  distance
-        10007  0.0
-        45568  6995.6
-        8382   7293.2
-
-        """
-        dtypes = self.info
-        if any(dtypes['db_name'] == name):
-            dtype = dtypes.loc[dtypes['db_name'] == name, 'db_type'].values[0]
-        else:
-            raise ValueError()
-        results = []
-        for i in trange(0, len(data), batch_size, desc="Similar Data"):
-            if isinstance(data, (pd.Series, pd.DataFrame)):
-                _batch = data.iloc[i:i+batch_size]
-            else:
-                _batch = data[i:i+batch_size]
-            res = self.similar_json(name, data2json(
-                _batch, dtype=dtype), top_k=top_k)
-            results.extend(res['similarity'])
-        return results
-
-    def similar_json(self, name: str, data_json, top_k: int = 5):
+    def _similar_json(self, name: str, data_json, top_k: int = 5):
         url = self.base_api_url + f"/similar/data/{name}?top_k={top_k}"
 
         response = requests.put(url, headers=self.header, data=data_json)
@@ -226,7 +227,7 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
-    def ids(self, name: str, mode: Mode = 'summarized'):
+    def ids(self, name: str, mode: Mode = 'simple'):
         response = requests.get(
             self.base_api_url + f'/id/{name}?mode={mode}', headers=self.header)
         if response.status_code == 200:
@@ -242,7 +243,7 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
-    def inserted_ids(self, name: str, mode: Mode = 'summarized'):
+    def _temp_ids(self, name: str, mode: Mode = 'simple'):
         response = requests.get(
             self.base_api_url + f'/setup/ids/{name}?mode={mode}', headers=self.header)
         if response.status_code == 200:
@@ -250,19 +251,25 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
-    def insert_setup(self, name: str, data, db_type: str, batch_size: int = 1024, **kwargs):
+    def setup(self, name: str, data, db_type: str, batch_size: int = 1024, **kwargs):
         insert_responses = {}
         for i, b in enumerate(trange(0, len(data), batch_size, desc="Insert Data")):
             if isinstance(data, (pd.Series, pd.DataFrame)):
                 _batch = data.iloc[b:b+batch_size]
             else:
                 _batch = data[b:b+batch_size]
-            insert_responses[i] = self.insert_json(name,
-                                                   data2json(_batch, dtype=db_type))
-        setup_response = self.setup_database(name, db_type, **kwargs)
+            insert_responses[i] = self._insert_json(name,
+                                                    data2json(_batch, dtype=db_type))
+
+        inserted_ids = self._temp_ids(name, 'simple')
+        if len(data) != int(inserted_ids[0].split()[0]):
+            self.delete_raw_data(name)
+            raise Exception("Something went wrong on data insertion. Please try again.")
+
+        setup_response = self._setup_database(name, db_type, **kwargs)
         return insert_responses, setup_response
 
-    def insert_json(self, name: str, df_json):
+    def _insert_json(self, name: str, df_json):
         response = requests.post(self.base_api_url + f'/data/{name}',
                                  headers=self.header, data=df_json)
         if response.status_code == 200:
@@ -270,7 +277,7 @@ class Mycelia():
         else:
             return self.assert_status_code(response)
 
-    def setup_database(self, name: str, db_type, **kwargs):
+    def _setup_database(self, name: str, db_type, **kwargs):
         kwargs['db_type'] = db_type
         response = requests.post(self.base_api_url + f'/setup/{name}',
                                  headers=self.header, data=json.dumps(kwargs))
@@ -294,7 +301,7 @@ class Mycelia():
                 else:
                     break
 
-    def append_data(self, name: str):
+    def _append(self, name: str):
         response = requests.patch(
             self.base_api_url + f'/data/{name}', headers=self.header)
         if response.status_code == 202:
