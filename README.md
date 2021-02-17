@@ -1,2 +1,2 @@
-# mycelia-sdk
+# JAI-sdk
 JAI SDKs
