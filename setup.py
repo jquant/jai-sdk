@@ -7,7 +7,7 @@ packages = find_packages(exclude=("tests",))
 
 setup(
     name="jai",
-    version="0.1.2",
+    version="0.0.1",
     packages=packages,
     include_package_data=True,
     install_requires=reqs,
