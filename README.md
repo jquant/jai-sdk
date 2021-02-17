@@ -61,7 +61,7 @@ and you can check the databases types for each of your databases with:
 ```python
 >>> jai.info
                         db_name       db_type
-0   		           jai_database          Text
+0                  jai_database          Text
 1              jai_unsupervised  Unsupervised
 2                jai_supervised    Supervised
 ```
