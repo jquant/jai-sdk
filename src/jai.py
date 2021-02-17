@@ -9,8 +9,8 @@ import pandas as pd
 import requests
 import time
 
-from auxiliar_funcs.utils_funcs import data2json
-from auxiliar_funcs.classes import Mode
+from .auxiliar_funcs.utils_funcs import data2json
+from .auxiliar_funcs.classes import Mode
 from pandas.api.types import is_integer_dtype
 from tqdm import trange
 

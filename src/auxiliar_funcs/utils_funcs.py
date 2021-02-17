@@ -12,7 +12,7 @@ from tqdm import tqdm
 from typing import Callable, List
 from pathlib import Path
 from PIL import Image
-from auxiliar_funcs.classes import FieldName, PossibleDtypes
+from .classes import FieldName, PossibleDtypes
 
 
 def read_image_folder(image_folder: str = None, images: List = None, ignore_corrupt=False,
