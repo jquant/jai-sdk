@@ -245,7 +245,7 @@ class jAI():
 
     def _temp_ids(self, name: str, mode: Mode = 'simple'):
         response = requests.get(
-            self.base_api_url + f'/setup/ids/{name}?mode={mode}', headers=self.header)
+            self.base_api_url + f'/id/{name}?mode={mode}', headers=self.header)
         if response.status_code == 200:
             return response.json()
         else:
@@ -260,11 +260,6 @@ class jAI():
                 _batch = data[b:b+batch_size]
             insert_responses[i] = self._insert_json(name,
                                                     data2json(_batch, dtype=db_type))
-
-        inserted_ids = self._temp_ids(name, 'simple')
-        if len(data) != int(inserted_ids[0].split()[0]):
-            self.delete_raw_data(name)
-            raise Exception("Something went wrong on data insertion. Please try again.")
 
         setup_response = self._setup_database(name, db_type, **kwargs)
         return insert_responses, setup_response
