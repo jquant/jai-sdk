@@ -1,5 +1,5 @@
 """
---- mycelia_core.py ---
+--- jai_core.py ---
 
 created by @dionisio
 """
@@ -15,7 +15,7 @@ from pandas.api.types import is_integer_dtype
 from tqdm import trange
 
 
-class Mycelia():
+class jAI():
     def __init__(self, auth_key: str, url=None):
         if url is None:
             self.base_api_url = 'https://mycelia.azure-api.net'
@@ -120,8 +120,8 @@ class Mycelia():
         >>> name = 'chosen_name'
         >>> DATA_ITEM = # data in the format of the database
         >>> TOP_K = 3
-        >>> mycelia = Mycelia(AUTH_KEY)
-        >>> df_index_distance = mycelia.similar(name, DATA_ITEM, TOP_K)
+        >>> jai = jAI(AUTH_KEY)
+        >>> df_index_distance = jai.similar(name, DATA_ITEM, TOP_K)
         >>> print(pd.DataFrame(df_index_distance['similarity']))
         index  distance
         10007  0.0
@@ -178,8 +178,8 @@ class Mycelia():
         >>> name = 'chosen_name'
         >>> ID_ITEM = 10007
         >>> TOP_K = 3
-        >>> mycelia = Mycelia(AUTH_KEY)
-        >>> df_index_distance = mycelia.similar_id(name, ID_ITEM, TOP_K)
+        >>> jai = jAI(AUTH_KEY)
+        >>> df_index_distance = jai.similar_id(name, ID_ITEM, TOP_K)
         >>> print(pd.DataFrame(df_index_distance['similarity']))
         index  distance
         10007  0.0
