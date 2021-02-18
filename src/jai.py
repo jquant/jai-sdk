@@ -15,7 +15,7 @@ from pandas.api.types import is_integer_dtype
 from tqdm import trange
 
 
-class jAI():
+class Jai():
     def __init__(self, auth_key: str, url=None):
         if url is None:
             self.base_api_url = 'https://mycelia.azure-api.net'
