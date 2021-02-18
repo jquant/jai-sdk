@@ -10,6 +10,7 @@ import requests
 import time
 
 from auxiliar_funcs.utils_funcs import data2json
+from auxiliar_funcs.classes import PossibleDtypes
 from auxiliar_funcs.classes import Mode
 from pandas.api.types import is_integer_dtype
 from tqdm import trange
@@ -228,11 +229,19 @@ class jAI():
             return self.assert_status_code(response)
 
     
-    def _check_dtype_and_clean(self, data):
+    def _check_dtype_and_clean(self, data, db_type):
         if not isinstance(data, (pd.Series, pd.DataFrame)):
             raise TypeError(f"Inserted data is of type {type(data)},\
                 but supported types are pandas.Series and pandas.DataFrame")
-        return data.dropna()
+        if db_type in [PossibleDtypes.text, PossibleDtypes.fasttext, PossibleDtypes.edit]:
+            data = data.dropna()
+        else:
+            cols_to_drop = []
+            for col in data.select_dtypes(include='category').columns:
+                if data[col].nunique() > 1024:
+                    cols_to_drop.append(col)
+            data = data.dropna(subset=cols_to_drop)
+        return data
 
     def ids(self, name: str, mode: Mode = 'simple'):
         response = requests.get(
@@ -254,6 +263,7 @@ class jAI():
         response = requests.get(
             self.base_api_url + f'/setup/ids/{name}?mode={mode}', headers=self.header)
         if response.status_code == 200:
+            print(response.json())
             return response.json()
         else:
             return self.assert_status_code(response)
@@ -267,22 +277,22 @@ class jAI():
         return insert_responses
 
     def _check_ids_consistency(self, data, name):
-        inserted_ids = self._temp_ids(name)
+        inserted_ids = self._temp_ids(name, mode="simple")
         if len(data) != int(inserted_ids[0].split()[0]):
             self.delete_raw_data(name)
             raise Exception("Something went wrong on data insertion. Please try again.")
 
     def setup(self, name: str, data, db_type: str, batch_size: int = 1024, **kwargs):
         # make sure our data has the correct type and is free of NAs
-        data = self._check_dtype_and_clean(data=data)
+        data = self._check_dtype_and_clean(data=data, db_type=db_type)
 
         # insert data
-        insert_responses = self._insert_data(data=data, name=name, db_type=db_type)
+        insert_responses = self._insert_data(data=data, name=name, batch_size=batch_size, db_type=db_type)
         
         # check if we inserted everything we were supposed to
         self._check_ids_consistency(data=data, name=name)
 
-        # (crazy) train the data
+        # train model
         setup_response = self._setup_database(name, db_type, **kwargs)
         return insert_responses, setup_response
 
