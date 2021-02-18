@@ -227,7 +227,7 @@ class Jai():
         else:
             return self.assert_status_code(response)
 
-    
+
     def _check_dtype_and_clean(self, data, db_type):
         if not isinstance(data, (pd.Series, pd.DataFrame)):
             raise TypeError(f"Inserted data is of type {type(data)},\
@@ -308,7 +308,8 @@ class Jai():
     def _check_ids_consistency(self, data, name):
         inserted_ids = self._temp_ids(name)
         if len(data) != int(inserted_ids[0].split()[0]):
-            self.delete_raw_data(name)
+            print(f"Found invalid ids: {inserted_ids[0]}")
+            print(self.delete_raw_data(name))
             raise Exception("Something went wrong on data insertion. Please try again.")
 
     def setup(self, name: str, data, db_type: str, batch_size: int = 1024, **kwargs):
@@ -317,7 +318,7 @@ class Jai():
 
         # insert data
         insert_responses = self._insert_data(data=data, name=name, batch_size=batch_size, db_type=db_type)
-        
+
         # check if we inserted everything we were supposed to
         self._check_ids_consistency(data=data, name=name)
 
@@ -338,7 +339,7 @@ class Jai():
         inserted_ids = self._temp_ids(name, 'simple')
         if len(data) != int(inserted_ids[0].split()[0]):
             print(f"Found invalid ids: {inserted_ids[0]}")
-            self.delete_raw_data(name)
+            print(self.delete_raw_data(name))
             raise Exception("Something went wrong on data insertion. Please try again.")
 
         setup_response = self._append(name)
@@ -395,14 +396,19 @@ class Jai():
         else:
             return self.assert_status_code(response)
 
-    def wait_setup(self, name: str, frequency_seconds=5):
+    def wait_setup(self, name: str, frequency_seconds:int=5):
         status = self.status
         if len(status) > 0:
             status = status[name]
             while status['Status'] != 'Task ended successfully.':
                 if status['Status'] == 'Something went wrong.':
                     raise BaseException(status['Description'])
-                time.sleep(frequency_seconds)
+
+                for x in range(int(frequency_seconds)*5):
+                    for frame in r'-\|/-\|/':
+                        print('\b', frame, sep='', end='', flush=True)
+                        time.sleep(0.2)
+
                 status = self.status
                 if len(status) > 0:
                     status = status[name]

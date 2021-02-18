@@ -10,6 +10,8 @@ jai = Jai(AUTH_KEY)
 
 ## Setting up your databases
 
+*All data should be an pandas.DataFrame or pandas.Series*
+
 Aplication using the model NLP FastText
 ```python
 ### fasttext implementation
@@ -90,6 +92,7 @@ results = jai.similar(name, data.index, top_k=100, batch_size=1024)
 ```
 
 - Using new data to be processed
+*All data should be an pandas.DataFrame or pandas.Series*
 ```python
 # Find the 100 most similar values for every new_data
 results = jai.similar(name, new_data, top_k=100, batch_size=1024)
