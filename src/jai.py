@@ -227,6 +227,37 @@ class jAI():
         else:
             return self.assert_status_code(response)
 
+    def predict(self, name: str, data, predict_proba:bool=False, batch_size: int = 1024):
+        dtypes = self.info
+        if any(dtypes['db_name'] == name):
+            dtype = dtypes.loc[dtypes['db_name'] == name, 'db_type'].values[0]
+            if dtype != "Supervised":
+                raise ValueError("predict is only available to dtype Supervised.")
+        else:
+            raise ValueError()
+
+        results = []
+        for i in trange(0, len(data), batch_size, desc="Similar"):
+            if isinstance(data, (pd.Series, pd.DataFrame)):
+                _batch = data.iloc[i:i+batch_size]
+            else:
+                _batch = data[i:i+batch_size]
+            res = self._predict(name, data2json(_batch, dtype=dtype),
+                                predict_proba=predict_proba)
+            results.extend(res)
+        return results
+
+
+    def _predict(self, name: str, data_json, predict_proba:bool=False):
+        url = self.base_api_url + f"/predict/{name}?predict_proba={predict_proba}"
+
+        response = requests.put(url, headers=self.header, data=data_json)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
+
+
     def ids(self, name: str, mode: Mode = 'simple'):
         response = requests.get(
             self.base_api_url + f'/id/{name}?mode={mode}', headers=self.header)
@@ -277,9 +308,26 @@ class jAI():
         else:
             return self.assert_status_code(response)
 
-    def _setup_database(self, name: str, db_type, **kwargs):
+    def _setup_database(self, name: str, db_type, overwrite=False, **kwargs):
+
+        possible = ['hyperparams', 'callback_url']
+        if db_type == "Unsupervised":
+            possible.extend(['num_process', 'cat_process',  'high_process',
+                             'mycelia_bases'])
+        elif db_type == "Supervised":
+            possible.extend(['num_process', 'cat_process',  'high_process',
+                             'mycelia_bases', 'label', 'split'])
+        flag = True
+        for key in possible:
+            val = kwargs.get(key, None)
+            if val is not None:
+                if flag:
+                    print("Recognized setup args:")
+                    flag = False
+                print(f"{key}: {val}")
+
         kwargs['db_type'] = db_type
-        response = requests.post(self.base_api_url + f'/setup/{name}',
+        response = requests.post(self.base_api_url + f'/setup/{name}?overwrite={overwrite}',
                                  headers=self.header, data=json.dumps(kwargs))
         if response.status_code == 201:
             return response.json()
