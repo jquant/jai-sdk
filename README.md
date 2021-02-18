@@ -4,7 +4,7 @@ JAI SDKs
 # Examples
 Instanciating your base class
 ```python
-from jai_core import jAI
+from jai import jAI
 jai = jAI(AUTH_KEY)
 ```
 
