@@ -10,8 +10,7 @@ import requests
 import time
 
 from auxiliar_funcs.utils_funcs import data2json
-from auxiliar_funcs.classes import PossibleDtypes
-from auxiliar_funcs.classes import Mode
+from auxiliar_funcs.classes import PossibleDtypes, Mode
 from pandas.api.types import is_integer_dtype
 from tqdm import trange
 
@@ -243,6 +242,37 @@ class jAI():
             data = data.dropna(subset=cols_to_drop)
         return data
 
+    def predict(self, name: str, data, predict_proba:bool=False, batch_size: int = 1024):
+        dtypes = self.info
+        if any(dtypes['db_name'] == name):
+            dtype = dtypes.loc[dtypes['db_name'] == name, 'db_type'].values[0]
+            if dtype != "Supervised":
+                raise ValueError("predict is only available to dtype Supervised.")
+        else:
+            raise ValueError(f"{name} is not a valid name.")
+
+        results = []
+        for i in trange(0, len(data), batch_size, desc="Similar"):
+            if isinstance(data, (pd.Series, pd.DataFrame)):
+                _batch = data.iloc[i:i+batch_size]
+            else:
+                _batch = data[i:i+batch_size]
+            res = self._predict(name, data2json(_batch, dtype=dtype),
+                                predict_proba=predict_proba)
+            results.extend(res)
+        return results
+
+
+    def _predict(self, name: str, data_json, predict_proba:bool=False):
+        url = self.base_api_url + f"/predict/{name}?predict_proba={predict_proba}"
+
+        response = requests.put(url, headers=self.header, data=data_json)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
+
+
     def ids(self, name: str, mode: Mode = 'simple'):
         response = requests.get(
             self.base_api_url + f'/id/{name}?mode={mode}', headers=self.header)
@@ -263,8 +293,7 @@ class jAI():
         response = requests.get(
             self.base_api_url + f'/setup/ids/{name}?mode={mode}', headers=self.header)
         if response.status_code == 200:
-            print(response.json())
-            return response.json()
+            return response.json()['value']
         else:
             return self.assert_status_code(response)
 
@@ -296,6 +325,25 @@ class jAI():
         setup_response = self._setup_database(name, db_type, **kwargs)
         return insert_responses, setup_response
 
+    def add_data(self, name: str, data, db_type: str, batch_size: int = 1024):
+        insert_responses = {}
+        for i, b in enumerate(trange(0, len(data), batch_size, desc="Insert Data")):
+            if isinstance(data, (pd.Series, pd.DataFrame)):
+                _batch = data.iloc[b:b+batch_size]
+            else:
+                _batch = data[b:b+batch_size]
+            insert_responses[i] = self._insert_json(name,
+                                                    data2json(_batch, dtype=db_type))
+
+        inserted_ids = self._temp_ids(name, 'simple')
+        if len(data) != int(inserted_ids[0].split()[0]):
+            print(f"Found invalid ids: {inserted_ids[0]}")
+            self.delete_raw_data(name)
+            raise Exception("Something went wrong on data insertion. Please try again.")
+
+        setup_response = self._append(name)
+        return insert_responses, setup_response
+
     def _insert_json(self, name: str, df_json):
         response = requests.post(self.base_api_url + f'/data/{name}',
                                  headers=self.header, data=df_json)
@@ -304,17 +352,50 @@ class jAI():
         else:
             return self.assert_status_code(response)
 
-    def _setup_database(self, name: str, db_type, **kwargs):
-        kwargs['db_type'] = db_type
-        response = requests.post(self.base_api_url + f'/setup/{name}',
-                                 headers=self.header, data=json.dumps(kwargs))
+    def _setup_database(self, name: str, db_type, overwrite=False, **kwargs):
+        possible = ['hyperparams', 'callback_url']
+        if db_type == "Unsupervised":
+            possible.extend(['num_process', 'cat_process',  'high_process',
+                             'mycelia_bases'])
+        elif db_type == "Supervised":
+            possible.extend(['num_process', 'cat_process',  'high_process',
+                             'mycelia_bases', 'label', 'split'])
+        body = {}
+        flag = True
+        for key in possible:
+            val = kwargs.get(key, None)
+            if val is not None:
+                if flag:
+                    print("Recognized setup args:")
+                    flag = False
+                print(f"{key}: {val}")
+                body[key] = val
+
+        body['db_type'] = db_type
+        response = requests.post(self.base_api_url + f'/setup/{name}?overwrite={overwrite}',
+                                 headers=self.header, data=json.dumps(body))
+
         if response.status_code == 201:
             return response.json()
         else:
             return self.assert_status_code(response)
 
-    def wait_setup(self, name: str, frequency_seconds=5):
+    def fields(self, name: str):
+        dtypes = self.info
+        if any(dtypes['db_name'] == name):
+            dtype = dtypes.loc[dtypes['db_name'] == name, 'db_type'].values[0]
+            if dtype != "Unsupervised" and dtype != "Supervised":
+                raise ValueError("predict is only available to dtype Unsupervised and Supervised.")
+        else:
+            raise ValueError(f"{name} is not a valid name.")
+        response = requests.get(self.base_api_url + f'/table/fields/{name}',
+                                headers=self.header)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
 
+    def wait_setup(self, name: str, frequency_seconds=5):
         status = self.status
         if len(status) > 0:
             status = status[name]
