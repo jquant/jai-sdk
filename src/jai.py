@@ -10,12 +10,12 @@ import requests
 import time
 
 from auxiliar_funcs.utils_funcs import data2json
-from auxiliar_funcs.classes import Mode
+from auxiliar_funcs.classes import PossibleDtypes, Mode
 from pandas.api.types import is_integer_dtype
 from tqdm import trange
 
 
-class jAI():
+class Jai():
     def __init__(self, auth_key: str, url=None):
         if url is None:
             self.base_api_url = 'https://mycelia.azure-api.net'
@@ -227,6 +227,21 @@ class jAI():
         else:
             return self.assert_status_code(response)
 
+    
+    def _check_dtype_and_clean(self, data, db_type):
+        if not isinstance(data, (pd.Series, pd.DataFrame)):
+            raise TypeError(f"Inserted data is of type {type(data)},\
+                but supported types are pandas.Series and pandas.DataFrame")
+        if db_type in [PossibleDtypes.text, PossibleDtypes.fasttext, PossibleDtypes.edit]:
+            data = data.dropna()
+        else:
+            cols_to_drop = []
+            for col in data.select_dtypes(include='category').columns:
+                if data[col].nunique() > 1024:
+                    cols_to_drop.append(col)
+            data = data.dropna(subset=cols_to_drop)
+        return data
+
     def predict(self, name: str, data, predict_proba:bool=False, batch_size: int = 1024):
         dtypes = self.info
         if any(dtypes['db_name'] == name):
@@ -274,7 +289,7 @@ class jAI():
         else:
             return self.assert_status_code(response)
 
-    def _temp_ids(self, name: str, mode: Mode = 'simple'):
+    def _temp_ids(self, name: str, mode: Mode='simple'):
         response = requests.get(
             self.base_api_url + f'/setup/ids/{name}?mode={mode}', headers=self.header)
         if response.status_code == 200:
@@ -282,22 +297,31 @@ class jAI():
         else:
             return self.assert_status_code(response)
 
-    def setup(self, name: str, data, db_type: str, batch_size: int = 1024, **kwargs):
+    def _insert_data(self, data, name, db_type, batch_size):
         insert_responses = {}
         for i, b in enumerate(trange(0, len(data), batch_size, desc="Insert Data")):
-            if isinstance(data, (pd.Series, pd.DataFrame)):
-                _batch = data.iloc[b:b+batch_size]
-            else:
-                _batch = data[b:b+batch_size]
+            _batch = data.iloc[b:b+batch_size]
             insert_responses[i] = self._insert_json(name,
                                                     data2json(_batch, dtype=db_type))
+        return insert_responses
 
-        inserted_ids = self._temp_ids(name, 'simple')
+    def _check_ids_consistency(self, data, name):
+        inserted_ids = self._temp_ids(name)
         if len(data) != int(inserted_ids[0].split()[0]):
-            print(f"Found invalid ids: {inserted_ids[0]}")
             self.delete_raw_data(name)
             raise Exception("Something went wrong on data insertion. Please try again.")
 
+    def setup(self, name: str, data, db_type: str, batch_size: int = 1024, **kwargs):
+        # make sure our data has the correct type and is free of NAs
+        data = self._check_dtype_and_clean(data=data, db_type=db_type)
+
+        # insert data
+        insert_responses = self._insert_data(data=data, name=name, batch_size=batch_size, db_type=db_type)
+        
+        # check if we inserted everything we were supposed to
+        self._check_ids_consistency(data=data, name=name)
+
+        # train model
         setup_response = self._setup_database(name, db_type, **kwargs)
         return insert_responses, setup_response
 
@@ -329,7 +353,6 @@ class jAI():
             return self.assert_status_code(response)
 
     def _setup_database(self, name: str, db_type, overwrite=False, **kwargs):
-
         possible = ['hyperparams', 'callback_url']
         if db_type == "Unsupervised":
             possible.extend(['num_process', 'cat_process',  'high_process',
@@ -351,6 +374,7 @@ class jAI():
         body['db_type'] = db_type
         response = requests.post(self.base_api_url + f'/setup/{name}?overwrite={overwrite}',
                                  headers=self.header, data=json.dumps(body))
+
         if response.status_code == 201:
             return response.json()
         else:
@@ -372,7 +396,6 @@ class jAI():
             return self.assert_status_code(response)
 
     def wait_setup(self, name: str, frequency_seconds=5):
-
         status = self.status
         if len(status) > 0:
             status = status[name]
@@ -408,5 +431,4 @@ class jAI():
         if response.status_code == 200:
             return response.json()
         else:
-            return self.assert_status_code(response)
             return self.assert_status_code(response)
