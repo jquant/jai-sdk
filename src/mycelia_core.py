@@ -227,6 +227,13 @@ class jAI():
         else:
             return self.assert_status_code(response)
 
+    
+    def _check_dtype_and_clean(self, data):
+        if not isinstance(data, (pd.Series, pd.DataFrame)):
+            raise TypeError(f"Inserted data is of type {type(data)},\
+                but supported types are pandas.Series and pandas.DataFrame")
+        return data.dropna()
+
     def ids(self, name: str, mode: Mode = 'simple'):
         response = requests.get(
             self.base_api_url + f'/id/{name}?mode={mode}', headers=self.header)
@@ -243,7 +250,7 @@ class jAI():
         else:
             return self.assert_status_code(response)
 
-    def _temp_ids(self, name: str, mode: Mode = 'simple'):
+    def _temp_ids(self, name: str, mode: Mode = 'summarized'):
         response = requests.get(
             self.base_api_url + f'/setup/ids/{name}?mode={mode}', headers=self.header)
         if response.status_code == 200:
@@ -251,21 +258,31 @@ class jAI():
         else:
             return self.assert_status_code(response)
 
-    def setup(self, name: str, data, db_type: str, batch_size: int = 1024, **kwargs):
+    def _insert_data(self, data, name, db_type, batch_size):
         insert_responses = {}
         for i, b in enumerate(trange(0, len(data), batch_size, desc="Insert Data")):
-            if isinstance(data, (pd.Series, pd.DataFrame)):
-                _batch = data.iloc[b:b+batch_size]
-            else:
-                _batch = data[b:b+batch_size]
+            _batch = data.iloc[b:b+batch_size]
             insert_responses[i] = self._insert_json(name,
                                                     data2json(_batch, dtype=db_type))
+        return insert_responses
 
-        inserted_ids = self._temp_ids(name, 'simple')
+    def _check_ids_consistency(self, data, name):
+        inserted_ids = self._temp_ids(name)
         if len(data) != int(inserted_ids[0].split()[0]):
             self.delete_raw_data(name)
             raise Exception("Something went wrong on data insertion. Please try again.")
 
+    def setup(self, name: str, data, db_type: str, batch_size: int = 1024, **kwargs):
+        # make sure our data has the correct type and is free of NAs
+        data = self._check_dtype_and_clean(data=data)
+
+        # insert data
+        insert_responses = self._insert_data(data=data, name=name, db_type=db_type)
+        
+        # check if we inserted everything we were supposed to
+        self._check_ids_consistency(data=data, name=name)
+
+        # (crazy) train the data
         setup_response = self._setup_database(name, db_type, **kwargs)
         return insert_responses, setup_response
 
@@ -323,5 +340,4 @@ class jAI():
         if response.status_code == 200:
             return response.json()
         else:
-            return self.assert_status_code(response)
             return self.assert_status_code(response)
