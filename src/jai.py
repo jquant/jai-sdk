@@ -285,15 +285,15 @@ class jAI():
         response = requests.get(
             self.base_api_url + f'/validation/{name}', headers=self.header)
         if response.status_code == 200:
-            return response.json()
+            return response.json()['value']
         else:
             return self.assert_status_code(response)
 
-    def _temp_ids(self, name: str, mode: Mode = 'summarized'):
+    def _temp_ids(self, name: str, mode: Mode='simple'):
         response = requests.get(
             self.base_api_url + f'/setup/ids/{name}?mode={mode}', headers=self.header)
         if response.status_code == 200:
-            return response.json()['value']
+            return response.json()
         else:
             return self.assert_status_code(response)
 
@@ -306,7 +306,7 @@ class jAI():
         return insert_responses
 
     def _check_ids_consistency(self, data, name):
-        inserted_ids = self._temp_ids(name, mode="simple")
+        inserted_ids = self._temp_ids(name)
         if len(data) != int(inserted_ids[0].split()[0]):
             self.delete_raw_data(name)
             raise Exception("Something went wrong on data insertion. Please try again.")
