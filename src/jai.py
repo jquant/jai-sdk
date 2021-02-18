@@ -234,7 +234,7 @@ class jAI():
             if dtype != "Supervised":
                 raise ValueError("predict is only available to dtype Supervised.")
         else:
-            raise ValueError()
+            raise ValueError(f"{name} is not a valid name.")
 
         results = []
         for i in trange(0, len(data), batch_size, desc="Similar"):
@@ -270,7 +270,7 @@ class jAI():
         response = requests.get(
             self.base_api_url + f'/validation/{name}', headers=self.header)
         if response.status_code == 200:
-            return response.json()
+            return response.json()['value']
         else:
             return self.assert_status_code(response)
 
@@ -294,10 +294,30 @@ class jAI():
 
         inserted_ids = self._temp_ids(name, 'simple')
         if len(data) != int(inserted_ids[0].split()[0]):
+            print(f"Found invalid ids: {inserted_ids[0]}")
             self.delete_raw_data(name)
             raise Exception("Something went wrong on data insertion. Please try again.")
 
         setup_response = self._setup_database(name, db_type, **kwargs)
+        return insert_responses, setup_response
+
+    def add_data(self, name: str, data, db_type: str, batch_size: int = 1024):
+        insert_responses = {}
+        for i, b in enumerate(trange(0, len(data), batch_size, desc="Insert Data")):
+            if isinstance(data, (pd.Series, pd.DataFrame)):
+                _batch = data.iloc[b:b+batch_size]
+            else:
+                _batch = data[b:b+batch_size]
+            insert_responses[i] = self._insert_json(name,
+                                                    data2json(_batch, dtype=db_type))
+
+        inserted_ids = self._temp_ids(name, 'simple')
+        if len(data) != int(inserted_ids[0].split()[0]):
+            print(f"Found invalid ids: {inserted_ids[0]}")
+            self.delete_raw_data(name)
+            raise Exception("Something went wrong on data insertion. Please try again.")
+
+        setup_response = self._append(name)
         return insert_responses, setup_response
 
     def _insert_json(self, name: str, df_json):
@@ -332,6 +352,21 @@ class jAI():
         response = requests.post(self.base_api_url + f'/setup/{name}?overwrite={overwrite}',
                                  headers=self.header, data=json.dumps(body))
         if response.status_code == 201:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
+
+    def fields(self, name: str):
+        dtypes = self.info
+        if any(dtypes['db_name'] == name):
+            dtype = dtypes.loc[dtypes['db_name'] == name, 'db_type'].values[0]
+            if dtype != "Unsupervised" and dtype != "Supervised":
+                raise ValueError("predict is only available to dtype Unsupervised and Supervised.")
+        else:
+            raise ValueError(f"{name} is not a valid name.")
+        response = requests.get(self.base_api_url + f'/table/fields/{name}',
+                                headers=self.header)
+        if response.status_code == 200:
             return response.json()
         else:
             return self.assert_status_code(response)
