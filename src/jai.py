@@ -317,6 +317,7 @@ class jAI():
         elif db_type == "Supervised":
             possible.extend(['num_process', 'cat_process',  'high_process',
                              'mycelia_bases', 'label', 'split'])
+        body = {}
         flag = True
         for key in possible:
             val = kwargs.get(key, None)
@@ -325,10 +326,11 @@ class jAI():
                     print("Recognized setup args:")
                     flag = False
                 print(f"{key}: {val}")
+                body[key] = val
 
-        kwargs['db_type'] = db_type
+        body['db_type'] = db_type
         response = requests.post(self.base_api_url + f'/setup/{name}?overwrite={overwrite}',
-                                 headers=self.header, data=json.dumps(kwargs))
+                                 headers=self.header, data=json.dumps(body))
         if response.status_code == 201:
             return response.json()
         else:
