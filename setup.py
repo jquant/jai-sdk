@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 with open("requirements.txt","r") as f:
         dependencies = f.read().splitlines()
-
+ 
 setup(
     name="jai-sdk",
     version="0.1.0",
