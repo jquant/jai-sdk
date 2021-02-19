@@ -13,6 +13,29 @@ from auxiliar_funcs.utils_funcs import process_similar
 
 
 def match(data1, data2, auth_key, name=None, threshold=None, top_k=20):
+    """
+    Experimental
+
+    Parameters
+    ----------
+    data1, data2 : text
+        data to be matched.
+    auth_key : TYPE
+        Auth key for mycelia.
+    name : TYPE, optional
+        DESCRIPTION. The default is None.
+    threshold : TYPE, optional
+        DESCRIPTION. The default is None.
+    top_k : TYPE, optional
+        DESCRIPTION. The default is 20.
+
+    Returns
+    -------
+    dict
+        each key is the id from data2 and the value is a list of ids from data1
+        that match.
+
+    """
 
     jai = Jai(auth_key)
     nt = np.clip(np.round(len(data1)/10, -3), 1000, 10000)
@@ -30,6 +53,28 @@ def match(data1, data2, auth_key, name=None, threshold=None, top_k=20):
 
 
 def resolution(data, auth_key, name=None, threshold=None, top_k=20):
+    """
+    Experimental
+
+    Parameters
+    ----------
+    data : text
+        data to find duplicates.
+    auth_key : TYPE
+        DESCRIPTION.
+    name : TYPE, optional
+        DESCRIPTION. The default is None.
+    threshold : TYPE, optional
+        DESCRIPTION. The default is None.
+    top_k : TYPE, optional
+        DESCRIPTION. The default is 20.
+
+    Returns
+    -------
+    dict
+        each key is the id and the value is a list of ids that are duplicates.
+
+    """
 
     jai = Jai(auth_key)
     nt = np.clip(np.round(len(data)/10, -3), 1000, 10000)
@@ -45,7 +90,29 @@ def resolution(data, auth_key, name=None, threshold=None, top_k=20):
     return process_similar(results, threshold=threshold, return_self=False)
 
 
-def fill(data, column, auth_key, name=None, **kwargs):
+def fill(data, column:str, auth_key, name=None, **kwargs):
+    """
+    Experimental
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        data to fill NaN.
+    column : str
+        name of the column to be filled.
+    auth_key : TYPE
+        DESCRIPTION.
+    name : TYPE, optional
+        DESCRIPTION. The default is None.
+    **kwargs : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    list of dicts
+        List of dicts with possible filling values for each id with column NaN.
+
+    """
     cat_threshold = 512
     data = data.copy()
 
@@ -84,12 +151,45 @@ def fill(data, column, auth_key, name=None, **kwargs):
         jai.wait_setup(name, 20)
         jai.delete_raw_data(name)
 
-    results = jai.predict(name, test, predict_proba=True, batch_size=10000)
-    return results
+    return jai.predict(name, test, predict_proba=True, batch_size=10000)
 
 
 def sanity(data, auth_key, data_validate=None, columns_ref: list=None,
            name:str=None, frac:float= .1, random_seed=42, **kwargs):
+    """
+    Experimental
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Data reference of sound data.
+    auth_key : TYPE
+        DESCRIPTION.
+    data_validate : TYPE, optional
+        Data to be checked if is valid or not. The default is None.
+    columns_ref : list, optional
+        Columns that can have inconsistencies. As default we use all non numeric
+        columns. The default is None.
+    name : str, optional
+        DESCRIPTION. The default is None.
+    frac : float, optional
+        DESCRIPTION. The default is .1.
+    random_seed : TYPE, optional
+        DESCRIPTION. The default is 42.
+    **kwargs : TYPE
+        DESCRIPTION.
+
+    Raises
+    ------
+    ValueError
+        DESCRIPTION.
+
+    Returns
+    -------
+    list of dicts
+        Result of data is valid or not.
+
+    """
     cat_threshold = 512
     np.random.seed(random_seed)
     target = ['is_valid', 'is_sound', 'valid', 'sanity', 'target']
@@ -148,7 +248,7 @@ def sanity(data, auth_key, data_validate=None, columns_ref: list=None,
     data[target] = "Valid"
     train = pd.concat([data, sample])
     if data_validate is None:
-        test = train.copy()
+        test = data.copy()
     else:
         test = data_validate.copy()
 
@@ -165,6 +265,27 @@ def sanity(data, auth_key, data_validate=None, columns_ref: list=None,
 
 
 def embedding(data, auth_key, name=None, db_type='FastText'):
+    """
+    Experimental
+    Quick embedding for high numbers of categories in columns.
+
+    Parameters
+    ----------
+    data : TYPE
+        DESCRIPTION.
+    auth_key : TYPE
+        DESCRIPTION.
+    name : TYPE, optional
+        DESCRIPTION. The default is None.
+    db_type : TYPE, optional
+        DESCRIPTION. The default is 'FastText'.
+
+    Returns
+    -------
+    name : str
+        name of the base where the data was embedded.
+
+    """
     jai = Jai(auth_key)
     if name is None:
         name = jai.generate_name(20, prefix='sdk_', suffix='')

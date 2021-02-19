@@ -130,7 +130,7 @@ The output will be a list of dictionaries with ("query_id") the id of the value 
 
 # Removing data
 
-After you're done with the model setup, you can delete your raw data
+After you're done with the model setup, you can delete the inserted raw data
 ```python
 # Delete the raw data inputed as it won't be needed anymore
 jai.delete_raw_data(name)
