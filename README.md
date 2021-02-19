@@ -54,7 +54,7 @@ or you can check if it's valid:
 
 ```python
 >>> jai.is_valid(name)
-{'value': True, 'message': 'jai_database is a valid database name.'}
+True
 ```
 
 
