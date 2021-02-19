@@ -7,9 +7,9 @@ Created on Thu Feb 18 21:39:24 2021
 
 import pandas as pd
 import numpy as np
-from jai import Jai
+from .jai import Jai
 
-from auxiliar_funcs.utils_funcs import process_similar
+from .auxiliar_funcs.utils_funcs import process_similar
 
 
 def match(data1, data2, auth_key, name=None, threshold=None, top_k=20):
