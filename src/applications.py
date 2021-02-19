@@ -75,7 +75,7 @@ def fill(data, column, auth_key, name=None, **kwargs):
 
     mask = data[column].isna()
     train = data.loc[~mask].copy()
-    test = data.loc[mask].copy()
+    test = data.loc[mask].drop(columns=[column])
 
     if name not in jai.names:
         jai.setup(name, train, batch_size=10000, db_type='Supervised',
@@ -85,7 +85,6 @@ def fill(data, column, auth_key, name=None, **kwargs):
         jai.delete_raw_data(name)
 
     results = jai.predict(name, test, predict_proba=True, batch_size=10000)
-
     return results
 
 
