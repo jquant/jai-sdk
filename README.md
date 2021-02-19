@@ -1,5 +1,5 @@
-# j-sdk
-j SDKs
+# jai-sdk
+jai SDKs
 
 # Examples
 Instanciating your base class
