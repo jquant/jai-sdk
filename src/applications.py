@@ -60,7 +60,7 @@ def fill(data, column, auth_key, name=None, **kwargs):
         id_col = 'id_' + col
         values, inverse = np.unique(data[col], return_inverse=True)
         data[id_col] = inverse
-        origin = embedding(values, auth_key)
+        origin = embedding(values, auth_key, name=name + '_' + col)
         prep_bases.append({"id_name": id_col, "db_parent": origin})
     data = data.drop(columns=pre)
 
@@ -110,7 +110,7 @@ def sanity(data, auth_key, data_validate=None, columns_ref: list=None,
         id_col = 'id_' + col
         values, inverse = np.unique(data[col], return_inverse=True)
         data[id_col] = inverse
-        origin = embedding(values, auth_key)
+        origin = embedding(values, auth_key, name=name + '_' + col)
         prep_bases.append({"id_name": id_col, "db_parent": origin})
     data = data.drop(columns=pre)
 
@@ -137,15 +137,15 @@ def sanity(data, auth_key, data_validate=None, columns_ref: list=None,
         sample.append(s)
     sample = pd.concat(sample)
 
-    # set target column values, 0 is invalid, 1 is valid
-    sample[target] = 0
+    # set target column values
+    sample[target] = "Invalid"
 
     # set index of samples with different values as data
     idx = np.arange(len(data)+len(sample))
     mask_idx = np.logical_not(np.isin(idx, data.index))
     sample.index = idx[mask_idx][:len(sample)]
 
-    data[target] = 1
+    data[target] = "Valid"
     train = pd.concat([data, sample])
     if data_validate is None:
         test = train.copy()
