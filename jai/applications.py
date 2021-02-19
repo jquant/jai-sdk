@@ -37,17 +37,17 @@ def match(data1, data2, auth_key, name=None, threshold=None, top_k=20):
 
     """
 
-    jai = Jai(auth_key)
+    j = Jai(auth_key)
     nt = np.clip(np.round(len(data1)/10, -3), 1000, 10000)
     if name is None:
-        name = jai.generate_name(20, prefix='sdk_', suffix='')
+        name = j.generate_name(20, prefix='sdk_', suffix='')
     print(f"name: {name}")
-    if name not in jai.names:
-        jai.setup(name, data1, batch_size=10000, db_type='TextEdit',
-                  hyperparams={"nt": nt})
-        jai.wait_setup(name, 20)
-        jai.delete_raw_data(name)
-    results = jai.similar(name, data2, top_k=top_k, batch_size=10000)
+    if name not in j.names:
+        j.setup(name, data1, batch_size=10000, db_type='TextEdit',
+                hyperparams={"nt": nt})
+        j.wait_setup(name, 20)
+        j.delete_raw_data(name)
+    results = j.similar(name, data2, top_k=top_k, batch_size=10000)
     return process_similar(results, threshold=threshold, return_self=True)
 
 
@@ -76,17 +76,17 @@ def resolution(data, auth_key, name=None, threshold=None, top_k=20):
 
     """
 
-    jai = Jai(auth_key)
+    j = Jai(auth_key)
     nt = np.clip(np.round(len(data)/10, -3), 1000, 10000)
     if name is None:
-        name = jai.generate_name(20, prefix='sdk_', suffix='')
+        name = j.generate_name(20, prefix='sdk_', suffix='')
     print(f"name: {name}")
-    if name not in jai.names:
-        jai.setup(name, data, batch_size=10000, db_type='TextEdit',
-                  hyperparams={"nt": nt})
-        jai.wait_setup(name, 20)
-        jai.delete_raw_data(name)
-    results = jai.similar(name, data.index, top_k=top_k, batch_size=10000)
+    if name not in j.names:
+        j.setup(name, data, batch_size=10000, db_type='TextEdit',
+                hyperparams={"nt": nt})
+        j.wait_setup(name, 20)
+        j.delete_raw_data(name)
+    results = j.similar(name, data.index, top_k=top_k, batch_size=10000)
     return process_similar(results, threshold=threshold, return_self=False)
 
 
@@ -116,9 +116,9 @@ def fill(data, column:str, auth_key, name=None, **kwargs):
     cat_threshold = 512
     data = data.copy()
 
-    jai = Jai(auth_key)
+    j = Jai(auth_key)
     if name is None:
-        name = jai.generate_name(20, prefix='sdk_', suffix='')
+        name = j.generate_name(20, prefix='sdk_', suffix='')
 
     cat = data.select_dtypes(exclude='number')
     pre = cat.columns[cat.nunique() > cat_threshold].tolist()
@@ -150,14 +150,14 @@ def fill(data, column:str, auth_key, name=None, **kwargs):
     train = data.loc[~mask].copy()
     test = data.loc[mask].drop(columns=[column])
 
-    if name not in jai.names:
-        jai.setup(name, train, batch_size=10000, db_type='Supervised',
-                  hyperparams={"learning_rate": 0.001}, label=label, split=split,
-                  **kwargs)
-        jai.wait_setup(name, 20)
-        jai.delete_raw_data(name)
+    if name not in j.names:
+        j.setup(name, train, batch_size=10000, db_type='Supervised',
+                hyperparams={"learning_rate": 0.001}, label=label, split=split,
+                **kwargs)
+        j.wait_setup(name, 20)
+        j.delete_raw_data(name)
 
-    return jai.predict(name, test, predict_proba=True, batch_size=10000)
+    return j.predict(name, test, predict_proba=True, batch_size=10000)
 
 
 def sanity(data, auth_key, data_validate=None, columns_ref: list=None,
@@ -205,9 +205,9 @@ def sanity(data, auth_key, data_validate=None, columns_ref: list=None,
     target = np.array(target)[mask_target][0]
     data = data.copy()
 
-    jai = Jai(auth_key)
+    j = Jai(auth_key)
     if name is None:
-        name = jai.generate_name(20, prefix='sdk_', suffix='')
+        name = j.generate_name(20, prefix='sdk_', suffix='')
 
     cat = data.select_dtypes(exclude='number')
     pre = cat.columns[cat.nunique() > cat_threshold].tolist()
@@ -259,14 +259,14 @@ def sanity(data, auth_key, data_validate=None, columns_ref: list=None,
         test = data_validate.copy()
 
 
-    if name not in jai.names:
-        jai.setup(name, train, batch_size=10000, db_type='Supervised',
+    if name not in j.names:
+        j.setup(name, train, batch_size=10000, db_type='Supervised',
                   hyperparams={"learning_rate": 0.001}, label=label, split=split,
                   **kwargs)
-        jai.wait_setup(name, 20)
-        jai.delete_raw_data(name)
+        j.wait_setup(name, 20)
+        j.delete_raw_data(name)
 
-    results = jai.predict(name, test, predict_proba=True, batch_size=10000)
+    results = j.predict(name, test, predict_proba=True, batch_size=10000)
     return results
 
 
@@ -292,9 +292,9 @@ def embedding(data, auth_key, name=None, db_type='FastText'):
         name of the base where the data was embedded.
 
     """
-    jai = Jai(auth_key)
+    j = Jai(auth_key)
     if name is None:
-        name = jai.generate_name(20, prefix='sdk_', suffix='')
+        name = j.generate_name(20, prefix='sdk_', suffix='')
 
     if db_type == "FastText":
         hyperparams={"minn": 0, "maxn": 0}
@@ -304,9 +304,9 @@ def embedding(data, auth_key, name=None, db_type='FastText'):
     else:
         hyperparams=None
     print(f"name: {name}")
-    if name not in jai.names:
-        jai.setup(name, data, batch_size=10000, db_type=db_type,
+    if name not in j.names:
+        j.setup(name, data, batch_size=10000, db_type=db_type,
                   hyperparams=hyperparams)
-        jai.wait_setup(name, 5)
-        jai.delete_raw_data(name)
+        j.wait_setup(name, 5)
+        j.delete_raw_data(name)
     return name
