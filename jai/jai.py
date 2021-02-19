@@ -6,11 +6,12 @@ created by @dionisio
 import secrets
 import json
 import pandas as pd
+import numpy as np
 import requests
 import time
 
-from auxiliar_funcs.utils_funcs import data2json
-from auxiliar_funcs.classes import PossibleDtypes, Mode
+from .auxiliar_funcs.utils_funcs import data2json
+from .auxiliar_funcs.classes import PossibleDtypes, Mode
 from pandas.api.types import is_integer_dtype
 from tqdm import trange
 
@@ -95,7 +96,7 @@ class Jai():
         print(response.json())
         return response
 
-    def similar(self, name: str, data, top_k: int = 5, batch_size: int = 1024):
+    def similar(self, name: str, data, top_k: int = 5, batch_size: int = 16384):
         """
 
 
@@ -108,7 +109,7 @@ class Jai():
         top_k : int, optional
             number of k similar items that we want to return. The default is 5.
         batch_size : int, optional
-            size of batches to send the data. The default is 1024.
+            size of batches to send the data. The default is 16384.
 
         Returns
         -------
@@ -134,6 +135,9 @@ class Jai():
             dtype = dtypes.loc[dtypes['db_name'] == name, 'db_type'].values[0]
         else:
             raise ValueError()
+
+        if isinstance(data, list):
+            data = np.array(data)
 
         is_id = is_integer_dtype(data)
 
@@ -229,20 +233,22 @@ class Jai():
 
 
     def _check_dtype_and_clean(self, data, db_type):
-        if not isinstance(data, (pd.Series, pd.DataFrame)):
+        if isinstance(data, (list, np.ndarray)):
+            data = pd.Series(data)
+        elif not isinstance(data, (pd.Series, pd.DataFrame)):
             raise TypeError(f"Inserted data is of type {type(data)},\
-                but supported types are pandas.Series and pandas.DataFrame")
+ but supported types are list, np.ndarray, pandas.Series and pandas.DataFrame")
         if db_type in [PossibleDtypes.text, PossibleDtypes.fasttext, PossibleDtypes.edit]:
             data = data.dropna()
         else:
             cols_to_drop = []
             for col in data.select_dtypes(include='category').columns:
-                if data[col].nunique() > 1024:
+                if data[col].nunique() > 16384:
                     cols_to_drop.append(col)
             data = data.dropna(subset=cols_to_drop)
         return data
 
-    def predict(self, name: str, data, predict_proba:bool=False, batch_size: int = 1024):
+    def predict(self, name: str, data, predict_proba:bool=False, batch_size: int = 16384):
         dtypes = self.info
         if any(dtypes['db_name'] == name):
             dtype = dtypes.loc[dtypes['db_name'] == name, 'db_type'].values[0]
@@ -312,7 +318,7 @@ class Jai():
             print(self.delete_raw_data(name))
             raise Exception("Something went wrong on data insertion. Please try again.")
 
-    def setup(self, name: str, data, db_type: str, batch_size: int = 1024, **kwargs):
+    def setup(self, name: str, data, db_type: str, batch_size: int = 16384, **kwargs):
         # make sure our data has the correct type and is free of NAs
         data = self._check_dtype_and_clean(data=data, db_type=db_type)
 
@@ -326,7 +332,7 @@ class Jai():
         setup_response = self._setup_database(name, db_type, **kwargs)
         return insert_responses, setup_response
 
-    def add_data(self, name: str, data, db_type: str, batch_size: int = 1024):
+    def add_data(self, name: str, data, db_type: str, batch_size: int = 16384):
         insert_responses = {}
         for i, b in enumerate(trange(0, len(data), batch_size, desc="Insert Data")):
             if isinstance(data, (pd.Series, pd.DataFrame)):
@@ -353,14 +359,21 @@ class Jai():
         else:
             return self.assert_status_code(response)
 
-    def _setup_database(self, name: str, db_type, overwrite=False, **kwargs):
+    def _check_kwargs(self, db_type, **kwargs):
         possible = ['hyperparams', 'callback_url']
+        must = []
         if db_type == "Unsupervised":
             possible.extend(['num_process', 'cat_process',  'high_process',
                              'mycelia_bases'])
         elif db_type == "Supervised":
             possible.extend(['num_process', 'cat_process',  'high_process',
                              'mycelia_bases', 'label', 'split'])
+            must.extend(['label', 'split'])
+
+        missing = [key for key in must if kwargs.get(key, None) is None]
+        if len(missing) > 0:
+            raise ValueError(f"missing arguments {missing}")
+
         body = {}
         flag = True
         for key in possible:
@@ -373,6 +386,11 @@ class Jai():
                 body[key] = val
 
         body['db_type'] = db_type
+        return body
+
+
+    def _setup_database(self, name: str, db_type, overwrite=False, **kwargs):
+        body = self._check_kwargs(db_type=db_type, **kwargs)
         response = requests.post(self.base_api_url + f'/setup/{name}?overwrite={overwrite}',
                                  headers=self.header, data=json.dumps(body))
 
@@ -398,7 +416,7 @@ class Jai():
 
     def wait_setup(self, name: str, frequency_seconds:int=5):
         status = self.status
-        if len(status) > 0:
+        if name in status.keys():
             status = status[name]
             while status['Status'] != 'Task ended successfully.':
                 if status['Status'] == 'Something went wrong.':
@@ -410,7 +428,7 @@ class Jai():
                         time.sleep(0.2)
 
                 status = self.status
-                if len(status) > 0:
+                if name in status.keys():
                     status = status[name]
                 else:
                     break

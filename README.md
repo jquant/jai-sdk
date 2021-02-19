@@ -1,11 +1,11 @@
-# JAI-sdk
-JAI SDKs
+# j-sdk
+j SDKs
 
 # Examples
 Instanciating your base class
 ```python
 from jai import Jai
-jai = Jai(AUTH_KEY)
+j = Jai(AUTH_KEY)
 ```
 
 ## Setting up your databases
@@ -22,21 +22,21 @@ name = 'text_data'
 # data can be a list of texts, pandas Series or DataFrame.
 # if data is a list, then ids will be set with range(len(data_list))
 # if data is a pandas type, then the ids will be the index values, index must not contain duplicated values
-jai.setup(name, data, db_type='FastText')
+j.setup(name, data, db_type='FastText')
 
 # wait for the train to finish
-jai.wait_setup(10)
+j.wait_setup(name, 10)
 ```
 
 Aplication using the model NLP BERT
 ```python
 ### bert implementation
 # generate a random name for identification of the base, can be a user input
-name = jai.generate_name(20, prefix='sdk_', suffix='_text')
+name = j.generate_name(20, prefix='sdk_', suffix='_text')
 
 # this time we choose db_type="Text", applying the pre-trained BERT model
-jai.setup(name, data, db_type='Text', batch_size=1024)
-jai.wait_setup(10)
+j.setup(name, data, db_type='Text', batch_size=1024)
+j.wait_setup(name, 10)
 ```
 
 ## Checking database
@@ -46,22 +46,22 @@ Here are some methods to check your databases:
 The name of your database should appear in:
 
 ```python
->>> jai.names
+>>> j.names
 ['jai_database', 'jai_unsupervised', 'jai_supervised']
 ```
 
 or you can check if it's valid:
 
 ```python
->>> jai.is_valid(name)
-{'value': True, 'message': 'jai_database is a valid database name.'}
+>>> j.is_valid(name)
+True
 ```
 
 
 and you can check the databases types for each of your databases with:
 
 ```python
->>> jai.info
+>>> j.info
                         db_name       db_type
 0                  jai_database          Text
 1              jai_unsupervised  Unsupervised
@@ -71,7 +71,7 @@ and you can check the databases types for each of your databases with:
 if you want to check which ids are in your database:
 
 ```python
->>> jai.ids(name)
+>>> j.ids(name)
 ['1000 items from 0 to 999']
 ```
 
@@ -81,21 +81,21 @@ After you're done with setting up your database, you can find similarity:
 - Using the indexes of the inputed data
 ```python
 # Find the 5 most similar values for the ids 0 and 1
-results = jai.similar(name, [0, 1], top_k=5)
+results = j.similar(name, [0, 1], top_k=5)
 
 # Find the 20 most similar values for every id in 0 to 100
 ids = list(range(100))
-results = jai.similar(name, ids, top_k=20)
+results = j.similar(name, ids, top_k=20)
 
 # Find the 100 most similar values for every inputed value
-results = jai.similar(name, data.index, top_k=100, batch_size=1024)
+results = j.similar(name, data.index, top_k=100, batch_size=1024)
 ```
 
 - Using new data to be processed
 *All data should be an pandas.DataFrame or pandas.Series*
 ```python
 # Find the 100 most similar values for every new_data
-results = jai.similar(name, new_data, top_k=100, batch_size=1024)
+results = j.similar(name, new_data, top_k=100, batch_size=1024)
 ```
 
 The output will be a list of dictionaries with ("query_id") the id of the value you want to find similars and ("results") a list with `top_k` dictionaries with the "id" and the "distance" between "query_id" and "id".
@@ -130,13 +130,13 @@ The output will be a list of dictionaries with ("query_id") the id of the value 
 
 # Removing data
 
-After you're done with the model setup, you can delete your raw data
+After you're done with the model setup, you can delete the inserted raw data
 ```python
 # Delete the raw data inputed as it won't be needed anymore
-jai.delete_raw_data(name)
+j.delete_raw_data(name)
 ```
 
 If you want to keep the environment clean
 ``` python
-jai.delete_database(name)
+j.delete_database(name)
 ```
