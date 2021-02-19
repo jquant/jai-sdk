@@ -5,6 +5,9 @@ from setuptools import find_packages, setup
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
+with open("requirements.txt","r") as f:
+        dependencies = f.read().splitlines()
+
 setup(
     name="jai-sdk",
     version="0.1.0",
@@ -22,5 +25,5 @@ setup(
         "Programming Language :: Python :: 3.7",
     ],
     python_requires=">=3.7",
-    install_requires=["azure-storage-blob", "numpy", "tqdm", "pandas", "pillow"]
+    install_requires=dependencies,
 )

@@ -10,8 +10,8 @@ import numpy as np
 import requests
 import time
 
-from auxiliar_funcs.utils_funcs import data2json
-from auxiliar_funcs.classes import PossibleDtypes, Mode
+from .auxiliar_funcs.utils_funcs import data2json
+from .auxiliar_funcs.classes import PossibleDtypes, Mode
 from pandas.api.types import is_integer_dtype
 from tqdm import trange
 
