@@ -402,7 +402,7 @@ class Jai():
 
     def wait_setup(self, name: str, frequency_seconds:int=5):
         status = self.status
-        if len(status) > 0:
+        if name in status.keys():
             status = status[name]
             while status['Status'] != 'Task ended successfully.':
                 if status['Status'] == 'Something went wrong.':
@@ -414,7 +414,7 @@ class Jai():
                         time.sleep(0.2)
 
                 status = self.status
-                if len(status) > 0:
+                if name in status.keys():
                     status = status[name]
                 else:
                     break
