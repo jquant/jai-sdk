@@ -11,8 +11,8 @@ with open("requirements.txt","r") as f:
 setup(
     name="jai-sdk",
     version="0.1.0",
-    author="paulo",
-    author_email="paulo.freire@jquant.com.br",
+    author="JQuant",
+    author_email="jedis@jquant.com.br",
     description="JAI - Trust your data",
     long_description=long_description,
     long_description_content_type="text/markdown",
