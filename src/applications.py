@@ -131,6 +131,12 @@ def fill(data, column:str, auth_key, name=None, **kwargs):
         prep_bases.append({"id_name": id_col, "db_parent": origin})
     data = data.drop(columns=pre)
 
+    vals = data[column].value_counts() < 2
+    if vals.sum() > 0:
+        eliminate = vals[vals].index
+        print(f"values {eliminate} from column {column} were removed for having less than 2 examples.")
+        data.loc[data[column].isin(), column] = None
+
     print(f"name: {name}")
     label = {"task": "metric_classification",
              "label_name": column}
