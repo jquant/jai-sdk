@@ -114,8 +114,8 @@ def data2json(data, dtype):
         raise ValueError(f"dtype {dtype} not recognized.")
 
 
-def process_similar(results, threshold: int = 5, only_duplicated: bool = False,
-                    priority: str = 'closest', validator: Callable = None):
+def process_similar(results, threshold=None, return_self: bool = True,
+                    skip_null: bool = True, validator: Callable = None):
     """
     Process the output from the similar methods.
 
@@ -124,17 +124,13 @@ def process_similar(results, threshold: int = 5, only_duplicated: bool = False,
     results : List of Dicts.
         output from similar methods.
     threshold : int, optional
-        value for the distance threshold. The default is 5.
-    only_duplicated : bool, optional
-        option to return all correspondences or only duplicated occurrences.
-        The default is False.
-    priority : str, optional
-        rule to choose the duplicated values, possible options are "min", "max"
-        and "closest". The default is 'closest'.
-        - "min": chooses the lowest id value.
-        - "max": chooses the largest id value.
-        - "closest": chooses the chooses the id value with the smallest distance,
-        unless the id is equal to the queried id.
+        value for the distance threshold. The default is None.
+        if set to None, takes a random 1% of the results and uses the 10%
+        quantile of the distances distributions as the threshold.
+    return_self : bool, optional
+        option to return the queried id from the query result or not. The default is True.
+    skip_null: bool, optional
+        option to skip ids without similar results. The default is True.
     validator : Callable, optional
         function that receive an array of ints and returns an array of bools
         of the same lenght as the input. Used as an extra filter to the id
@@ -162,27 +158,30 @@ def process_similar(results, threshold: int = 5, only_duplicated: bool = False,
         if not isinstance(mask, np.ndarray) or mask.dtype != bool:
             raise ValueError(msg)
 
+    if threshold is None:
+        samples = np.random.randint(0, len(results), len(results)//(100))
+        distribution = []
+        for s in tqdm(samples, desc="Fiding threshold"):
+            d = [l['distance'] for l in results[s]['results'][1:]]
+            distribution.extend(d)
+        threshold = np.quantile(distribution, .1)
+    print(f"threshold: {threshold}\n")
+
     map_duplicate = {}
     for k in tqdm(results, desc="Processing Similar"):
         i = k['query_id']
-        df = pd.DataFrame(k['results']).sort_values(by='distance')
-        distances = df['distance'].values
-        similar = df.loc[distances < threshold, 'id'].values
+        similar = [l['id'] for l in k['results'] if l['distance']<=threshold]
         if validator is not None:
             similar = similar[validator(similar)]
-        if only_duplicated and len(similar) <= 1:
-            continue
-        elif len(similar) == 0:
-            map_duplicate[i] = None
-        elif priority == 'min':
-            map_duplicate[i] = min(similar)
-        elif priority == 'max':
-            map_duplicate[i] = max(similar)
-        elif priority == 'closest':
-            map_duplicate[i] = similar[0] if len(
-                similar) <= 1 or similar[0] != i else similar[1]
-        else:
-            raise NotImplementedError(
-                f"priority {priority} is not recognized.")
+        if not return_self and i in similar:
+            similar.remove(i)
 
-    return pd.Series(map_duplicate)
+        if similar is None or len(similar) == 0:
+            if skip_null:
+                continue
+            else:
+                map_duplicate[i] = None
+        else:
+            map_duplicate[i] = similar
+
+    return map_duplicate

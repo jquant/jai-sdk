@@ -233,9 +233,11 @@ class Jai():
 
 
     def _check_dtype_and_clean(self, data, db_type):
-        if not isinstance(data, (pd.Series, pd.DataFrame)):
+        if isinstance(data, (list, np.ndarray)):
+            data = pd.Series(data)
+        elif not isinstance(data, (pd.Series, pd.DataFrame)):
             raise TypeError(f"Inserted data is of type {type(data)},\
-                but supported types are pandas.Series and pandas.DataFrame")
+ but supported types are list, np.ndarray, pandas.Series and pandas.DataFrame")
         if db_type in [PossibleDtypes.text, PossibleDtypes.fasttext, PossibleDtypes.edit]:
             data = data.dropna()
         else:
@@ -357,14 +359,21 @@ class Jai():
         else:
             return self.assert_status_code(response)
 
-    def _setup_database(self, name: str, db_type, overwrite=False, **kwargs):
+    def _check_kwargs(self, db_type, **kwargs):
         possible = ['hyperparams', 'callback_url']
+        must = []
         if db_type == "Unsupervised":
             possible.extend(['num_process', 'cat_process',  'high_process',
                              'mycelia_bases'])
         elif db_type == "Supervised":
             possible.extend(['num_process', 'cat_process',  'high_process',
                              'mycelia_bases', 'label', 'split'])
+            must.extend(['label', 'split'])
+
+        missing = [key for key in must if kwargs.get(key, None) is None]
+        if len(missing) > 0:
+            raise ValueError(f"missing arguments {missing}")
+
         body = {}
         flag = True
         for key in possible:
@@ -377,6 +386,11 @@ class Jai():
                 body[key] = val
 
         body['db_type'] = db_type
+        return body
+
+
+    def _setup_database(self, name: str, db_type, overwrite=False, **kwargs):
+        body = self._check_kwargs(db_type=db_type, **kwargs)
         response = requests.post(self.base_api_url + f'/setup/{name}?overwrite={overwrite}',
                                  headers=self.header, data=json.dumps(body))
 
