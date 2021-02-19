@@ -70,7 +70,7 @@ def fill(data, column, auth_key, name=None, **kwargs):
     split = {"type": 'stratified',
              "split_column": column,
              "test_size": .2}
-    mycelia_bases = kwargs.get("mycelia_bases", {})
+    mycelia_bases = kwargs.get("mycelia_bases", [])
     mycelia_bases.extend(prep_bases)
 
     mask = data[column].isna()
@@ -98,6 +98,6 @@ def embedding(data, auth_key, name=None, db_type='FastText'):
     if name not in jai.names:
         jai.setup(name, data, batch_size=10000, db_type=db_type,
                   hyperparams={"minn": 0, "maxn": 0})
-        jai.wait_setup(name, 20)
+        jai.wait_setup(name, 5)
         jai.delete_raw_data(name)
     return name
