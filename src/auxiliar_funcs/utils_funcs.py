@@ -124,7 +124,7 @@ def process_similar(results, threshold=None, return_self: bool = True,
     return_self : bool, optional
         option to return the queried id from the query result or not. The default is True.
     skip_null: bool, optional
-        option to skip ids without similar results.
+        option to skip ids without similar results. The default is True.
     validator : Callable, optional
         function that receive an array of ints and returns an array of bools
         of the same lenght as the input. Used as an extra filter to the id
