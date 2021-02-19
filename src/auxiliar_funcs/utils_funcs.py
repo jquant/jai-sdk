@@ -90,6 +90,12 @@ def data2json(data, dtype):
             return list2json(data, name=FieldName.text)
         elif isinstance(data, pd.Series):
             return series2json(data, name=FieldName.text)
+        elif isinstance(data, pd.DataFrame):
+            if data.shape[1] == 1:
+                c = data.columns[0]
+                return series2json(data[c], name=FieldName.text)
+            else:
+                raise ValueError("Data must be a DataFrame with one column.")
         else:
             raise NotImplementedError(f"type {type(data)} is not implemented.")
     elif dtype == PossibleDtypes.image:
