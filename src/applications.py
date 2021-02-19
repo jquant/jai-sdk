@@ -62,7 +62,7 @@ def fill(data, column, auth_key, name=None, **kwargs):
         data[id_col] = inverse
         origin = embedding(values, auth_key)
         prep_bases.append({"id_name": id_col, "db_parent": origin})
-    data.drop(columns=pre)
+    data = data.drop(columns=pre)
 
     print(f"name: {name}")
     label = {"task": "metric_classification",
