@@ -168,7 +168,7 @@ def process_similar(results, threshold=None, return_self: bool = True,
         if validator is not None:
             similar = similar[validator(similar)]
         if not return_self and i in similar:
-            similar = similar.remove(i)
+            similar.remove(i)
 
         if similar is None or len(similar) == 0:
             if skip_null:
