@@ -621,26 +621,47 @@ class Jai():
         setup_response = self._setup_database(name, db_type, **kwargs)
         return insert_responses, setup_response
 
-    def add_data(self, name: str, data, db_type: str, batch_size: int = 16384):
-        insert_responses = {}
-        for i, b in enumerate(trange(0, len(data), batch_size, desc="Insert Data")):
-            if isinstance(data, (pd.Series, pd.DataFrame)):
-                _batch = data.iloc[b:b+batch_size]
-            else:
-                _batch = data[b:b+batch_size]
-            insert_responses[i] = self._insert_json(name,
-                                                    data2json(_batch, dtype=db_type))
+    def add_data(self, name: str, data, db_type: str, batch_size: int=16384):
+        """
+        Insert raw data and extract their latent representation.
 
-        inserted_ids = self._temp_ids(name, 'simple')
-        if len(data) != int(inserted_ids[0].split()[0]):
-            print(f"Found invalid ids: {inserted_ids[0]}")
-            print(self.delete_raw_data(name))
-            raise Exception("Something went wrong on data insertion. Please try again.")
+        This method should be used when we already setup up a database using `setup()`
+        and want to create the vector representations of new data
+        using the model we already trained for the given database.
 
-        setup_response = self._append(name)
-        return insert_responses, setup_response
+        Args
+        ----------
+        `name`: str
+            String with the name of a database in your JAI environment.
+        `data`: pandas.DataFrame or pandas.Series
+            Data to be inserted and used for training.
+        `batch_size`: int
+            Size of batch to send the data. Default is 16384.
+
+        Return
+        -------
+        insert_responses: dict
+            Dictionary of responses for each batch. Each response contains
+            information of whether or not that particular batch was successfully inserted.
+        """
+        pass
 
     def _insert_json(self, name: str, df_json):
+        """
+        Insert data in JSON format. This is a protected method.
+
+        Args
+        ----------
+        `name`: str
+            String with the name of a database in your JAI environment.
+        `df_json`: dict
+            Data in JSON format.
+
+        Return
+        -------
+        response: dict
+            Dictionary with the API response.
+        """
         response = requests.post(self.base_api_url + f'/data/{name}',
                                  headers=self.header, data=df_json)
         if response.status_code == 200:
@@ -649,6 +670,20 @@ class Jai():
             return self.assert_status_code(response)
 
     def _check_kwargs(self, db_type, **kwargs):
+        """
+        Sanity checks in the keyword arguments.
+        This is a protected method.
+
+        Args
+        ----------
+        `db_type`: str
+            Database type (Supervised, Unsupervised, Text...)
+
+        Return
+        -------
+        body: dict
+            Body to be sent in the POST request to the API.
+        """
         possible = ['hyperparams', 'callback_url']
         must = []
         if db_type == "Unsupervised":
@@ -679,6 +714,27 @@ class Jai():
 
 
     def _setup_database(self, name: str, db_type, overwrite=False, **kwargs):
+        """
+        Call the API method for database setup.
+        This is a protected method.
+
+        Args
+        ----------
+        `name`: str
+            String with the name of a database in your JAI environment.
+        `db_type`: str
+            Database type (Supervised, Unsupervised, Text...)
+        `overwrite`: boolean
+            [Optional] Whether of not to overwrite the given database. Default is False.
+        `kwargs`:
+            Any parameters the user wants to (or needs to) set for the given datase. Please
+            refer to the API methods to see the possible arguments.
+
+        Return
+        -------
+        response: dict
+            Dictionary with the API response.
+        """
         body = self._check_kwargs(db_type=db_type, **kwargs)
         response = requests.post(self.base_api_url + f'/setup/{name}?overwrite={overwrite}',
                                  headers=self.header, data=json.dumps(body))
@@ -689,11 +745,34 @@ class Jai():
             return self.assert_status_code(response)
 
     def fields(self, name: str):
+        """
+        Get the table fields for a Supervised/Unsupervised database.
+
+        Args
+        ----------
+        `name`: str
+            String with the name of a database in your JAI environment.
+
+        Return
+        -------
+        response: dict
+            Dictionary with table fields.
+
+        Example
+        ----------
+        ```python
+        >>> name = 'chosen_name'
+        >>> j = Jai(AUTH_KEY)
+        >>> fields = j.fields(name=name)
+        >>> print(fields)
+        {'id': 0, 'feature1': 0.01, 'feature2': 'string', 'feature3': 0}
+        ```
+        """
         dtypes = self.info
         if any(dtypes['db_name'] == name):
             dtype = dtypes.loc[dtypes['db_name'] == name, 'db_type'].values[0]
             if dtype != "Unsupervised" and dtype != "Supervised":
-                raise ValueError("predict is only available to dtype Unsupervised and Supervised.")
+                raise ValueError("'fields' method is only available to dtype Unsupervised and Supervised.")
         else:
             raise ValueError(f"{name} is not a valid name.")
         response = requests.get(self.base_api_url + f'/table/fields/{name}',
@@ -704,6 +783,20 @@ class Jai():
             return self.assert_status_code(response)
 
     def wait_setup(self, name: str, frequency_seconds:int=5):
+        """
+        Wait for the setup (model training) to finish
+
+        Args
+        ----------
+        `name`: str
+            String with the name of a database in your JAI environment.
+        `frequency_seconds`: int
+            [Optional] Number of seconds apart from each status check. Default is 5.
+
+        Return
+        -------
+        None.
+        """
         status = self.status
         if name in status.keys():
             status = status[name]
@@ -723,6 +816,20 @@ class Jai():
                     break
 
     def _append(self, name: str):
+        """
+        Add data to a database that has been previously trained.
+        This is a protected method.
+
+        Args
+        ----------
+        `name`: str
+            String with the name of a database in your JAI environment.
+
+        Return
+        -------
+        `response`: dict
+            Dictionary with the API response.
+        """
         response = requests.patch(
             self.base_api_url + f'/data/{name}', headers=self.header)
         if response.status_code == 202:
@@ -731,6 +838,28 @@ class Jai():
             return self.assert_status_code(response)
 
     def delete_raw_data(self, name: str):
+        """
+        Delete raw data. It is good practice to do this after training a model.
+
+        Args
+        ----------
+        `name`: str
+            String with the name of a database in your JAI environment.
+
+        Return
+        -------
+        `response`: dict
+            Dictionary with the API response.
+
+        Example
+        ----------
+        ```python
+        >>> name = 'chosen_name'
+        >>> j = Jai(AUTH_KEY)
+        >>> j.delete_raw_data(name=name)
+        'All raw data from database 'chosen_name' was deleted!'
+        ```
+        """
         response = requests.delete(
             self.base_api_url + f'/data/{name}', headers=self.header)
         if response.status_code == 200:
@@ -739,6 +868,28 @@ class Jai():
             return self.assert_status_code(response)
 
     def delete_database(self, name: str):
+        """
+        Delete a database and everything that goes with it (I thank you all).
+
+        Args
+        ----------
+        `name`: str
+            String with the name of a database in your JAI environment.
+
+        Return
+        -------
+        `response`: dict
+            Dictionary with the API response.
+
+        Example
+        ----------
+        ```python
+        >>> name = 'chosen_name'
+        >>> j = Jai(AUTH_KEY)
+        >>> j.delete_database(name=name)
+        'Bombs away! We nuked database titanic_selfsup!'
+        ```
+        """
         response = requests.delete(
             self.base_api_url + f'/database/{name}', headers=self.header)
         if response.status_code == 200:
