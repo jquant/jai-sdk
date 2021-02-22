@@ -1,8 +1,8 @@
 # jai-sdk
-jai SDKs
+JAI SDK - Trust your data
 
 # Examples
-Instanciating your base class
+Instantiate base class
 ```python
 from jai import Jai
 j = Jai(AUTH_KEY)
@@ -10,28 +10,29 @@ j = Jai(AUTH_KEY)
 
 ## Setting up your databases
 
-*All data should be an pandas.DataFrame or pandas.Series*
+*All data should be in pandas.DataFrame or pandas.Series format*
 
-Aplication using the model NLP FastText
+Aplication using the NLP FastText model
 ```python
 ### fasttext implementation
-# save this if you wish to work in the same database later
+# save this if you want to work in the same database later
 name = 'text_data'
 
-### Data insertion and train the unsupervised FastText model
+### Insert data and train the FastText model
 # data can be a list of texts, pandas Series or DataFrame.
-# if data is a list, then ids will be set with range(len(data_list))
-# if data is a pandas type, then the ids will be the index values, index must not contain duplicated values
+# if data is a list, then the ids will be set with range(len(data_list))
+# if data is a pandas type, then the ids will be the index values.
+# heads-up: index values must not contain duplicates.
 j.setup(name, data, db_type='FastText')
 
-# wait for the train to finish
+# wait for the training to finish
 j.wait_setup(name, 10)
 ```
 
-Aplication using the model NLP BERT
+Aplication using the NLP BERT model
 ```python
-### bert implementation
-# generate a random name for identification of the base, can be a user input
+### BERT implementation
+# generate a random name for identification of the base; it can be a user input
 name = j.generate_name(20, prefix='sdk_', suffix='_text')
 
 # this time we choose db_type="Text", applying the pre-trained BERT model
@@ -41,7 +42,7 @@ j.wait_setup(name, 10)
 
 ## Checking database
 
-Here are some methods to check your databases:
+Here are some methods to check your databases.
 
 The name of your database should appear in:
 
@@ -50,7 +51,7 @@ The name of your database should appear in:
 ['jai_database', 'jai_unsupervised', 'jai_supervised']
 ```
 
-or you can check if it's valid:
+or you can check if a given database name is valid:
 
 ```python
 >>> j.is_valid(name)
@@ -58,7 +59,7 @@ True
 ```
 
 
-and you can check the databases types for each of your databases with:
+You can also check the types for each of your databases with:
 
 ```python
 >>> j.info
@@ -68,7 +69,7 @@ and you can check the databases types for each of your databases with:
 2                jai_supervised    Supervised
 ```
 
-if you want to check which ids are in your database:
+If you want to check which ids are in your database:
 
 ```python
 >>> j.ids(name)
@@ -76,29 +77,29 @@ if you want to check which ids are in your database:
 ```
 
 ## Similarity
-After you're done with setting up your database, you can find similarity:
+After you're done setting up your database, you perform similarity searches:
 
-- Using the indexes of the inputed data
+- Using the indexes of the input data
 ```python
-# Find the 5 most similar values for the ids 0 and 1
+# Find the 5 most similar values for ids 0 and 1
 results = j.similar(name, [0, 1], top_k=5)
 
-# Find the 20 most similar values for every id in 0 to 100
+# Find the 20 most similar values for every id from [0, 99]
 ids = list(range(100))
 results = j.similar(name, ids, top_k=20)
 
-# Find the 100 most similar values for every inputed value
+# Find the 100 most similar values for every input value
 results = j.similar(name, data.index, top_k=100, batch_size=1024)
 ```
 
 - Using new data to be processed
-*All data should be an pandas.DataFrame or pandas.Series*
+*All data should be in pandas.DataFrame or pandas.Series format*
 ```python
 # Find the 100 most similar values for every new_data
 results = j.similar(name, new_data, top_k=100, batch_size=1024)
 ```
 
-The output will be a list of dictionaries with ("query_id") the id of the value you want to find similars and ("results") a list with `top_k` dictionaries with the "id" and the "distance" between "query_id" and "id".
+The output will be a list of dictionaries with ("query_id") being the id of the value you want to find similars and ("results") a list with `top_k` dictionaries with the "id" and the "distance" between "query_id" and "id".
 ```
 [
   {
@@ -130,13 +131,13 @@ The output will be a list of dictionaries with ("query_id") the id of the value 
 
 # Removing data
 
-After you're done with the model setup, you can delete the inserted raw data
+After you're done with the model setup, you can delete your raw data
 ```python
 # Delete the raw data inputed as it won't be needed anymore
 j.delete_raw_data(name)
 ```
 
-If you want to keep the environment clean
+If you no longer need the model or anything else related to your database:
 ``` python
 j.delete_database(name)
 ```
