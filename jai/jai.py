@@ -646,6 +646,11 @@ class Jai():
         """
         # insert data
         insert_responses = self._insert_data(data=data, name=name, batch_size=batch_size, db_type=db_type)
+
+        # check if we inserted everything we were supposed to
+        self._check_ids_consistency(name=name, data=data)
+        
+        # add data per se
         add_data_response = self._append(name=name)
 
         return insert_responses, add_data_response
