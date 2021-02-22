@@ -29,19 +29,24 @@ class Jai():
 
     @property
     def names(self):
-        """Retrieves collections already created for the provided Auth Key.
+        """
+        Retrieves collections already created for the provided Auth Key.
 
         Args
         ----------
-        header (dict): dict with the authentication key from mycelia platform. Example {'Auth': 'auth_key_mycelia'}.
+        None.
 
         Return
         ----------
-        collections_json (list): list with the collections created so far.
+        List with the collections created so far.
 
         Examples
         ----------
+        ```python
+        >>> j.names
+        ['jai_database', 'jai_unsupervised', 'jai_supervised']
 
+        ```
         """
         response = requests.get(url=self.base_api_url +
                                 '/info?mode=names', headers=self.header)
@@ -52,6 +57,28 @@ class Jai():
 
     @property
     def info(self):
+        """
+        Get name and type of each database in your environment.
+
+        Args
+        ----------
+        None.
+
+        Return
+        ----------
+        `df`: pandas.DataFrame
+            Pandas dataframe with name and type of each database in your environment.
+
+        Examples
+        ----------
+        ```python
+        >>> j.info
+                                db_name       db_type
+        0                  jai_database          Text
+        1              jai_unsupervised  Unsupervised
+        2                jai_supervised    Supervised
+        ```
+        """
         response = requests.get(url=self.base_api_url +
                                 '/info?mode=complete', headers=self.header)
         if response.status_code == 200:
@@ -63,6 +90,29 @@ class Jai():
 
     @property
     def status(self):
+        """
+        Get the status of your JAI environment when training.
+
+        Args
+        ----------
+        None.
+
+        Return
+        ----------
+        `response`: dict
+            A `JSON` file with the current status of the training tasks.
+
+        Examples
+        ----------
+        ```python
+        >>> j.status
+        {
+            "Task": "Training",
+            "Status": "Completed",
+            "Description": "Training of database YOUR_DATABASE has ended."
+        }
+        ```
+        """
         response = requests.get(
             self.base_api_url + '/status', headers=self.header)
         if response.status_code == 200:
@@ -70,7 +120,33 @@ class Jai():
         else:
             return self.assert_status_code(response)
 
-    def generate_name(self, length: int = 8, prefix: str = '', suffix: str = ''):
+    def generate_name(self, length: int=8, prefix: str='', suffix: str=''):
+        """
+        Generate a random string. You can pass a prefix and/or suffix. In this case,
+        the generated string will be a concatenation of `prefix + random + suffix`.
+
+        Args
+        ----------
+        `length`: int [Optional]
+            Length for the desired string. Default is 8.
+        `prefix`: string [Optional]
+            Prefix of your string. Default is empty.
+        `suffix`: string [Optional]
+            Suffix of your string. Default is empty.
+
+        Return
+        ----------
+        `str`: a random string.
+
+        Examples
+        ----------
+        ```python
+        >>> j.generate_name()
+        13636a8b
+        >>> j.generate_name(length=16, prefix="company")
+        companyb8bbd445d
+        ```
+        """
         len_prefix = len(prefix)
         len_suffix = len(suffix)
 
@@ -96,25 +172,26 @@ class Jai():
         print(response.json())
         return response
 
-    def similar(self, name: str, data, top_k: int = 5, batch_size: int = 16384):
+    def similar(self, name: str, data, top_k: int=5, batch_size: int=16384):
         """
+        Query a database in search for the `top_k` most similar entries for each
+        input data passed as argument.
 
-
-        Parameters
+        Args
         ----------
-        name : str
-            string with the name of the database you created on the mycelia platform.
-        data : list, pd.Series or pd.DataFrame
-            data to be processed to search similiar in the inputed data.
-        top_k : int, optional
-            number of k similar items that we want to return. The default is 5.
-        batch_size : int, optional
-            size of batches to send the data. The default is 16384.
+        `name`: str
+            String with the name of a database in your JAI environment.
+        `data`: list, pd.Series or pd.DataFrame
+            Data to be queried for similar inputs in your database.
+        `top_k`: int [Optional]
+            Number of k similar items that we want to return. Default is 5.
+        `batch_size`: int [Optional]
+            Size of batches to send the data. Default is 16384.
 
-        Returns
+        Return
         -------
         results : dict
-            dict with the index and distance of the k most similar items.
+            Dictionary with the index and distance of the K most similar items.
 
         Examples
         ----------
@@ -128,7 +205,6 @@ class Jai():
         10007  0.0
         45568  6995.6
         8382   7293.2
-
         """
         dtypes = self.info
         if any(dtypes['db_name'] == name):
@@ -162,33 +238,26 @@ class Jai():
         return results
 
 
-    def _similar_id(self, name: str, id_item: int, top_k: int = 5, method="PUT"):
-        """Creates a list of dicts, with the index and distance of the k itens most similars.
+    def _similar_id(self, name: str, id_item: int, top_k: int=5, method="PUT"):
+        """
+        Creates a list of dicts, with the index and distance of the k items most similars given an id.
+        This is a protected method.
 
         Args
         ----------
-        name (str): string with the name of the database you created on the mycelia platform.
+        `name`: str 
+            String with the name of a database in your JAI environment.
 
-        idx_tem (int): index of the item the customer is looking for at the moment.
+        `idx_tem`: int 
+            Index of the item the user is looking for.
 
-        top_k (int): number of k similar items that we want to return.
+        `top_k`: int
+            Number of k similar items we want to return.
 
         Return
         ----------
-        response (dict): dict with the index and distance of the k most similar items.
-
-        Examples
-        ----------
-        >>> name = 'chosen_name'
-        >>> ID_ITEM = 10007
-        >>> TOP_K = 3
-        >>> jai = jAI(AUTH_KEY)
-        >>> df_index_distance = jai.similar_id(name, ID_ITEM, TOP_K)
-        >>> print(pd.DataFrame(df_index_distance['similarity']))
-        index  distance
-        10007  0.0
-        45568  6995.6
-        8382   7293.2
+        `response`: dict
+            Dictionary with the index and distance of the k most similar items.
         """
         if method == "GET":
             if isinstance(id_item, list):
@@ -216,6 +285,7 @@ class Jai():
                     f"/similar/id/{name}?top_k={top_k}", headers=self.header, data=json.dumps(id_item))
         else:
             raise ValueError("method must be GET or PUT.")
+        
         if response.status_code == 200:
             return response.json()
         else:
@@ -223,6 +293,27 @@ class Jai():
 
 
     def _similar_json(self, name: str, data_json, top_k: int = 5):
+        """
+        Creates a list of dicts, with the index and distance of the k items most similars given a JSON data entry.
+        This is a protected method
+
+        Args
+        ----------
+        `name`: str 
+            String with the name of a database in your JAI environment.
+
+        `data_json`: dict (JSON) 
+            Data in JSON format. Each input in the dictionary will be used to search for the `top_k` most
+            similar entries in the database.
+
+        `top_k`: int
+            Number of k similar items we want to return.
+
+        Return
+        ----------
+        `response`: dict
+            Dictionary with the index and distance of the k most similar items.
+        """
         url = self.base_api_url + f"/similar/data/{name}?top_k={top_k}"
 
         response = requests.put(url, headers=self.header, data=data_json)
@@ -233,22 +324,72 @@ class Jai():
 
 
     def _check_dtype_and_clean(self, data, db_type):
+        """
+        Check data type and remove NAs from the data.
+        This is a protected method.
+
+        Args
+        ----------
+        `data`: pandas.DataFrame or pandas.Series
+            Data to be checked and cleaned.
+
+        `db_type`: str
+            Database type (Supervised, Unsupervised, Text...)
+
+        Return
+        ----------
+        `data`: pandas.DataFrame or pandas.Series
+            Data without NAs
+        """
         if isinstance(data, (list, np.ndarray)):
             data = pd.Series(data)
         elif not isinstance(data, (pd.Series, pd.DataFrame)):
             raise TypeError(f"Inserted data is of type {type(data)},\
- but supported types are list, np.ndarray, pandas.Series and pandas.DataFrame")
+ but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame")
         if db_type in [PossibleDtypes.text, PossibleDtypes.fasttext, PossibleDtypes.edit]:
             data = data.dropna()
         else:
             cols_to_drop = []
             for col in data.select_dtypes(include='category').columns:
-                if data[col].nunique() > 16384:
+                if data[col].nunique() > 1024:
                     cols_to_drop.append(col)
             data = data.dropna(subset=cols_to_drop)
         return data
 
-    def predict(self, name: str, data, predict_proba:bool=False, batch_size: int = 16384):
+    def predict(self, name: str, data, predict_proba:bool=False, batch_size: int=16384):
+        """
+        Query a database in search for the `top_k` most similar entries for each
+        input data passed as argument.
+
+        Args
+        ----------
+        `name`: str
+            String with the name of a database in your JAI environment.
+        `data`: list, pd.Series or pd.DataFrame
+            Data to be queried for similar inputs in your database.
+        `predict_proba`: bool [Optional]
+            Whether or not to return the probabilities of each prediction. Default is False.
+        `batch_size`: int [Optional]
+            Size of batches to send the data. Default is 16384.
+
+        Return
+        -------
+        results : list
+            List of predctions for the data passed as parameter.
+
+        Examples
+        ----------
+        >>> name = 'chosen_name'
+        >>> DATA_ITEM = # data in the format of the database
+        >>> TOP_K = 3
+        >>> jai = jAI(AUTH_KEY)
+        >>> df_index_distance = jai.similar(name, DATA_ITEM, TOP_K)
+        >>> print(pd.DataFrame(df_index_distance['similarity']))
+        index  distance
+        10007  0.0
+        45568  6995.6
+        8382   7293.2
+        """
         dtypes = self.info
         if any(dtypes['db_name'] == name):
             dtype = dtypes.loc[dtypes['db_name'] == name, 'db_type'].values[0]
