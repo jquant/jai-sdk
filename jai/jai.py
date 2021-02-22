@@ -127,12 +127,12 @@ class Jai():
 
         Args
         ----------
-        `length`: int [Optional]
-            Length for the desired string. Default is 8.
-        `prefix`: string [Optional]
-            Prefix of your string. Default is empty.
-        `suffix`: string [Optional]
-            Suffix of your string. Default is empty.
+        `length`: int 
+            [Optional] Length for the desired string. Default is 8.
+        `prefix`: string
+            [Optional] Prefix of your string. Default is empty.
+        `suffix`: string
+            [Optional] Suffix of your string. Default is empty.
 
         Return
         ----------
@@ -183,10 +183,10 @@ class Jai():
             String with the name of a database in your JAI environment.
         `data`: list, pd.Series or pd.DataFrame
             Data to be queried for similar inputs in your database.
-        `top_k`: int [Optional]
-            Number of k similar items that we want to return. Default is 5.
-        `batch_size`: int [Optional]
-            Size of batches to send the data. Default is 16384.
+        `top_k`: int
+            [Optional] Number of k similar items that we want to return. Default is 5.
+        `batch_size`: int
+            [Optional] Size of batches to send the data. Default is 16384.
 
         Return
         -------
@@ -236,7 +236,6 @@ class Jai():
                                         top_k=top_k)
             results.extend(res['similarity'])
         return results
-
 
     def _similar_id(self, name: str, id_item: int, top_k: int=5, method="PUT"):
         """
@@ -291,7 +290,6 @@ class Jai():
         else:
             return self.assert_status_code(response)
 
-
     def _similar_json(self, name: str, data_json, top_k: int = 5):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given a JSON data entry.
@@ -321,7 +319,6 @@ class Jai():
             return response.json()
         else:
             return self.assert_status_code(response)
-
 
     def _check_dtype_and_clean(self, data, db_type):
         """
@@ -366,10 +363,10 @@ class Jai():
             String with the name of a database in your JAI environment.
         `data`: list, pd.Series or pd.DataFrame
             Data to be queried for similar inputs in your database.
-        `predict_proba`: bool [Optional]
-            Whether or not to return the probabilities of each prediction. Default is False.
-        `batch_size`: int [Optional]
-            Size of batches to send the data. Default is 16384.
+        `predict_proba`: bool
+            [Optional] Whether or not to return the probabilities of each prediction. Default is False.
+        `batch_size`: int
+            [Optional] Size of batches to send the data. Default is 16384.
 
         Return
         -------
@@ -405,7 +402,6 @@ class Jai():
             results.extend(res)
         return results
 
-
     def _predict(self, name: str, data_json, predict_proba:bool=False):
         """
         Predict the output of new data for a given database by calling its
@@ -417,8 +413,8 @@ class Jai():
             String with the name of a database in your JAI environment.
         `data_json`: JSON file (dict)
             Data to be queried for similar inputs in your database.
-        `predict_proba`: bool [Optional]
-            Whether or not to return the probabilities of each prediction. Default is False.
+        `predict_proba`: bool
+            [Optional] Whether or not to return the probabilities of each prediction. Default is False.
 
         Return
         -------
@@ -432,7 +428,6 @@ class Jai():
             return response.json()
         else:
             return self.assert_status_code(response)
-
 
     def ids(self, name: str, mode: Mode='simple'):
         """
@@ -744,7 +739,6 @@ class Jai():
         body['db_type'] = db_type
         return body
 
-
     def _setup_database(self, name: str, db_type, overwrite=False, **kwargs):
         """
         Call the API method for database setup.
@@ -846,7 +840,6 @@ class Jai():
                     status = status[name]
                 else:
                     break
-
 
     def delete_raw_data(self, name: str):
         """
