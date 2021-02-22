@@ -127,7 +127,7 @@ class Jai():
 
         Args
         ----------
-        `length`: int 
+        `length`: int
             [Optional] Length for the desired string. Default is 8.
         `prefix`: string
             [Optional] Prefix of your string. Default is empty.
@@ -206,11 +206,7 @@ class Jai():
         45568  6995.6
         8382   7293.2
         """
-        dtypes = self.info
-        if any(dtypes['db_name'] == name):
-            dtype = dtypes.loc[dtypes['db_name'] == name, 'db_type'].values[0]
-        else:
-            raise ValueError()
+        dtype = self._get_dtype(name)
 
         if isinstance(data, list):
             data = np.array(data)
@@ -244,10 +240,10 @@ class Jai():
 
         Args
         ----------
-        `name`: str 
+        `name`: str
             String with the name of a database in your JAI environment.
 
-        `idx_tem`: int 
+        `idx_tem`: int
             Index of the item the user is looking for.
 
         `top_k`: int
@@ -284,11 +280,38 @@ class Jai():
                     f"/similar/id/{name}?top_k={top_k}", headers=self.header, data=json.dumps(id_item))
         else:
             raise ValueError("method must be GET or PUT.")
-        
+
         if response.status_code == 200:
             return response.json()
         else:
             return self.assert_status_code(response)
+
+    def _get_dtype(self, name):
+        """
+        Return the database type.
+
+        Parameters
+        ----------
+        `name`: str
+            String with the name of a database in your JAI environment.
+
+        Raises
+        ------
+        ValueError
+            If the name is not valid.
+
+        Returns
+        -------
+        str
+            The name of the type of the database.
+
+        """
+        dtypes = self.info
+        if any(dtypes['db_name'] == name):
+            return dtypes.loc[dtypes['db_name'] == name, 'db_type'].values[0]
+        else:
+            raise ValueError(f"{name} is not a valid name.")
+
 
     def _similar_json(self, name: str, data_json, top_k: int = 5):
         """
@@ -297,10 +320,10 @@ class Jai():
 
         Args
         ----------
-        `name`: str 
+        `name`: str
             String with the name of a database in your JAI environment.
 
-        `data_json`: dict (JSON) 
+        `data_json`: dict (JSON)
             Data in JSON format. Each input in the dictionary will be used to search for the `top_k` most
             similar entries in the database.
 
@@ -383,13 +406,9 @@ class Jai():
         >>> print(preds)
         ['Class0', 'Class1', 'Class0', 'Class2']
         """
-        dtypes = self.info
-        if any(dtypes['db_name'] == name):
-            dtype = dtypes.loc[dtypes['db_name'] == name, 'db_type'].values[0]
-            if dtype != "Supervised":
-                raise ValueError("predict is only available to dtype Supervised.")
-        else:
-            raise ValueError(f"{name} is not a valid name.")
+        dtype = self._get_dtype(name)
+        if dtype != "Supervised":
+            raise ValueError("predict is only available to dtype Supervised.")
 
         results = []
         for i in trange(0, len(data), batch_size, desc="Similar"):
@@ -551,7 +570,7 @@ class Jai():
             Database name.
         `data`: pandas.DataFrame or pandas.Series
             Inserted data.
-        
+
         Return
         -------
         None. If an inconsistency is found, an error is raised.
@@ -603,6 +622,10 @@ class Jai():
         }
         ```
         """
+
+        # delete data reamains
+        self.delete_raw_data(name)
+
         # make sure our data has the correct type and is free of NAs
         data = self._check_dtype_and_clean(data=data, db_type=db_type)
 
@@ -616,7 +639,7 @@ class Jai():
         setup_response = self._setup_database(name, db_type, **kwargs)
         return insert_responses, setup_response
 
-    def add_data(self, name: str, data, db_type: str, batch_size: int=16384):
+    def add_data(self, name: str, data, batch_size: int=16384):
         """
         Insert raw data and extract their latent representation.
 
@@ -639,12 +662,21 @@ class Jai():
             Dictionary of responses for each batch. Each response contains
             information of whether or not that particular batch was successfully inserted.
         """
+        # delete data reamains
+        self.delete_raw_data(name)
+
+        # get the db_type
+        db_type = self._get_dtype(name)
+
+        # make sure our data has the correct type and is free of NAs
+        data = self._check_dtype_and_clean(data=data, db_type=db_type)
+
         # insert data
         insert_responses = self._insert_data(data=data, name=name, batch_size=batch_size, db_type=db_type)
 
         # check if we inserted everything we were supposed to
         self._check_ids_consistency(name=name, data=data)
-        
+
         # add data per se
         add_data_response = self._append(name=name)
 
@@ -794,13 +826,10 @@ class Jai():
         {'id': 0, 'feature1': 0.01, 'feature2': 'string', 'feature3': 0}
         ```
         """
-        dtypes = self.info
-        if any(dtypes['db_name'] == name):
-            dtype = dtypes.loc[dtypes['db_name'] == name, 'db_type'].values[0]
-            if dtype != "Unsupervised" and dtype != "Supervised":
-                raise ValueError("'fields' method is only available to dtype Unsupervised and Supervised.")
-        else:
-            raise ValueError(f"{name} is not a valid name.")
+        dtype = self._get_dtype(name)
+        if dtype != "Unsupervised" and dtype != "Supervised":
+            raise ValueError("'fields' method is only available to dtype Unsupervised and Supervised.")
+
         response = requests.get(self.base_api_url + f'/table/fields/{name}',
                                 headers=self.header)
         if response.status_code == 200:
