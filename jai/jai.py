@@ -644,7 +644,34 @@ class Jai():
             Dictionary of responses for each batch. Each response contains
             information of whether or not that particular batch was successfully inserted.
         """
-        pass
+        # insert data
+        insert_responses = self._insert_data(data=data, name=name, batch_size=batch_size, db_type=db_type)
+        add_data_response = self._append(name=name)
+
+        return insert_responses, add_data_response
+
+    def _append(self, name: str):
+        """
+        Add data to a database that has been previously trained.
+        This is a protected method.
+
+        Args
+        ----------
+        `name`: str
+            String with the name of a database in your JAI environment.
+
+        Return
+        -------
+        `response`: dict
+            Dictionary with the API response.
+        """
+        response = requests.patch(
+            self.base_api_url + f'/data/{name}', headers=self.header)
+        if response.status_code == 202:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
+
 
     def _insert_json(self, name: str, df_json):
         """
@@ -815,27 +842,6 @@ class Jai():
                 else:
                     break
 
-    def _append(self, name: str):
-        """
-        Add data to a database that has been previously trained.
-        This is a protected method.
-
-        Args
-        ----------
-        `name`: str
-            String with the name of a database in your JAI environment.
-
-        Return
-        -------
-        `response`: dict
-            Dictionary with the API response.
-        """
-        response = requests.patch(
-            self.base_api_url + f'/data/{name}', headers=self.header)
-        if response.status_code == 202:
-            return response.json()
-        else:
-            return self.assert_status_code(response)
 
     def delete_raw_data(self, name: str):
         """
@@ -887,7 +893,7 @@ class Jai():
         >>> name = 'chosen_name'
         >>> j = Jai(AUTH_KEY)
         >>> j.delete_database(name=name)
-        'Bombs away! We nuked database titanic_selfsup!'
+        'Bombs away! We nuked database chosen_name!'
         ```
         """
         response = requests.delete(
