@@ -200,10 +200,11 @@ def sanity(data, auth_key, data_validate=None, columns_ref: list=None,
     np.random.seed(random_seed)
     target = ['is_valid', 'is_sound', 'valid', 'sanity', 'target']
     mask_target = np.logical_not(np.isin(np.array(target), data.columns))
-    if mask_target.all():
+    if not mask_target.any():
         raise ValueError(f"at least one of the values ({target}) should not be in columns.")
     target = np.array(target)[mask_target][0]
     data = data.copy()
+    data_validate = data_validate.copy()
 
     j = Jai(auth_key)
     if name is None:
@@ -211,14 +212,23 @@ def sanity(data, auth_key, data_validate=None, columns_ref: list=None,
 
     cat = data.select_dtypes(exclude='number')
     pre = cat.columns[cat.nunique() > cat_threshold].tolist()
+    if columns_ref is None:
+        columns_ref = cat.columns.tolist()
+
+    n = len(data)
     prep_bases = []
     for col in pre:
         id_col = 'id_' + col
-        values, inverse = np.unique(data[col], return_inverse=True)
-        data[id_col] = inverse
-        origin = embedding(values, auth_key, name=name + '_' + col)
+        emb = data[col].tolist() + data_validate[col].tolist()
+        values, inverse = np.unique(emb, return_inverse=True)
+        data[id_col] = inverse[:n]
+        data_validate[id_col] = inverse[n:]
+        origin = embedding(values, auth_key, name=name + '_' + col.lower())
         prep_bases.append({"id_name": id_col, "db_parent": origin})
+        columns_ref.remove(col)
+        columns_ref.append(id_col)
     data = data.drop(columns=pre)
+    data_validate = data_validate.drop(columns=pre)
 
     print(f"name: {name}")
     label = {"task": "metric_classification",
@@ -233,8 +243,6 @@ def sanity(data, auth_key, data_validate=None, columns_ref: list=None,
         return np.random.choice(options[options!=original])
 
     # get a sample of the data and shuffle it
-    if columns_ref is None:
-        columns_ref = cat.columns
     sample = []
     for c in columns_ref:
         s = data.sample(frac=frac)
@@ -306,7 +314,7 @@ def embedding(data, auth_key, name=None, db_type='FastText'):
     print(f"name: {name}")
     if name not in j.names:
         j.setup(name, data, batch_size=10000, db_type=db_type,
-                  hyperparams=hyperparams)
-        j.wait_setup(name, 5)
+                hyperparams=hyperparams)
+        j.wait_setup(name, 10)
         j.delete_raw_data(name)
     return name
