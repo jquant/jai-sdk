@@ -15,6 +15,8 @@ from .auxiliar_funcs.classes import PossibleDtypes, Mode
 from pandas.api.types import is_integer_dtype
 from tqdm import trange
 
+__all__ = ['Jai']
+
 
 class Jai():
     def __init__(self, auth_key: str, url=None):
@@ -127,7 +129,7 @@ class Jai():
 
         Args
         ----------
-        `length`: int 
+        `length`: int
             [Optional] Length for the desired string. Default is 8.
         `prefix`: string
             [Optional] Prefix of your string. Default is empty.
@@ -244,10 +246,10 @@ class Jai():
 
         Args
         ----------
-        `name`: str 
+        `name`: str
             String with the name of a database in your JAI environment.
 
-        `idx_tem`: int 
+        `idx_tem`: int
             Index of the item the user is looking for.
 
         `top_k`: int
@@ -284,7 +286,7 @@ class Jai():
                     f"/similar/id/{name}?top_k={top_k}", headers=self.header, data=json.dumps(id_item))
         else:
             raise ValueError("method must be GET or PUT.")
-        
+
         if response.status_code == 200:
             return response.json()
         else:
@@ -297,10 +299,10 @@ class Jai():
 
         Args
         ----------
-        `name`: str 
+        `name`: str
             String with the name of a database in your JAI environment.
 
-        `data_json`: dict (JSON) 
+        `data_json`: dict (JSON)
             Data in JSON format. Each input in the dictionary will be used to search for the `top_k` most
             similar entries in the database.
 
@@ -551,7 +553,7 @@ class Jai():
             Database name.
         `data`: pandas.DataFrame or pandas.Series
             Inserted data.
-        
+
         Return
         -------
         None. If an inconsistency is found, an error is raised.
@@ -644,7 +646,7 @@ class Jai():
 
         # check if we inserted everything we were supposed to
         self._check_ids_consistency(name=name, data=data)
-        
+
         # add data per se
         add_data_response = self._append(name=name)
 
@@ -808,9 +810,39 @@ class Jai():
         else:
             return self.assert_status_code(response)
 
+    def _wait_status(self, name):
+        """
+        Auxiliar functions for wait_setup method.
+
+        Parameters
+        ----------
+        `name`: str
+            String with the name of a database in your JAI environment.
+
+        Returns
+        -------
+        Status dict.
+
+        """
+        status = self.status
+        max_trials = 5
+        patience = 60  # time in seconds that we'll wait
+        trials = 0
+        while trials < max_trials:
+            if name in status.keys():
+                status = status[name]
+                return status
+            else:
+                time.sleep(patience//max_trials)
+                trials += 1
+        raise ValueError(f"Could not find a status for database '{name}'.")
+
+
     def wait_setup(self, name: str, frequency_seconds:int=5):
         """
         Wait for the setup (model training) to finish
+
+        Placeholder method for scripts.
 
         Args
         ----------
@@ -823,23 +855,19 @@ class Jai():
         -------
         None.
         """
-        status = self.status
-        if name in status.keys():
-            status = status[name]
-            while status['Status'] != 'Task ended successfully.':
-                if status['Status'] == 'Something went wrong.':
-                    raise BaseException(status['Description'])
+        status = self._wait_status(name)
+        while status['Status'] != 'Task ended successfully.':
+            if status['Status'] == 'Something went wrong.':
+                raise BaseException(status['Description'])
+            # spinning thing loop
+            for x in range(int(frequency_seconds)*5):
+                for frame in r'-\|/-\|/':
+                    print('\b', frame, sep='', end='', flush=True)
+                    time.sleep(0.2)
 
-                for x in range(int(frequency_seconds)*5):
-                    for frame in r'-\|/-\|/':
-                        print('\b', frame, sep='', end='', flush=True)
-                        time.sleep(0.2)
-
-                status = self.status
-                if name in status.keys():
-                    status = status[name]
-                else:
-                    break
+            status = self._wait_status(name)
+        print(status['Description'])
+        return status
 
     def delete_raw_data(self, name: str):
         """
