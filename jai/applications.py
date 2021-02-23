@@ -12,7 +12,7 @@ from .jai import Jai
 __all__ = ['match', 'resolution', 'fill', 'sanity']
 
 
-def match(data1, data2, auth_key, name=None, top_k=20):
+def match(data1, data2, auth_key, name=None):
     """
     Experimental
 
@@ -24,8 +24,6 @@ def match(data1, data2, auth_key, name=None, top_k=20):
         Auth key for mycelia.
     name : TYPE, optional
         DESCRIPTION. The default is None.
-    top_k : TYPE, optional
-        DESCRIPTION. The default is 20.
 
     Returns
     -------
@@ -33,8 +31,24 @@ def match(data1, data2, auth_key, name=None, top_k=20):
         each key is the id from data2 and the value is a list of ids from data1
         that match.
 
+    Example
+    -------
+    >>> import pandas as pd
+    >>> from jai.applications import match
+    >>> from jai.auxiliar_funcs.utils_funcs import process_similar
+    >>>
+    >>> results = match(data1, data2, AUTH_KEY, name)
+    >>> processed = process_similar(results, return_self=True)
+    >>> pd.DataFrame(processed).sort_values('query_id')
+    >>> # query_id is from data2 and id is from data 1
+             query_id           id     distance
+       0            1            2         0.11
+       1            2            1         0.11
+       2            3          NaN          NaN
+       3            4          NaN          NaN
+       4            5            5         0.15
     """
-
+    top_k = 20
     j = Jai(auth_key)
     nt = np.clip(np.round(len(data1)/10, -3), 1000, 10000)
     if name is None:
@@ -48,7 +62,7 @@ def match(data1, data2, auth_key, name=None, top_k=20):
     return j.similar(name, data2, top_k=top_k, batch_size=10000)
 
 
-def resolution(data, auth_key, name=None, top_k=20):
+def resolution(data, auth_key, name=None):
     """
     Experimental
 
@@ -60,16 +74,28 @@ def resolution(data, auth_key, name=None, top_k=20):
         DESCRIPTION.
     name : TYPE, optional
         DESCRIPTION. The default is None.
-    top_k : TYPE, optional
-        DESCRIPTION. The default is 20.
 
     Returns
     -------
     dict
         each key is the id and the value is a list of ids that are duplicates.
 
+    Example
+    -------
+    >>> import pandas as pd
+    >>> from jai.applications import resolution
+    >>> from jai.auxiliar_funcs.utils_funcs import process_similar
+    >>>
+    >>> results = resolution(data, AUTH_KEY, name)
+    >>> processed = process_similar(results, return_self=True)
+    >>> pd.DataFrame(processed).sort_values('query_id')
+             query_id           id     distance
+       0            1            2         0.11
+       1            2            1         0.11
+       2            3          NaN          NaN
+       3            4            5         0.15
     """
-
+    top_k = 20
     j = Jai(auth_key)
     nt = np.clip(np.round(len(data)/10, -3), 1000, 10000)
     if name is None:
@@ -98,13 +124,26 @@ def fill(data, column:str, auth_key, name=None, **kwargs):
     name : TYPE, optional
         DESCRIPTION. The default is None.
     **kwargs : TYPE
-        DESCRIPTION.
+        Extra args for supervised model.
 
     Returns
     -------
     list of dicts
         List of dicts with possible filling values for each id with column NaN.
 
+    Example
+    -------
+    >>> import pandas as pd
+    >>> from jai.applications import fill
+    >>> from jai.auxiliar_funcs.utils_funcs import process_predict
+    >>>
+    >>> results = fill(data, COL_TO_FILL, AUTH_KEY, name)
+    >>> processed = process_similar(results)
+    >>> pd.DataFrame(processed).sort_values('id')
+              id   sanity_prediction    confidence_level (%)
+       0       1             value_1                    70.9
+       1       4             value_1                    67.3
+       2       7             value_1                    80.2
     """
     cat_threshold = 512
     data = data.copy()
@@ -188,6 +227,20 @@ def sanity(data, auth_key, data_validate=None, columns_ref: list=None,
     list of dicts
         Result of data is valid or not.
 
+    Example
+    -------
+    >>> import pandas as pd
+    >>> from jai.applications import sanity
+    >>> from jai.auxiliar_funcs.utils_funcs import process_predict
+    >>>
+    >>> results = sanity(data, AUTH_KEY, 'sdk_4ddfcb1c1100de84')
+    >>> processed = process_predict(results)
+    >>> pd.DataFrame(processed).sort_values('id')
+              id   sanity_prediction    confidence_level (%)
+       0       1               Valid                    70.9
+       1       4             Invalid                    67.3
+       2       7             Invalid                    80.6
+       3      13               Valid                    74.2
     """
     cat_threshold = 512
     np.random.seed(random_seed)
