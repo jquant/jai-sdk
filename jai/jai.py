@@ -220,10 +220,10 @@ class Jai():
             if is_id:
                 if isinstance(data, pd.Series):
                     _batch = data.iloc[i:i+batch_size].tolist()
-                if isinstance(data, pd.Index):
+                elif isinstance(data, pd.Index):
                     _batch = data[i:i+batch_size].tolist()
                 else:
-                    _batch = data[i:i+batch_size]
+                    _batch = data[i:i+batch_size].tolist()
                 res = self._similar_id(name, _batch, top_k=top_k)
             else:
                 if isinstance(data, (pd.Series, pd.DataFrame)):
