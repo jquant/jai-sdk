@@ -128,7 +128,7 @@ def fill(data, column:str, auth_key, name=None, **kwargs):
     if vals.sum() > 0:
         eliminate = vals[vals].index.tolist()
         print(f"values {eliminate} from column {column} were removed for having less than 2 examples.")
-        data.loc[data[column].isin(vals), column] = None
+        data.loc[data[column].isin(eliminate), column] = None
 
     print(f"name: {name}")
     label = {"task": "metric_classification",
