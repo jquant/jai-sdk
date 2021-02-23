@@ -11,6 +11,9 @@ import pytest
 from jai.auxiliar_funcs.utils_funcs import (list2json, series2json, df2json,
                                             data2json, process_similar, process_predict)
 
+# =============================================================================
+# Tests for data2json
+# =============================================================================
 @pytest.mark.parametrize('data', [list('ab'), np.array(['abc', 'def'])])
 @pytest.mark.parametrize('name', ['text', 'image_base64'])
 def test_list2json(data, name):
@@ -34,6 +37,9 @@ def t_df2json():
 def t_data2json():
     pass
 
+# =============================================================================
+# Tests for process similar
+# =============================================================================
 def test_process_similar_threshold():
     similar = [{"query_id": 0, "results": [{'id':0, 'distance':0}, {'id':1, 'distance':1}, {'id':2, 'distance':2}]}]
     assert process_similar(similar, 0, True) == [{'id': 0, 'distance': 0, 'query_id': 0}], "process similar results failed. (threshold)"
@@ -48,7 +54,9 @@ def test_process_similar_null():
     similar = [{"query_id": 0, "results": [{'id':0, 'distance':0}, {'id':1, 'distance':1}, {'id':2, 'distance':2}]}]
     assert process_similar(similar, 0, False, False) == [{'query_id': 0, 'distance': None, 'id': None}], "process similar results failed. (null param)"
 
-
+# =============================================================================
+# Tests for process predict
+# =============================================================================
 @pytest.mark.parametrize('predict', [[{"id": 0, "predict": 'class1'}]])
 def test_process_predict(predict):
     assert process_predict(predict) == [{'id': 0, 'predict': 'class1'}], "process predict results failed."
