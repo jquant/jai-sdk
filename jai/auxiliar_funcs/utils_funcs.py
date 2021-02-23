@@ -84,37 +84,35 @@ def df2json(dataframe):
     if 'id' not in dataframe.columns:
         dataframe.index.name = 'id'
         dataframe = dataframe.reset_index()
-    if dataframe.index.duplicated().any():
+    if dataframe['id'].duplicated().any():
         raise ValueError("Index must not contain duplicated values.")
     return dataframe.to_json(orient='records')
 
 
 def data2json(data, dtype):
     if (dtype == PossibleDtypes.edit or dtype == PossibleDtypes.text
-        or dtype == PossibleDtypes.fasttext):
-        if isinstance(data, (set, list, tuple, np.ndarray)):
-            return list2json(data, name=FieldName.text)
-        elif isinstance(data, pd.Series):
-            return series2json(data, name=FieldName.text)
-        elif isinstance(data, pd.DataFrame):
-            if data.shape[1] == 1:
-                c = data.columns[0]
-                return series2json(data[c], name=FieldName.text)
-            else:
-                raise ValueError("Data must be a DataFrame with one column.")
+        or dtype == PossibleDtypes.fasttext or dtype == PossibleDtypes.image):
+        if dtype == PossibleDtypes.image:
+            name = FieldName.image
         else:
-            raise NotImplementedError(f"type {type(data)} is not implemented.")
-    elif dtype == PossibleDtypes.image:
+            name = FieldName.text
         if isinstance(data, (set, list, tuple, np.ndarray)):
-            return list2json(data, name=FieldName.image)
+            return list2json(data, name=name)
         elif isinstance(data, pd.Series):
-            return series2json(data, name=FieldName.image)
+            return series2json(data, name=name)
         elif isinstance(data, pd.DataFrame):
             if data.shape[1] == 1:
                 c = data.columns[0]
-                return series2json(data[c], name=FieldName.image)
+                return series2json(data[c], name=name)
+            elif data.shape[1] == 2:
+                if 'id' in data.columns:
+                    data = data.set_index('id')
+                    c = data.columns[0]
+                    return series2json(data[c], name=name)
+                else:
+                    raise ValueError("If data has 2 columns, one must be named 'id'.")
             else:
-                raise ValueError("Data must be a DataFrame with one column.")
+                raise ValueError("Data must be a DataFrame with 1 column or 2 columns with one named 'id'.")
         else:
             raise NotImplementedError(f"type {type(data)} is not implemented.")
     elif dtype == PossibleDtypes.supervised or dtype == PossibleDtypes.unsupervised:

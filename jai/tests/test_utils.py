@@ -30,20 +30,26 @@ def test_series2json(data, name, ids):
     gab = s.reset_index().to_json(orient='records')
     assert series2json(s, name) == gab, 'series2json failed.'
 
-
-def t_df2json():
-    pass
+@pytest.mark.parametrize('col1, col2, ids', [([42, 123], ['abc', 'def'], None), ([69, 420], ['ghi', 'jkl'], [10, 64])])
+def test_df2json(col1, col2, ids):
+    df = pd.DataFrame({"col1": col1, "col2": col2}, index=ids)
+    if ids is None:
+        ids = range(len(col1))
+    out = ','.join([f'{{"id":{i},"col1":{a},"col2":"{b}"}}' for i, a, b in zip(ids, col1, col2)])
+    assert df2json(df) == '[' + out + ']', 'df2json failed.'
 
 def t_data2json():
     pass
+
 
 # =============================================================================
 # Tests for process similar
 # =============================================================================
 def test_process_similar_threshold():
     similar = [{"query_id": 0, "results": [{'id':0, 'distance':0}, {'id':1, 'distance':1}, {'id':2, 'distance':2}]}]
-    assert process_similar(similar, 0, True) == [{'id': 0, 'distance': 0, 'query_id': 0}], "process similar results failed. (threshold)"
-    assert process_similar(similar, 1, True) == [{'id': 0, 'distance': 0, 'query_id': 0}], "process similar results failed. (threshold)"
+    gab = [{'id': 0, 'distance': 0, 'query_id': 0}]
+    assert process_similar(similar, 0, True) == gab, "process similar results failed. (threshold)"
+    assert process_similar(similar, 1, True) == gab, "process similar results failed. (threshold)"
 
 def test_process_similar_self():
     similar = [{"query_id": 0, "results": [{'id':0, 'distance':0}, {'id':1, 'distance':1}, {'id':2, 'distance':2}]}]
@@ -53,6 +59,7 @@ def test_process_similar_self():
 def test_process_similar_null():
     similar = [{"query_id": 0, "results": [{'id':0, 'distance':0}, {'id':1, 'distance':1}, {'id':2, 'distance':2}]}]
     assert process_similar(similar, 0, False, False) == [{'query_id': 0, 'distance': None, 'id': None}], "process similar results failed. (null param)"
+    assert process_similar(similar, 1, False, False) == [{'query_id': 0, 'id': 1, 'distance': 1}], "process similar results failed. (null param)"
 
 # =============================================================================
 # Tests for process predict
