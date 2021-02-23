@@ -12,7 +12,7 @@ from .jai import Jai
 from .auxiliar_funcs.utils_funcs import process_similar
 
 
-def match(data1, data2, auth_key, name=None, threshold=None, top_k=20):
+def match(data1, data2, auth_key, name=None, top_k=20):
     """
     Experimental
 
@@ -23,8 +23,6 @@ def match(data1, data2, auth_key, name=None, threshold=None, top_k=20):
     auth_key : TYPE
         Auth key for mycelia.
     name : TYPE, optional
-        DESCRIPTION. The default is None.
-    threshold : TYPE, optional
         DESCRIPTION. The default is None.
     top_k : TYPE, optional
         DESCRIPTION. The default is 20.
@@ -47,12 +45,10 @@ def match(data1, data2, auth_key, name=None, threshold=None, top_k=20):
                 hyperparams={"nt": nt})
         j.wait_setup(name, 20)
         j.delete_raw_data(name)
-    results = j.similar(name, data2, top_k=top_k, batch_size=10000)
-    return process_similar(results, threshold=threshold, return_self=True)
+    return j.similar(name, data2, top_k=top_k, batch_size=10000)
 
 
-
-def resolution(data, auth_key, name=None, threshold=None, top_k=20):
+def resolution(data, auth_key, name=None, top_k=20):
     """
     Experimental
 
@@ -63,8 +59,6 @@ def resolution(data, auth_key, name=None, threshold=None, top_k=20):
     auth_key : TYPE
         DESCRIPTION.
     name : TYPE, optional
-        DESCRIPTION. The default is None.
-    threshold : TYPE, optional
         DESCRIPTION. The default is None.
     top_k : TYPE, optional
         DESCRIPTION. The default is 20.
@@ -86,8 +80,7 @@ def resolution(data, auth_key, name=None, threshold=None, top_k=20):
                 hyperparams={"nt": nt})
         j.wait_setup(name, 20)
         j.delete_raw_data(name)
-    results = j.similar(name, data.index, top_k=top_k, batch_size=10000)
-    return process_similar(results, threshold=threshold, return_self=False)
+    return j.similar(name, data.index, top_k=top_k, batch_size=10000)
 
 
 def fill(data, column:str, auth_key, name=None, **kwargs):
@@ -133,9 +126,9 @@ def fill(data, column:str, auth_key, name=None, **kwargs):
 
     vals = data[column].value_counts() < 2
     if vals.sum() > 0:
-        eliminate = vals[vals].index
+        eliminate = vals[vals].index.tolist()
         print(f"values {eliminate} from column {column} were removed for having less than 2 examples.")
-        data.loc[data[column].isin(), column] = None
+        data.loc[data[column].isin(vals), column] = None
 
     print(f"name: {name}")
     label = {"task": "metric_classification",
@@ -223,7 +216,7 @@ def sanity(data, auth_key, data_validate=None, columns_ref: list=None,
         values, inverse = np.unique(emb, return_inverse=True)
         data[id_col] = inverse[:n]
         data_validate[id_col] = inverse[n:]
-        origin = embedding(values, auth_key, name=name + '_' + col.lower())
+        origin = embedding(values, auth_key, name=name + '_' + col)
         prep_bases.append({"id_name": id_col, "db_parent": origin})
         columns_ref.remove(col)
         columns_ref.append(id_col)
@@ -303,6 +296,8 @@ def embedding(data, auth_key, name=None, db_type='FastText'):
     j = Jai(auth_key)
     if name is None:
         name = j.generate_name(20, prefix='sdk_', suffix='')
+    else:
+        name = name.lower().replace('-', '_').replace(' ', '_')[:35]
 
     if db_type == "FastText":
         hyperparams={"minn": 0, "maxn": 0}

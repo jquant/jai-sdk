@@ -12,6 +12,9 @@ from tqdm import tqdm
 from typing import Callable, List
 from pathlib import Path
 from PIL import Image
+
+from operator import itemgetter
+from functools import cmp_to_key
 from .classes import FieldName, PossibleDtypes
 
 
@@ -115,7 +118,7 @@ def data2json(data, dtype):
 
 
 def process_similar(results, threshold=None, return_self: bool = True,
-                    skip_null: bool = True, validator: Callable = None):
+                    skip_null: bool = True):
     """
     Process the output from the similar methods.
 
@@ -131,15 +134,9 @@ def process_similar(results, threshold=None, return_self: bool = True,
         option to return the queried id from the query result or not. The default is True.
     skip_null: bool, optional
         option to skip ids without similar results. The default is True.
-    validator : Callable, optional
-        function that receive an array of ints and returns an array of bools
-        of the same lenght as the input. Used as an extra filter to the id
-        values. The default is None.
 
     Raises
     ------
-    ValueError
-        If validator is not valid.
     NotImplementedError
         If priority inputed is not implemented.
 
@@ -149,15 +146,6 @@ def process_similar(results, threshold=None, return_self: bool = True,
         mapping the query id to the similar value.
 
     """
-    if validator is not None:
-        if not isinstance(validator, Callable):
-            raise ValueError(f"validator {validator} is not Callable type.")
-        dummy_array = pd.DataFrame(results[0]['results'])['id'].iloc[:3].values
-        mask = validator(dummy_array)
-        msg = f"Callable validator {validator} must return a boolean array with same lenght as the input."
-        if not isinstance(mask, np.ndarray) or mask.dtype != bool:
-            raise ValueError(msg)
-
     if threshold is None:
         samples = np.random.randint(0, len(results), len(results)//(100))
         distribution = []
@@ -167,21 +155,66 @@ def process_similar(results, threshold=None, return_self: bool = True,
         threshold = np.quantile(distribution, .1)
     print(f"threshold: {threshold}\n")
 
-    map_duplicate = {}
-    for k in tqdm(results, desc="Processing Similar"):
-        i = k['query_id']
-        similar = [l['id'] for l in k['results'] if l['distance']<=threshold]
-        if validator is not None:
-            similar = similar[validator(similar)]
-        if not return_self and i in similar:
-            similar.remove(i)
-
-        if similar is None or len(similar) == 0:
-            if skip_null:
-                continue
-            else:
-                map_duplicate[i] = None
+    similar = []
+    for q in tqdm(results.copy(), desc='Process'):
+        sort = multikeysort(q['results'], ['distance', 'id'])
+        zero, one = sort[0], sort[1]
+        if zero['distance'] <= threshold and (zero['id'] != q['query_id'] or return_self):
+            zero['query_id'] =  q['query_id']
+            similar.append(zero)
+        elif one['distance'] <= threshold:
+            one['query_id'] = q['query_id']
+            similar.append(one)
+        elif not skip_null:
+            mock = {"query_id":  q['query_id'], "id": None, "distance": None}
+            similar.append(mock)
         else:
-            map_duplicate[i] = similar
+            continue
+    return similar
 
-    return map_duplicate
+
+
+# https://stackoverflow.com/a/1144405
+# https://stackoverflow.com/a/73050
+def cmp(x, y):
+    """
+    Replacement for built-in function cmp that was removed in Python 3
+
+    Compare the two objects x and y and return an integer according to
+    the outcome. The return value is negative if x < y, zero if x == y
+    and strictly positive if x > y.
+
+    https://portingguide.readthedocs.io/en/latest/comparisons.html#the-cmp-function
+    """
+
+    return (x > y) - (x < y)
+
+def multikeysort(items, columns):
+    """
+    Sort a list of dictionaries.
+
+    Parameters
+    ----------
+    items : list of dictionaries
+        list of dictionaries to be sorted.
+    columns : list of strings
+        list of key names to be sorted on the order of the sorting. add '-' at
+        the start of the name if it should be sorted from high to low.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    """
+    comparers = [
+        ((itemgetter(col[1:].strip()), -1) if col.startswith('-') else (itemgetter(col.strip()), 1))
+        for col in columns
+    ]
+    def comparer(left, right):
+        comparer_iter = (
+            cmp(fn(left), fn(right)) * mult
+            for fn, mult in comparers
+        )
+        return next((result for result in comparer_iter if result), 0)
+    return sorted(items, key=cmp_to_key(comparer))
