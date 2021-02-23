@@ -411,7 +411,7 @@ class Jai():
             raise ValueError("predict is only available to dtype Supervised.")
 
         results = []
-        for i in trange(0, len(data), batch_size, desc="Similar"):
+        for i in trange(0, len(data), batch_size, desc="Predict"):
             if isinstance(data, (pd.Series, pd.DataFrame)):
                 _batch = data.iloc[i:i+batch_size]
             else:
