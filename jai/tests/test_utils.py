@@ -46,22 +46,22 @@ def test_process_similar_self():
 
 def test_process_similar_null():
     similar = [{"query_id": 0, "results": [{'id':0, 'distance':0}, {'id':1, 'distance':1}, {'id':2, 'distance':2}]}]
-    assert process_similar(similar, 0, False, False) == [{'id': 0, 'distance': None, 'query_id': None}], "process similar results failed. (null param)"
+    assert process_similar(similar, 0, False, False) == [{'query_id': 0, 'distance': None, 'id': None}], "process similar results failed. (null param)"
 
 
-@pytest.mark.parametrize('predict', ([{"id": 0, "predict": 'class1'}]))
+@pytest.mark.parametrize('predict', [[{"id": 0, "predict": 'class1'}]])
 def test_process_predict(predict):
     assert process_predict(predict) == [{'id': 0, 'predict': 'class1'}], "process predict results failed."
 
 
 @pytest.mark.parametrize('predict',
-                         ([{"id": 0, "predict": {'class0': 0.1, 'class1':.5, 'class2':.4}}]))
+                         [[{"id": 0, "predict": {'class0': 0.1, 'class1':.5, 'class2':.4}}]])
 def test_process_predict_proba(predict):
      assert process_predict(predict) == [{'id': 0, 'predict': 'class1', 'probability(%)': 50.0}], "process predict results failed. (proba)"
 
 
 @pytest.mark.parametrize('predict',
-                         ([{"id": 0, "predict": ['class1']}]))
+                         [[{"id": 0, "predict": ['class1']}]])
 def test_process_predict_error(predict):
-    with pytest.raises("NotImplementedError"):
+    with pytest.raises(ValueError):
         process_predict(predict)
