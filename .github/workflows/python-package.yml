@@ -15,18 +15,6 @@ jobs:
     strategy:
       matrix:
         python-version: [3.7, 3.8]
-    env:
-      # Celery
-      BROKER_NAME: "pyamqp"
-      SAS_POLICY: "guest"
-      SAS_KEY: ""
-      NAMESPACE: "localhost"
-      BACKEND: "rpc://"
-
-      # Config
-      AZURE_CONN_STRING: "DefaultEndpointsProtocol=https;AccountName=myceliadev;AccountKey=cLTv/h1gC+0GRjN65eNHPpvVIVdbtgseDRIj2t8ndJiWSHDPCtfolZDzAEWQOgiOJhJQMCZozEFhINlcTYvZQA==;EndpointSuffix=core.windows.net"
-      MILVUS_HOST: 40.117.38.72
-      MILVUS_PORT: 19530
 
     steps:
       - uses: actions/checkout@v2
@@ -45,11 +33,10 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-      - name: Celery
+      - name: Docker container
         run: |
-          cd ./code
-          celery -A celery_app.app worker -P solo -l INFO -f celog.log &
-          cd ..
+          # this is where you are supposed to start your container
       - name: Test with pytest
         run: |
           pytest
+          # this is where you are supposed to stop your container
