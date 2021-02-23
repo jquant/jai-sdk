@@ -9,13 +9,16 @@ import base64
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
-from typing import Callable, List
+from typing import List
 from pathlib import Path
 from PIL import Image
 
 from operator import itemgetter
 from functools import cmp_to_key
 from .classes import FieldName, PossibleDtypes
+
+
+__all__ = ['data2json', 'process_predict', 'process_similar']
 
 
 def read_image_folder(image_folder: str = None, images: List = None, ignore_corrupt=False,
@@ -173,6 +176,26 @@ def process_similar(results, threshold=None, return_self: bool = True,
     return similar
 
 
+def process_predict(predicts):
+    example = predicts[0]['predict']
+    if isinstance(example, dict):
+        predict_proba = True
+    elif isinstance(example, str):
+        predict_proba = False
+    else:
+        raise ValueError(f"Unexpected predict type. {type(example)}")
+
+    sanity_check = []
+    for query in tqdm(predicts, desc='Predict all ids'):
+        if predict_proba == False:
+            sanity_check.append(query)
+        else:
+            predict = max(query['predict'], key=query['predict'].get)
+            confidence_level = round(query['predict'][predict]*100, 2)
+            sanity_check.append({'id': query['id'],
+                                 'sanity_prediction': predict,
+                                 'confidence_level (%)': confidence_level})
+    return sanity_check
 
 # https://stackoverflow.com/a/1144405
 # https://stackoverflow.com/a/73050

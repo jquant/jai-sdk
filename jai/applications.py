@@ -9,7 +9,7 @@ import pandas as pd
 import numpy as np
 from .jai import Jai
 
-from .auxiliar_funcs.utils_funcs import process_similar
+__all__ = ['match', 'resolution', 'fill', 'sanity']
 
 
 def match(data1, data2, auth_key, name=None, top_k=20):
