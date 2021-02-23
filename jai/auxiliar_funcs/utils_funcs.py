@@ -64,19 +64,19 @@ def read_image_folder(image_folder: str = None, images: List = None, ignore_corr
     return pd.Series(temp_img, index=index, name='image_base64')
 
 
-def list2json(data_list, name):
-    index = pd.Index(range(len(data_list)), name='id')
-    series = pd.Series(data_list, index=index, name=name)
-    return series.reset_index().to_json(orient='records')
+def list2json(data_list, name, ids=None):
+    if ids is None:
+        ids = range(len(data_list))
+    out = ','.join([f'{{"id":{i},"{name}":"{d}"}}' for i, d in zip(ids, data_list)])
+    return '[' + out + ']'
 
 
 def series2json(data_series, name):
     data_series = data_series.copy()
-    data_series.index.name = 'id'
     data_series.name = name
     if data_series.index.duplicated().any():
         raise ValueError("Index must not contain duplicated values.")
-    return data_series.reset_index().to_json(orient='records')
+    return list2json(data_series.values, name, data_series.index)
 
 
 def df2json(dataframe):
@@ -107,8 +107,14 @@ def data2json(data, dtype):
     elif dtype == PossibleDtypes.image:
         if isinstance(data, (set, list, tuple, np.ndarray)):
             return list2json(data, name=FieldName.image)
-        if isinstance(data, pd.Series):
+        elif isinstance(data, pd.Series):
             return series2json(data, name=FieldName.image)
+        elif isinstance(data, pd.DataFrame):
+            if data.shape[1] == 1:
+                c = data.columns[0]
+                return series2json(data[c], name=FieldName.image)
+            else:
+                raise ValueError("Data must be a DataFrame with one column.")
         else:
             raise NotImplementedError(f"type {type(data)} is not implemented.")
     elif dtype == PossibleDtypes.supervised or dtype == PossibleDtypes.unsupervised:
@@ -120,7 +126,7 @@ def data2json(data, dtype):
         raise ValueError(f"dtype {dtype} not recognized.")
 
 
-def process_similar(results, threshold=None, return_self: bool = True,
+def process_similar(results, threshold:float=None, return_self: bool = True,
                     skip_null: bool = True):
     """
     Process the output from the similar methods.
@@ -129,7 +135,7 @@ def process_similar(results, threshold=None, return_self: bool = True,
     ----------
     results : List of Dicts.
         output from similar methods.
-    threshold : int, optional
+    threshold : float, optional
         value for the distance threshold. The default is None.
         if set to None, takes a random 1% of the results and uses the 10%
         quantile of the distances distributions as the threshold.
@@ -145,7 +151,7 @@ def process_similar(results, threshold=None, return_self: bool = True,
 
     Returns
     -------
-    pd.Series
+    list
         mapping the query id to the similar value.
 
     """
@@ -177,6 +183,25 @@ def process_similar(results, threshold=None, return_self: bool = True,
 
 
 def process_predict(predicts):
+    """
+    Process the output from the predict methods from supervised models.
+
+    Parameters
+    ----------
+    predicts : List of Dicts.
+        output from predict methods.
+
+    Raises
+    ------
+    NotImplementedError
+        If unexpected predict type. {type(example)}
+
+    Returns
+    -------
+    list
+        mapping the query id to the predicted value.
+
+    """
     example = predicts[0]['predict']
     if isinstance(example, dict):
         predict_proba = True
@@ -193,12 +218,11 @@ def process_predict(predicts):
             predict = max(query['predict'], key=query['predict'].get)
             confidence_level = round(query['predict'][predict]*100, 2)
             sanity_check.append({'id': query['id'],
-                                 'sanity_prediction': predict,
-                                 'confidence_level (%)': confidence_level})
+                                 'predict': predict,
+                                 'probability(%)': confidence_level})
     return sanity_check
 
-# https://stackoverflow.com/a/1144405
-# https://stackoverflow.com/a/73050
+
 def cmp(x, y):
     """
     Replacement for built-in function cmp that was removed in Python 3
@@ -212,9 +236,13 @@ def cmp(x, y):
 
     return (x > y) - (x < y)
 
+
 def multikeysort(items, columns):
     """
     Sort a list of dictionaries.
+
+    https://stackoverflow.com/a/1144405
+    https://stackoverflow.com/a/73050
 
     Parameters
     ----------
