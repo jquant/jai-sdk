@@ -15,6 +15,8 @@ from .auxiliar_funcs.classes import PossibleDtypes, Mode
 from pandas.api.types import is_integer_dtype
 from tqdm import trange
 
+__all__ = ['Jai']
+
 
 class Jai():
     def __init__(self, auth_key: str, url=None):
@@ -837,9 +839,39 @@ class Jai():
         else:
             return self.assert_status_code(response)
 
+    def _wait_status(self, name):
+        """
+        Auxiliar functions for wait_setup method.
+
+        Parameters
+        ----------
+        `name`: str
+            String with the name of a database in your JAI environment.
+
+        Returns
+        -------
+        Status dict.
+
+        """
+        status = self.status
+        max_trials = 5
+        patience = 60  # time in seconds that we'll wait
+        trials = 0
+        while trials < max_trials:
+            if name in status.keys():
+                status = status[name]
+                return status
+            else:
+                time.sleep(patience//max_trials)
+                trials += 1
+        raise ValueError(f"Could not find a status for database '{name}'.")
+
+
     def wait_setup(self, name: str, frequency_seconds:int=5):
         """
         Wait for the setup (model training) to finish
+
+        Placeholder method for scripts.
 
         Args
         ----------
@@ -852,23 +884,19 @@ class Jai():
         -------
         None.
         """
-        status = self.status
-        if name in status.keys():
-            status = status[name]
-            while status['Status'] != 'Task ended successfully.':
-                if status['Status'] == 'Something went wrong.':
-                    raise BaseException(status['Description'])
+        status = self._wait_status(name)
+        while status['Status'] != 'Task ended successfully.':
+            if status['Status'] == 'Something went wrong.':
+                raise BaseException(status['Description'])
+            # spinning thing loop
+            for x in range(int(frequency_seconds)*5):
+                for frame in r'-\|/-\|/':
+                    print('\b', frame, sep='', end='', flush=True)
+                    time.sleep(0.2)
 
-                for x in range(int(frequency_seconds)*5):
-                    for frame in r'-\|/-\|/':
-                        print('\b', frame, sep='', end='', flush=True)
-                        time.sleep(0.2)
-
-                status = self.status
-                if name in status.keys():
-                    status = status[name]
-                else:
-                    break
+            status = self._wait_status(name)
+        print(status['Description'])
+        return status
 
     def delete_raw_data(self, name: str):
         """

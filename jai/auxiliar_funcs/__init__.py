@@ -2,4 +2,4 @@
 --- ___init___.py ---
 
 """
-__all__ = ["auxiliar", "classes", "utils_funcs"]
+__all__ = ["classes", "utils_funcs"]
