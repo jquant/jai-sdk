@@ -19,7 +19,32 @@ __all__ = ['Jai']
 
 
 class Jai():
-    def __init__(self, auth_key: str, url=None):
+    """
+    Base class for communication with the Mycelia API.
+
+    Used as foundation for more complex applications for data validation such
+    as matching tables, resolution of duplicated values, filling missing values
+    and more.
+    """
+    def __init__(self, auth_key: str, url:str=None):
+        """
+        Inicialize the Jai class.
+
+        An authorization key is needed to use the Mycelia API.
+
+
+        Parameters
+        ----------
+        auth_key : str
+            Authorization key for the use of the API.
+        url : str, optional
+            Param used for development purposes. The default is None.
+
+        Returns
+        -------
+        None.
+
+        """
         if url is None:
             self.base_api_url = 'https://mycelia.azure-api.net'
             self.header = {'Auth': auth_key}
