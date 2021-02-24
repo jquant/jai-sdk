@@ -625,9 +625,17 @@ class Jai():
         ```
         """
 
-        # delete data reamains
+        # delete data remains
         self.delete_raw_data(name)
-
+        
+        # if overwrite is set to True and name is valid,
+        # delete whole database before setting it up again
+        if kwargs.get("overwrite", None) and self.is_valid(name):
+            print(f"Overwritting '{name}'")
+            self.delete_database(name)
+        elif kwargs.get("overwrite", None) and not self.is_valid(name):
+            raise KeyError(f"Overwrite set to True, but database '{name}' does not exist.")
+            
         # make sure our data has the correct type and is free of NAs
         data = self._check_dtype_and_clean(data=data, db_type=db_type)
 
@@ -895,7 +903,7 @@ class Jai():
                     time.sleep(0.2)
 
             status = self._wait_status(name)
-        print(status['Description'])
+        print(f"\n{status['Description']}")
         return status
 
     def delete_raw_data(self, name: str):
