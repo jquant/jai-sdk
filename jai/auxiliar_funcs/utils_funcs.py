@@ -84,31 +84,35 @@ def df2json(dataframe):
     if 'id' not in dataframe.columns:
         dataframe.index.name = 'id'
         dataframe = dataframe.reset_index()
-    if dataframe.index.duplicated().any():
+    if dataframe['id'].duplicated().any():
         raise ValueError("Index must not contain duplicated values.")
     return dataframe.to_json(orient='records')
 
 
 def data2json(data, dtype):
     if (dtype == PossibleDtypes.edit or dtype == PossibleDtypes.text
-        or dtype == PossibleDtypes.fasttext):
+        or dtype == PossibleDtypes.fasttext or dtype == PossibleDtypes.image):
+        if dtype == PossibleDtypes.image:
+            name = FieldName.image
+        else:
+            name = FieldName.text
         if isinstance(data, (set, list, tuple, np.ndarray)):
-            return list2json(data, name=FieldName.text)
+            return list2json(data, name=name)
         elif isinstance(data, pd.Series):
-            return series2json(data, name=FieldName.text)
+            return series2json(data, name=name)
         elif isinstance(data, pd.DataFrame):
             if data.shape[1] == 1:
                 c = data.columns[0]
-                return series2json(data[c], name=FieldName.text)
+                return series2json(data[c], name=name)
+            elif data.shape[1] == 2:
+                if 'id' in data.columns:
+                    data = data.set_index('id')
+                    c = data.columns[0]
+                    return series2json(data[c], name=name)
+                else:
+                    raise ValueError("If data has 2 columns, one must be named 'id'.")
             else:
-                raise ValueError("Data must be a DataFrame with one column.")
-        else:
-            raise NotImplementedError(f"type {type(data)} is not implemented.")
-    elif dtype == PossibleDtypes.image:
-        if isinstance(data, (set, list, tuple, np.ndarray)):
-            return list2json(data, name=FieldName.image)
-        if isinstance(data, pd.Series):
-            return series2json(data, name=FieldName.image)
+                raise ValueError("Data must be a DataFrame with 1 column or 2 columns with one named 'id'.")
         else:
             raise NotImplementedError(f"type {type(data)} is not implemented.")
     elif dtype == PossibleDtypes.supervised or dtype == PossibleDtypes.unsupervised:
@@ -120,7 +124,7 @@ def data2json(data, dtype):
         raise ValueError(f"dtype {dtype} not recognized.")
 
 
-def process_similar(results, threshold=None, return_self: bool = True,
+def process_similar(results, threshold:float=None, return_self: bool = True,
                     skip_null: bool = True):
     """
     Process the output from the similar methods.
@@ -129,7 +133,7 @@ def process_similar(results, threshold=None, return_self: bool = True,
     ----------
     results : List of Dicts.
         output from similar methods.
-    threshold : int, optional
+    threshold : float, optional
         value for the distance threshold. The default is None.
         if set to None, takes a random 1% of the results and uses the 10%
         quantile of the distances distributions as the threshold.
@@ -145,7 +149,7 @@ def process_similar(results, threshold=None, return_self: bool = True,
 
     Returns
     -------
-    pd.Series
+    list
         mapping the query id to the similar value.
 
     """
@@ -177,6 +181,25 @@ def process_similar(results, threshold=None, return_self: bool = True,
 
 
 def process_predict(predicts):
+    """
+    Process the output from the predict methods from supervised models.
+
+    Parameters
+    ----------
+    predicts : List of Dicts.
+        output from predict methods.
+
+    Raises
+    ------
+    NotImplementedError
+        If unexpected predict type. {type(example)}
+
+    Returns
+    -------
+    list
+        mapping the query id to the predicted value.
+
+    """
     example = predicts[0]['predict']
     if isinstance(example, dict):
         predict_proba = True
@@ -193,12 +216,11 @@ def process_predict(predicts):
             predict = max(query['predict'], key=query['predict'].get)
             confidence_level = round(query['predict'][predict]*100, 2)
             sanity_check.append({'id': query['id'],
-                                 'sanity_prediction': predict,
-                                 'confidence_level (%)': confidence_level})
+                                 'predict': predict,
+                                 'probability(%)': confidence_level})
     return sanity_check
 
-# https://stackoverflow.com/a/1144405
-# https://stackoverflow.com/a/73050
+
 def cmp(x, y):
     """
     Replacement for built-in function cmp that was removed in Python 3
@@ -212,9 +234,13 @@ def cmp(x, y):
 
     return (x > y) - (x < y)
 
+
 def multikeysort(items, columns):
     """
     Sort a list of dictionaries.
+
+    https://stackoverflow.com/a/1144405
+    https://stackoverflow.com/a/73050
 
     Parameters
     ----------
