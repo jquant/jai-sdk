@@ -28,22 +28,22 @@ np.random.seed(42)
 def test_text(name, data, dtype):
     train = pd.read_csv(TITANIC_TRAIN).rename(columns={"PassengerId": "id"}).set_index("id")['Name']
     test = pd.read_csv(TITANIC_TEST).rename(columns={"PassengerId": "id"})
+    ids_test = test['id'].tolist()
 
     if data == 'list':
         train = train.tolist()
         ids = list(range(len(train)))
         test = test.set_index('id')['Name']
-        ids_test = test.index.tolist()
+        query = test.loc[np.random.choice(ids_test, 10, replace=False)]
     elif data == 'array':
         train = train.values
         ids = list(range(len(train)))
         test = test.set_index('id')['Name']
-        ids_test = test.index.tolist()
+        query = test.loc[np.random.choice(ids_test, 10, replace=False)]
     else:
         ids = train.index.tolist()
         test = test[['id', 'Name']]
-        ids_test = test['id'].tolist()
-    query = test.loc[np.random.choice(ids_test, 10)]
+        query = test.loc[test['id'].isin(np.random.choice(ids_test, 10, replace=False))]
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
     j.setup(name, train, db_type=dtype, overwrite=True)
@@ -57,6 +57,7 @@ def test_text(name, data, dtype):
     assert isinstance(result, list), "similar result failed"
 
     j.add_data(name, test)
+    assert j.wait_setup(name)
 
     ids = ids + ids_test
     assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"], 'ids simple failed'
