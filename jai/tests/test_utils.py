@@ -21,6 +21,7 @@ def test_list2json(data, name):
     gab = pd.Series(data, index=index, name=name).reset_index().to_json(orient='records')
     assert list2json(data, name) == gab, 'list2json failed.'
 
+
 @pytest.mark.parametrize('data', [list('ab'), np.array(['abc', 'def'])])
 @pytest.mark.parametrize('name', ['text', 'image_base64'])
 @pytest.mark.parametrize('ids', [None, [10, 12]])
@@ -29,6 +30,7 @@ def test_series2json(data, name, ids):
     s = pd.Series(data, index=pd.Index(ids, name='id'), name=name)
     gab = s.reset_index().to_json(orient='records')
     assert series2json(s, name) == gab, 'series2json failed.'
+
 
 @pytest.mark.parametrize('col1, col2, ids', [([42, 123], ['abc', 'def'], None), ([69, 420], ['ghi', 'jkl'], [10, 64])])
 def test_df2json(col1, col2, ids):

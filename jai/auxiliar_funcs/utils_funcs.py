@@ -69,6 +69,7 @@ def list2json(data_list, name):
     series = pd.Series(data_list, index=index, name=name)
     return series.reset_index().to_json(orient='records')
 
+
 def series2json(data_series, name):
     data_series = data_series.copy()
     data_series.index.name = 'id'
