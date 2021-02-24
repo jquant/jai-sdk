@@ -34,16 +34,16 @@ def test_text(name, data, dtype):
         train = train.tolist()
         ids = list(range(len(train)))
         test = test.set_index('id')['Name']
-        ids_test = train.index.tolist()
+        ids_test = test.index.tolist()
     elif data == 'array':
         train = train.values
         ids = list(range(len(train)))
         test = test.set_index('id')['Name']
-        ids_test = train.index.tolist()
+        ids_test = test.index.tolist()
     else:
         ids = train['id'].tolist()
         test = test[['id', 'Name']]
-        ids_test = train['id'].tolist()
+        ids_test = test['id'].tolist()
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
     j.setup(name, train, db_type=dtype, overwrite=True)
@@ -138,6 +138,7 @@ def test_supervised():
     assert isinstance(result, list), "predict result failed"
 
     j.add_data(name, test)
+    assert j.wait_setup(name)
 
     ids = train['id'].tolist() + test['id'].tolist()
     assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"], 'ids simple failed'
