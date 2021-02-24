@@ -27,15 +27,15 @@ np.random.seed(42)
                                         ("test_edittext", "series", "TextEdit")])
 def test_text(name, data, dtype):
     train = pd.read_csv(TITANIC_TRAIN).rename(columns={"PassengerId": "id"}).set_index("id")['Name']
+    ids = train.index.tolist()
+    query = train.loc[np.random.choice(ids, 10, replace=False)]
 
     if data == 'list':
         train = train.tolist()
-        ids = list(range(len(train)))
     elif data == 'array':
         train = train.values
-        ids = list(range(len(train)))
     else:
-        ids = train.index.tolist()
+        pass
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
     if j.is_valid(name):
@@ -48,7 +48,6 @@ def test_text(name, data, dtype):
     assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"], 'ids simple failed'
     assert sorted(j.ids(name, 'complete')) == ids, "ids complete failed"
 
-    query = train.loc[np.random.choice(ids, 10, replace=False)]
     result = j.similar(name, query)
     assert isinstance(result, list), "similar result failed"
 
