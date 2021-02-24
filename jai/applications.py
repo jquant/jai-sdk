@@ -250,7 +250,8 @@ def sanity(data, auth_key, data_validate=None, columns_ref: list=None,
         raise ValueError(f"at least one of the values ({target}) should not be in columns.")
     target = np.array(target)[mask_target][0]
     data = data.copy()
-    data_validate = data_validate.copy()
+    if data_validate is not None:
+        data_validate = data_validate.copy()
 
     j = Jai(auth_key)
     if name is None:
@@ -265,16 +266,24 @@ def sanity(data, auth_key, data_validate=None, columns_ref: list=None,
     prep_bases = []
     for col in pre:
         id_col = 'id_' + col
-        emb = data[col].tolist() + data_validate[col].tolist()
+        if data_validate is not None:
+            emb = data[col].tolist() + data_validate[col].tolist()
+        else:
+            emb = data[col].tolist()
         values, inverse = np.unique(emb, return_inverse=True)
         data[id_col] = inverse[:n]
-        data_validate[id_col] = inverse[n:]
+
+        if data_validate is not None:
+            data_validate[id_col] = inverse[n:]
+
         origin = embedding(values, auth_key, name=name + '_' + col)
         prep_bases.append({"id_name": id_col, "db_parent": origin})
         columns_ref.remove(col)
         columns_ref.append(id_col)
     data = data.drop(columns=pre)
-    data_validate = data_validate.drop(columns=pre)
+
+    if data_validate is not None:
+        data_validate = data_validate.drop(columns=pre)
 
     print(f"name: {name}")
     label = {"task": "metric_classification",

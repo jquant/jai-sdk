@@ -1,5 +1,5 @@
 """
---- jai_core.py ---
+--- jai.py ---
 
 created by @dionisio
 """
@@ -19,7 +19,32 @@ __all__ = ['Jai']
 
 
 class Jai():
-    def __init__(self, auth_key: str, url=None):
+    """
+    Base class for communication with the Mycelia API.
+
+    Used as foundation for more complex applications for data validation such
+    as matching tables, resolution of duplicated values, filling missing values
+    and more.
+    """
+    def __init__(self, auth_key: str, url:str=None):
+        """
+        Inicialize the Jai class.
+
+        An authorization key is needed to use the Mycelia API.
+
+
+        Parameters
+        ----------
+        auth_key : str
+            Authorization key for the use of the API.
+        url : str, optional
+            Param used for development purposes. The default is None.
+
+        Returns
+        -------
+        None.
+
+        """
         if url is None:
             self.base_api_url = 'https://mycelia.azure-api.net'
             self.header = {'Auth': auth_key}
@@ -203,10 +228,10 @@ class Jai():
         >>> j = Jai(AUTH_KEY)
         >>> df_index_distance = j.similar(name, DATA_ITEM, TOP_K)
         >>> print(pd.DataFrame(df_index_distance['similarity']))
-        index  distance
-        10007  0.0
-        45568  6995.6
-        8382   7293.2
+           id  distance
+        10007       0.0
+        45568    6995.6
+         8382    7293.2
         """
         dtype = self._get_dtype(name)
 
@@ -220,10 +245,10 @@ class Jai():
             if is_id:
                 if isinstance(data, pd.Series):
                     _batch = data.iloc[i:i+batch_size].tolist()
-                if isinstance(data, pd.Index):
+                elif isinstance(data, pd.Index):
                     _batch = data[i:i+batch_size].tolist()
                 else:
-                    _batch = data[i:i+batch_size]
+                    _batch = data[i:i+batch_size].tolist()
                 res = self._similar_id(name, _batch, top_k=top_k)
             else:
                 if isinstance(data, (pd.Series, pd.DataFrame)):
@@ -309,7 +334,9 @@ class Jai():
 
         """
         dtypes = self.info
-        if any(dtypes['db_name'] == name):
+        if len(dtypes) == 0:
+            raise ValueError("No databases were found.")
+        elif any(dtypes['db_name'] == name):
             return dtypes.loc[dtypes['db_name'] == name, 'db_type'].values[0]
         else:
             raise ValueError(f"{name} is not a valid name.")
@@ -395,18 +422,20 @@ class Jai():
 
         Return
         -------
-        results : list
+        results : list of dicts
             List of predctions for the data passed as parameter.
 
         Example
         ----------
         >>> name = 'chosen_name'
         >>> DATA_ITEM = # data in the format of the database
-        >>> TOP_K = 3
         >>> j = Jai(AUTH_KEY)
         >>> preds = j.predict(name, DATA_ITEM)
         >>> print(preds)
-        ['Class0', 'Class1', 'Class0', 'Class2']
+        [{"id":0, "predict": "class1"}, {"id":1, "predict": "class0"}]
+        >>> preds = j.predict(name, DATA_ITEM, predict_proba=True)
+        >>> print(preds)
+        [{"id": 0 , "predict"; {"class0": 0.1, "class1": 0.6, "class2": 0.3}}]
         """
         dtype = self._get_dtype(name)
         if dtype != "Supervised":
@@ -597,10 +626,127 @@ class Jai():
             Database type (Supervised, Unsupervised, Text...)
         `batch_size`: int
             Size of batch to insert the data. Default is 16384 (2**14).
-        `kwargs`: dict
+
+        kwargs
+        ----------
             Parameters that should be passed as a dictionary in compliance with the
             API methods. In other words, every kwarg argument should be passed as if
             it were in the body of a POST method.
+
+        `overwrite`: bool
+            If setup should continue even if there's a database set up with the
+            given name. Default is False.
+
+        `hyperparams`: dict
+            Model Hyperparams:
+            - "Image":
+                model_name: (torchvision) model for image preprocessing
+                {resnet18, alexnet, squeezenet, vgg16, densenet, inception,
+                 googlenet, shufflenet, mobilenet, resnext50_32x4d,
+                 wide_resnet50_2, mnasnet}, default is "vgg16".
+                mode: last layer of the model, varies for each model
+                {classifier, dense, conv, avgpool or int}, default is -3.
+                resize_H: (int) height of image resizing, must be greater or
+                equal to 224, default is 224.
+                resize_W: (int) width of image resizing, must be greater or
+                equal to 224, default is 224.
+            - "FastText":
+                minn: (int) min length of char ngram, default is 0.
+                maxn: (int) max length of char ngram, default is 0.
+                dim: (int) final latent layer dimension, default is 128.
+                epoch: (int) number of epochs, default is 10.
+                model: (str) unsupervised fasttext model {cbow, skipgram},
+                default is skipgram.
+                lr: (float) learning rate, default is 0.05.
+                ws: (int) size of the context window, default is 5.
+                minCount: (int) minimal number of word occurences, default is 0.
+                neg: (int) number of negatives sampled, default is 5.
+                wordNgrams: (int) max length of word ngram, default is 1.
+                loss: (str) loss function {ns, hs, softmax, ova}, default is ns.
+                bucket: (int) number of buckets, default is 2000000.
+                lrUpdateRate: (int) change the rate of updates for the
+                learning rate, default is 1000.
+                "t": (float) sampling threshold, default is 0.0001.
+            - "Text":
+                nlp_model: (transformers) model name for text preprocessing.
+                max_length: (int) Controls the maximum length to use by one
+                of the truncation/padding parameters, default is 100.
+            - "TextEdit":
+                nt: (int) # of training samples, default is 1000.
+                nr: (int) # of generated training samples, default is 1000.
+                nb: (int) # of  base items, default is 1385451.
+                k: (int) # sampling threshold, default is 100.
+                epochs: (int) # of epochs, default is 20.
+                shuffle_seed: (int) seed for shuffle, default is 808.
+                batch_size: (int) batch size for sgd, default is 128.
+                test_batch_size: (int) batch size for test, default is 1024.
+                channel: (int) # of channels, default is 8.
+                mtc: (bool) does we use multi channel as for input, default is False.
+                embed_dim: (int) output dimension, default is 128.
+                random_train: (bool) generate random training samples and replace, default is False.
+                random_append_train: (bool) generate random training samples and append, default is False.
+                bert: (bool) using bert or not, default is False.
+                maxl: (int) max length of strings, default is 0.
+            - "Supervised" or "Unsupervised":
+                batch_size: (int) batch size for training, default is 512.
+                dropout_rate: (float) dropout rate, default is 0.25.
+                learning_rate: (float) initial learning rate, default is 0.001.
+                encoder_layer: structure for the encoder layer {2L, tabnet}, default is tabnet.
+                decoder_layer: structure for the decoder layer {2L, 2L_BN, 1L}, default is 2L_BN.
+                hidden_latent_dim: (int) hidden layer size, default is 64.
+                encoder_steps: (int) Number of sucessive steps in the newtork (usually between 3 and 10), only when encoder is tabnet, default is 3.
+
+        `num_process`: dict
+            Parameters defining how numeric values will be processed
+            Only for db_type Supervised and Unsupervised.
+
+            embedding_dim: (int) initial embedding dimension, default is 8.
+            scaler: (sklearn) scaler for numeric values
+            {maxabs, minmax, normalizer, quantile, robust, standard}, default is standard
+            fill_value: (number) fill value for missing values, default is 0.
+
+        `cat_process`: dict
+            Parameters defining how categorical values will be processed
+            Only for db_type Supervised and Unsupervised.
+
+            embedding_dim: (int) initial embedding dimension, default is 32.
+            fill_value: (str) fill value for missing values, default is "_other".
+            min_freq: (str) Number of times a category has to occur to be valid,
+            otherwise we substitute by fill_value, default is 3.
+
+        `high_process`: dict
+            Parameters defining how high dimensional vector values will be processed
+            Only for db_type Supervised and Unsupervised.
+
+            embedding_dim: (int) initial embedding dimension, default is 32.
+            nlp_model: (transformers) model for high dim features preprocessing.
+            max_length: (int) Controls the maximum length to use by one
+            of the truncation/padding parameters, default is 100.
+
+        `mycelia_bases`: dict
+            Related already processed data that will be used in the setup of this new one.
+            Only for db_type Supervised and Unsupervised.
+            If a column has id values that represent a database already preprocessed, then:
+
+            db_parent: (str) name of the preprocessed database, required.
+            id_name: (str) name of the column with the id values in the current table, required.
+            embedding_dim: (int) initial embedding dimension, default is 128.
+
+        `label`: dict
+            Label of each ID
+            Only for db_type Supervised.
+
+            task: Supervised task type {classification, metric_classification, regression}, required.
+            label_name: Column name with target values, required.
+
+        `split`: dict
+            How data will be split in the training process
+            Only for db_type Supervised.
+
+            type: how to split the data in train and test {random, stratified}, default is random
+            split_column: (str) Name of column as reference for the split, default is "".
+            Obligatory whem type is stratified.
+            test_size: (float) Size of test for the split, default is 0.2.
 
         Return
         ----------
