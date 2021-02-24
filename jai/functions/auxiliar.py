@@ -67,7 +67,7 @@ def connect_azure_blob_storage(db_name: str, company_id: str, conn_str: str):
     return blob_client
 
 
-def get_status_json(file_path="./auxiliar/pbar_status.json"):
+def get_status_json(file_path="./jai/auxiliar/pbar_status.json"):
     pbar_status_path = Path(file_path)
     with open(pbar_status_path, 'r') as f:
         status_dict = json.load(f)

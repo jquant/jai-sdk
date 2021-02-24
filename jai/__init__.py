@@ -1,6 +1,6 @@
 """
 --- ___init___.py ---
 """
-__all__ = ["auxiliar", "jai"]
+__all__ = ["functions", "jai"]
 
 from .jai import Jai

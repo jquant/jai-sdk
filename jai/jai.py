@@ -10,9 +10,9 @@ import numpy as np
 import requests
 import time
 
-from .auxiliar.functions.utils_funcs import data2json
-from .auxiliar.functions.classes import PossibleDtypes, Mode
-from .auxiliar.functions.auxiliar import pbar_steps
+from .functions.utils_funcs import data2json
+from .functions.classes import PossibleDtypes, Mode
+from .auxiliar import pbar_steps
 from pandas.api.types import is_integer_dtype
 from tqdm import trange, tqdm
 
@@ -22,8 +22,7 @@ __all__ = ['Jai']
 class Jai():
     def __init__(self, auth_key: str, url=None):
         if url is None:
-            # self.base_api_url = 'https://mycelia.azure-api.net'
-            self.base_api_url = 'http://127.0.0.1:8000'
+            self.base_api_url = 'https://mycelia.azure-api.net'
             self.header = {'Auth': auth_key}
         else:
             if url.endswith('/'):
