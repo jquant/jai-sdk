@@ -1,5 +1,5 @@
 """
---- jai_core.py ---
+--- jai.py ---
 
 created by @dionisio
 """
