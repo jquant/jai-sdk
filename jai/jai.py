@@ -10,10 +10,11 @@ import numpy as np
 import requests
 import time
 
-from .auxiliar_funcs.utils_funcs import data2json
-from .auxiliar_funcs.classes import PossibleDtypes, Mode
+from .auxiliar.functions.utils_funcs import data2json
+from .auxiliar.functions.classes import PossibleDtypes, Mode
+from .auxiliar.functions.auxiliar import pbar_steps
 from pandas.api.types import is_integer_dtype
-from tqdm import trange
+from tqdm import trange, tqdm
 
 __all__ = ['Jai']
 
@@ -21,7 +22,8 @@ __all__ = ['Jai']
 class Jai():
     def __init__(self, auth_key: str, url=None):
         if url is None:
-            self.base_api_url = 'https://mycelia.azure-api.net'
+            # self.base_api_url = 'https://mycelia.azure-api.net'
+            self.base_api_url = 'http://127.0.0.1:8000'
             self.header = {'Auth': auth_key}
         else:
             if url.endswith('/'):
@@ -50,8 +52,8 @@ class Jai():
 
         ```
         """
-        response = requests.get(url=self.base_api_url +
-                                '/info?mode=names', headers=self.header)
+        response = requests.get(url=self.base_api_url + '/info?mode=names',
+                                headers=self.header)
         if response.status_code == 200:
             return response.json()
         else:
@@ -81,11 +83,13 @@ class Jai():
         2                jai_supervised    Supervised
         ```
         """
-        response = requests.get(url=self.base_api_url +
-                                '/info?mode=complete', headers=self.header)
+        response = requests.get(url=self.base_api_url + '/info?mode=complete',
+                                headers=self.header)
         if response.status_code == 200:
-            df = pd.DataFrame(response.json()).rename({'db_name': 'name',
-                                                       'db_type': 'type'})
+            df = pd.DataFrame(response.json()).rename({
+                'db_name': 'name',
+                'db_type': 'type'
+            })
             return df
         else:
             return self.assert_status_code(response)
@@ -115,14 +119,17 @@ class Jai():
         }
         ```
         """
-        response = requests.get(
-            self.base_api_url + '/status', headers=self.header)
+        response = requests.get(self.base_api_url + '/status',
+                                headers=self.header)
         if response.status_code == 200:
             return response.json()
         else:
             return self.assert_status_code(response)
 
-    def generate_name(self, length: int=8, prefix: str='', suffix: str=''):
+    def generate_name(self,
+                      length: int = 8,
+                      prefix: str = '',
+                      suffix: str = ''):
         """
         Generate a random string. You can pass a prefix and/or suffix. In this case,
         the generated string will be a concatenation of `prefix + random + suffix`.
@@ -154,7 +161,8 @@ class Jai():
 
         if length <= len_prefix + len_suffix:
             raise ValueError(
-                f"length {length} is should be larger than {len_prefix+len_suffix} for prefix and suffix inputed.")
+                f"length {length} is should be larger than {len_prefix+len_suffix} for prefix and suffix inputed."
+            )
 
         length -= (len_prefix + len_suffix)
         code = secrets.token_hex(length)[:length].lower()
@@ -174,7 +182,11 @@ class Jai():
         print(response.json())
         return response
 
-    def similar(self, name: str, data, top_k: int=5, batch_size: int=16384):
+    def similar(self,
+                name: str,
+                data,
+                top_k: int = 5,
+                batch_size: int = 16384):
         """
         Query a database in search for the `top_k` most similar entries for each
         input data passed as argument.
@@ -219,23 +231,28 @@ class Jai():
         for i in trange(0, len(data), batch_size, desc="Similar"):
             if is_id:
                 if isinstance(data, pd.Series):
-                    _batch = data.iloc[i:i+batch_size].tolist()
+                    _batch = data.iloc[i:i + batch_size].tolist()
                 elif isinstance(data, pd.Index):
-                    _batch = data[i:i+batch_size].tolist()
+                    _batch = data[i:i + batch_size].tolist()
                 else:
-                    _batch = data[i:i+batch_size].tolist()
+                    _batch = data[i:i + batch_size].tolist()
                 res = self._similar_id(name, _batch, top_k=top_k)
             else:
                 if isinstance(data, (pd.Series, pd.DataFrame)):
-                    _batch = data.iloc[i:i+batch_size]
+                    _batch = data.iloc[i:i + batch_size]
                 else:
-                    _batch = data[i:i+batch_size]
-                res = self._similar_json(name, data2json(_batch, dtype=dtype),
-                                        top_k=top_k)
+                    _batch = data[i:i + batch_size]
+                res = self._similar_json(name,
+                                         data2json(_batch, dtype=dtype),
+                                         top_k=top_k)
             results.extend(res['similarity'])
         return results
 
-    def _similar_id(self, name: str, id_item: int, top_k: int=5, method="PUT"):
+    def _similar_id(self,
+                    name: str,
+                    id_item: int,
+                    top_k: int = 5,
+                    method="PUT"):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given an id.
         This is a protected method.
@@ -266,7 +283,8 @@ class Jai():
                     f"/similar/id/{name}?id={id_item}&top_k={top_k}"
             else:
                 raise TypeError(
-                    f"id_item param must be int or list, {type(id_item)} found.")
+                    f"id_item param must be int or list, {type(id_item)} found."
+                )
 
             response = requests.get(url, headers=self.header)
         elif method == "PUT":
@@ -276,7 +294,8 @@ class Jai():
                 id_item = [id_item]
             else:
                 raise TypeError(
-                    f"id_item param must be int or list, {type(id_item)} found.")
+                    f"id_item param must be int or list, {type(id_item)} found."
+                )
 
             response = requests.put(self.base_api_url + \
                     f"/similar/id/{name}?top_k={top_k}", headers=self.header, data=json.dumps(id_item))
@@ -313,7 +332,6 @@ class Jai():
             return dtypes.loc[dtypes['db_name'] == name, 'db_type'].values[0]
         else:
             raise ValueError(f"{name} is not a valid name.")
-
 
     def _similar_json(self, name: str, data_json, top_k: int = 5):
         """
@@ -368,7 +386,10 @@ class Jai():
         elif not isinstance(data, (pd.Series, pd.DataFrame)):
             raise TypeError(f"Inserted data is of type {type(data)},\
  but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame")
-        if db_type in [PossibleDtypes.text, PossibleDtypes.fasttext, PossibleDtypes.edit]:
+        if db_type in [
+                PossibleDtypes.text, PossibleDtypes.fasttext,
+                PossibleDtypes.edit
+        ]:
             data = data.dropna()
         else:
             cols_to_drop = []
@@ -378,7 +399,11 @@ class Jai():
             data = data.dropna(subset=cols_to_drop)
         return data
 
-    def predict(self, name: str, data, predict_proba:bool=False, batch_size: int=16384):
+    def predict(self,
+                name: str,
+                data,
+                predict_proba: bool = False,
+                batch_size: int = 16384):
         """
         Predict the output of new data for a given database.
 
@@ -415,15 +440,16 @@ class Jai():
         results = []
         for i in trange(0, len(data), batch_size, desc="Predict"):
             if isinstance(data, (pd.Series, pd.DataFrame)):
-                _batch = data.iloc[i:i+batch_size]
+                _batch = data.iloc[i:i + batch_size]
             else:
-                _batch = data[i:i+batch_size]
-            res = self._predict(name, data2json(_batch, dtype=dtype),
+                _batch = data[i:i + batch_size]
+            res = self._predict(name,
+                                data2json(_batch, dtype=dtype),
                                 predict_proba=predict_proba)
             results.extend(res)
         return results
 
-    def _predict(self, name: str, data_json, predict_proba:bool=False):
+    def _predict(self, name: str, data_json, predict_proba: bool = False):
         """
         Predict the output of new data for a given database by calling its
         respecive API method. This is a protected method.
@@ -450,7 +476,7 @@ class Jai():
         else:
             return self.assert_status_code(response)
 
-    def ids(self, name: str, mode: Mode='simple'):
+    def ids(self, name: str, mode: Mode = 'simple'):
         """
         Get id information of a given database.
 
@@ -475,8 +501,8 @@ class Jai():
         >>> print(ids)
         ['891 items from 0 to 890']
         """
-        response = requests.get(
-            self.base_api_url + f'/id/{name}?mode={mode}', headers=self.header)
+        response = requests.get(self.base_api_url + f'/id/{name}?mode={mode}',
+                                headers=self.header)
         if response.status_code == 200:
             return response.json()
         else:
@@ -504,14 +530,14 @@ class Jai():
         >>> print(check_valid)
         True
         """
-        response = requests.get(
-            self.base_api_url + f'/validation/{name}', headers=self.header)
+        response = requests.get(self.base_api_url + f'/validation/{name}',
+                                headers=self.header)
         if response.status_code == 200:
             return response.json()['value']
         else:
             return self.assert_status_code(response)
 
-    def _temp_ids(self, name: str, mode: Mode='simple'):
+    def _temp_ids(self, name: str, mode: Mode = 'simple'):
         """
         Get id information of a RAW database (i.e., before training). This is a protected method
 
@@ -528,8 +554,9 @@ class Jai():
             List with the actual ids (mode: 'complete') or a summary of ids
             ('simple'/'summarized') of the given database.
         """
-        response = requests.get(
-            self.base_api_url + f'/setup/ids/{name}?mode={mode}', headers=self.header)
+        response = requests.get(self.base_api_url +
+                                f'/setup/ids/{name}?mode={mode}',
+                                headers=self.header)
         if response.status_code == 200:
             return response.json()
         else:
@@ -555,10 +582,11 @@ class Jai():
             information of whether or not that particular batch was successfully inserted.
         """
         insert_responses = {}
-        for i, b in enumerate(trange(0, len(data), batch_size, desc="Insert Data")):
-            _batch = data.iloc[b:b+batch_size]
-            insert_responses[i] = self._insert_json(name,
-                                                    data2json(_batch, dtype=db_type))
+        for i, b in enumerate(
+                trange(0, len(data), batch_size, desc="Insert Data")):
+            _batch = data.iloc[b:b + batch_size]
+            insert_responses[i] = self._insert_json(
+                name, data2json(_batch, dtype=db_type))
         return insert_responses
 
     def _check_ids_consistency(self, name, data):
@@ -581,9 +609,15 @@ class Jai():
         if len(data) != int(inserted_ids[0].split()[0]):
             print(f"Found invalid ids: {inserted_ids[0]}")
             print(self.delete_raw_data(name))
-            raise Exception("Something went wrong on data insertion. Please try again.")
+            raise Exception(
+                "Something went wrong on data insertion. Please try again.")
 
-    def setup(self, name: str, data, db_type: str, batch_size: int=16384, **kwargs):
+    def setup(self,
+              name: str,
+              data,
+              db_type: str,
+              batch_size: int = 16384,
+              **kwargs):
         """
         Insert data and train model. This is JAI's crème de la crème.
 
@@ -632,7 +666,10 @@ class Jai():
         data = self._check_dtype_and_clean(data=data, db_type=db_type)
 
         # insert data
-        insert_responses = self._insert_data(data=data, name=name, batch_size=batch_size, db_type=db_type)
+        insert_responses = self._insert_data(data=data,
+                                             name=name,
+                                             batch_size=batch_size,
+                                             db_type=db_type)
 
         # check if we inserted everything we were supposed to
         self._check_ids_consistency(name=name, data=data)
@@ -641,7 +678,7 @@ class Jai():
         setup_response = self._setup_database(name, db_type, **kwargs)
         return insert_responses, setup_response
 
-    def add_data(self, name: str, data, batch_size: int=16384):
+    def add_data(self, name: str, data, batch_size: int = 16384):
         """
         Insert raw data and extract their latent representation.
 
@@ -674,7 +711,10 @@ class Jai():
         data = self._check_dtype_and_clean(data=data, db_type=db_type)
 
         # insert data
-        insert_responses = self._insert_data(data=data, name=name, batch_size=batch_size, db_type=db_type)
+        insert_responses = self._insert_data(data=data,
+                                             name=name,
+                                             batch_size=batch_size,
+                                             db_type=db_type)
 
         # check if we inserted everything we were supposed to
         self._check_ids_consistency(name=name, data=data)
@@ -699,13 +739,12 @@ class Jai():
         `response`: dict
             Dictionary with the API response.
         """
-        response = requests.patch(
-            self.base_api_url + f'/data/{name}', headers=self.header)
+        response = requests.patch(self.base_api_url + f'/data/{name}',
+                                  headers=self.header)
         if response.status_code == 202:
             return response.json()
         else:
             return self.assert_status_code(response)
-
 
     def _insert_json(self, name: str, df_json):
         """
@@ -724,7 +763,8 @@ class Jai():
             Dictionary with the API response.
         """
         response = requests.post(self.base_api_url + f'/data/{name}',
-                                 headers=self.header, data=df_json)
+                                 headers=self.header,
+                                 data=df_json)
         if response.status_code == 200:
             return response.json()
         else:
@@ -748,11 +788,14 @@ class Jai():
         possible = ['hyperparams', 'callback_url']
         must = []
         if db_type == "Unsupervised":
-            possible.extend(['num_process', 'cat_process',  'high_process',
-                             'mycelia_bases'])
+            possible.extend([
+                'num_process', 'cat_process', 'high_process', 'mycelia_bases'
+            ])
         elif db_type == "Supervised":
-            possible.extend(['num_process', 'cat_process',  'high_process',
-                             'mycelia_bases', 'label', 'split'])
+            possible.extend([
+                'num_process', 'cat_process', 'high_process', 'mycelia_bases',
+                'label', 'split'
+            ])
             must.extend(['label', 'split'])
 
         missing = [key for key in must if kwargs.get(key, None) is None]
@@ -796,8 +839,10 @@ class Jai():
             Dictionary with the API response.
         """
         body = self._check_kwargs(db_type=db_type, **kwargs)
-        response = requests.post(self.base_api_url + f'/setup/{name}?overwrite={overwrite}',
-                                 headers=self.header, data=json.dumps(body))
+        response = requests.post(self.base_api_url +
+                                 f'/setup/{name}?overwrite={overwrite}',
+                                 headers=self.header,
+                                 data=json.dumps(body))
 
         if response.status_code == 201:
             return response.json()
@@ -830,7 +875,9 @@ class Jai():
         """
         dtype = self._get_dtype(name)
         if dtype != "Unsupervised" and dtype != "Supervised":
-            raise ValueError("'fields' method is only available to dtype Unsupervised and Supervised.")
+            raise ValueError(
+                "'fields' method is only available to dtype Unsupervised and Supervised."
+            )
 
         response = requests.get(self.base_api_url + f'/table/fields/{name}',
                                 headers=self.header)
@@ -862,12 +909,11 @@ class Jai():
                 status = status[name]
                 return status
             else:
-                time.sleep(patience//max_trials)
+                time.sleep(patience // max_trials)
                 trials += 1
         raise ValueError(f"Could not find a status for database '{name}'.")
 
-
-    def wait_setup(self, name: str, frequency_seconds:int=5):
+    def wait_setup(self, name: str, frequency_seconds: int = 5):
         """
         Wait for the setup (model training) to finish
 
@@ -885,17 +931,29 @@ class Jai():
         None.
         """
         status = self._wait_status(name)
-        while status['Status'] != 'Task ended successfully.':
-            if status['Status'] == 'Something went wrong.':
-                raise BaseException(status['Description'])
-            # spinning thing loop
-            for x in range(int(frequency_seconds)*5):
-                for frame in r'-\|/-\|/':
-                    print('\b', frame, sep='', end='', flush=True)
-                    time.sleep(0.2)
-
-            status = self._wait_status(name)
-        print(status['Description'])
+        max_steps = None
+        while max_steps is None:
+            starts_at, max_steps = pbar_steps(status=status)
+            time.sleep(1)
+        step = starts_at
+        aux = 0
+        with tqdm(total=max_steps, desc="Setup is working") as pbar:
+            while status['Status'] != 'Task ended successfully.':
+                if status['Status'] == 'Something went wrong.':
+                    raise BaseException(status['Description'])
+                if (step == starts_at) and (aux == 0):
+                    pbar.update(starts_at)
+                else:
+                    diff = step - starts_at
+                    pbar.update(diff)
+                    starts_at = step
+                step, _ = pbar_steps(status=status, step=step)
+                time.sleep(frequency_seconds)
+                status = self._wait_status(name)
+                aux += 1
+            if (starts_at != max_steps):
+                diff = max_steps - starts_at
+                pbar.update(diff)
         return status
 
     def delete_raw_data(self, name: str):
@@ -921,8 +979,8 @@ class Jai():
         'All raw data from database 'chosen_name' was deleted!'
         ```
         """
-        response = requests.delete(
-            self.base_api_url + f'/data/{name}', headers=self.header)
+        response = requests.delete(self.base_api_url + f'/data/{name}',
+                                   headers=self.header)
         if response.status_code == 200:
             return response.json()
         else:
@@ -951,8 +1009,8 @@ class Jai():
         'Bombs away! We nuked database chosen_name!'
         ```
         """
-        response = requests.delete(
-            self.base_api_url + f'/database/{name}', headers=self.header)
+        response = requests.delete(self.base_api_url + f'/database/{name}',
+                                   headers=self.header)
         if response.status_code == 200:
             return response.json()
         else:

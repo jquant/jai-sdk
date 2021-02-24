@@ -35,7 +35,7 @@ def match(data1, data2, auth_key, name=None):
     -------
     >>> import pandas as pd
     >>> from jai.applications import match
-    >>> from jai.auxiliar_funcs.utils_funcs import process_similar
+    >>> from jai.auxiliar.functions.utils_funcs import process_similar
     >>>
     >>> results = match(data1, data2, AUTH_KEY, name)
     >>> processed = process_similar(results, return_self=True)
@@ -84,7 +84,7 @@ def resolution(data, auth_key, name=None):
     -------
     >>> import pandas as pd
     >>> from jai.applications import resolution
-    >>> from jai.auxiliar_funcs.utils_funcs import process_similar
+    >>> from jai.auxiliar.functions.utils_funcs import process_similar
     >>>
     >>> results = resolution(data, AUTH_KEY, name)
     >>> processed = process_similar(results, return_self=True)
@@ -135,7 +135,7 @@ def fill(data, column:str, auth_key, name=None, **kwargs):
     -------
     >>> import pandas as pd
     >>> from jai.applications import fill
-    >>> from jai.auxiliar_funcs.utils_funcs import process_predict
+    >>> from jai.auxiliar.functions.utils_funcs import process_predict
     >>>
     >>> results = fill(data, COL_TO_FILL, AUTH_KEY, name)
     >>> processed = process_similar(results)
@@ -231,7 +231,7 @@ def sanity(data, auth_key, data_validate=None, columns_ref: list=None,
     -------
     >>> import pandas as pd
     >>> from jai.applications import sanity
-    >>> from jai.auxiliar_funcs.utils_funcs import process_predict
+    >>> from jai.auxiliar.functions.utils_funcs import process_predict
     >>>
     >>> results = sanity(data, AUTH_KEY, 'sdk_4ddfcb1c1100de84')
     >>> processed = process_predict(results)

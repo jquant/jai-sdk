@@ -1,0 +1,83 @@
+{
+    "Image": [
+        "^.*(setup has started).*$", 
+        "^.*(Checking collection sanity).*$", 
+        "^.*(Processing has started).*$",
+        "^.*(Processing data).*$",
+        "^.*(Saving processed data).*$", 
+        "^.*(Backing up vectors and IDs).*$", 
+        "^.*(Making database info available).*$", 
+        "^.*(model training for).*(has ended).*$"
+    ],
+    "FastText": [
+        "^.*(setup has started).*$", 
+        "^.*(Checking collection sanity).*$", 
+        "^.*(Processing has started).*$",
+        "^.*(Data preprocessing).*$",
+        "^.*(Model training).*$",
+        "^.*(Processing data).*$",
+        "^.*(Saving model).*$",
+        "^.*(Saving processed data).*$", 
+        "^.*(Backing up vectors and IDs).*$", 
+        "^.*(Making database info available).*$", 
+        "^.*(model training for).*(has ended).*$"
+    ],
+    "Supervised": [
+        "^.*(setup has started).*$", 
+        "^.*(Checking collection sanity).*$", 
+        "^.*(Processing has started).*$",
+        "^.*(Checking for missing databases).*$",
+        "^.*(Sanitizing paths).*$",
+        "^.*(Sanitizing columns).*$",
+        "^.*(Getting preprocessed data).*$", 
+        "^.*(Training model).*$",
+        "^.*(Evaluating model).*$",
+        "^.*(Processing data).*$",
+        "^.*(Predicting).*$",
+        "^.*(Saving model).*$",
+        "^.*(Backing up to the cloud).*$",
+        "^.*(Saving processed data).*$", 
+        "^.*(Backing up vectors and IDs).*$", 
+        "^.*(Making database info available).*$", 
+        "^.*(model training for).*(has ended).*$"
+    ],
+    "Unsupervised": [
+        "^.*(setup has started).*$", 
+        "^.*(Checking collection sanity).*$", 
+        "^.*(Processing has started).*$",
+        "^.*(Checking for missing databases).*$",
+        "^.*(Sanitizing paths).*$",
+        "^.*(Sanitizing columns).*$",
+        "^.*(Getting preprocessed data).*$", 
+        "^.*(Training model).*$",
+        "^.*(Processing data).*$",
+        "^.*(Saving model).*$",
+        "^.*(Backing up to the cloud).*$",
+        "^.*(Saving processed data).*$", 
+        "^.*(Backing up vectors and IDs).*$", 
+        "^.*(Making database info available).*$", 
+        "^.*(model training for).*(has ended).*$"
+    ],
+    "Text": [
+        "^.*(setup has started).*$", 
+        "^.*(Checking collection sanity).*$", 
+        "^.*(Processing has started).*$",
+        "^.*(Processing data).*$",
+        "^.*(Saving processed data).*$", 
+        "^.*(Backing up vectors and IDs).*$", 
+        "^.*(Making database info available).*$", 
+        "^.*(model training for).*(has ended).*$"
+    ],
+    "TextEdit": [
+        "^.*(setup has started).*$", 
+        "^.*(Checking collection sanity).*$", 
+        "^.*(Processing has started).*$",
+        "^.*(Data preprocessing).*$",
+        "^.*(Model training).*$",
+        "^.*(Saving model).*$",
+        "^.*(Saving processed data).*$", 
+        "^.*(Backing up vectors and IDs).*$", 
+        "^.*(Making database info available).*$", 
+        "^.*(model training for).*(has ended).*$"
+    ]
+}
