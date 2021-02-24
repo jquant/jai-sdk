@@ -28,7 +28,6 @@ np.random.seed(42)
 def test_text(name, data, dtype):
     train = pd.read_csv(TITANIC_TRAIN).rename(columns={"PassengerId": "id"}).set_index("id")['Name']
     test = pd.read_csv(TITANIC_TEST).rename(columns={"PassengerId": "id"})
-    query = test.loc[np.random.randint(0, len(test), 10)]
 
     if data == 'list':
         train = train.tolist()
@@ -44,6 +43,7 @@ def test_text(name, data, dtype):
         ids = train['id'].tolist()
         test = test[['id', 'Name']]
         ids_test = test['id'].tolist()
+    query = test.loc[np.random.randint(0, len(test), 10)]
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
     j.setup(name, train, db_type=dtype, overwrite=True)
