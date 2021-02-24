@@ -40,7 +40,7 @@ def test_text(name, data, dtype):
         test = test.set_index('id')['Name']
         ids_test = test.index.tolist()
     else:
-        ids = train['id'].tolist()
+        ids = train.index.tolist()
         test = test[['id', 'Name']]
         ids_test = test['id'].tolist()
     query = test.loc[np.random.choice(ids_test, 10)]
