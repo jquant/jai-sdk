@@ -64,19 +64,18 @@ def read_image_folder(image_folder: str = None, images: List = None, ignore_corr
     return pd.Series(temp_img, index=index, name='image_base64')
 
 
-def list2json(data_list, name, ids=None):
-    if ids is None:
-        ids = range(len(data_list))
-    out = ','.join([f'{{"id":{i},"{name}":"{d}"}}' for i, d in zip(ids, data_list)])
-    return '[' + out + ']'
-
+def list2json(data_list, name):
+    index = pd.Index(range(len(data_list)), name='id')
+    series = pd.Series(data_list, index=index, name=name)
+    return series.reset_index().to_json(orient='records')
 
 def series2json(data_series, name):
     data_series = data_series.copy()
+    data_series.index.name = 'id'
     data_series.name = name
     if data_series.index.duplicated().any():
         raise ValueError("Index must not contain duplicated values.")
-    return list2json(data_series.values, name, data_series.index)
+    return data_series.reset_index().to_json(orient='records')
 
 
 def df2json(dataframe):
