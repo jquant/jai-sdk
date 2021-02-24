@@ -29,39 +29,31 @@ def test_text(name, data, dtype):
     train = pd.read_csv(TITANIC_TRAIN).rename(columns={"PassengerId": "id"}).set_index("id")['Name']
     test = pd.read_csv(TITANIC_TEST).rename(columns={"PassengerId": "id"})
     ids_test = test['id'].tolist()
+    test = test.set_index('id')['Name']
+    query = test.loc[np.random.choice(ids_test, 10, replace=False)]
 
     if data == 'list':
         train = train.tolist()
         ids = list(range(len(train)))
-        test = test.set_index('id')['Name']
-        query = test.loc[np.random.choice(ids_test, 10, replace=False)]
     elif data == 'array':
         train = train.values
         ids = list(range(len(train)))
-        test = test.set_index('id')['Name']
-        query = test.loc[np.random.choice(ids_test, 10, replace=False)]
     else:
         ids = train.index.tolist()
-        test = test[['id', 'Name']]
-        query = test.loc[test['id'].isin(np.random.choice(ids_test, 10, replace=False))]
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
+    if j.is_valid(name):
+        j.delete_database(name)
+
     j.setup(name, train, db_type=dtype, overwrite=True)
     assert j.wait_setup(name)
     assert j.is_valid(name), "valid name after setup failed"
 
     assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"], 'ids simple failed'
-    assert j.ids(name, 'complete') == ids, "ids complete failed"
+    assert sorted(j.ids(name, 'complete')) == ids, "ids complete failed"
 
     result = j.similar(name, query)
     assert isinstance(result, list), "similar result failed"
-
-    j.add_data(name, test)
-    assert j.wait_setup(name)
-
-    ids = ids + ids_test
-    assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"], 'ids simple failed'
-    assert j.ids(name, 'complete') == ids, "ids complete failed"
 
     j.delete_database(name)
     assert not j.is_valid(name), "valid name after delete failed"
@@ -77,6 +69,9 @@ def test_unsupervised():
     query = train.loc[np.random.randint(0, len(train), 10)]
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
+    if j.is_valid(name):
+        j.delete_database(name)
+
     j.setup(name, train, db_type="Unsupervised", overwrite=True)
 
     assert j.wait_setup(name)
@@ -110,6 +105,9 @@ def test_supervised():
     query = test.loc[np.random.randint(0, len(test), 10)]
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
+    if j.is_valid(name):
+        j.delete_database(name)
+
     j.setup(name, train, db_type="Supervised",
             overwrite=True,
             label={"task": "metric_classification",
