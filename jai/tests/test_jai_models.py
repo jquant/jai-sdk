@@ -43,7 +43,7 @@ def test_text(name, data, dtype):
         ids = train['id'].tolist()
         test = test[['id', 'Name']]
         ids_test = test['id'].tolist()
-    query = test.loc[np.random.randint(0, len(test), 10)]
+    query = test.loc[np.random.choice(ids_test, 10)]
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
     j.setup(name, train, db_type=dtype, overwrite=True)
