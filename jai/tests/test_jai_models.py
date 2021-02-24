@@ -32,19 +32,24 @@ def test_text(name, data, dtype):
 
     if data == 'list':
         train = train.tolist()
+        ids = list(range(len(train)))
         test = test.set_index('id')['Name']
+        ids_test = train.index.tolist()
     elif data == 'array':
         train = train.values
+        ids = list(range(len(train)))
         test = test.set_index('id')['Name']
+        ids_test = train.index.tolist()
     else:
+        ids = train['id'].tolist()
         test = test[['id', 'Name']]
+        ids_test = train['id'].tolist()
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
     j.setup(name, train, db_type=dtype, overwrite=True)
     assert j.wait_setup(name)
     assert j.is_valid(name), "valid name after setup failed"
 
-    ids = train.index.tolist()
     assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"], 'ids simple failed'
     assert j.ids(name, 'complete') == ids, "ids complete failed"
 
@@ -53,10 +58,9 @@ def test_text(name, data, dtype):
 
     j.add_data(name, test)
 
-    ids = train.index.tolist()
+    ids = ids + ids_test
     assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"], 'ids simple failed'
     assert j.ids(name, 'complete') == ids, "ids complete failed"
-
 
     j.delete_database(name)
     assert not j.is_valid(name), "valid name after delete failed"
@@ -82,6 +86,8 @@ def test_unsupervised():
     assert j.ids(name, 'complete') == ids, "ids complete failed"
 
     for k, v in j.fields(name).items():
+        if k == 'id':
+            continue
         original = infer_dtype(train[k])
         from_api = infer_dtype([v])
         assert original == from_api, "dtype from api {from_api} differ from data {original}"
@@ -118,12 +124,12 @@ def test_supervised():
     assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"], 'ids simple failed'
     assert j.ids(name, 'complete') == ids, "ids complete failed"
 
-    # Label returns with wrong value
-    # uncomment after solving the issue on api
-    # for k, v in j.fields(name).items():
-    #     original = infer_dtype(train[k])
-    #     from_api = infer_dtype([v])
-    #     assert original == from_api, "dtype from api {from_api} differ from data {original}"
+    for k, v in j.fields(name).items():
+        if k == 'Survived':
+            continue
+        original = infer_dtype(train[k])
+        from_api = infer_dtype([v])
+        assert original == from_api, "dtype from api {from_api} differ from data {original}"
 
     result = j.similar(name, query)
     assert isinstance(result, list), "similar result failed"
@@ -133,7 +139,7 @@ def test_supervised():
 
     j.add_data(name, test)
 
-    ids = train.index.tolist()
+    ids = train['id'].tolist() + test['id'].tolist()
     assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"], 'ids simple failed'
     assert j.ids(name, 'complete') == ids, "ids complete failed"
 
