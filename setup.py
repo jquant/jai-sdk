@@ -17,7 +17,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/jquant/jai-sdk",
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests', 'jai.tests']),
     license="MIT",
     classifiers=[
         "License :: OSI Approved :: MIT License",
