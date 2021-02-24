@@ -203,10 +203,10 @@ class Jai():
         >>> j = Jai(AUTH_KEY)
         >>> df_index_distance = j.similar(name, DATA_ITEM, TOP_K)
         >>> print(pd.DataFrame(df_index_distance['similarity']))
-        index  distance
-        10007  0.0
-        45568  6995.6
-        8382   7293.2
+           id  distance
+        10007       0.0
+        45568    6995.6
+         8382    7293.2
         """
         dtype = self._get_dtype(name)
 
