@@ -32,8 +32,10 @@ def test_text(name, data, dtype):
 
     if data == 'list':
         train = train.tolist()
+        ids = list(range(len(train)))
     elif data == 'array':
         train = train.values
+        ids = list(range(len(train)))
     else:
         pass
 
@@ -62,7 +64,7 @@ def test_unsupervised():
     name = 'test_unsupervised'
 
     train = pd.read_csv(TITANIC_TRAIN).drop(columns=["PassengerId"])
-    query = train.loc[np.random.randint(0, len(train), 10)]
+    query = train.loc[np.random.choice(len(train), 10, replace=False)]
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
     if j.is_valid(name):
@@ -98,7 +100,7 @@ def test_supervised():
 
     train = pd.read_csv(TITANIC_TRAIN).rename(columns={"PassengerId": "id"})
     test = pd.read_csv(TITANIC_TEST).rename(columns={"PassengerId": "id"})
-    query = test.loc[np.random.randint(0, len(test), 10)]
+    query = test.loc[np.random.choice(len(test), 10, replace=False)]
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
     if j.is_valid(name):
