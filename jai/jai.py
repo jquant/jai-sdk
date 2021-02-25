@@ -1145,7 +1145,7 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def match(self, name: str, data_left, data_right, top_k: int = 20):
+    def match(self, name: str, data_left, data_right, top_k: int = 20, overwrite=False):
         """
         Experimental
         Match two datasets with their possible equal values.
@@ -1183,7 +1183,7 @@ class Jai:
            3            4          NaN          NaN
            4            5            5         0.15
         """
-        if name not in self.names:
+        if name not in self.names or overwrite:
             nt = np.clip(np.round(len(data_left) / 10, -3), 1000, 10000)
             self.setup(
                 name, data_left, db_type="TextEdit", hyperparams={"nt": nt},
@@ -1191,7 +1191,7 @@ class Jai:
             self.wait_setup(name, 20)
         return self.similar(name, data_right, top_k=top_k)
 
-    def resolution(self, name: str, data, top_k: int = 20):
+    def resolution(self, name: str, data, top_k: int = 20, overwrite=False):
         """
         Experimental
         Find possible duplicated values within the data.
@@ -1224,7 +1224,7 @@ class Jai:
            2            3          NaN          NaN
            3            4            5         0.15
         """
-        if name not in self.names:
+        if name not in self.names or overwrite:
             nt = np.clip(np.round(len(data) / 10, -3), 1000, 10000)
             self.setup(name, data, db_type="TextEdit", hyperparams={"nt": nt})
             self.wait_setup(name, 20)
