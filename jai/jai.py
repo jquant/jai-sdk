@@ -334,9 +334,7 @@ class Jai():
 
         """
         dtypes = self.info
-        if len(dtypes) == 0:
-            raise ValueError("No databases were found.")
-        elif any(dtypes['db_name'] == name):
+        if self.is_valid(name):
             return dtypes.loc[dtypes['db_name'] == name, 'db_type'].values[0]
         else:
             raise ValueError(f"{name} is not a valid name.")
