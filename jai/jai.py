@@ -1,8 +1,3 @@
-"""
---- jai.py ---
-
-created by @dionisio
-"""
 import secrets
 import json
 import pandas as pd

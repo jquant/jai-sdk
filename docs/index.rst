@@ -3,13 +3,16 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to jai-sdk's documentation!
-===================================
+JAI-SDK - Trust your data!
+==========================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
+   installation
+   get_auth
+   use_cases/index
    source/jai
 
 
