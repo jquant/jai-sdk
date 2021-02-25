@@ -1186,7 +1186,11 @@ class Jai:
         if name not in self.names or overwrite:
             nt = np.clip(np.round(len(data_left) / 10, -3), 1000, 10000)
             self.setup(
-                name, data_left, db_type="TextEdit", hyperparams={"nt": nt},
+                name,
+                data_left,
+                db_type="TextEdit",
+                overwrite=overwrite,
+                hyperparams={"nt": nt},
             )
             self.wait_setup(name, 20)
         return self.similar(name, data_right, top_k=top_k)
@@ -1226,7 +1230,13 @@ class Jai:
         """
         if name not in self.names or overwrite:
             nt = np.clip(np.round(len(data) / 10, -3), 1000, 10000)
-            self.setup(name, data, db_type="TextEdit", hyperparams={"nt": nt})
+            self.setup(
+                name,
+                data,
+                db_type="TextEdit",
+                overwrite=overwrite,
+                hyperparams={"nt": nt},
+            )
             self.wait_setup(name, 20)
         return self.similar(name, data.index, top_k=top_k)
 
