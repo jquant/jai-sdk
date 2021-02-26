@@ -7,7 +7,7 @@ JAI-SDK - Trust your data!
 ==========================
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Getting Started
 
    installation
@@ -15,15 +15,18 @@ JAI-SDK - Trust your data!
 
 .. toctree::
    :maxdepth: 1
-   :caption: Use Cases
+   :caption: Use cases
 
-   use_cases/index
+   use_cases/setup_data
+   use_cases/check_database
+   use_cases/similarity
+   use_cases/remove_data
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: API Reference
    
-   source/jai
+   source/api_ref
 
 
 Indices and tables

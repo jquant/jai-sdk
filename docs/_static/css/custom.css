@@ -73,3 +73,7 @@ html.writer-html5
   background: #5a375520;
   color: #5a3755;
 }
+
+.wy-menu-vertical li span.toctree-expand {
+  color: #ffffff;
+}
