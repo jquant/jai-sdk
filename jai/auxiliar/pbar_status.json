@@ -79,5 +79,11 @@
         "^.*(Backing up vectors and IDs).*$", 
         "^.*(Making database info available).*$", 
         "^.*(model training for).*(has ended).*$"
+    ],
+    "Add": [
+        "^.*(Vectors being added).*$", 
+        "^.*(New data is being processed).*$", 
+        "^.*(Making vectors backup).*$",
+        "^.*(Vectors added successfully).*$"
     ]
 }

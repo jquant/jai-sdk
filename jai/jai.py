@@ -12,7 +12,7 @@ import time
 
 from .functions.utils_funcs import data2json
 from .functions.classes import PossibleDtypes, Mode
-from .auxiliar import pbar_steps
+from .functions.auxiliar import pbar_steps
 from pandas.api.types import is_integer_dtype
 from tqdm import trange, tqdm
 
@@ -118,12 +118,15 @@ class Jai():
         }
         ```
         """
-        response = requests.get(self.base_api_url + '/status',
-                                headers=self.header)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return self.assert_status_code(response)
+        for attempt in range(3):
+            response = requests.get(self.base_api_url + '/status',
+                                    headers=self.header)
+            if (response.status_code == 200):
+                return response.json()
+            elif attempt < 2:
+                time.sleep(1)
+            else:
+                return self.assert_status_code(response)
 
     def generate_name(self,
                       length: int = 8,
@@ -616,6 +619,7 @@ class Jai():
               data,
               db_type: str,
               batch_size: int = 16384,
+              frequency_seconds: int = 0,
               **kwargs):
         """
         Insert data and train model. This is JAI's crème de la crème.
@@ -675,9 +679,17 @@ class Jai():
 
         # train model
         setup_response = self._setup_database(name, db_type, **kwargs)
+
+        if frequency_seconds < 1:
+            self.wait_setup(name=name, frequency_seconds=frequency_seconds)
+
         return insert_responses, setup_response
 
-    def add_data(self, name: str, data, batch_size: int = 16384):
+    def add_data(self,
+                 name: str,
+                 data,
+                 batch_size: int = 16384,
+                 frequency_seconds: int = 0):
         """
         Insert raw data and extract their latent representation.
 
@@ -720,6 +732,9 @@ class Jai():
 
         # add data per se
         add_data_response = self._append(name=name)
+
+        if frequency_seconds < 1:
+            self.wait_setup(name=name, frequency_seconds=frequency_seconds)
 
         return insert_responses, add_data_response
 
@@ -936,7 +951,7 @@ class Jai():
             time.sleep(1)
         step = starts_at
         aux = 0
-        with tqdm(total=max_steps, desc="Setup is working") as pbar:
+        with tqdm(total=max_steps, desc="JAI is working") as pbar:
             while status['Status'] != 'Task ended successfully.':
                 if status['Status'] == 'Something went wrong.':
                     raise BaseException(status['Description'])
@@ -950,9 +965,11 @@ class Jai():
                 time.sleep(frequency_seconds)
                 status = self._wait_status(name)
                 aux += 1
-            if (starts_at != max_steps):
+            if (starts_at != max_steps) and aux != 0:
                 diff = max_steps - starts_at
                 pbar.update(diff)
+            elif (starts_at != max_steps) and aux == 0:
+                pbar.update(max_steps)
         return status
 
     def delete_raw_data(self, name: str):
