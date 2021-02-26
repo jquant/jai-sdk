@@ -26,7 +26,8 @@ JAI-SDK - Trust your data!
    :maxdepth: 2
    :caption: API Reference
    
-   source/api_ref
+   source/jai
+   source/application
 
 
 Indices and tables
