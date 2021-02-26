@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Feb 12 12:35:32 2021
+# """
+# Created on Fri Feb 12 12:35:32 2021
 
-@author: Kazu
-"""
+# @author: Kazu
+# """
 from enum import Enum
 
 __all__ = ['FieldName', 'Mode', 'PossibleDtypes']
+
 
 class PossibleDtypes(str, Enum):
     image = "Image"
@@ -23,7 +24,6 @@ class FieldName(str, Enum):
 
     def __str__(self):
         return str(self.value)
-
 
 
 class Mode(str, Enum):

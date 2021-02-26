@@ -8,11 +8,21 @@ JAI-SDK - Trust your data!
 
 .. toctree::
    :maxdepth: 1
-   :caption: Contents:
+   :caption: Getting Started
 
    installation
    get_auth
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Use Cases
+
    use_cases/index
+
+.. toctree::
+   :maxdepth: 1
+   :caption: API Reference
+   
    source/jai
 
 

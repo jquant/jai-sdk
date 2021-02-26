@@ -1,6 +1,3 @@
-Use cases
-=========
-
 .. toctree::
     :maxdepth: 1
 

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Feb 18 21:39:24 2021
+# """
+# Created on Thu Feb 18 21:39:24 2021
 
-@author: Kazu
-"""
+# @author: Kazu
+# """
 
 import pandas as pd
 import numpy as np
@@ -50,12 +50,15 @@ def match(data1, data2, auth_key, name=None):
     """
     top_k = 20
     j = Jai(auth_key)
-    nt = np.clip(np.round(len(data1)/10, -3), 1000, 10000)
+    nt = np.clip(np.round(len(data1) / 10, -3), 1000, 10000)
     if name is None:
         name = j.generate_name(20, prefix='sdk_', suffix='')
     print(f"name: {name}")
     if name not in j.names:
-        j.setup(name, data1, batch_size=10000, db_type='TextEdit',
+        j.setup(name,
+                data1,
+                batch_size=10000,
+                db_type='TextEdit',
                 hyperparams={"nt": nt})
         j.wait_setup(name, 20)
         j.delete_raw_data(name)
@@ -97,19 +100,22 @@ def resolution(data, auth_key, name=None):
     """
     top_k = 20
     j = Jai(auth_key)
-    nt = np.clip(np.round(len(data)/10, -3), 1000, 10000)
+    nt = np.clip(np.round(len(data) / 10, -3), 1000, 10000)
     if name is None:
         name = j.generate_name(20, prefix='sdk_', suffix='')
     print(f"name: {name}")
     if name not in j.names:
-        j.setup(name, data, batch_size=10000, db_type='TextEdit',
+        j.setup(name,
+                data,
+                batch_size=10000,
+                db_type='TextEdit',
                 hyperparams={"nt": nt})
         j.wait_setup(name, 20)
         j.delete_raw_data(name)
     return j.similar(name, data.index, top_k=top_k, batch_size=10000)
 
 
-def fill(data, column:str, auth_key, name=None, **kwargs):
+def fill(data, column: str, auth_key, name=None, **kwargs):
     """
     Experimental
 
@@ -166,15 +172,14 @@ def fill(data, column:str, auth_key, name=None, **kwargs):
     vals = data[column].value_counts() < 2
     if vals.sum() > 0:
         eliminate = vals[vals].index.tolist()
-        print(f"values {eliminate} from column {column} were removed for having less than 2 examples.")
+        print(
+            f"values {eliminate} from column {column} were removed for having less than 2 examples."
+        )
         data.loc[data[column].isin(eliminate), column] = None
 
     print(f"name: {name}")
-    label = {"task": "metric_classification",
-             "label_name": column}
-    split = {"type": 'stratified',
-             "split_column": column,
-             "test_size": .2}
+    label = {"task": "metric_classification", "label_name": column}
+    split = {"type": 'stratified', "split_column": column, "test_size": .2}
     mycelia_bases = kwargs.get("mycelia_bases", [])
     mycelia_bases.extend(prep_bases)
 
@@ -183,8 +188,13 @@ def fill(data, column:str, auth_key, name=None, **kwargs):
     test = data.loc[mask].drop(columns=[column])
 
     if name not in j.names:
-        j.setup(name, train, batch_size=10000, db_type='Supervised',
-                hyperparams={"learning_rate": 0.001}, label=label, split=split,
+        j.setup(name,
+                train,
+                batch_size=10000,
+                db_type='Supervised',
+                hyperparams={"learning_rate": 0.001},
+                label=label,
+                split=split,
                 **kwargs)
         j.wait_setup(name, 20)
         j.delete_raw_data(name)
@@ -192,8 +202,14 @@ def fill(data, column:str, auth_key, name=None, **kwargs):
     return j.predict(name, test, predict_proba=True, batch_size=10000)
 
 
-def sanity(data, auth_key, data_validate=None, columns_ref: list=None,
-           name:str=None, frac:float= .1, random_seed=42, **kwargs):
+def sanity(data,
+           auth_key,
+           data_validate=None,
+           columns_ref: list = None,
+           name: str = None,
+           frac: float = .1,
+           random_seed=42,
+           **kwargs):
     """
     Experimental
 
@@ -247,7 +263,8 @@ def sanity(data, auth_key, data_validate=None, columns_ref: list=None,
     target = ['is_valid', 'is_sound', 'valid', 'sanity', 'target']
     mask_target = np.logical_not(np.isin(np.array(target), data.columns))
     if not mask_target.any():
-        raise ValueError(f"at least one of the values ({target}) should not be in columns.")
+        raise ValueError(
+            f"at least one of the values ({target}) should not be in columns.")
     target = np.array(target)[mask_target][0]
     data = data.copy()
     if data_validate is not None:
@@ -286,16 +303,13 @@ def sanity(data, auth_key, data_validate=None, columns_ref: list=None,
         data_validate = data_validate.drop(columns=pre)
 
     print(f"name: {name}")
-    label = {"task": "metric_classification",
-             "label_name": target}
-    split = {"type": 'stratified',
-             "split_column": target,
-             "test_size": .2}
+    label = {"task": "metric_classification", "label_name": target}
+    split = {"type": 'stratified', "split_column": target, "test_size": .2}
     mycelia_bases = kwargs.get("mycelia_bases", [])
     mycelia_bases.extend(prep_bases)
 
     def change(options, original):
-        return np.random.choice(options[options!=original])
+        return np.random.choice(options[options != original])
 
     # get a sample of the data and shuffle it
     sample = []
@@ -310,7 +324,7 @@ def sanity(data, auth_key, data_validate=None, columns_ref: list=None,
     sample[target] = "Invalid"
 
     # set index of samples with different values as data
-    idx = np.arange(len(data)+len(sample))
+    idx = np.arange(len(data) + len(sample))
     mask_idx = np.logical_not(np.isin(idx, data.index))
     sample.index = idx[mask_idx][:len(sample)]
 
@@ -321,11 +335,15 @@ def sanity(data, auth_key, data_validate=None, columns_ref: list=None,
     else:
         test = data_validate.copy()
 
-
     if name not in j.names:
-        j.setup(name, train, batch_size=10000, db_type='Supervised',
-                  hyperparams={"learning_rate": 0.001}, label=label, split=split,
-                  **kwargs)
+        j.setup(name,
+                train,
+                batch_size=10000,
+                db_type='Supervised',
+                hyperparams={"learning_rate": 0.001},
+                label=label,
+                split=split,
+                **kwargs)
         j.wait_setup(name, 20)
         j.delete_raw_data(name)
 
@@ -362,15 +380,18 @@ def embedding(data, auth_key, name=None, db_type='FastText'):
         name = name.lower().replace('-', '_').replace(' ', '_')[:35]
 
     if db_type == "FastText":
-        hyperparams={"minn": 0, "maxn": 0}
+        hyperparams = {"minn": 0, "maxn": 0}
     elif db_type == "TextEdit":
-        nt = np.clip(np.round(len(data)/10, -3), 1000, 10000)
-        hyperparams={"nt": nt}
+        nt = np.clip(np.round(len(data) / 10, -3), 1000, 10000)
+        hyperparams = {"nt": nt}
     else:
-        hyperparams=None
+        hyperparams = None
     print(f"name: {name}")
     if name not in j.names:
-        j.setup(name, data, batch_size=10000, db_type=db_type,
+        j.setup(name,
+                data,
+                batch_size=10000,
+                db_type=db_type,
                 hyperparams=hyperparams)
         j.wait_setup(name, 10)
         j.delete_raw_data(name)
