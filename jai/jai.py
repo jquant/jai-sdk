@@ -143,15 +143,12 @@ class Jai:
         }
         ```
         """
-        for attempt in range(6):
-            response = requests.get(self.base_api_url + '/status',
-                                    headers=self.header)
-            if (response.status_code == 200):
-                return response.json()
-            elif attempt < 4:
-                time.sleep(1)
-            else:
-                return self.assert_status_code(response)
+        response = requests.get(self.base_api_url + '/status',
+                                headers=self.header)
+        if (response.status_code == 200):
+            return response.json()
+        else:
+            return self.assert_status_code(response)
 
     def generate_name(self,
                       length: int = 8,
@@ -1060,7 +1057,7 @@ class Jai:
 
         """
         status = self.status
-        max_trials = 5
+        max_trials = 6
         patience = 60  # time in seconds that we'll wait
         trials = 0
         while trials < max_trials:
