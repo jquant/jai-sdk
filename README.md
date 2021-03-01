@@ -2,7 +2,7 @@
 JAI SDK - Trust your data
 
 # Installation
-The source code is currently hosted on GitHub at: [https://github.com/jquant/jai-sd](https://github.com/jquant/jai-sdk)
+The source code is currently hosted on GitHub at: [https://github.com/jquant/jai-sdk](https://github.com/jquant/jai-sdk)
 
 Installing jai-sdk using `pip`:
 

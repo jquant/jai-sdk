@@ -10,10 +10,10 @@ from .auxiliar_funcs.classes import PossibleDtypes, Mode
 from pandas.api.types import is_integer_dtype
 from tqdm import trange
 
-__all__ = ['Jai']
+__all__ = ["Jai"]
 
 
-class Jai():
+class Jai:
     """
     Base class for communication with the Mycelia API.
 
@@ -42,13 +42,13 @@ class Jai():
 
         """
         if url is None:
-            self.base_api_url = 'https://mycelia.azure-api.net'
-            self.header = {'Auth': auth_key}
+            self.base_api_url = "https://mycelia.azure-api.net"
+            self.header = {"Auth": auth_key}
         else:
-            if url.endswith('/'):
+            if url.endswith("/"):
                 url = url[:-1]
             self.base_api_url = url
-            self.header = {'company-key': auth_key}
+            self.header = {"company-key": auth_key}
 
     @property
     def names(self):
@@ -69,8 +69,9 @@ class Jai():
         ['jai_database', 'jai_unsupervised', 'jai_supervised']
 
         """
-        response = requests.get(url=self.base_api_url + '/info?mode=names',
-                                headers=self.header)
+        response = requests.get(
+            url=self.base_api_url + "/info?mode=names", headers=self.header
+        )
         if response.status_code == 200:
             return response.json()
         else:
@@ -98,13 +99,13 @@ class Jai():
         1              jai_unsupervised  Unsupervised
         2                jai_supervised    Supervised
         """
-        response = requests.get(url=self.base_api_url + '/info?mode=complete',
-                                headers=self.header)
+        response = requests.get(
+            url=self.base_api_url + "/info?mode=complete", headers=self.header
+        )
         if response.status_code == 200:
-            df = pd.DataFrame(response.json()).rename({
-                'db_name': 'name',
-                'db_type': 'type'
-            })
+            df = pd.DataFrame(response.json()).rename(
+                {"db_name": "name", "db_type": "type"}
+            )
             return df
         else:
             return self.assert_status_code(response)
@@ -132,17 +133,13 @@ class Jai():
             "Description": "Training of database YOUR_DATABASE has ended."
         }
         """
-        response = requests.get(self.base_api_url + '/status',
-                                headers=self.header)
+        response = requests.get(self.base_api_url + "/status", headers=self.header)
         if response.status_code == 200:
             return response.json()
         else:
             return self.assert_status_code(response)
 
-    def generate_name(self,
-                      length: int = 8,
-                      prefix: str = '',
-                      suffix: str = ''):
+    def generate_name(self, length: int = 8, prefix: str = "", suffix: str = ""):
         """
 
         Generate a random string. You can pass a prefix and/or suffix. In this case,
@@ -178,7 +175,7 @@ class Jai():
                 f"length {length} is should be larger than {len_prefix+len_suffix} for prefix and suffix inputed."
             )
 
-        length -= (len_prefix + len_suffix)
+        length -= len_prefix + len_suffix
         code = secrets.token_hex(length)[:length].lower()
         name = str(prefix) + str(code) + str(suffix)
         names = self.names
@@ -196,11 +193,7 @@ class Jai():
         print(response.json())
         return response
 
-    def similar(self,
-                name: str,
-                data,
-                top_k: int = 5,
-                batch_size: int = 16384):
+    def similar(self, name: str, data, top_k: int = 5, batch_size: int = 16384):
         """
         Query a database in search for the `top_k` most similar entries for each
         input data passed as argument.
@@ -245,28 +238,24 @@ class Jai():
         for i in trange(0, len(data), batch_size, desc="Similar"):
             if is_id:
                 if isinstance(data, pd.Series):
-                    _batch = data.iloc[i:i + batch_size].tolist()
+                    _batch = data.iloc[i : i + batch_size].tolist()
                 elif isinstance(data, pd.Index):
-                    _batch = data[i:i + batch_size].tolist()
+                    _batch = data[i : i + batch_size].tolist()
                 else:
-                    _batch = data[i:i + batch_size].tolist()
+                    _batch = data[i : i + batch_size].tolist()
                 res = self._similar_id(name, _batch, top_k=top_k)
             else:
                 if isinstance(data, (pd.Series, pd.DataFrame)):
-                    _batch = data.iloc[i:i + batch_size]
+                    _batch = data.iloc[i : i + batch_size]
                 else:
-                    _batch = data[i:i + batch_size]
-                res = self._similar_json(name,
-                                         data2json(_batch, dtype=dtype),
-                                         top_k=top_k)
-            results.extend(res['similarity'])
+                    _batch = data[i : i + batch_size]
+                res = self._similar_json(
+                    name, data2json(_batch, dtype=dtype), top_k=top_k
+                )
+            results.extend(res["similarity"])
         return results
 
-    def _similar_id(self,
-                    name: str,
-                    id_item: int,
-                    top_k: int = 5,
-                    method="PUT"):
+    def _similar_id(self, name: str, id_item: int, top_k: int = 5, method="PUT"):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given an id.
         This is a protected method.
@@ -289,12 +278,12 @@ class Jai():
         """
         if method == "GET":
             if isinstance(id_item, list):
-                id_req = '&'.join(['id=' + str(i) for i in set(id_item)])
-                url = self.base_api_url + \
-                    f"/similar/id/{name}?{id_req}&top_k={top_k}"
+                id_req = "&".join(["id=" + str(i) for i in set(id_item)])
+                url = self.base_api_url + f"/similar/id/{name}?{id_req}&top_k={top_k}"
             elif isinstance(id_item, int):
-                url = self.base_api_url + \
-                    f"/similar/id/{name}?id={id_item}&top_k={top_k}"
+                url = (
+                    self.base_api_url + f"/similar/id/{name}?id={id_item}&top_k={top_k}"
+                )
             else:
                 raise TypeError(
                     f"id_item param must be int or list, {type(id_item)} found."
@@ -311,8 +300,11 @@ class Jai():
                     f"id_item param must be int or list, {type(id_item)} found."
                 )
 
-            response = requests.put(self.base_api_url + \
-                    f"/similar/id/{name}?top_k={top_k}", headers=self.header, data=json.dumps(id_item))
+            response = requests.put(
+                self.base_api_url + f"/similar/id/{name}?top_k={top_k}",
+                headers=self.header,
+                data=json.dumps(id_item),
+            )
         else:
             raise ValueError("method must be GET or PUT.")
 
@@ -342,10 +334,8 @@ class Jai():
 
         """
         dtypes = self.info
-        if len(dtypes) == 0:
-            raise ValueError("No databases were found.")
-        elif any(dtypes['db_name'] == name):
-            return dtypes.loc[dtypes['db_name'] == name, 'db_type'].values[0]
+        if self.is_valid(name):
+            return dtypes.loc[dtypes["db_name"] == name, "db_type"].values[0]
         else:
             raise ValueError(f"{name} is not a valid name.")
 
@@ -400,26 +390,27 @@ class Jai():
         if isinstance(data, (list, np.ndarray)):
             data = pd.Series(data)
         elif not isinstance(data, (pd.Series, pd.DataFrame)):
-            raise TypeError(f"Inserted data is of type {type(data)},\
- but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame")
+            raise TypeError(
+                f"Inserted data is of type {type(data)},\
+ but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame"
+            )
         if db_type in [
-                PossibleDtypes.text, PossibleDtypes.fasttext,
-                PossibleDtypes.edit
+            PossibleDtypes.text,
+            PossibleDtypes.fasttext,
+            PossibleDtypes.edit,
         ]:
             data = data.dropna()
         else:
             cols_to_drop = []
-            for col in data.select_dtypes(include='category').columns:
+            for col in data.select_dtypes(include="category").columns:
                 if data[col].nunique() > 1024:
                     cols_to_drop.append(col)
             data = data.dropna(subset=cols_to_drop)
         return data
 
-    def predict(self,
-                name: str,
-                data,
-                predict_proba: bool = False,
-                batch_size: int = 16384):
+    def predict(
+        self, name: str, data, predict_proba: bool = False, batch_size: int = 16384
+    ):
         """
         Predict the output of new data for a given database.
 
@@ -458,12 +449,12 @@ class Jai():
         results = []
         for i in trange(0, len(data), batch_size, desc="Predict"):
             if isinstance(data, (pd.Series, pd.DataFrame)):
-                _batch = data.iloc[i:i + batch_size]
+                _batch = data.iloc[i : i + batch_size]
             else:
-                _batch = data[i:i + batch_size]
-            res = self._predict(name,
-                                data2json(_batch, dtype=dtype),
-                                predict_proba=predict_proba)
+                _batch = data[i : i + batch_size]
+            res = self._predict(
+                name, data2json(_batch, dtype=dtype), predict_proba=predict_proba
+            )
             results.extend(res)
         return results
 
@@ -494,16 +485,12 @@ class Jai():
         else:
             return self.assert_status_code(response)
 
-    def ids(self, name: str, mode: Mode = 'simple'):
+    def ids(self, name: str, mode: Mode = "simple"):
         """
         Get id information of a given database.
 
         Args
-        ----------
-        name : str
-            String with the name of a database in your JAI environment.
         mode : str, optional
-            Level of detail to return. Possible values are 'simple', 'summarized' or 'complete'.
 
         Return
         -------
@@ -519,8 +506,9 @@ class Jai():
         >>> print(ids)
         ['891 items from 0 to 890']
         """
-        response = requests.get(self.base_api_url + f'/id/{name}?mode={mode}',
-                                headers=self.header)
+        response = requests.get(
+            self.base_api_url + f"/id/{name}?mode={mode}", headers=self.header
+        )
         if response.status_code == 200:
             return response.json()
         else:
@@ -548,14 +536,10 @@ class Jai():
         >>> print(check_valid)
         True
         """
-        response = requests.get(self.base_api_url + f'/validation/{name}',
-                                headers=self.header)
-        if response.status_code == 200:
-            return response.json()['value']
+        response = requests.get(
+            return response.json()["value"]
         else:
-            return self.assert_status_code(response)
-
-    def _temp_ids(self, name: str, mode: Mode = 'simple'):
+    def _temp_ids(self, name: str, mode: Mode = "simple"):
         """
         Get id information of a RAW database (i.e., before training). This is a protected method
 
@@ -572,9 +556,9 @@ class Jai():
             List with the actual ids (mode: 'complete') or a summary of ids
             ('simple'/'summarized') of the given database.
         """
-        response = requests.get(self.base_api_url +
-                                f'/setup/ids/{name}?mode={mode}',
-                                headers=self.header)
+        response = requests.get(
+            self.base_api_url + f"/setup/ids/{name}?mode={mode}", headers=self.header
+        )
         if response.status_code == 200:
             return response.json()
         else:
@@ -600,11 +584,11 @@ class Jai():
             information of whether or not that particular batch was successfully inserted.
         """
         insert_responses = {}
-        for i, b in enumerate(
-                trange(0, len(data), batch_size, desc="Insert Data")):
-            _batch = data.iloc[b:b + batch_size]
+        for i, b in enumerate(trange(0, len(data), batch_size, desc="Insert Data")):
+            _batch = data.iloc[b : b + batch_size]
             insert_responses[i] = self._insert_json(
-                name, data2json(_batch, dtype=db_type))
+                name, data2json(_batch, dtype=db_type)
+            )
         return insert_responses
 
     def _check_ids_consistency(self, name, data):
@@ -631,12 +615,7 @@ class Jai():
             raise Exception(
                 "Something went wrong on data insertion. Please try again.")
 
-    def setup(self,
-              name: str,
-              data,
-              db_type: str,
-              batch_size: int = 16384,
-              **kwargs):
+    def setup(self, name: str, data, db_type: str, batch_size: int = 16384, **kwargs):
         """
         Insert data and train model. This is JAI's crème de la crème.
 
@@ -684,10 +663,9 @@ class Jai():
         data = self._check_dtype_and_clean(data=data, db_type=db_type)
 
         # insert data
-        insert_responses = self._insert_data(data=data,
-                                             name=name,
-                                             batch_size=batch_size,
-                                             db_type=db_type)
+        insert_responses = self._insert_data(
+            data=data, name=name, batch_size=batch_size, db_type=db_type
+        )
 
         # check if we inserted everything we were supposed to
         self._check_ids_consistency(name=name, data=data)
@@ -729,10 +707,9 @@ class Jai():
         data = self._check_dtype_and_clean(data=data, db_type=db_type)
 
         # insert data
-        insert_responses = self._insert_data(data=data,
-                                             name=name,
-                                             batch_size=batch_size,
-                                             db_type=db_type)
+        insert_responses = self._insert_data(
+            data=data, name=name, batch_size=batch_size, db_type=db_type
+        )
 
         # check if we inserted everything we were supposed to
         self._check_ids_consistency(name=name, data=data)
@@ -757,8 +734,9 @@ class Jai():
         response : dict
             Dictionary with the API response.
         """
-        response = requests.patch(self.base_api_url + f'/data/{name}',
-                                  headers=self.header)
+        response = requests.patch(
+            self.base_api_url + f"/data/{name}", headers=self.header
+        )
         if response.status_code == 202:
             return response.json()
         else:
@@ -783,11 +761,9 @@ class Jai():
         response = requests.post(self.base_api_url + f'/data/{name}',
                                  headers=self.header,
                                  data=df_json)
-        if response.status_code == 200:
             return response.json()
         else:
             return self.assert_status_code(response)
-
     def _check_kwargs(self, db_type, **kwargs):
         """
         Sanity checks in the keyword arguments.
@@ -803,18 +779,24 @@ class Jai():
         body: dict
             Body to be sent in the POST request to the API.
         """
-        possible = ['hyperparams', 'callback_url']
+        possible = ["hyperparams", "callback_url"]
         must = []
         if db_type == "Unsupervised":
-            possible.extend([
-                'num_process', 'cat_process', 'high_process', 'mycelia_bases'
-            ])
+            possible.extend(
+                ["num_process", "cat_process", "high_process", "mycelia_bases"]
+            )
         elif db_type == "Supervised":
-            possible.extend([
-                'num_process', 'cat_process', 'high_process', 'mycelia_bases',
-                'label', 'split'
-            ])
-            must.extend(['label', 'split'])
+            possible.extend(
+                [
+                    "num_process",
+                    "cat_process",
+                    "high_process",
+                    "mycelia_bases",
+                    "label",
+                    "split",
+                ]
+            )
+            must.extend(["label", "split"])
 
         missing = [key for key in must if kwargs.get(key, None) is None]
         if len(missing) > 0:
@@ -831,7 +813,7 @@ class Jai():
                 print(f"{key}: {val}")
                 body[key] = val
 
-        body['db_type'] = db_type
+        body["db_type"] = db_type
         return body
 
     def _setup_database(self, name: str, db_type, overwrite=False, **kwargs):
@@ -857,10 +839,11 @@ class Jai():
             Dictionary with the API response.
         """
         body = self._check_kwargs(db_type=db_type, **kwargs)
-        response = requests.post(self.base_api_url +
-                                 f'/setup/{name}?overwrite={overwrite}',
-                                 headers=self.header,
-                                 data=json.dumps(body))
+        response = requests.post(
+            self.base_api_url + f"/setup/{name}?overwrite={overwrite}",
+            headers=self.header,
+            data=json.dumps(body),
+        )
 
         if response.status_code == 201:
             return response.json()
@@ -895,8 +878,9 @@ class Jai():
                 "'fields' method is only available to dtype Unsupervised and Supervised."
             )
 
-        response = requests.get(self.base_api_url + f'/table/fields/{name}',
-                                headers=self.header)
+        response = requests.get(
+            self.base_api_url + f"/table/fields/{name}", headers=self.header
+        )
         if response.status_code == 200:
             return response.json()
         else:
@@ -948,17 +932,17 @@ class Jai():
         None
         """
         status = self._wait_status(name)
-        while status['Status'] != 'Task ended successfully.':
-            if status['Status'] == 'Something went wrong.':
-                raise BaseException(status['Description'])
+        while status["Status"] != "Task ended successfully.":
+            if status["Status"] == "Something went wrong.":
+                raise BaseException(status["Description"])
             # spinning thing loop
             for x in range(int(frequency_seconds) * 5):
-                for frame in r'-\|/-\|/':
-                    print('\b', frame, sep='', end='', flush=True)
+                for frame in r"-\|/-\|/":
+                    print("\b", frame, sep="", end="", flush=True)
                     time.sleep(0.2)
 
             status = self._wait_status(name)
-        print(status['Description'])
+        print(status["Description"])
         return status
 
     def delete_raw_data(self, name: str):
@@ -982,8 +966,9 @@ class Jai():
         >>> j.delete_raw_data(name=name)
         'All raw data from database 'chosen_name' was deleted!'
         """
-        response = requests.delete(self.base_api_url + f'/data/{name}',
-                                   headers=self.header)
+        response = requests.delete(
+            self.base_api_url + f"/data/{name}", headers=self.header
+        )
         if response.status_code == 200:
             return response.json()
         else:
@@ -1010,9 +995,386 @@ class Jai():
         >>> j.delete_database(name=name)
         'Bombs away! We nuked database chosen_name!'
         """
-        response = requests.delete(self.base_api_url + f'/database/{name}',
-                                   headers=self.header)
+        response = requests.delete(
+            self.base_api_url + f"/database/{name}", headers=self.header
+        )
         if response.status_code == 200:
             return response.json()
         else:
             return self.assert_status_code(response)
+            
+            
+    def match(self, name: str, data_left, data_right, top_k: int = 20, overwrite=False):
+        """
+        Experimental
+        Match two datasets with their possible equal values.
+
+        Queries the data right to get the similar results in data left.
+
+        Parameters
+        ----------
+        name: str
+            String with the name of a database in your JAI environment.
+        data_left, data_right : text
+            data to be matched.
+
+        Returns
+        -------
+        dict
+            each key is the id from data_right and the value is a list of ids from data_left
+            that match.
+
+        Example
+        -------
+        >>> import pandas as pd
+        >>> from jai.applications import match
+        >>> from jai.auxiliar_funcs.utils_funcs import process_similar
+        >>>
+        >>> j = Jai(AUTH_KEY)
+        >>> results = j.match(name, data1, data2)
+        >>> processed = process_similar(results, return_self=True)
+        >>> pd.DataFrame(processed).sort_values('query_id')
+        >>> # query_id is from data_right and id is from data_left
+                 query_id           id     distance
+           0            1            2         0.11
+           1            2            1         0.11
+           2            3          NaN          NaN
+           3            4          NaN          NaN
+           4            5            5         0.15
+        """
+        if name not in self.names or overwrite:
+            nt = np.clip(np.round(len(data_left) / 10, -3), 1000, 10000)
+            self.setup(
+                name,
+                data_left,
+                db_type="TextEdit",
+                overwrite=overwrite,
+                hyperparams={"nt": nt},
+            )
+            self.wait_setup(name, 20)
+        return self.similar(name, data_right, top_k=top_k)
+
+    def resolution(self, name: str, data, top_k: int = 20, overwrite=False):
+        """
+        Experimental
+        Find possible duplicated values within the data.
+
+        Parameters
+        ----------
+        name: str
+            String with the name of a database in your JAI environment.
+        data : text
+            data to find duplicates.
+
+        Returns
+        -------
+        dict
+            each key is the id and the value is a list of ids that are duplicates.
+
+        Example
+        -------
+        >>> import pandas as pd
+        >>> from jai.applications import resolution
+        >>> from jai.auxiliar_funcs.utils_funcs import process_similar
+        >>>
+        >>> j = Jai(AUTH_KEY)
+        >>> results = resolution(name, data)
+        >>> processed = process_similar(results, return_self=True)
+        >>> pd.DataFrame(processed).sort_values('query_id')
+                 query_id           id     distance
+           0            1            2         0.11
+           1            2            1         0.11
+           2            3          NaN          NaN
+           3            4            5         0.15
+        """
+        if name not in self.names or overwrite:
+            nt = np.clip(np.round(len(data) / 10, -3), 1000, 10000)
+            self.setup(
+                name,
+                data,
+                db_type="TextEdit",
+                overwrite=overwrite,
+                hyperparams={"nt": nt},
+            )
+            self.wait_setup(name, 20)
+        return self.similar(name, data.index, top_k=top_k)
+
+    def fill(self, name: str, data, column: str, **kwargs):
+        """
+        Experimental
+        Fills the column in data with the most likely value given the other columns.
+
+        Parameters
+        ----------
+        name: str
+            String with the name of a database in your JAI environment.
+        data : pd.DataFrame
+            data to fill NaN.
+        column : str
+            name of the column to be filled.
+        **kwargs : TYPE
+            Extra args for supervised model.
+
+        Returns
+        -------
+        list of dicts
+            List of dicts with possible filling values for each id with column NaN.
+
+        Example
+        -------
+        >>> import pandas as pd
+        >>> from jai.applications import fill
+        >>> from jai.auxiliar_funcs.utils_funcs import process_predict
+        >>>
+        >>> j = Jai(AUTH_KEY)
+        >>> results = j.fill(name, data, COL_TO_FILL)
+        >>> processed = process_similar(results)
+        >>> pd.DataFrame(processed).sort_values('id')
+                  id   sanity_prediction    confidence_level (%)
+           0       1             value_1                    70.9
+           1       4             value_1                    67.3
+           2       7             value_1                    80.2
+        """
+        cat_threshold = kwargs.get("cat_threshold", 512)
+        data = data.copy()
+        vals = data[column].value_counts() < 2
+        if vals.sum() > 0:
+            eliminate = vals[vals].index.tolist()
+            print(
+                f"values {eliminate} from column {column} were removed for having less than 2 examples."
+            )
+            data.loc[data[column].isin(eliminate), column] = None
+
+        mask = data[column].isna()
+        train = data.loc[~mask].copy()
+        test = data.loc[mask].drop(columns=[column])
+
+        cat = train.select_dtypes(exclude="number")
+        pre = cat.columns[cat.nunique() > cat_threshold].tolist()
+        prep_bases = []
+        for col in pre:
+            id_col = "id_" + col
+            origin = name + "_" + col
+            origin = origin.lower().replace("-", "_").replace(" ", "_")[:35]
+            train[id_col], test[id_col] = self.embedding(origin, train[col], test[col])
+            prep_bases.append({"id_name": id_col, "db_parent": origin})
+        train = train.drop(columns=pre)
+        test = test.drop(columns=pre)
+
+        if name not in self.names:
+            label = {"task": "metric_classification", "label_name": column}
+            split = {"type": "stratified", "split_column": column, "test_size": 0.2}
+            mycelia_bases = kwargs.get("mycelia_bases", [])
+            mycelia_bases.extend(prep_bases)
+            self.setup(
+                name,
+                train,
+                db_type="Supervised",
+                hyperparams={"learning_rate": 0.001},
+                label=label,
+                split=split,
+                **kwargs,
+            )
+            self.wait_setup(name, 20)
+
+        return self.predict(name, test, predict_proba=True)
+
+    def sanity(
+        self, name: str, data, data_validate=None, columns_ref: list = None, **kwargs,
+    ):
+        """
+        Experimental
+        Validates consistency in the columns (columns_ref).
+
+        Parameters
+        ----------
+        name: str
+            String with the name of a database in your JAI environment.
+        data : pd.DataFrame
+            Data reference of sound data.
+        data_validate : TYPE, optional
+            Data to be checked if is valid or not. The default is None.
+        columns_ref : list, optional
+            Columns that can have inconsistencies. As default we use all non numeric columns.
+        **kwargs : TYPE
+            DESCRIPTION.
+
+        Raises
+        ------
+        ValueError
+            DESCRIPTION.
+
+        Returns
+        -------
+        list of dicts
+            Result of data is valid or not.
+
+        Example
+        -------
+        >>> import pandas as pd
+        >>> from jai.applications import sanity
+        >>> from jai.auxiliar_funcs.utils_funcs import process_predict
+        >>>
+        >>> j = Jai(AUTH_KEY)
+        >>> results = j.sanity(name, data)
+        >>> processed = process_predict(results)
+        >>> pd.DataFrame(processed).sort_values('id')
+                  id   sanity_prediction    confidence_level (%)
+           0       1               Valid                    70.9
+           1       4             Invalid                    67.3
+           2       7             Invalid                    80.6
+           3      13               Valid                    74.2
+        """
+        frac = kwargs.get("frac", 0.1)
+        random_seed = kwargs.get("frac", 42)
+        cat_threshold = kwargs.get("cat_threshold", 512)
+        target = kwargs.get("target", "is_valid")
+        if target in data.columns:
+            raise ValueError(f'unable to set target column (name "{target}")')
+
+        np.random.seed(random_seed)
+
+        data = data.copy()
+        if data_validate is not None:
+            data_validate = data_validate.copy()
+
+        cat = data.select_dtypes(exclude="number")
+        pre = cat.columns[cat.nunique() > cat_threshold].tolist()
+        if columns_ref is None:
+            columns_ref = cat.columns.tolist()
+
+        prep_bases = []
+        for col in pre:
+            id_col = "id_" + col
+            origin = name + "_" + col
+            origin = origin.lower().replace("-", "_").replace(" ", "_")[:35]
+            if data_validate is not None:
+                data[id_col], data_validate[id_col] = self.embedding(
+                    origin, data[col], data_validate[col]
+                )
+            else:
+                data[id_col] = self.embedding(origin, data[col])
+
+            prep_bases.append({"id_name": id_col, "db_parent": origin})
+
+            if col in columns_ref:
+                columns_ref.remove(col)
+                columns_ref.append(id_col)
+
+        data = data.drop(columns=pre)
+        if data_validate is not None:
+            data_validate = data_validate.drop(columns=pre)
+            test = data_validate.copy()
+        else:
+            test = data.copy()
+
+        if name not in self.names:
+
+            def change(options, original):
+                return np.random.choice(options[options != original])
+
+            # get a sample of the data and shuffle it
+            sample = []
+            for c in columns_ref:
+                s = data.sample(frac=frac)
+                uniques = s[c].unique()
+                s[c] = [change(uniques, v) for v in s[c]]
+                sample.append(s)
+            sample = pd.concat(sample)
+
+            # set target column values
+            sample[target] = "Invalid"
+
+            # set index of samples with different values as data
+            idx = np.arange(len(data) + len(sample))
+            mask_idx = np.logical_not(np.isin(idx, data.index))
+            sample.index = idx[mask_idx][: len(sample)]
+
+            data[target] = "Valid"
+            train = pd.concat([data, sample])
+
+            label = {"task": "metric_classification", "label_name": target}
+            split = {"type": "stratified", "split_column": target, "test_size": 0.2}
+            mycelia_bases = kwargs.get("mycelia_bases", [])
+            mycelia_bases.extend(prep_bases)
+
+            self.setup(
+                name,
+                train,
+                db_type="Supervised",
+                hyperparams={"learning_rate": 0.001},
+                label=label,
+                split=split,
+                **kwargs,
+            )
+            self.wait_setup(name, 20)
+
+        return self.predict(name, test, predict_proba=True)
+
+    def embedding(
+        self, name: str, train, test=None, db_type="FastText", hyperparams=None,
+    ):
+        """
+        Experimental
+        Quick embedding for high numbers of categories in columns.
+
+        Parameters
+        ----------
+        name : str, optional
+            DESCRIPTION. The default is None.
+        data : TYPE
+            DESCRIPTION.
+        auth_key : TYPE
+            DESCRIPTION.
+        db_type : str, optional
+            type of model to be trained. The default is 'FastText'.
+        hyperparams: optional
+            See setup documentation.
+
+        Returns
+        -------
+        name : str
+            name of the base where the data was embedded.
+
+        """
+        if isinstance(train, pd.Series):
+            train = train.copy()
+        else:
+            raise ValueError("train must be a Series")
+        n = len(train)
+        if test is None:
+            values, inverse = np.unique(train, return_inverse=True)
+        else:
+            if isinstance(test, pd.Series):
+                train = train.copy()
+            else:
+                raise ValueError("test must be a Series")
+            test = test.copy()
+            values, inverse = np.unique(
+                train.tolist() + test.tolist(), return_inverse=True
+            )
+
+        train.loc[:] = inverse[:n]
+        i_train = np.unique(inverse[:n])
+        settrain = pd.Series(values[i_train], index=i_train)
+
+        if name not in self.names:
+            self.setup(name, settrain, db_type=db_type, hyperparams=hyperparams)
+            self.wait_setup(name, 10)
+        else:
+            missing = i_train[~np.isin(i_train, self.ids(name, "complete"))]
+            if len(missing) > 0:
+                self.add_data(name, settrain.loc[missing])
+
+        if test is not None:
+            test.loc[:] = inverse[n:]
+            i_test = np.unique(inverse[n:])
+            settest = pd.Series(values[i_test], index=i_test)
+            missing = i_test[~np.isin(i_test, self.ids(name, "complete"))]
+            if len(missing) > 0:
+                self.add_data(name, settest.loc[missing])
+
+            return train, test
+        else:
+            return train
+            
