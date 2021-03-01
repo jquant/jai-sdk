@@ -22,6 +22,7 @@ class Jai:
     and more.
 
     """
+
     def __init__(self, auth_key: str, url: str = None):
         """
         Inicialize the Jai class.
@@ -133,7 +134,8 @@ class Jai:
             "Description": "Training of database YOUR_DATABASE has ended."
         }
         """
-        response = requests.get(self.base_api_url + "/status", headers=self.header)
+        response = requests.get(
+            self.base_api_url + "/status", headers=self.header)
         if response.status_code == 200:
             return response.json()
         else:
@@ -238,17 +240,17 @@ class Jai:
         for i in trange(0, len(data), batch_size, desc="Similar"):
             if is_id:
                 if isinstance(data, pd.Series):
-                    _batch = data.iloc[i : i + batch_size].tolist()
+                    _batch = data.iloc[i: i + batch_size].tolist()
                 elif isinstance(data, pd.Index):
-                    _batch = data[i : i + batch_size].tolist()
+                    _batch = data[i: i + batch_size].tolist()
                 else:
-                    _batch = data[i : i + batch_size].tolist()
+                    _batch = data[i: i + batch_size].tolist()
                 res = self._similar_id(name, _batch, top_k=top_k)
             else:
                 if isinstance(data, (pd.Series, pd.DataFrame)):
-                    _batch = data.iloc[i : i + batch_size]
+                    _batch = data.iloc[i: i + batch_size]
                 else:
-                    _batch = data[i : i + batch_size]
+                    _batch = data[i: i + batch_size]
                 res = self._similar_json(
                     name, data2json(_batch, dtype=dtype), top_k=top_k
                 )
@@ -279,10 +281,12 @@ class Jai:
         if method == "GET":
             if isinstance(id_item, list):
                 id_req = "&".join(["id=" + str(i) for i in set(id_item)])
-                url = self.base_api_url + f"/similar/id/{name}?{id_req}&top_k={top_k}"
+                url = self.base_api_url + \
+                    f"/similar/id/{name}?{id_req}&top_k={top_k}"
             elif isinstance(id_item, int):
                 url = (
-                    self.base_api_url + f"/similar/id/{name}?id={id_item}&top_k={top_k}"
+                    self.base_api_url +
+                    f"/similar/id/{name}?id={id_item}&top_k={top_k}"
                 )
             else:
                 raise TypeError(
@@ -449,9 +453,9 @@ class Jai:
         results = []
         for i in trange(0, len(data), batch_size, desc="Predict"):
             if isinstance(data, (pd.Series, pd.DataFrame)):
-                _batch = data.iloc[i : i + batch_size]
+                _batch = data.iloc[i: i + batch_size]
             else:
-                _batch = data[i : i + batch_size]
+                _batch = data[i: i + batch_size]
             res = self._predict(
                 name, data2json(_batch, dtype=dtype), predict_proba=predict_proba
             )
@@ -477,7 +481,8 @@ class Jai:
         results : dict
             Dictionary of predctions for the data passed as parameter.
         """
-        url = self.base_api_url + f"/predict/{name}?predict_proba={predict_proba}"
+        url = self.base_api_url + \
+            f"/predict/{name}?predict_proba={predict_proba}"
 
         response = requests.put(url, headers=self.header, data=data_json)
         if response.status_code == 200:
@@ -590,7 +595,7 @@ class Jai:
         """
         insert_responses = {}
         for i, b in enumerate(trange(0, len(data), batch_size, desc="Insert Data")):
-            _batch = data.iloc[b : b + batch_size]
+            _batch = data.iloc[b: b + batch_size]
             insert_responses[i] = self._insert_json(
                 name, data2json(_batch, dtype=db_type)
             )
@@ -770,6 +775,7 @@ class Jai:
             return response.json()
         else:
             return self.assert_status_code(response)
+
     def _check_kwargs(self, db_type, **kwargs):
         """
         Sanity checks in the keyword arguments.
@@ -1009,7 +1015,6 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-
     def match(self, name: str, data_left, data_right, top_k: int = 20, overwrite=False):
         """
         Experimental
@@ -1119,7 +1124,7 @@ class Jai:
         column : str
             name of the column to be filled.
         **kwargs : TYPE
-            Extra args for supervised model.
+            Extra args for supervised model. See setup method.
 
         Returns
         -------
@@ -1162,14 +1167,16 @@ class Jai:
             id_col = "id_" + col
             origin = name + "_" + col
             origin = origin.lower().replace("-", "_").replace(" ", "_")[:35]
-            train[id_col], test[id_col] = self.embedding(origin, train[col], test[col])
+            train[id_col], test[id_col] = self.embedding(
+                origin, train[col], test[col])
             prep_bases.append({"id_name": id_col, "db_parent": origin})
         train = train.drop(columns=pre)
         test = test.drop(columns=pre)
 
         if name not in self.names:
             label = {"task": "metric_classification", "label_name": column}
-            split = {"type": "stratified", "split_column": column, "test_size": 0.2}
+            split = {"type": "stratified",
+                     "split_column": column, "test_size": 0.2}
             mycelia_bases = kwargs.get("mycelia_bases", [])
             mycelia_bases.extend(prep_bases)
             self.setup(
@@ -1203,12 +1210,15 @@ class Jai:
         columns_ref : list, optional
             Columns that can have inconsistencies. As default we use all non numeric columns.
         **kwargs : TYPE
-            DESCRIPTION.
+            Extra args for supervised model except label and split. See setup method. Also:
+            frac: Percentage of the orignal dataframe to be shuffled to create
+            invalid samples for each column in columns_ref. `Default is 0.1`.
+            random_seed: random seed. `Default is 42`.
+            cat_threshold: threshold for processing categorical columns with fasttext model.
+            `Default is 512`.
+            target: target validation column. If target is already in data, shuffling is skipped.
+            `Default is "is_valid"`.
 
-        Raises
-        ------
-        ValueError
-            DESCRIPTION.
 
         Returns
         -------
@@ -1232,11 +1242,11 @@ class Jai:
            3      13               Valid                    74.2
         """
         frac = kwargs.get("frac", 0.1)
-        random_seed = kwargs.get("frac", 42)
+        random_seed = kwargs.get("random_seed", 42)
         cat_threshold = kwargs.get("cat_threshold", 512)
         target = kwargs.get("target", "is_valid")
-        if target in data.columns:
-            raise ValueError(f'unable to set target column (name "{target}")')
+
+        SKIP_SHUFFLING = target in data.columns
 
         np.random.seed(random_seed)
 
@@ -1275,32 +1285,33 @@ class Jai:
             test = data.copy()
 
         if name not in self.names:
+            if not SKIP_SHUFFLING:
+                def change(options, original):
+                    return np.random.choice(options[options != original])
 
-            def change(options, original):
-                return np.random.choice(options[options != original])
+                # get a sample of the data and shuffle it
+                sample = []
+                for c in columns_ref:
+                    s = data.sample(frac=frac)
+                    uniques = s[c].unique()
+                    s[c] = [change(uniques, v) for v in s[c]]
+                    sample.append(s)
+                sample = pd.concat(sample)
 
-            # get a sample of the data and shuffle it
-            sample = []
-            for c in columns_ref:
-                s = data.sample(frac=frac)
-                uniques = s[c].unique()
-                s[c] = [change(uniques, v) for v in s[c]]
-                sample.append(s)
-            sample = pd.concat(sample)
+                # set target column values
+                sample[target] = "Invalid"
 
-            # set target column values
-            sample[target] = "Invalid"
+                # set index of samples with different values as data
+                idx = np.arange(len(data) + len(sample))
+                mask_idx = np.logical_not(np.isin(idx, data.index))
+                sample.index = idx[mask_idx][: len(sample)]
 
-            # set index of samples with different values as data
-            idx = np.arange(len(data) + len(sample))
-            mask_idx = np.logical_not(np.isin(idx, data.index))
-            sample.index = idx[mask_idx][: len(sample)]
-
-            data[target] = "Valid"
-            train = pd.concat([data, sample])
+                data[target] = "Valid"
+                train = pd.concat([data, sample])
 
             label = {"task": "metric_classification", "label_name": target}
-            split = {"type": "stratified", "split_column": target, "test_size": 0.2}
+            split = {"type": "stratified",
+                     "split_column": target, "test_size": 0.2}
             mycelia_bases = kwargs.get("mycelia_bases", [])
             mycelia_bases.extend(prep_bases)
 
@@ -1326,16 +1337,16 @@ class Jai:
 
         Parameters
         ----------
-        name : str, optional
-            DESCRIPTION. The default is None.
-        data : TYPE
+        name: str
+            String with the name of a database in your JAI environment.
+        train : TYPE
             DESCRIPTION.
-        auth_key : TYPE
+        test : TYPE
             DESCRIPTION.
         db_type : str, optional
             type of model to be trained. The default is 'FastText'.
         hyperparams: optional
-            See setup documentation.
+            See setup documentation for the db_type used.
 
         Returns
         -------
@@ -1365,7 +1376,8 @@ class Jai:
         settrain = pd.Series(values[i_train], index=i_train)
 
         if name not in self.names:
-            self.setup(name, settrain, db_type=db_type, hyperparams=hyperparams)
+            self.setup(name, settrain, db_type=db_type,
+                       hyperparams=hyperparams)
             self.wait_setup(name, 10)
         else:
             missing = i_train[~np.isin(i_train, self.ids(name, "complete"))]
@@ -1383,4 +1395,3 @@ class Jai:
             return train, test
         else:
             return train
-
