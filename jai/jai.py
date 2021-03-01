@@ -150,6 +150,39 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
+    def get_auth_key(self, email: str, firstName: str, lastName: str):
+        """
+        Request an auth key to use JAI-SDK with.
+
+        Args
+        ----------
+        `email`: str
+            A valid email address where the auth key will be sent to.
+        `firstName`: str
+            User's first name.
+        `lastName`: str
+            User's last name.
+
+        Return
+        ----------
+        `response`: dict
+            A `JSON` file stating whether or not the auth key was created.
+
+        Example
+        ----------
+        ```python
+        >>> j.get_auth_key(email="example@example.com", "firstName"="Warren", "lastName"="Buffett")
+        Registration successful. Check your email for the auth key.
+        <Response [201]>
+        ```
+        """
+        body = {"email": email, "firstName": firstName, "lastName": lastName}
+        response = requests.put(self.base_api_url + "/auth", data=json.dumps(body))
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
+    
     def generate_name(self, length: int = 8, prefix: str = "", suffix: str = ""):
         """
         Generate a random string. You can pass a prefix and/or suffix. In this case,
