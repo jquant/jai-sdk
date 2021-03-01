@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-# """
-# Created on Wed Feb 10 16:00:58 2021
-
-# @author: Kazu
-# """
-
 import base64
 import pandas as pd
 import numpy as np

@@ -1,8 +1,3 @@
-# """
-# --- auxiliar.py ---
-
-# created by @rogerioguicampos
-# """
 from azure.storage.blob import BlobServiceClient
 import numpy as np
 import re

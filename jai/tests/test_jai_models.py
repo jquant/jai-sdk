@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-# """
-# Created on Tue Feb 23 20:52:01 2021
-
-# @author: Kazu
-# """
-
 from jai import Jai
 from pandas.api.types import infer_dtype
 import pandas as pd

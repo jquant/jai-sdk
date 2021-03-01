@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-# """
-# Created on Tue Feb 23 16:58:37 2021
-
-# @author: Kazu
-# """
-
 import pytest
 from jai.auxiliar_funcs.utils_funcs import process_similar, process_predict
 

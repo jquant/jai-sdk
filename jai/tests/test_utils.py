@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-# """
-# Created on Tue Feb 23 15:04:55 2021
-
-# @author: Kazu
-# """
-
 import numpy as np
 import pandas as pd
 import pytest

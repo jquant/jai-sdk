@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-# """
-# Created on Fri Feb 12 12:35:32 2021
-
-# @author: Kazu
-# """
 from enum import Enum
 
 __all__ = ['FieldName', 'Mode', 'PossibleDtypes']
