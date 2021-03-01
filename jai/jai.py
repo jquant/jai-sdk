@@ -10,10 +10,11 @@ import numpy as np
 import requests
 import time
 
-from .auxiliar_funcs.utils_funcs import data2json
-from .auxiliar_funcs.classes import PossibleDtypes, Mode
+from .functions.utils_funcs import data2json
+from .functions.classes import PossibleDtypes, Mode
+from .functions.auxiliar import pbar_steps, compare_regex
 from pandas.api.types import is_integer_dtype
-from tqdm import trange
+from tqdm import trange, tqdm
 
 __all__ = ["Jai"]
 
@@ -26,7 +27,6 @@ class Jai:
     as matching tables, resolution of duplicated values, filling missing values
     and more.
     """
-
     def __init__(self, auth_key: str, url: str = None):
         """
         Inicialize the Jai class.
@@ -76,9 +76,8 @@ class Jai:
 
         ```
         """
-        response = requests.get(
-            url=self.base_api_url + "/info?mode=names", headers=self.header
-        )
+        response = requests.get(url=self.base_api_url + "/info?mode=names",
+                                headers=self.header)
         if response.status_code == 200:
             return response.json()
         else:
@@ -108,13 +107,13 @@ class Jai:
         2                jai_supervised    Supervised
         ```
         """
-        response = requests.get(
-            url=self.base_api_url + "/info?mode=complete", headers=self.header
-        )
+        response = requests.get(url=self.base_api_url + "/info?mode=complete",
+                                headers=self.header)
         if response.status_code == 200:
-            df = pd.DataFrame(response.json()).rename(
-                {"db_name": "name", "db_type": "type"}
-            )
+            df = pd.DataFrame(response.json()).rename({
+                "db_name": "name",
+                "db_type": "type"
+            })
             return df
         else:
             return self.assert_status_code(response)
@@ -144,13 +143,19 @@ class Jai:
         }
         ```
         """
-        response = requests.get(self.base_api_url + "/status", headers=self.header)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return self.assert_status_code(response)
+        for tries in range(3):
+            response = requests.get(self.base_api_url + '/status',
+                                    headers=self.header)
+            if (response.status_code == 200):
+                return response.json()
+            elif tries < 3:
+                time.sleep(1)
+        return self.assert_status_code(response)
 
-    def generate_name(self, length: int = 8, prefix: str = "", suffix: str = ""):
+    def generate_name(self,
+                      length: int = 8,
+                      prefix: str = "",
+                      suffix: str = ""):
         """
         Generate a random string. You can pass a prefix and/or suffix. In this case,
         the generated string will be a concatenation of `prefix + random + suffix`.
@@ -203,7 +208,11 @@ class Jai:
         print(response.json())
         return response
 
-    def similar(self, name: str, data, top_k: int = 5, batch_size: int = 16384):
+    def similar(self,
+                name: str,
+                data,
+                top_k: int = 5,
+                batch_size: int = 16384):
         """
         Query a database in search for the `top_k` most similar entries for each
         input data passed as argument.
@@ -248,24 +257,28 @@ class Jai:
         for i in trange(0, len(data), batch_size, desc="Similar"):
             if is_id:
                 if isinstance(data, pd.Series):
-                    _batch = data.iloc[i : i + batch_size].tolist()
+                    _batch = data.iloc[i:i + batch_size].tolist()
                 elif isinstance(data, pd.Index):
-                    _batch = data[i : i + batch_size].tolist()
+                    _batch = data[i:i + batch_size].tolist()
                 else:
-                    _batch = data[i : i + batch_size].tolist()
+                    _batch = data[i:i + batch_size].tolist()
                 res = self._similar_id(name, _batch, top_k=top_k)
             else:
                 if isinstance(data, (pd.Series, pd.DataFrame)):
-                    _batch = data.iloc[i : i + batch_size]
+                    _batch = data.iloc[i:i + batch_size]
                 else:
-                    _batch = data[i : i + batch_size]
-                res = self._similar_json(
-                    name, data2json(_batch, dtype=dtype), top_k=top_k
-                )
+                    _batch = data[i:i + batch_size]
+                res = self._similar_json(name,
+                                         data2json(_batch, dtype=dtype),
+                                         top_k=top_k)
             results.extend(res["similarity"])
         return results
 
-    def _similar_id(self, name: str, id_item: int, top_k: int = 5, method="PUT"):
+    def _similar_id(self,
+                    name: str,
+                    id_item: int,
+                    top_k: int = 5,
+                    method="PUT"):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given an id.
         This is a protected method.
@@ -291,9 +304,8 @@ class Jai:
                 id_req = "&".join(["id=" + str(i) for i in set(id_item)])
                 url = self.base_api_url + f"/similar/id/{name}?{id_req}&top_k={top_k}"
             elif isinstance(id_item, int):
-                url = (
-                    self.base_api_url + f"/similar/id/{name}?id={id_item}&top_k={top_k}"
-                )
+                url = (self.base_api_url +
+                       f"/similar/id/{name}?id={id_item}&top_k={top_k}")
             else:
                 raise TypeError(
                     f"id_item param must be int or list, {type(id_item)} found."
@@ -400,14 +412,12 @@ class Jai:
         if isinstance(data, (list, np.ndarray)):
             data = pd.Series(data)
         elif not isinstance(data, (pd.Series, pd.DataFrame)):
-            raise TypeError(
-                f"Inserted data is of type {type(data)},\
- but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame"
-            )
+            raise TypeError(f"Inserted data is of type {type(data)},\
+ but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame")
         if db_type in [
-            PossibleDtypes.text,
-            PossibleDtypes.fasttext,
-            PossibleDtypes.edit,
+                PossibleDtypes.text,
+                PossibleDtypes.fasttext,
+                PossibleDtypes.edit,
         ]:
             data = data.dropna()
         else:
@@ -418,9 +428,11 @@ class Jai:
             data = data.dropna(subset=cols_to_drop)
         return data
 
-    def predict(
-        self, name: str, data, predict_proba: bool = False, batch_size: int = 16384
-    ):
+    def predict(self,
+                name: str,
+                data,
+                predict_proba: bool = False,
+                batch_size: int = 16384):
         """
         Predict the output of new data for a given database.
 
@@ -459,12 +471,12 @@ class Jai:
         results = []
         for i in trange(0, len(data), batch_size, desc="Predict"):
             if isinstance(data, (pd.Series, pd.DataFrame)):
-                _batch = data.iloc[i : i + batch_size]
+                _batch = data.iloc[i:i + batch_size]
             else:
-                _batch = data[i : i + batch_size]
-            res = self._predict(
-                name, data2json(_batch, dtype=dtype), predict_proba=predict_proba
-            )
+                _batch = data[i:i + batch_size]
+            res = self._predict(name,
+                                data2json(_batch, dtype=dtype),
+                                predict_proba=predict_proba)
             results.extend(res)
         return results
 
@@ -520,9 +532,8 @@ class Jai:
         >>> print(ids)
         ['891 items from 0 to 890']
         """
-        response = requests.get(
-            self.base_api_url + f"/id/{name}?mode={mode}", headers=self.header
-        )
+        response = requests.get(self.base_api_url + f"/id/{name}?mode={mode}",
+                                headers=self.header)
         if response.status_code == 200:
             return response.json()
         else:
@@ -550,9 +561,8 @@ class Jai:
         >>> print(check_valid)
         True
         """
-        response = requests.get(
-            self.base_api_url + f"/validation/{name}", headers=self.header
-        )
+        response = requests.get(self.base_api_url + f"/validation/{name}",
+                                headers=self.header)
         if response.status_code == 200:
             return response.json()["value"]
         else:
@@ -575,9 +585,9 @@ class Jai:
             List with the actual ids (mode: 'complete') or a summary of ids
             ('simple'/'summarized') of the given database.
         """
-        response = requests.get(
-            self.base_api_url + f"/setup/ids/{name}?mode={mode}", headers=self.header
-        )
+        response = requests.get(self.base_api_url +
+                                f"/setup/ids/{name}?mode={mode}",
+                                headers=self.header)
         if response.status_code == 200:
             return response.json()
         else:
@@ -603,11 +613,11 @@ class Jai:
             information of whether or not that particular batch was successfully inserted.
         """
         insert_responses = {}
-        for i, b in enumerate(trange(0, len(data), batch_size, desc="Insert Data")):
-            _batch = data.iloc[b : b + batch_size]
+        for i, b in enumerate(
+                trange(0, len(data), batch_size, desc="Insert Data")):
+            _batch = data.iloc[b:b + batch_size]
             insert_responses[i] = self._insert_json(
-                name, data2json(_batch, dtype=db_type)
-            )
+                name, data2json(_batch, dtype=db_type))
         return insert_responses
 
     def _check_ids_consistency(self, name, data):
@@ -630,9 +640,16 @@ class Jai:
         if len(data) != int(inserted_ids[0].split()[0]):
             print(f"Found invalid ids: {inserted_ids[0]}")
             print(self.delete_raw_data(name))
-            raise Exception("Something went wrong on data insertion. Please try again.")
+            raise Exception(
+                "Something went wrong on data insertion. Please try again.")
 
-    def setup(self, name: str, data, db_type: str, batch_size: int = 16384, **kwargs):
+    def setup(self,
+              name: str,
+              data,
+              db_type: str,
+              batch_size: int = 16384,
+              frequency_seconds: int = 0,
+              **kwargs):
         """
         Insert data and train model. This is JAI's crème de la crème.
 
@@ -798,18 +815,27 @@ class Jai:
         data = self._check_dtype_and_clean(data=data, db_type=db_type)
 
         # insert data
-        insert_responses = self._insert_data(
-            data=data, name=name, batch_size=batch_size, db_type=db_type
-        )
+        insert_responses = self._insert_data(data=data,
+                                             name=name,
+                                             batch_size=batch_size,
+                                             db_type=db_type)
 
         # check if we inserted everything we were supposed to
         self._check_ids_consistency(name=name, data=data)
 
         # train model
         setup_response = self._setup_database(name, db_type, **kwargs)
+
+        if frequency_seconds >= 1:
+            self.wait_setup(name=name, frequency_seconds=frequency_seconds)
+
         return insert_responses, setup_response
 
-    def add_data(self, name: str, data, batch_size: int = 16384):
+    def add_data(self,
+                 name: str,
+                 data,
+                 batch_size: int = 16384,
+                 frequency_seconds: int = 0):
         """
         Insert raw data and extract their latent representation.
 
@@ -842,15 +868,19 @@ class Jai:
         data = self._check_dtype_and_clean(data=data, db_type=db_type)
 
         # insert data
-        insert_responses = self._insert_data(
-            data=data, name=name, batch_size=batch_size, db_type=db_type
-        )
+        insert_responses = self._insert_data(data=data,
+                                             name=name,
+                                             batch_size=batch_size,
+                                             db_type=db_type)
 
         # check if we inserted everything we were supposed to
         self._check_ids_consistency(name=name, data=data)
 
         # add data per se
         add_data_response = self._append(name=name)
+
+        if frequency_seconds >= 1:
+            self.wait_setup(name=name, frequency_seconds=frequency_seconds)
 
         return insert_responses, add_data_response
 
@@ -869,9 +899,8 @@ class Jai:
         `response`: dict
             Dictionary with the API response.
         """
-        response = requests.patch(
-            self.base_api_url + f"/data/{name}", headers=self.header
-        )
+        response = requests.patch(self.base_api_url + f"/data/{name}",
+                                  headers=self.header)
         if response.status_code == 202:
             return response.json()
         else:
@@ -893,9 +922,9 @@ class Jai:
         response: dict
             Dictionary with the API response.
         """
-        response = requests.post(
-            self.base_api_url + f"/data/{name}", headers=self.header, data=df_json
-        )
+        response = requests.post(self.base_api_url + f"/data/{name}",
+                                 headers=self.header,
+                                 data=df_json)
         if response.status_code == 200:
             return response.json()
         else:
@@ -919,21 +948,15 @@ class Jai:
         possible = ["hyperparams", "callback_url"]
         must = []
         if db_type == "Unsupervised":
-            possible.extend(
-                ["num_process", "cat_process", "high_process", "mycelia_bases"]
-            )
+            possible.extend([
+                'num_process', 'cat_process', 'high_process', 'mycelia_bases'
+            ])
         elif db_type == "Supervised":
-            possible.extend(
-                [
-                    "num_process",
-                    "cat_process",
-                    "high_process",
-                    "mycelia_bases",
-                    "label",
-                    "split",
-                ]
-            )
-            must.extend(["label", "split"])
+            possible.extend([
+                'num_process', 'cat_process', 'high_process', 'mycelia_bases',
+                'label', 'split'
+            ])
+            must.extend(['label', 'split'])
 
         missing = [key for key in must if kwargs.get(key, None) is None]
         if len(missing) > 0:
@@ -1017,9 +1040,8 @@ class Jai:
                 "'fields' method is only available to dtype Unsupervised and Supervised."
             )
 
-        response = requests.get(
-            self.base_api_url + f"/table/fields/{name}", headers=self.header
-        )
+        response = requests.get(self.base_api_url + f"/table/fields/{name}",
+                                headers=self.header)
         if response.status_code == 200:
             return response.json()
         else:
@@ -1041,7 +1063,7 @@ class Jai:
         """
         status = self.status
         max_trials = 5
-        patience = 60  # time in seconds that we'll wait
+        patience = 15  # time in seconds that we'll wait
         trials = 0
         while trials < max_trials:
             if name in status.keys():
@@ -1066,21 +1088,35 @@ class Jai:
             [Optional] Number of seconds apart from each status check. Default is 5.
 
         Return
-        -------
+        ------
         None.
         """
-        status = self._wait_status(name)
-        while status["Status"] != "Task ended successfully.":
-            if status["Status"] == "Something went wrong.":
-                raise BaseException(status["Description"])
-            # spinning thing loop
-            for x in range(int(frequency_seconds) * 5):
-                for frame in r"-\|/-\|/":
-                    print("\b", frame, sep="", end="", flush=True)
-                    time.sleep(0.2)
-
+        max_steps = None
+        while max_steps is None:
             status = self._wait_status(name)
-        print(status["Description"])
+            starts_at, max_steps = pbar_steps(status=status)
+            time.sleep(1)
+        step = starts_at
+        aux = 0
+        with tqdm(total=max_steps, desc="JAI is working") as pbar:
+            while status['Status'] != 'Task ended successfully.':
+                if status['Status'] == 'Something went wrong.':
+                    raise BaseException(status['Description'])
+                if (step == starts_at) and (aux == 0):
+                    pbar.update(starts_at)
+                else:
+                    diff = step - starts_at
+                    pbar.update(diff)
+                    starts_at = step
+                step, _ = pbar_steps(status=status, step=step)
+                time.sleep(frequency_seconds)
+                status = self._wait_status(name)
+                aux += 1
+            if (starts_at != max_steps) and aux != 0:
+                diff = max_steps - starts_at
+                pbar.update(diff)
+            elif (starts_at != max_steps) and aux == 0:
+                pbar.update(max_steps)
         return status
 
     def delete_raw_data(self, name: str):
@@ -1106,9 +1142,8 @@ class Jai:
         'All raw data from database 'chosen_name' was deleted!'
         ```
         """
-        response = requests.delete(
-            self.base_api_url + f"/data/{name}", headers=self.header
-        )
+        response = requests.delete(self.base_api_url + f"/data/{name}",
+                                   headers=self.header)
         if response.status_code == 200:
             return response.json()
         else:
@@ -1137,15 +1172,19 @@ class Jai:
         'Bombs away! We nuked database chosen_name!'
         ```
         """
-        response = requests.delete(
-            self.base_api_url + f"/database/{name}", headers=self.header
-        )
+        response = requests.delete(self.base_api_url + f"/database/{name}",
+                                   headers=self.header)
         if response.status_code == 200:
             return response.json()
         else:
             return self.assert_status_code(response)
 
-    def match(self, name: str, data_left, data_right, top_k: int = 20, overwrite=False):
+    def match(self,
+              name: str,
+              data_left,
+              data_right,
+              top_k: int = 20,
+              overwrite=False):
         """
         Experimental
         Match two datasets with their possible equal values.
@@ -1168,8 +1207,7 @@ class Jai:
         Example
         -------
         >>> import pandas as pd
-        >>> from jai.applications import match
-        >>> from jai.auxiliar_funcs.utils_funcs import process_similar
+        >>> from jai.functions.utils_funcs import process_similar
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.match(name, data1, data2)
@@ -1215,11 +1253,10 @@ class Jai:
         Example
         -------
         >>> import pandas as pd
-        >>> from jai.applications import resolution
-        >>> from jai.auxiliar_funcs.utils_funcs import process_similar
+        >>> from jai.functions.utils_funcs import process_similar
         >>>
         >>> j = Jai(AUTH_KEY)
-        >>> results = resolution(name, data)
+        >>> results = j.resolution(name, data)
         >>> processed = process_similar(results, return_self=True)
         >>> pd.DataFrame(processed).sort_values('query_id')
                  query_id           id     distance
@@ -1264,8 +1301,7 @@ class Jai:
         Example
         -------
         >>> import pandas as pd
-        >>> from jai.applications import fill
-        >>> from jai.auxiliar_funcs.utils_funcs import process_predict
+        >>> from jai.functions.utils_funcs import process_predict
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.fill(name, data, COL_TO_FILL)
@@ -1297,14 +1333,19 @@ class Jai:
             id_col = "id_" + col
             origin = name + "_" + col
             origin = origin.lower().replace("-", "_").replace(" ", "_")[:35]
-            train[id_col], test[id_col] = self.embedding(origin, train[col], test[col])
+            train[id_col], test[id_col] = self.embedding(
+                origin, train[col], test[col])
             prep_bases.append({"id_name": id_col, "db_parent": origin})
         train = train.drop(columns=pre)
         test = test.drop(columns=pre)
 
         if name not in self.names:
             label = {"task": "metric_classification", "label_name": column}
-            split = {"type": "stratified", "split_column": column, "test_size": 0.2}
+            split = {
+                "type": "stratified",
+                "split_column": column,
+                "test_size": 0.2
+            }
             mycelia_bases = kwargs.get("mycelia_bases", [])
             mycelia_bases.extend(prep_bases)
             self.setup(
@@ -1321,7 +1362,12 @@ class Jai:
         return self.predict(name, test, predict_proba=True)
 
     def sanity(
-        self, name: str, data, data_validate=None, columns_ref: list = None, **kwargs,
+        self,
+        name: str,
+        data,
+        data_validate=None,
+        columns_ref: list = None,
+        **kwargs,
     ):
         """
         Experimental
@@ -1353,8 +1399,7 @@ class Jai:
         Example
         -------
         >>> import pandas as pd
-        >>> from jai.applications import sanity
-        >>> from jai.auxiliar_funcs.utils_funcs import process_predict
+        >>> from jai.functions.utils_funcs import process_predict
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.sanity(name, data)
@@ -1391,8 +1436,7 @@ class Jai:
             origin = origin.lower().replace("-", "_").replace(" ", "_")[:35]
             if data_validate is not None:
                 data[id_col], data_validate[id_col] = self.embedding(
-                    origin, data[col], data_validate[col]
-                )
+                    origin, data[col], data_validate[col])
             else:
                 data[id_col] = self.embedding(origin, data[col])
 
@@ -1429,13 +1473,17 @@ class Jai:
             # set index of samples with different values as data
             idx = np.arange(len(data) + len(sample))
             mask_idx = np.logical_not(np.isin(idx, data.index))
-            sample.index = idx[mask_idx][: len(sample)]
+            sample.index = idx[mask_idx][:len(sample)]
 
             data[target] = "Valid"
             train = pd.concat([data, sample])
 
             label = {"task": "metric_classification", "label_name": target}
-            split = {"type": "stratified", "split_column": target, "test_size": 0.2}
+            split = {
+                "type": "stratified",
+                "split_column": target,
+                "test_size": 0.2
+            }
             mycelia_bases = kwargs.get("mycelia_bases", [])
             mycelia_bases.extend(prep_bases)
 
@@ -1453,7 +1501,12 @@ class Jai:
         return self.predict(name, test, predict_proba=True)
 
     def embedding(
-        self, name: str, train, test=None, db_type="FastText", hyperparams=None,
+        self,
+        name: str,
+        train,
+        test=None,
+        db_type="FastText",
+        hyperparams=None,
     ):
         """
         Experimental
@@ -1491,16 +1544,18 @@ class Jai:
             else:
                 raise ValueError("test must be a Series")
             test = test.copy()
-            values, inverse = np.unique(
-                train.tolist() + test.tolist(), return_inverse=True
-            )
+            values, inverse = np.unique(train.tolist() + test.tolist(),
+                                        return_inverse=True)
 
         train.loc[:] = inverse[:n]
         i_train = np.unique(inverse[:n])
         settrain = pd.Series(values[i_train], index=i_train)
 
         if name not in self.names:
-            self.setup(name, settrain, db_type=db_type, hyperparams=hyperparams)
+            self.setup(name,
+                       settrain,
+                       db_type=db_type,
+                       hyperparams=hyperparams)
             self.wait_setup(name, 10)
         else:
             missing = i_train[~np.isin(i_train, self.ids(name, "complete"))]
