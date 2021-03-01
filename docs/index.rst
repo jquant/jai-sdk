@@ -28,7 +28,7 @@ JAI-SDK - Trust your data!
    
    source/jai
    source/application
-
+   
 
 Indices and tables
 ==================

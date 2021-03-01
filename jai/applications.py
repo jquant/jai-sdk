@@ -20,9 +20,9 @@ def match(data1, data2, auth_key, name=None):
     ----------
     data1, data2 : text
         data to be matched.
-    auth_key : TYPE
+    auth_key : str
         Auth key for mycelia.
-    name : TYPE, optional
+    name : str, optional
         DESCRIPTION. The default is None.
 
     Returns
@@ -73,9 +73,9 @@ def resolution(data, auth_key, name=None):
     ----------
     data : text
         data to find duplicates.
-    auth_key : TYPE
-        DESCRIPTION.
-    name : TYPE, optional
+    auth_key : str
+        Auth key for mycelia.
+    name : str, optional
         DESCRIPTION. The default is None.
 
     Returns
@@ -125,9 +125,9 @@ def fill(data, column: str, auth_key, name=None, **kwargs):
         data to fill NaN.
     column : str
         name of the column to be filled.
-    auth_key : TYPE
-        DESCRIPTION.
-    name : TYPE, optional
+    auth_key : str
+        Auth key for mycelia.
+    name : str, optional
         DESCRIPTION. The default is None.
     **kwargs : TYPE
         Extra args for supervised model.
@@ -217,8 +217,8 @@ def sanity(data,
     ----------
     data : pd.DataFrame
         Data reference of sound data.
-    auth_key : TYPE
-        DESCRIPTION.
+    auth_key : str
+        Auth key for mycelia.
     data_validate : TYPE, optional
         Data to be checked if is valid or not. The default is None.
     columns_ref : list, optional
@@ -228,9 +228,9 @@ def sanity(data,
         DESCRIPTION. The default is None.
     frac : float, optional
         DESCRIPTION. The default is .1.
-    random_seed : TYPE, optional
-        DESCRIPTION. The default is 42.
-    **kwargs : TYPE
+    random_seed : int, optional
+        Seed for random number generator. The default is 42.
+    **kwargs : dict
         DESCRIPTION.
 
     Raises
@@ -360,11 +360,11 @@ def embedding(data, auth_key, name=None, db_type='FastText'):
     ----------
     data : TYPE
         DESCRIPTION.
-    auth_key : TYPE
-        DESCRIPTION.
-    name : TYPE, optional
+    auth_key : str
+        Auth key for mycelia.
+    name : str, optional
         DESCRIPTION. The default is None.
-    db_type : TYPE, optional
+    db_type : str, optional
         DESCRIPTION. The default is 'FastText'.
 
     Returns
