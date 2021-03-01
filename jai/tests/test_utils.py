@@ -8,8 +8,8 @@ Created on Tue Feb 23 15:04:55 2021
 import numpy as np
 import pandas as pd
 import pytest
-from jai.auxiliar_funcs.utils_funcs import (list2json, series2json, df2json,
-                                            data2json)
+from jai.functions.utils_funcs import (list2json, series2json, df2json,
+                                       data2json)
 
 # =============================================================================
 # Tests for data2json
