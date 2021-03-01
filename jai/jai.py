@@ -1205,8 +1205,7 @@ class Jai:
         Example
         -------
         >>> import pandas as pd
-        >>> from jai.applications import match
-        >>> from jai.auxiliar_funcs.utils_funcs import process_similar
+        >>> from jai.functions.utils_funcs import process_similar
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.match(name, data1, data2)
@@ -1252,11 +1251,10 @@ class Jai:
         Example
         -------
         >>> import pandas as pd
-        >>> from jai.applications import resolution
-        >>> from jai.auxiliar_funcs.utils_funcs import process_similar
+        >>> from jai.functions.utils_funcs import process_similar
         >>>
         >>> j = Jai(AUTH_KEY)
-        >>> results = resolution(name, data)
+        >>> results = j.resolution(name, data)
         >>> processed = process_similar(results, return_self=True)
         >>> pd.DataFrame(processed).sort_values('query_id')
                  query_id           id     distance
@@ -1301,8 +1299,7 @@ class Jai:
         Example
         -------
         >>> import pandas as pd
-        >>> from jai.applications import fill
-        >>> from jai.auxiliar_funcs.utils_funcs import process_predict
+        >>> from jai.functions.utils_funcs import process_predict
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.fill(name, data, COL_TO_FILL)
@@ -1400,8 +1397,7 @@ class Jai:
         Example
         -------
         >>> import pandas as pd
-        >>> from jai.applications import sanity
-        >>> from jai.auxiliar_funcs.utils_funcs import process_predict
+        >>> from jai.functions.utils_funcs import process_predict
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.sanity(name, data)
