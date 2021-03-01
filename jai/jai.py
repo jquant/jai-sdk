@@ -27,7 +27,7 @@ class Jai:
     and more.
     """
 
-    def __init__(self, auth_key: str, url: str = None):
+    def __init__(self, auth_key: str = None, url: str = None):
         """
         Inicialize the Jai class.
 
@@ -48,12 +48,20 @@ class Jai:
         """
         if url is None:
             self.base_api_url = "https://mycelia.azure-api.net"
-            self.header = {"Auth": auth_key}
+            if auth_key is None: # user has no auth key yet, so get them an auth key first
+                print(self.first_access())
+                self.header = self._set_first_access_key()
+            else:
+                self.header = {"Auth": auth_key}
         else:
             if url.endswith("/"):
                 url = url[:-1]
             self.base_api_url = url
-            self.header = {"company-key": auth_key}
+            if auth_key is None:
+                print(self.first_access())
+                self.header = self._set_first_access_key()
+            else:
+                self.header = {"company-key": auth_key}
 
     @property
     def names(self):
@@ -150,9 +158,47 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def get_auth_key(self, email: str, firstName: str, lastName: str):
+    def first_access(self):
         """
         Request an auth key to use JAI-SDK with.
+
+        Args
+        ----------
+        None.
+
+        Return
+        ----------
+        `response`: dict
+            A `JSON` file stating whether or not the auth key was created.
+
+        Example
+        ----------
+        ```python
+        >>> j = Jai()
+        "Welcome to JAI! Please enter your email, first and last names to get an auth key."
+        >>> Email: example@example.com
+        >>> First name: Warrent
+        >>> Last name: Buffett
+        Registering key...
+        Registration successful. Check your email for the auth key.
+        <Response [201]>
+        ```
+        """
+        print("Welcome to JAI! Please enter your email, first and last names to get an auth key.")
+        email = input("Email: ")
+        firstName = input("First name: ")
+        lastName = input("Last name: ")
+        print("Registering key...")
+        return self._get_auth_key(email, firstName, lastName)
+
+    def _set_first_access_key(self):
+        auth_key = input("Please input your auth key now: ")
+        print("All set! Next time, simply declare j = Jai(AUTH_KEY) and you are done.")
+        return auth_key
+        
+    def _get_auth_key(self, email: str, firstName: str, lastName: str):
+        """
+        Request an auth key to use JAI-SDK with. This is a protected method.
 
         Args
         ----------
@@ -167,18 +213,10 @@ class Jai:
         ----------
         `response`: dict
             A `JSON` file stating whether or not the auth key was created.
-
-        Example
-        ----------
-        ```python
-        >>> j.get_auth_key(email="example@example.com", "firstName"="Warren", "lastName"="Buffett")
-        Registration successful. Check your email for the auth key.
-        <Response [201]>
-        ```
         """
         body = {"email": email, "firstName": firstName, "lastName": lastName}
         response = requests.put(self.base_api_url + "/auth", data=json.dumps(body))
-        if response.status_code == 200:
+        if response.status_code == 201:
             return response.json()
         else:
             return self.assert_status_code(response)
@@ -232,9 +270,9 @@ class Jai:
     def assert_status_code(self, response):
         # find a way to process this
         # what errors to raise, etc.
-        # raise ValueError(response.content)
         print(response.json())
-        return response
+        print(f"\n\nSTATUS: {response.status_code}\n\n")
+        raise ValueError(f"Something went wrong.\n{response.content}")
 
     def similar(self, name: str, data, top_k: int = 5, batch_size: int = 16384):
         """
