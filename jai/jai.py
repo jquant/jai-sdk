@@ -20,7 +20,7 @@ class Jai:
     Used as foundation for more complex applications for data validation such
     as matching tables, resolution of duplicated values, filling missing values
     and more.
-    
+
     """
     def __init__(self, auth_key: str, url: str = None):
         """
@@ -537,8 +537,13 @@ class Jai:
         True
         """
         response = requests.get(
+            self.base_api_url + f"/validation/{name}", headers=self.header
+        )
+        if response.status_code == 200:
             return response.json()["value"]
         else:
+            return self.assert_status_code(response)
+
     def _temp_ids(self, name: str, mode: Mode = "simple"):
         """
         Get id information of a RAW database (i.e., before training). This is a protected method
@@ -632,7 +637,7 @@ class Jai:
         **kwargs
             Parameters that should be passed as a dictionary in compliance with the
             API methods. In other words, every kwarg argument should be passed as if
-            it were in the body of a POST method. **To check all possible kwargs in 
+            it were in the body of a POST method. **To check all possible kwargs in
             Jai.setup method, you can check the** `Setup kwargs`_ **section**.
 
         Return
@@ -761,6 +766,7 @@ class Jai:
         response = requests.post(self.base_api_url + f'/data/{name}',
                                  headers=self.header,
                                  data=df_json)
+        if response.status_code == 200:
             return response.json()
         else:
             return self.assert_status_code(response)
@@ -1002,8 +1008,8 @@ class Jai:
             return response.json()
         else:
             return self.assert_status_code(response)
-            
-            
+
+
     def match(self, name: str, data_left, data_right, top_k: int = 20, overwrite=False):
         """
         Experimental
@@ -1377,4 +1383,4 @@ class Jai:
             return train, test
         else:
             return train
-            
+
