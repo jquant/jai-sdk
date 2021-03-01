@@ -47,13 +47,21 @@ class Jai:
 
         """
         if url is None:
-            self.base_api_url = "https://mycelia.azure-api.net"
+            self.__url = "https://mycelia.azure-api.net"
             self.header = {"Auth": auth_key}
         else:
             if url.endswith("/"):
                 url = url[:-1]
-            self.base_api_url = url
+            self.__url = url
             self.header = {"company-key": auth_key}
+
+    @property
+    def url(self):
+        """
+        API Url that the class uses for requests made.
+
+        """
+        return self.__url
 
     @property
     def names(self):
@@ -77,7 +85,7 @@ class Jai:
         ```
         """
         response = requests.get(
-            url=self.base_api_url + "/info?mode=names", headers=self.header
+            url=self.url + "/info?mode=names", headers=self.header
         )
         if response.status_code == 200:
             return response.json()
@@ -109,7 +117,7 @@ class Jai:
         ```
         """
         response = requests.get(
-            url=self.base_api_url + "/info?mode=complete", headers=self.header
+            url=self.url + "/info?mode=complete", headers=self.header
         )
         if response.status_code == 200:
             df = pd.DataFrame(response.json()).rename(
@@ -144,7 +152,8 @@ class Jai:
         }
         ```
         """
-        response = requests.get(self.base_api_url + "/status", headers=self.header)
+        response = requests.get(
+            self.url + "/status", headers=self.header)
         if response.status_code == 200:
             return response.json()
         else:
@@ -289,10 +298,12 @@ class Jai:
         if method == "GET":
             if isinstance(id_item, list):
                 id_req = "&".join(["id=" + str(i) for i in set(id_item)])
-                url = self.base_api_url + f"/similar/id/{name}?{id_req}&top_k={top_k}"
+                url = self.url + \
+                    f"/similar/id/{name}?{id_req}&top_k={top_k}"
             elif isinstance(id_item, int):
                 url = (
-                    self.base_api_url + f"/similar/id/{name}?id={id_item}&top_k={top_k}"
+                    self.url +
+                    f"/similar/id/{name}?id={id_item}&top_k={top_k}"
                 )
             else:
                 raise TypeError(
@@ -311,7 +322,7 @@ class Jai:
                 )
 
             response = requests.put(
-                self.base_api_url + f"/similar/id/{name}?top_k={top_k}",
+                self.url + f"/similar/id/{name}?top_k={top_k}",
                 headers=self.header,
                 data=json.dumps(id_item),
             )
@@ -371,7 +382,7 @@ class Jai:
         `response`: dict
             Dictionary with the index and distance of the k most similar items.
         """
-        url = self.base_api_url + f"/similar/data/{name}?top_k={top_k}"
+        url = self.url + f"/similar/data/{name}?top_k={top_k}"
 
         response = requests.put(url, headers=self.header, data=data_json)
         if response.status_code == 200:
@@ -487,7 +498,8 @@ class Jai:
         results : JSON (dict)
             Dictionary of predctions for the data passed as parameter.
         """
-        url = self.base_api_url + f"/predict/{name}?predict_proba={predict_proba}"
+        url = self.url + \
+            f"/predict/{name}?predict_proba={predict_proba}"
 
         response = requests.put(url, headers=self.header, data=data_json)
         if response.status_code == 200:
@@ -521,7 +533,7 @@ class Jai:
         ['891 items from 0 to 890']
         """
         response = requests.get(
-            self.base_api_url + f"/id/{name}?mode={mode}", headers=self.header
+            self.url + f"/id/{name}?mode={mode}", headers=self.header
         )
         if response.status_code == 200:
             return response.json()
@@ -551,7 +563,7 @@ class Jai:
         True
         """
         response = requests.get(
-            self.base_api_url + f"/validation/{name}", headers=self.header
+            self.url + f"/validation/{name}", headers=self.header
         )
         if response.status_code == 200:
             return response.json()["value"]
@@ -576,7 +588,7 @@ class Jai:
             ('simple'/'summarized') of the given database.
         """
         response = requests.get(
-            self.base_api_url + f"/setup/ids/{name}?mode={mode}", headers=self.header
+            self.url + f"/setup/ids/{name}?mode={mode}", headers=self.header
         )
         if response.status_code == 200:
             return response.json()
@@ -870,7 +882,7 @@ class Jai:
             Dictionary with the API response.
         """
         response = requests.patch(
-            self.base_api_url + f"/data/{name}", headers=self.header
+            self.url + f"/data/{name}", headers=self.header
         )
         if response.status_code == 202:
             return response.json()
@@ -894,7 +906,7 @@ class Jai:
             Dictionary with the API response.
         """
         response = requests.post(
-            self.base_api_url + f"/data/{name}", headers=self.header, data=df_json
+            self.url + f"/data/{name}", headers=self.header, data=df_json
         )
         if response.status_code == 200:
             return response.json()
@@ -977,7 +989,7 @@ class Jai:
         """
         body = self._check_kwargs(db_type=db_type, **kwargs)
         response = requests.post(
-            self.base_api_url + f"/setup/{name}?overwrite={overwrite}",
+            self.url + f"/setup/{name}?overwrite={overwrite}",
             headers=self.header,
             data=json.dumps(body),
         )
@@ -1018,7 +1030,7 @@ class Jai:
             )
 
         response = requests.get(
-            self.base_api_url + f"/table/fields/{name}", headers=self.header
+            self.url + f"/table/fields/{name}", headers=self.header
         )
         if response.status_code == 200:
             return response.json()
@@ -1107,7 +1119,7 @@ class Jai:
         ```
         """
         response = requests.delete(
-            self.base_api_url + f"/data/{name}", headers=self.header
+            self.url + f"/data/{name}", headers=self.header
         )
         if response.status_code == 200:
             return response.json()
@@ -1138,7 +1150,7 @@ class Jai:
         ```
         """
         response = requests.delete(
-            self.base_api_url + f"/database/{name}", headers=self.header
+            self.url + f"/database/{name}", headers=self.header
         )
         if response.status_code == 200:
             return response.json()
