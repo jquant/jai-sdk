@@ -74,12 +74,16 @@ def get_status_json(file_path="./jai/auxiliar/pbar_status.json"):
     return status_dict
 
 
+def compare_regex(setup_task: str):
+    return re.findall('\[(.*?)\]', setup_task)[0]
+
+
 def pbar_steps(status: List = None, step: int = 0):
     PBAR_STATUS_PATH = "./jai/auxiliar/pbar_status.json"
     setup_task = status['Description']
 
     try:
-        db_type = re.findall('\[(.*?)\]', setup_task)[0]
+        db_type = compare_regex(setup_task)
         possible_tasks = get_status_json(PBAR_STATUS_PATH)[db_type]
         for index, task in enumerate(possible_tasks):
             pattern = re.compile(task)

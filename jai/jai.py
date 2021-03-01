@@ -12,7 +12,7 @@ import time
 
 from .functions.utils_funcs import data2json
 from .functions.classes import PossibleDtypes, Mode
-from .functions.auxiliar import pbar_steps
+from .functions.auxiliar import pbar_steps, compare_regex
 from pandas.api.types import is_integer_dtype
 from tqdm import trange, tqdm
 
@@ -143,12 +143,14 @@ class Jai:
         }
         ```
         """
-        response = requests.get(self.base_api_url + '/status',
-                                headers=self.header)
-        if (response.status_code == 200):
-            return response.json()
-        else:
-            return self.assert_status_code(response)
+        for tries in range(3):
+            response = requests.get(self.base_api_url + '/status',
+                                    headers=self.header)
+            if (response.status_code == 200):
+                return response.json()
+            elif tries < 3:
+                time.sleep(1)
+        return self.assert_status_code(response)
 
     def generate_name(self,
                       length: int = 8,
@@ -206,7 +208,10 @@ class Jai:
         print(response.json())
         return response
 
-    def similar(self, name: str, data, top_k: int = 5,
+    def similar(self,
+                name: str,
+                data,
+                top_k: int = 5,
                 batch_size: int = 16384):
         """
         Query a database in search for the `top_k` most similar entries for each
@@ -821,7 +826,7 @@ class Jai:
         # train model
         setup_response = self._setup_database(name, db_type, **kwargs)
 
-        if frequency_seconds < 1:
+        if frequency_seconds >= 1:
             self.wait_setup(name=name, frequency_seconds=frequency_seconds)
 
         return insert_responses, setup_response
@@ -874,7 +879,7 @@ class Jai:
         # add data per se
         add_data_response = self._append(name=name)
 
-        if frequency_seconds < 1:
+        if frequency_seconds >= 1:
             self.wait_setup(name=name, frequency_seconds=frequency_seconds)
 
         return insert_responses, add_data_response
@@ -1057,8 +1062,8 @@ class Jai:
 
         """
         status = self.status
-        max_trials = 6
-        patience = 60  # time in seconds that we'll wait
+        max_trials = 5
+        patience = 15  # time in seconds that we'll wait
         trials = 0
         while trials < max_trials:
             if name in status.keys():
@@ -1083,12 +1088,12 @@ class Jai:
             [Optional] Number of seconds apart from each status check. Default is 5.
 
         Return
-        -------
+        ------
         None.
         """
-        status = self._wait_status(name)
         max_steps = None
         while max_steps is None:
+            status = self._wait_status(name)
             starts_at, max_steps = pbar_steps(status=status)
             time.sleep(1)
         step = starts_at
@@ -1357,12 +1362,12 @@ class Jai:
         return self.predict(name, test, predict_proba=True)
 
     def sanity(
-            self,
-            name: str,
-            data,
-            data_validate=None,
-            columns_ref: list = None,
-            **kwargs,
+        self,
+        name: str,
+        data,
+        data_validate=None,
+        columns_ref: list = None,
+        **kwargs,
     ):
         """
         Experimental
@@ -1496,12 +1501,12 @@ class Jai:
         return self.predict(name, test, predict_proba=True)
 
     def embedding(
-            self,
-            name: str,
-            train,
-            test=None,
-            db_type="FastText",
-            hyperparams=None,
+        self,
+        name: str,
+        train,
+        test=None,
+        db_type="FastText",
+        hyperparams=None,
     ):
         """
         Experimental

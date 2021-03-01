@@ -1,5 +1,6 @@
 {
     "Image": [
+        "^.*(is waiting for setup).*$",
         "^.*(setup has started).*$", 
         "^.*(Checking collection sanity).*$", 
         "^.*(Processing has started).*$",
@@ -10,6 +11,7 @@
         "^.*(model training for).*(has ended).*$"
     ],
     "FastText": [
+        "^.*(is waiting for setup).*$",
         "^.*(setup has started).*$", 
         "^.*(Checking collection sanity).*$", 
         "^.*(Processing has started).*$",
@@ -23,6 +25,7 @@
         "^.*(model training for).*(has ended).*$"
     ],
     "Supervised": [
+        "^.*(is waiting for setup).*$",
         "^.*(setup has started).*$", 
         "^.*(Checking collection sanity).*$", 
         "^.*(Processing has started).*$",
@@ -42,6 +45,7 @@
         "^.*(model training for).*(has ended).*$"
     ],
     "Unsupervised": [
+        "^.*(is waiting for setup).*$",
         "^.*(setup has started).*$", 
         "^.*(Checking collection sanity).*$", 
         "^.*(Processing has started).*$",
@@ -59,6 +63,7 @@
         "^.*(model training for).*(has ended).*$"
     ],
     "Text": [
+        "^.*(is waiting for setup).*$",
         "^.*(setup has started).*$", 
         "^.*(Checking collection sanity).*$", 
         "^.*(Processing has started).*$",
@@ -69,6 +74,7 @@
         "^.*(model training for).*(has ended).*$"
     ],
     "TextEdit": [
+        "^.*(is waiting for setup).*$",
         "^.*(setup has started).*$", 
         "^.*(Checking collection sanity).*$", 
         "^.*(Processing has started).*$",
@@ -81,6 +87,7 @@
         "^.*(model training for).*(has ended).*$"
     ],
     "Add": [
+        "^.*(is waiting to be added).*$",
         "^.*(Vectors being added).*$", 
         "^.*(New data is being processed).*$", 
         "^.*(Making vectors backup).*$",
