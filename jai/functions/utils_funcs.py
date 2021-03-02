@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Feb 10 16:00:58 2021
-
-@author: Kazu
-"""
-
 import base64
 import pandas as pd
 import numpy as np
@@ -17,11 +10,12 @@ from operator import itemgetter
 from functools import cmp_to_key
 from .classes import FieldName, PossibleDtypes
 
-
 __all__ = ['data2json', 'process_predict', 'process_similar']
 
 
-def read_image_folder(image_folder: str = None, images: List = None, ignore_corrupt=False,
+def read_image_folder(image_folder: str = None,
+                      images: List = None,
+                      ignore_corrupt=False,
                       extentions=["*.png", "*.jpg", "*.jpeg"]):
 
     if image_folder is not None:
@@ -30,7 +24,8 @@ def read_image_folder(image_folder: str = None, images: List = None, ignore_corr
         pass
     else:
         raise ValueError(
-            "must pass the folder of the images or a list with the paths of each image.")
+            "must pass the folder of the images or a list with the paths of each image."
+        )
 
     temp_img = []
     ids = []
@@ -39,7 +34,8 @@ def read_image_folder(image_folder: str = None, images: List = None, ignore_corr
         if filename.suffix in extentions:
             try:
                 im = Image.open(filename)
-                im.verify()  # I perform also verify, don't know if he sees other types o defects
+                im.verify(
+                )  # I perform also verify, don't know if he sees other types o defects
                 im.close()  # reload is necessary in my case
                 im = Image.open(filename)
                 im.transpose(Image.FLIP_LEFT_RIGHT)
@@ -91,7 +87,8 @@ def df2json(dataframe):
 
 def data2json(data, dtype):
     if (dtype == PossibleDtypes.edit or dtype == PossibleDtypes.text
-        or dtype == PossibleDtypes.fasttext or dtype == PossibleDtypes.image):
+            or dtype == PossibleDtypes.fasttext
+            or dtype == PossibleDtypes.image):
         if dtype == PossibleDtypes.image:
             name = FieldName.image
         else:
@@ -110,9 +107,12 @@ def data2json(data, dtype):
                     c = data.columns[0]
                     return series2json(data[c], name=name)
                 else:
-                    raise ValueError("If data has 2 columns, one must be named 'id'.")
+                    raise ValueError(
+                        "If data has 2 columns, one must be named 'id'.")
             else:
-                raise ValueError("Data must be a DataFrame with 1 column or 2 columns with one named 'id'.")
+                raise ValueError(
+                    "Data must be a DataFrame with 1 column or 2 columns with one named 'id'."
+                )
         else:
             raise NotImplementedError(f"type {type(data)} is not implemented.")
     elif dtype == PossibleDtypes.supervised or dtype == PossibleDtypes.unsupervised:
@@ -124,7 +124,9 @@ def data2json(data, dtype):
         raise ValueError(f"dtype {dtype} not recognized.")
 
 
-def process_similar(results, threshold:float=None, return_self: bool = True,
+def process_similar(results,
+                    threshold: float = None,
+                    return_self: bool = True,
                     skip_null: bool = True):
     """
     Process the output from the similar methods.
@@ -154,7 +156,7 @@ def process_similar(results, threshold:float=None, return_self: bool = True,
 
     """
     if threshold is None:
-        samples = np.random.randint(0, len(results), len(results)//(100))
+        samples = np.random.randint(0, len(results), len(results) // (100))
         distribution = []
         for s in tqdm(samples, desc="Fiding threshold"):
             d = [l['distance'] for l in results[s]['results'][1:]]
@@ -166,14 +168,15 @@ def process_similar(results, threshold:float=None, return_self: bool = True,
     for q in tqdm(results.copy(), desc='Process'):
         sort = multikeysort(q['results'], ['distance', 'id'])
         zero, one = sort[0], sort[1]
-        if zero['distance'] <= threshold and (zero['id'] != q['query_id'] or return_self):
-            zero['query_id'] =  q['query_id']
+        if zero['distance'] <= threshold and (zero['id'] != q['query_id']
+                                              or return_self):
+            zero['query_id'] = q['query_id']
             similar.append(zero)
         elif one['distance'] <= threshold:
             one['query_id'] = q['query_id']
             similar.append(one)
         elif not skip_null:
-            mock = {"query_id":  q['query_id'], "id": None, "distance": None}
+            mock = {"query_id": q['query_id'], "id": None, "distance": None}
             similar.append(mock)
         else:
             continue
@@ -214,10 +217,12 @@ def process_predict(predicts):
             sanity_check.append(query)
         else:
             predict = max(query['predict'], key=query['predict'].get)
-            confidence_level = round(query['predict'][predict]*100, 2)
-            sanity_check.append({'id': query['id'],
-                                 'predict': predict,
-                                 'probability(%)': confidence_level})
+            confidence_level = round(query['predict'][predict] * 100, 2)
+            sanity_check.append({
+                'id': query['id'],
+                'predict': predict,
+                'probability(%)': confidence_level
+            })
     return sanity_check
 
 
@@ -256,14 +261,12 @@ def multikeysort(items, columns):
         DESCRIPTION.
 
     """
-    comparers = [
-        ((itemgetter(col[1:].strip()), -1) if col.startswith('-') else (itemgetter(col.strip()), 1))
-        for col in columns
-    ]
+    comparers = [((itemgetter(col[1:].strip()), -1) if col.startswith('-') else
+                  (itemgetter(col.strip()), 1)) for col in columns]
+
     def comparer(left, right):
-        comparer_iter = (
-            cmp(fn(left), fn(right)) * mult
-            for fn, mult in comparers
-        )
+        comparer_iter = (cmp(fn(left), fn(right)) * mult
+                         for fn, mult in comparers)
         return next((result for result in comparer_iter if result), 0)
+
     return sorted(items, key=cmp_to_key(comparer))

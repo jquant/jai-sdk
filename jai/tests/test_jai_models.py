@@ -1,16 +1,8 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Feb 23 20:52:01 2021
-
-@author: Kazu
-"""
-
 from jai import Jai
 from pandas.api.types import infer_dtype
 import pandas as pd
 import numpy as np
 import pytest
-
 
 URL = 'http://localhost:8001'
 AUTH_KEY = "sdk_test"
@@ -19,14 +11,18 @@ TITANIC_TEST = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/d
 
 np.random.seed(42)
 
+
 # =============================================================================
 # Test Text
 # =============================================================================
-@pytest.mark.parametrize("name,data,dtype", [("test_nlp", "list", "Text"),
-                                        ("test_fasttext", "array", "FastText"),
-                                        ("test_edittext", "series", "TextEdit")])
+@pytest.mark.parametrize("name,data,dtype",
+                         [("test_nlp", "list", "Text"),
+                          ("test_fasttext", "array", "FastText"),
+                          ("test_edittext", "series", "TextEdit")])
 def test_text(name, data, dtype):
-    train = pd.read_csv(TITANIC_TRAIN).rename(columns={"PassengerId": "id"}).set_index("id")['Name']
+    train = pd.read_csv(TITANIC_TRAIN).rename(columns={
+        "PassengerId": "id"
+    }).set_index("id")['Name']
     ids = train.index.tolist()
     query = train.loc[np.random.choice(ids, 10, replace=False)]
 
@@ -47,7 +43,8 @@ def test_text(name, data, dtype):
     assert j.wait_setup(name)
     assert j.is_valid(name), "valid name after setup failed"
 
-    assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"], 'ids simple failed'
+    assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"
+                           ], 'ids simple failed'
     assert sorted(j.ids(name, 'complete')) == ids, "ids complete failed"
 
     result = j.similar(name, query)
@@ -76,7 +73,8 @@ def test_unsupervised():
     assert j.is_valid(name), "valid name after setup failed"
 
     ids = train.index.tolist()
-    assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"], 'ids simple failed'
+    assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"
+                           ], 'ids simple failed'
     assert j.ids(name, 'complete') == ids, "ids complete failed"
 
     for k, v in j.fields(name).items():
@@ -92,6 +90,7 @@ def test_unsupervised():
     j.delete_database(name)
     assert not j.is_valid(name), "valid name after delete failed"
 
+
 # =============================================================================
 # Test Supervised
 # =============================================================================
@@ -106,19 +105,26 @@ def test_supervised():
     if j.is_valid(name):
         j.delete_database(name)
 
-    j.setup(name, train, db_type="Supervised",
+    j.setup(name,
+            train,
+            db_type="Supervised",
             overwrite=True,
-            label={"task": "metric_classification",
-                    "label_name": "Survived"},
-            split={"type": 'stratified',
-                    "split_column": "Survived",
-                    "test_size": .2})
+            label={
+                "task": "metric_classification",
+                "label_name": "Survived"
+            },
+            split={
+                "type": 'stratified',
+                "split_column": "Survived",
+                "test_size": .2
+            })
 
     assert j.wait_setup(name)
     assert j.is_valid(name), "valid name after setup failed"
 
     ids = train['id'].tolist()
-    assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"], 'ids simple failed'
+    assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"
+                           ], 'ids simple failed'
     assert j.ids(name, 'complete') == ids, "ids complete failed"
 
     for k, v in j.fields(name).items():
@@ -138,10 +144,9 @@ def test_supervised():
     assert j.wait_setup(name)
 
     ids = train['id'].tolist() + test['id'].tolist()
-    assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"], 'ids simple failed'
+    assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"
+                           ], 'ids simple failed'
     assert j.ids(name, 'complete') == ids, "ids complete failed"
 
     j.delete_database(name)
     assert not j.is_valid(name), "valid name after delete failed"
-
-
