@@ -29,6 +29,7 @@ Or you can check if a given database name is valid:
     True
 
 Here you can check which ids are inserted in your database:
+
 .. code-block:: python
 
     >>> j.ids(name)
