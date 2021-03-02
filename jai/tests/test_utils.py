@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 import pytest
-from jai.auxiliar_funcs.utils_funcs import (list2json, series2json, df2json,
-                                            data2json)
+from jai.functions.utils_funcs import (list2json, series2json, df2json,
+                                       data2json)
 
 
 # =============================================================================
