@@ -59,10 +59,15 @@ def test_text(name, data, dtype):
 def test_unsupervised():
     name = 'test_unsupervised'
 
-    train = pd.read_csv(TITANIC_TRAIN).drop(columns=["PassengerId"])
-    query = train.loc[np.random.choice(len(train), 10, replace=False)]
+    train = pd.read_csv(TITANIC_TRAIN).drop(
 
-    j = Jai(url=URL, auth_key=AUTH_KEY)
+        columns=["PassengerId"])
+    query = train.loc[np.random.choice(len(train),
+
+
+                                       10, replace=False)]
+
+    j = Jai(url=URL,    auth_key=AUTH_KEY)
     if j.is_valid(name):
         j.delete_database(name)
 
