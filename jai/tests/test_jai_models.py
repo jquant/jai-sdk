@@ -40,8 +40,7 @@ def test_text(name, data, dtype):
         j.delete_database(name)
 
     j.setup(name, train, db_type=dtype, overwrite=True)
-    assert j.wait_setup(name)
-    assert j.is_valid(name), "valid name after setup failed"
+    assert j.is_valid(name), f"valid name {name} after setup failed"
 
     assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"
                            ], 'ids simple failed'
@@ -69,8 +68,7 @@ def test_unsupervised():
 
     j.setup(name, train, db_type="Unsupervised", overwrite=True)
 
-    assert j.wait_setup(name)
-    assert j.is_valid(name), "valid name after setup failed"
+    assert j.is_valid(name), f"valid name {name} after setup failed"
 
     ids = train.index.tolist()
     assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"
@@ -119,8 +117,7 @@ def test_supervised():
                 "test_size": .2
             })
 
-    assert j.wait_setup(name)
-    assert j.is_valid(name), "valid name after setup failed"
+    assert j.is_valid(name), f"valid name {name} after setup failed"
 
     ids = train['id'].tolist()
     assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"
@@ -141,7 +138,6 @@ def test_supervised():
     assert isinstance(result, list), "predict result failed"
 
     j.add_data(name, test)
-    assert j.wait_setup(name)
 
     ids = train['id'].tolist() + test['id'].tolist()
     assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"
