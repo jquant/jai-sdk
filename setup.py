@@ -5,9 +5,9 @@ from setuptools import find_packages, setup
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
-with open("requirements.txt","r") as f:
-        dependencies = f.read().splitlines()
- 
+with open("requirements.txt", "r") as f:
+    dependencies = f.read().splitlines()
+
 setup(
     name="jai-sdk",
     version="0.1.2",
