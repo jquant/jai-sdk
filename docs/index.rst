@@ -3,8 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+##########################
 JAI-SDK - Trust your data!
-==========================
+##########################
 
 .. toctree::
    :maxdepth: 2
@@ -20,6 +21,7 @@ JAI-SDK - Trust your data!
    use_cases/setup_data
    use_cases/check_database
    use_cases/similarity
+   use_cases/predict
    use_cases/remove_data
 
 .. toctree::
@@ -30,8 +32,9 @@ JAI-SDK - Trust your data!
    source/application
    
 
+##################
 Indices and tables
-==================
+##################
 
 * :ref:`genindex`
 * :ref:`modindex`
