@@ -23,6 +23,7 @@ class Jai:
     and more.
 
     """
+
     def __init__(self, auth_key: str, url: str = None):
         """
         Inicialize the Jai class.
@@ -170,7 +171,7 @@ class Jai:
         Return
         ----------
         `response`: dict
-            A `JSON` file stating whether or not the auth key was created.
+            A Response object with whether or not the auth key was created.
         """
         url = "https://mycelia.azure-api.net"
         body = {"email": email, "firstName": firstName, "lastName": lastName}
