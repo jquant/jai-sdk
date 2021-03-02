@@ -53,4 +53,4 @@ jobs:
       - name: push changes
         if: github.ref != 'refs/heads/main'
         run: |
-          git commit -m "Automation: YAPF Formatter" --all | exit 0
+          git push
