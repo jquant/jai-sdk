@@ -10,8 +10,22 @@ Installing jai-sdk using `pip`:
 pip install jai-sdk
 ```
 
-# Examples
-Instantiate base class
+# Get your Auth Key
+First, you'll need and Authorization key to use the backend API.
+
+To get an Trial version API using the sdk, fill the values with your information:
+
+```python
+from jai import Jai
+
+r = jai.get_auth_key(email=EMAIL, firstName=FIRSTNAME, lastName=LASTNAME)
+```
+
+If the response code is 201, then you should be receiving an email with your Auth Key.
+
+
+# Get Started
+If you already have an Auth Key, the you can use the sdk:
 ```python
 from jai import Jai
 j = Jai(AUTH_KEY)

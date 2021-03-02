@@ -23,6 +23,7 @@ class Jai:
     and more.
 
     """
+
     def __init__(self, auth_key: str, url: str = None):
         """
         Inicialize the Jai class.
@@ -62,7 +63,7 @@ class Jai:
     @property
     def names(self):
         """
-        Retrieves collections already created for the provided Auth Key.
+        Retrieves databases already created for the provided Auth Key.
 
         Args
         ----
@@ -70,7 +71,7 @@ class Jai:
 
         Return
         ------
-            List with the collections created so far.
+            List with the databases created so far.
 
         Example
         -------
@@ -156,7 +157,7 @@ class Jai:
     @staticmethod
     def get_auth_key(email: str, firstName: str, lastName: str):
         """
-        Request an auth key to use JAI-SDK with. This is a protected method.
+        Request an auth key to use JAI-SDK with.
 
         Args
         ----------
@@ -170,7 +171,7 @@ class Jai:
         Return
         ----------
         `response`: dict
-            A `JSON` file stating whether or not the auth key was created.
+            A Response object with whether or not the auth key was created.
         """
         url = "https://mycelia.azure-api.net"
         body = {"email": email, "firstName": firstName, "lastName": lastName}
@@ -1095,6 +1096,7 @@ class Jai:
               overwrite=False):
         """
         Experimental
+
         Match two datasets with their possible equal values.
 
         Queries the data right to get the similar results in data left.
@@ -1103,7 +1105,7 @@ class Jai:
         ----------
         name: str
             String with the name of a database in your JAI environment.
-        data_left, data_right : text
+        data_left, data_right : pd.Series
             data to be matched.
 
         Returns
@@ -1144,13 +1146,14 @@ class Jai:
     def resolution(self, name: str, data, top_k: int = 20, overwrite=False):
         """
         Experimental
+
         Find possible duplicated values within the data.
 
         Parameters
         ----------
         name: str
             String with the name of a database in your JAI environment.
-        data : text
+        data : pd.Series
             data to find duplicates.
 
         Returns
@@ -1188,6 +1191,7 @@ class Jai:
     def fill(self, name: str, data, column: str, **kwargs):
         """
         Experimental
+
         Fills the column in data with the most likely value given the other columns.
 
         Parameters
@@ -1279,6 +1283,7 @@ class Jai:
     ):
         """
         Experimental
+
         Validates consistency in the columns (columns_ref).
 
         Parameters
@@ -1293,12 +1298,12 @@ class Jai:
             Columns that can have inconsistencies. As default we use all non numeric columns.
         **kwargs : TYPE
             Extra args for supervised model except label and split. See setup method. Also:
-            frac: Percentage of the orignal dataframe to be shuffled to create
+            * frac: Percentage of the orignal dataframe to be shuffled to create
             invalid samples for each column in columns_ref. `Default is 0.1`.
-            random_seed: random seed. `Default is 42`.
-            cat_threshold: threshold for processing categorical columns with fasttext model.
+            * random_seed: random seed. `Default is 42`.
+            * cat_threshold: threshold for processing categorical columns with fasttext model.
             `Default is 512`.
-            target: target validation column. If target is already in data, shuffling is skipped.
+            * target: target validation column. If target is already in data, shuffling is skipped.
             `Default is "is_valid"`.
 
 
@@ -1422,16 +1427,17 @@ class Jai:
     ):
         """
         Experimental
+
         Quick embedding for high numbers of categories in columns.
 
         Parameters
         ----------
         name: str
             String with the name of a database in your JAI environment.
-        train : TYPE
-            DESCRIPTION.
-        test : TYPE
-            DESCRIPTION.
+        train : pd.Series
+            Data to train your text based model.
+        test : pd.Series, optional
+            Extra data do be added to the database.
         db_type : str, optional
             type of model to be trained. The default is 'FastText'.
         hyperparams: optional
