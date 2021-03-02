@@ -11,7 +11,7 @@ from .functions.auxiliar import pbar_steps, compare_regex
 from pandas.api.types import is_integer_dtype
 from tqdm import trange, tqdm
 
-__all__ = ["Jai"]
+__all__ = ["Jai"  ]
 
 
 class Jai:
@@ -24,7 +24,7 @@ class Jai:
 
     """
 
-    def __init__(self, auth_key: str, url: str = None):
+    def __init__(self, auth_key   : str, url  : str = None):
         """
         Inicialize the Jai class.
 
