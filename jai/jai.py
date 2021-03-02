@@ -169,7 +169,7 @@ class Jai:
         `response`: dict
             A Response object with whether or not the auth key was created.
         """
-        url = "https://mycelia.azure-api.net"
+        url = "https://mycelia.azure-api.net/clone"
         body = {"email": email, "firstName": firstName, "lastName": lastName}
         response = requests.put(url + "/auth", data=json.dumps(body))
         return response
