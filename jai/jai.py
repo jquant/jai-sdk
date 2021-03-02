@@ -1296,15 +1296,19 @@ class Jai:
             Data to be checked if is valid or not. The default is None.
         columns_ref : list, optional
             Columns that can have inconsistencies. As default we use all non numeric columns.
-        **kwargs : TYPE
+        **kwargs :
             Extra args for supervised model except label and split. See setup method. Also:
-            * frac: Percentage of the orignal dataframe to be shuffled to create
-            invalid samples for each column in columns_ref. `Default is 0.1`.
-            * random_seed: random seed. `Default is 42`.
-            * cat_threshold: threshold for processing categorical columns with fasttext model.
-            `Default is 512`.
-            * target: target validation column. If target is already in data, shuffling is skipped.
-            `Default is "is_valid"`.
+            * *frac*:
+                Percentage of the orignal dataframe to be shuffled to create
+                invalid samples for each column in columns_ref. `Default is 0.1`.
+            * *random_seed*:
+                random seed. `Default is 42`.
+            * *cat_threshold*:
+                threshold for processing categorical columns with fasttext model.
+                `Default is 512`.
+            * *target*:
+                target validation column. If target is already in data, shuffling is skipped.
+                `Default is "is_valid"`.
 
 
         Returns
