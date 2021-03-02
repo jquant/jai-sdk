@@ -140,6 +140,30 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
+    @staticmethod
+    def get_auth_key(email: str, firstName: str, lastName: str):
+        """
+        Request an auth key to use JAI-SDK with. This is a protected method.
+
+        Args
+        ----------
+        `email`: str
+            A valid email address where the auth key will be sent to.
+        `firstName`: str
+            User's first name.
+        `lastName`: str
+            User's last name.
+
+        Return
+        ----------
+        `response`: dict
+            A `JSON` file stating whether or not the auth key was created.
+        """
+        url = "https://mycelia.azure-api.net"
+        body = {"email": email, "firstName": firstName, "lastName": lastName}
+        response = requests.put(url + "/auth", data=json.dumps(body))
+        return response
+
     def generate_name(self,
                       length: int = 8,
                       prefix: str = "",
@@ -193,9 +217,9 @@ class Jai:
     def assert_status_code(self, response):
         # find a way to process this
         # what errors to raise, etc.
-        # raise ValueError(response.content)
         print(response.json())
-        return response
+        print(f"\n\nSTATUS: {response.status_code}\n\n")
+        raise ValueError(f"Something went wrong.\n{response.content}")
 
     def similar(self, name: str, data, top_k: int = 5,
                 batch_size: int = 16384):
