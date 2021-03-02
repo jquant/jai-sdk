@@ -1,8 +1,3 @@
-"""
---- auxiliar.py ---
-
-created by @rogerioguicampos
-"""
 from azure.storage.blob import BlobServiceClient
 from typing import List
 from pathlib import Path
