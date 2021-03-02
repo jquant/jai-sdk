@@ -2,6 +2,7 @@
 [![PyPI Latest Release](https://img.shields.io/pypi/v/jai-sdk.svg)](https://pypi.org/project/jai-sdk/)
 [![Python Version](https://img.shields.io/badge/python-3.7%20%7C%203.8-blue)](https://img.shields.io/badge/python-3.7%20%7C%203.8-blue)
 [![Documentation Status](https://readthedocs.org/projects/jai-sdk/badge/?version=latest)](https://jai-sdk.readthedocs.io/en/latest/?badge=latest)
+[![License](https://img.shields.io/pypi/l/jai-sdk.svg)](https://github.com/jquant/jai-sdk/blob/main/LICENSE)
 
 # Installation
 The source code is currently hosted on GitHub at: [https://github.com/jquant/jai-sdk](https://github.com/jquant/jai-sdk)
