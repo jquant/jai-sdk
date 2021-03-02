@@ -1301,15 +1301,16 @@ class Jai:
             Columns that can have inconsistencies. As default we use all non numeric columns.
         kwargs :
             Extra args for supervised model except label and split. See setup method. Also:
-            * **frac**:
+
+            * **frac** (float):
                 Percentage of the orignal dataframe to be shuffled to create
                 invalid samples for each column in columns_ref. `Default is 0.1`.
-            * **random_seed**:
+            * **random_seed** (int):
                 random seed. `Default is 42`.
-            * **cat_threshold**:
+            * **cat_threshold** (int):
                 threshold for processing categorical columns with fasttext model.
                 `Default is 512`.
-            * **target**:
+            * **target** (str):
                 target validation column. If target is already in data, shuffling is skipped.
                 `Default is "is_valid"`.
 

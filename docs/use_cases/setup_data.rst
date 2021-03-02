@@ -22,6 +22,7 @@ Setup applying NLP FastText model
 This is an example of database with a fasttext model implementation. 
 
 .. code-block:: python
+
     >>> name = 'text_data'
     >>> j.setup(name, data, db_type='FastText')
 
@@ -32,11 +33,13 @@ The transformers model used by defaul is the BERT.
 It's possible to generate a random name for identification of the base; it can be a user input.
 
 .. code-block:: python
+
     >>> name = j.generate_name(12, prefix='sdk_', suffix='_text')
 
 This time we choose :code:`db_type="Text"`, applying the pre-trained BERT model
 
 .. code-block:: python
+
     >>> j.setup(name, data, db_type='Text')
 
 
@@ -46,6 +49,7 @@ Setup applying Edit Distance Model
 It's also possible to use an model trained to reproduce the neighboring relation of the edit distance.
 
 .. code-block:: python
+
     >>> j.setup(name, data, db_type='TextEdit')
 
 
@@ -56,8 +60,9 @@ Setup for Image type data
 For any uses of image-type data, data should be first encoded before inserting into the Jai class.
 
 .. code-block:: python
-    with open(filename, "rb") as image_file:
-        encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
+
+    >>> with open(filename, "rb") as image_file:
+    >>>     encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
 
 Then the encoded string can be inserted into a list, pandas Series or DataFrame.
 We provide :code:`read_image_folder` function for reading images from a local folder.
@@ -68,6 +73,7 @@ Setup applying Image Model
 Images are processed using torchvision pretrained models.
 
 .. code-block:: python
+
     >>> j.setup(name, data, db_type='Image')
 
 ***************************
@@ -78,6 +84,7 @@ Setup applying Self-Supervised Model
 ====================================
 
 .. code-block:: python
+
     >>> j.setup(name, data, db_type='Unsupervised')
 
 
@@ -85,5 +92,6 @@ Setup applying Supervised Model
 ===============================
 
 .. code-block:: python
+
     >>> j.setup(name, data, db_type='Supervised', label={"task": "metric_classification", "label_name": "my_label"})
 
