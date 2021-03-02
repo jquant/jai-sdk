@@ -24,9 +24,9 @@ jobs:
           pip install pytest-cov
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Removing response.json file
-        run: |
-          # this is where you are supposed to start your container
-          rm ~/mycelia-dev/mycelia-api/outputs/sdk_test/response/response.json
+        uses: JesseTG/rm@v1.0.2
+        with:
+          path: ~/mycelia-dev/mycelia-api/outputs/sdk_test/response/response.json
       - name: Generate coverage report
         run: |
           pytest --cov=./ --cov-report=xml
