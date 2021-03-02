@@ -16,9 +16,6 @@ You can also check the types for each of your databases with:
 .. code-block:: python
 
     >>> j.info
-
-.. code-block:: console
-
                             db_name       db_type
     0                  jai_database          Text
     1              jai_unsupervised  Unsupervised

@@ -25,6 +25,15 @@ JAI-SDK - Trust your data!
    use_cases/remove_data
 
 .. toctree::
+   :maxdepth: 1
+   :caption: Experimental
+
+   applications/match
+   applications/resolution
+   applications/fill
+   applications/sanity
+   
+.. toctree::
    :maxdepth: 2
    :caption: API Reference
    
