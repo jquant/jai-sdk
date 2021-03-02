@@ -4,7 +4,7 @@ jai module
 Jai class
 ---------
 
-.. automodule:: jai
+.. automodule:: jai.jai
    :members:
    :undoc-members:
    :show-inheritance:
