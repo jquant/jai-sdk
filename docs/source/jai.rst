@@ -1,10 +1,10 @@
-jai.jai module
+jai module
 ==============
 
 Jai class
 ---------
 
-.. automodule:: jai.jai
+.. automodule:: jai
    :members:
    :undoc-members:
    :show-inheritance:
