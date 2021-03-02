@@ -471,7 +471,8 @@ class Jai:
         data : list, pd.Series or pd.DataFrame
             Data to be queried for similar inputs in your database.
         predict_proba : bool
-            Whether or not to return the probabilities of each prediction. `Default is False`.
+            Whether or not to return the probabilities of each prediction is
+            it's a classification. `Default is False`.
         batch_size : int
             Size of batches to send the data. `Default is 16384`.
 
@@ -488,6 +489,7 @@ class Jai:
         >>> preds = j.predict(name, DATA_ITEM)
         >>> print(preds)
         [{"id":0, "predict": "class1"}, {"id":1, "predict": "class0"}]
+
         >>> preds = j.predict(name, DATA_ITEM, predict_proba=True)
         >>> print(preds)
         [{"id": 0 , "predict"; {"class0": 0.1, "class1": 0.6, "class2": 0.3}}]
@@ -676,7 +678,7 @@ class Jai:
               data,
               db_type: str,
               batch_size: int = 16384,
-              frequency_seconds: int = 0,
+              frequency_seconds: int = 10,
               **kwargs):
         """
         Insert data and train model. This is JAI's crème de la crème.
@@ -688,9 +690,11 @@ class Jai:
         data : pandas.DataFrame or pandas.Series
             Data to be inserted and used for training.
         db_type : str
-            Database type (Supervised, Unsupervised, Text...)
+            Database type {Supervised, Unsupervised, Text, FastText, TextEdit, Image}
         batch_size : int
-            Size of batch to insert the data. Default is 16384 (2**14).
+            Size of batch to insert the data.`Default is 16384 (2**14)`.
+        frequency_seconds : int
+            Time in between each check of status. `Default is 10`.
         **kwargs
             Parameters that should be passed as a dictionary in compliance with the
             API methods. In other words, every kwarg argument should be passed as if
@@ -745,7 +749,7 @@ class Jai:
                  name: str,
                  data,
                  batch_size: int = 16384,
-                 frequency_seconds: int = 0):
+                 frequency_seconds: int = 10):
         """
         Insert raw data and extract their latent representation.
 
@@ -761,6 +765,8 @@ class Jai:
             Data to be inserted and used for training.
         batch_size : int
             Size of batch to send the data. `Default is 16384`.
+        frequency_seconds : int
+            Time in between each check of status. `Default is 10`.
 
         Return
         -------
@@ -867,7 +873,7 @@ class Jai:
                 'num_process', 'cat_process', 'high_process', 'mycelia_bases',
                 'label', 'split'
             ])
-            must.extend(['label', 'split'])
+            must.extend(['label'])
 
         missing = [key for key in must if kwargs.get(key, None) is None]
         if len(missing) > 0:
@@ -974,7 +980,7 @@ class Jai:
         """
         status = self.status
         max_trials = 5
-        patience = 15  # time in seconds that we'll wait
+        patience = 25  # time in seconds that we'll wait
         trials = 0
         while trials < max_trials:
             if name in status.keys():
@@ -1140,7 +1146,6 @@ class Jai:
                 overwrite=overwrite,
                 hyperparams={"nt": nt},
             )
-            self.wait_setup(name, 20)
         return self.similar(name, data_right, top_k=top_k)
 
     def resolution(self, name: str, data, top_k: int = 20, overwrite=False):
@@ -1185,7 +1190,6 @@ class Jai:
                 overwrite=overwrite,
                 hyperparams={"nt": nt},
             )
-            self.wait_setup(name, 20)
         return self.similar(name, data.index, top_k=top_k)
 
     def fill(self, name: str, data, column: str, **kwargs):
@@ -1269,7 +1273,6 @@ class Jai:
                 split=split,
                 **kwargs,
             )
-            self.wait_setup(name, 20)
 
         return self.predict(name, test, predict_proba=True)
 
@@ -1296,17 +1299,18 @@ class Jai:
             Data to be checked if is valid or not. The default is None.
         columns_ref : list, optional
             Columns that can have inconsistencies. As default we use all non numeric columns.
-        **kwargs :
+        kwargs :
             Extra args for supervised model except label and split. See setup method. Also:
-            * *frac*:
+
+            * **frac** (float):
                 Percentage of the orignal dataframe to be shuffled to create
                 invalid samples for each column in columns_ref. `Default is 0.1`.
-            * *random_seed*:
+            * **random_seed** (int):
                 random seed. `Default is 42`.
-            * *cat_threshold*:
+            * **cat_threshold** (int):
                 threshold for processing categorical columns with fasttext model.
                 `Default is 512`.
-            * *target*:
+            * **target** (str):
                 target validation column. If target is already in data, shuffling is skipped.
                 `Default is "is_valid"`.
 
@@ -1417,7 +1421,6 @@ class Jai:
                 split=split,
                 **kwargs,
             )
-            self.wait_setup(name, 20)
 
         return self.predict(name, test, predict_proba=True)
 
@@ -1478,7 +1481,6 @@ class Jai:
                        settrain,
                        db_type=db_type,
                        hyperparams=hyperparams)
-            self.wait_setup(name, 10)
         else:
             missing = i_train[~np.isin(i_train, self.ids(name, "complete"))]
             if len(missing) > 0:
