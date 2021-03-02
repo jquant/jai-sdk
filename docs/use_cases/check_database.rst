@@ -21,6 +21,16 @@ You can also check the types for each of your databases with:
 
 .. code-block:: python
 
+    >>> j.info
+                            db_name       db_type
+    0                  jai_database          Text
+    1              jai_unsupervised  Unsupervised
+    2                jai_supervised    Supervised
+
+
+Here you can check which ids are inserted in your database:
+.. code-block:: python
+
     >>> j.ids(name)
     ['1000 items from 0 to 999']
 
