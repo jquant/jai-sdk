@@ -11,7 +11,7 @@ from .functions.auxiliar import pbar_steps, compare_regex
 from pandas.api.types import is_integer_dtype
 from tqdm import trange, tqdm
 
-__all__ = ["Jai"  ]
+__all__ = ["Jai"]
 
 
 class Jai:
@@ -23,8 +23,7 @@ class Jai:
     and more.
 
     """
-
-    def __init__(self, auth_key   : str, url  : str = None):
+    def __init__(self, auth_key: str, url: str = None):
         """
         Inicialize the Jai class.
 
@@ -79,9 +78,8 @@ class Jai:
         ['jai_database', 'jai_unsupervised', 'jai_supervised']
 
         """
-        response = requests.get(
-            url=self.url + "/info?mode=names", headers=self.header
-        )
+        response = requests.get(url=self.url + "/info?mode=names",
+                                headers=self.header)
 
         if response.status_code == 200:
             return response.json()
@@ -110,9 +108,8 @@ class Jai:
         1              jai_unsupervised  Unsupervised
         2                jai_supervised    Supervised
         """
-        response = requests.get(
-            url=self.url + "/info?mode=complete", headers=self.header
-        )
+        response = requests.get(url=self.url + "/info?mode=complete",
+                                headers=self.header)
 
         if response.status_code == 200:
             df = pd.DataFrame(response.json()).rename({
@@ -146,8 +143,7 @@ class Jai:
             "Description": "Training of database YOUR_DATABASE has ended."
         }
         """
-        response = requests.get(
-            self.url + "/status", headers=self.header)
+        response = requests.get(self.url + "/status", headers=self.header)
 
         if response.status_code == 200:
             return response.json()
@@ -235,7 +231,10 @@ class Jai:
         print(f"\n\nSTATUS: {response.status_code}\n\n")
         raise ValueError(f"Something went wrong.\n{response.content}")
 
-    def similar(self, name: str, data, top_k: int = 5,
+    def similar(self,
+                name: str,
+                data,
+                top_k: int = 5,
                 batch_size: int = 16384):
         """
         Query a database in search for the `top_k` most similar entries for each
@@ -329,10 +328,8 @@ class Jai:
                 url = self.url + \
                     f"/similar/id/{name}?{id_req}&top_k={top_k}"
             elif isinstance(id_item, int):
-                url = (
-                    self.url +
-                    f"/similar/id/{name}?id={id_item}&top_k={top_k}"
-                )
+                url = (self.url +
+                       f"/similar/id/{name}?id={id_item}&top_k={top_k}")
 
             else:
                 raise TypeError(
@@ -559,9 +556,8 @@ class Jai:
         >>> print(ids)
         ['891 items from 0 to 890']
         """
-        response = requests.get(
-            self.url + f"/id/{name}?mode={mode}", headers=self.header
-        )
+        response = requests.get(self.url + f"/id/{name}?mode={mode}",
+                                headers=self.header)
         if response.status_code == 200:
             return response.json()
         else:
@@ -589,9 +585,8 @@ class Jai:
         >>> print(check_valid)
         True
         """
-        response = requests.get(
-            self.url + f"/validation/{name}", headers=self.header
-        )
+        response = requests.get(self.url + f"/validation/{name}",
+                                headers=self.header)
         if response.status_code == 200:
             return response.json()["value"]
         else:
@@ -614,9 +609,8 @@ class Jai:
             List with the actual ids (mode: 'complete') or a summary of ids
             ('simple'/'summarized') of the given database.
         """
-        response = requests.get(
-            self.url + f"/setup/ids/{name}?mode={mode}", headers=self.header
-        )
+        response = requests.get(self.url + f"/setup/ids/{name}?mode={mode}",
+                                headers=self.header)
         if response.status_code == 200:
             return response.json()
         else:
@@ -815,9 +809,8 @@ class Jai:
         response : dict
             Dictionary with the API response.
         """
-        response = requests.patch(
-            self.url + f"/data/{name}", headers=self.header
-        )
+        response = requests.patch(self.url + f"/data/{name}",
+                                  headers=self.header)
         if response.status_code == 202:
             return response.json()
         else:
@@ -839,9 +832,9 @@ class Jai:
         response : dict
             Dictionary with the API response.
         """
-        response = requests.post(
-            self.url + f"/data/{name}", headers=self.header, data=df_json
-        )
+        response = requests.post(self.url + f"/data/{name}",
+                                 headers=self.header,
+                                 data=df_json)
         if response.status_code == 200:
             return response.json()
         else:
@@ -955,9 +948,8 @@ class Jai:
                 "'fields' method is only available to dtype Unsupervised and Supervised."
             )
 
-        response = requests.get(
-            self.url + f"/table/fields/{name}", headers=self.header
-        )
+        response = requests.get(self.url + f"/table/fields/{name}",
+                                headers=self.header)
         if response.status_code == 200:
             return response.json()
         else:
@@ -1057,9 +1049,8 @@ class Jai:
         >>> j.delete_raw_data(name=name)
         'All raw data from database 'chosen_name' was deleted!'
         """
-        response = requests.delete(
-            self.url + f"/data/{name}", headers=self.header
-        )
+        response = requests.delete(self.url + f"/data/{name}",
+                                   headers=self.header)
         if response.status_code == 200:
             return response.json()
         else:
@@ -1086,9 +1077,8 @@ class Jai:
         >>> j.delete_database(name=name)
         'Bombs away! We nuked database chosen_name!'
         """
-        response = requests.delete(
-            self.url + f"/database/{name}", headers=self.header
-        )
+        response = requests.delete(self.url + f"/database/{name}",
+                                   headers=self.header)
         if response.status_code == 200:
             return response.json()
         else:
@@ -1277,12 +1267,12 @@ class Jai:
         return self.predict(name, test, predict_proba=True)
 
     def sanity(
-            self,
-            name: str,
-            data,
-            data_validate=None,
-            columns_ref: list = None,
-            **kwargs,
+        self,
+        name: str,
+        data,
+        data_validate=None,
+        columns_ref: list = None,
+        **kwargs,
     ):
         """
         Experimental
@@ -1425,12 +1415,12 @@ class Jai:
         return self.predict(name, test, predict_proba=True)
 
     def embedding(
-            self,
-            name: str,
-            train,
-            test=None,
-            db_type="FastText",
-            hyperparams=None,
+        self,
+        name: str,
+        train,
+        test=None,
+        db_type="FastText",
+        hyperparams=None,
     ):
         """
         Experimental
