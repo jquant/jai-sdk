@@ -3,7 +3,7 @@ Getting your Authentication Key
 ###############################
 
 
-First, you'll need and Authorization key to use the backend API.
+First, you'll need an Authorization key to use the backend API.
 
 To get an Trial version API using the sdk, fill the values with your information:
 
