@@ -12,6 +12,8 @@ from pandas.api.types import is_integer_dtype
 from tqdm import trange, tqdm
 
 __all__ = ["Jai"]
+
+
 class Jai:
     """
     Base class for communication with the Mycelia API.
