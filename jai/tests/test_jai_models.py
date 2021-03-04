@@ -11,6 +11,7 @@ TITANIC_TEST = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/d
 
 np.random.seed(42)
 
+# so pra testar se os tests tão passando na VM nova
 
 # =============================================================================
 # Test Text

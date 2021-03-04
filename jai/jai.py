@@ -13,6 +13,7 @@ from tqdm import trange, tqdm
 
 __all__ = ["Jai"]
 
+# so pra testar se os tests tão passando na VM nova
 
 class Jai:
     """
