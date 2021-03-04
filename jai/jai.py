@@ -12,10 +12,6 @@ from pandas.api.types import is_integer_dtype
 from tqdm import trange, tqdm
 
 __all__ = ["Jai"]
-
-# so pra testar se os tests tão passando na VM nova
-
-
 class Jai:
     """
     Base class for communication with the Mycelia API.
