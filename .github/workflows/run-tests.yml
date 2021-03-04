@@ -42,7 +42,7 @@ jobs:
         # https://github.com/pytest-dev/pytest-cov
         # https://pytest-cov.readthedocs.io/en/latest/readme.html
         run: |
-          pytest --cov=./jai --cov-report=xml:coverage.xml
+          pytest --cov=./jai --cov-report=xml:coverage.xml | tee tests_output.out
       - name: Upload coverage to Codecov
         # https://github.com/codecov/codecov-action
         uses: codecov/codecov-action@v1
