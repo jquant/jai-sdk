@@ -15,6 +15,7 @@ __all__ = ["Jai"]
 
 # so pra testar se os tests tão passando na VM nova
 
+
 class Jai:
     """
     Base class for communication with the Mycelia API.
