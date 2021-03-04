@@ -145,10 +145,17 @@ class Jai:
         """
         response = requests.get(self.url + "/status", headers=self.header)
 
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return self.assert_status_code(response)
+        max_trials = 5
+        patience = 25  # time in seconds that we'll wait
+        trials = 0
+
+        while trials < max_trials:
+            if response.status_code == 200:
+                return response.json()
+            time.sleep(patience // max_trials)
+            trials += 1
+            response = requests.get(self.url + "/status", headers=self.header)
+        return self.assert_status_code(response)
 
     @staticmethod
     def get_auth_key(email: str, firstName: str, lastName: str):
@@ -955,34 +962,6 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def _wait_status(self, name):
-        """
-        Auxiliar functions for wait_setup method.
-
-        Parameters
-        ----------
-        name : str
-            String with the name of a database in your JAI environment.
-
-        Returns
-        -------
-        dict
-            Status dict.
-
-        """
-        status = self.status
-        max_trials = 5
-        patience = 25  # time in seconds that we'll wait
-        trials = 0
-        while trials < max_trials:
-            if name in status.keys():
-                status = status[name]
-                return status
-            else:
-                time.sleep(patience // max_trials)
-                trials += 1
-        raise ValueError(f"Could not find a status for database '{name}'.")
-
     def wait_setup(self, name: str, frequency_seconds: int = 5):
         """
         Wait for the setup (model training) to finish
@@ -1002,7 +981,7 @@ class Jai:
         """
         max_steps = None
         while max_steps is None:
-            status = self._wait_status(name)
+            status = self.status[name]
             starts_at, max_steps = pbar_steps(status=status)
             time.sleep(1)
         step = starts_at
@@ -1019,7 +998,7 @@ class Jai:
                     starts_at = step
                 step, _ = pbar_steps(status=status, step=step)
                 time.sleep(frequency_seconds)
-                status = self._wait_status(name)
+                status = self.status[name]
                 aux += 1
             if (starts_at != max_steps) and aux != 0:
                 diff = max_steps - starts_at
