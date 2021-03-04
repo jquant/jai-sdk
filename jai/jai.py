@@ -22,7 +22,6 @@ class Jai:
     and more.
 
     """
-
     def __init__(self, auth_key: str, url: str = None):
         """
         Inicialize the Jai class.
