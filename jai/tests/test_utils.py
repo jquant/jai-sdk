@@ -43,3 +43,22 @@ def test_df2json(col1, col2, ids):
 
 def t_data2json():
     pass
+
+
+@pytest.mark.parametrize('data', [list('ab'), np.array(['abc', 'def'])])
+@pytest.mark.parametrize('name', ['text', 'image_base64'])
+@pytest.mark.parametrize('ids', [[1, 1], [10, 10]])
+def test_series_error(data, name, ids):
+    with pytest.raises(ValueError):
+        ids = ids if ids is not None else range(len(data))
+        s = pd.Series(data, index=pd.Index(ids, name='id'), name=name)
+        series2json(s, name)
+
+
+@pytest.mark.parametrize('col1, col2, ids',
+                         [([42, 123], ['abc', 'def'], [2, 2]),
+                          ([69, 420], ['ghi', 'jkl'], [42, 42])])
+def test_df_error(col1, col2, ids):
+    with pytest.raises(ValueError):
+        df = pd.DataFrame({"col1": col1, "col2": col2}, index=ids)
+        df2json(df)

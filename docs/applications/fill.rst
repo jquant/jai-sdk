@@ -7,7 +7,7 @@ Fills the column in data with the most likely value given the other columns.
 .. code-block:: python
 
     >>> import pandas as pd
-    >>> from jai.functions.utils_funcs import process_predict
+    >>> from jai.processing import process_predict
     >>>
     >>> j = Jai(AUTH_KEY)
     >>> results = j.fill(name, data, COL_TO_FILL)

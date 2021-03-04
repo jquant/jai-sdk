@@ -1,16 +1,46 @@
 import base64
+import json
+import re
 import pandas as pd
 import numpy as np
+
 from tqdm import tqdm
 from typing import List
 from pathlib import Path
 from PIL import Image
-
 from operator import itemgetter
 from functools import cmp_to_key
 from .classes import FieldName, PossibleDtypes
 
-__all__ = ['data2json', 'process_predict', 'process_similar']
+__all__ = ["data2json", "pbar_steps"]
+
+
+def get_status_json(file_path="./jai/auxiliar/pbar_status.json"):
+    pbar_status_path = Path(file_path)
+    with open(pbar_status_path, 'r') as f:
+        status_dict = json.load(f)
+    return status_dict
+
+
+def compare_regex(setup_task: str):
+    return re.findall('\[(.*?)\]', setup_task)[0]
+
+
+def pbar_steps(status: List = None, step: int = 0):
+    PBAR_STATUS_PATH = "./jai/auxiliar/pbar_status.json"
+    setup_task = status['Description']
+
+    try:
+        db_type = compare_regex(setup_task)
+        possible_tasks = get_status_json(PBAR_STATUS_PATH)[db_type]
+        for index, task in enumerate(possible_tasks):
+            pattern = re.compile(task)
+            is_my_task = pattern.search(setup_task)
+            if is_my_task:
+                return index + 1, len(possible_tasks)
+        return step, None
+    except:
+        return step, None
 
 
 def read_image_folder(image_folder: str = None,
@@ -122,108 +152,6 @@ def data2json(data, dtype):
             raise NotImplementedError(f"type {type(data)} is not implemented.")
     else:
         raise ValueError(f"dtype {dtype} not recognized.")
-
-
-def process_similar(results,
-                    threshold: float = None,
-                    return_self: bool = True,
-                    skip_null: bool = True):
-    """
-    Process the output from the similar methods.
-
-    Parameters
-    ----------
-    results : List of Dicts.
-        output from similar methods.
-    threshold : float, optional
-        value for the distance threshold. The default is None.
-        if set to None, takes a random 1% of the results and uses the 10%
-        quantile of the distances distributions as the threshold.
-    return_self : bool, optional
-        option to return the queried id from the query result or not. The default is True.
-    skip_null: bool, optional
-        option to skip ids without similar results. The default is True.
-
-    Raises
-    ------
-    NotImplementedError
-        If priority inputed is not implemented.
-
-    Returns
-    -------
-    list
-        mapping the query id to the similar value.
-
-    """
-    if threshold is None:
-        samples = np.random.randint(0, len(results), len(results) // (100))
-        distribution = []
-        for s in tqdm(samples, desc="Fiding threshold"):
-            d = [l['distance'] for l in results[s]['results'][1:]]
-            distribution.extend(d)
-        threshold = np.quantile(distribution, .1)
-    print(f"threshold: {threshold}\n")
-
-    similar = []
-    for q in tqdm(results.copy(), desc='Process'):
-        sort = multikeysort(q['results'], ['distance', 'id'])
-        zero, one = sort[0], sort[1]
-        if zero['distance'] <= threshold and (zero['id'] != q['query_id']
-                                              or return_self):
-            zero['query_id'] = q['query_id']
-            similar.append(zero)
-        elif one['distance'] <= threshold:
-            one['query_id'] = q['query_id']
-            similar.append(one)
-        elif not skip_null:
-            mock = {"query_id": q['query_id'], "id": None, "distance": None}
-            similar.append(mock)
-        else:
-            continue
-    return similar
-
-
-def process_predict(predicts):
-    """
-    Process the output from the predict methods from supervised models.
-
-    Parameters
-    ----------
-    predicts : List of Dicts.
-        output from predict methods.
-
-    Raises
-    ------
-    NotImplementedError
-        If unexpected predict type. {type(example)}
-
-    Returns
-    -------
-    list
-        mapping the query id to the predicted value.
-
-    """
-    example = predicts[0]['predict']
-    if isinstance(example, dict):
-        predict_proba = True
-    elif isinstance(example, str):
-        predict_proba = False
-    else:
-        raise ValueError(f"Unexpected predict type. {type(example)}")
-
-    sanity_check = []
-    for query in tqdm(predicts, desc='Predict all ids'):
-        if predict_proba == False:
-            sanity_check.append(query)
-        else:
-            predict = max(query['predict'], key=query['predict'].get)
-            confidence_level = round(query['predict'][predict] * 100, 2)
-            sanity_check.append({
-                'id': query['id'],
-                'predict': predict,
-                'probability(%)': confidence_level
-            })
-    return sanity_check
 
 
 def cmp(x, y):

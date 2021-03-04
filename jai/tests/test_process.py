@@ -1,5 +1,5 @@
 import pytest
-from jai.functions.utils_funcs import process_similar, process_predict
+from jai.processing import process_similar, process_predict
 
 
 # =============================================================================

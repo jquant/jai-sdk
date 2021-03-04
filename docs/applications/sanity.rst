@@ -7,7 +7,7 @@ Validates consistency in the columns (columns_ref).
 .. code-block:: python
 
     >>> import pandas as pd
-    >>> from jai.functions.utils_funcs import process_predict
+    >>> from jai.processing import process_predict
     >>>
     >>> j = Jai(AUTH_KEY)
     >>> results = j.sanity(name, data)

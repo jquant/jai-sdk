@@ -5,9 +5,8 @@ import numpy as np
 import requests
 import time
 
-from .functions.utils_funcs import data2json
+from .functions.utils_funcs import data2json, pbar_steps
 from .functions.classes import PossibleDtypes, Mode
-from .functions.auxiliar import pbar_steps, compare_regex
 from pandas.api.types import is_integer_dtype
 from tqdm import trange, tqdm
 
@@ -23,6 +22,7 @@ class Jai:
     and more.
 
     """
+
     def __init__(self, auth_key: str, url: str = None):
         """
         Inicialize the Jai class.
@@ -1113,7 +1113,7 @@ class Jai:
         Example
         -------
         >>> import pandas as pd
-        >>> from jai.functions.utils_funcs import process_similar
+        >>> from jai.processing import process_similar
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.match(name, data1, data2)
@@ -1159,7 +1159,7 @@ class Jai:
         Example
         -------
         >>> import pandas as pd
-        >>> from jai.functions.utils_funcs import process_similar
+        >>> from jai.processing import process_similar
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.resolution(name, data)
@@ -1207,7 +1207,7 @@ class Jai:
         Example
         -------
         >>> import pandas as pd
-        >>> from jai.functions.utils_funcs import process_predict
+        >>> from jai.processing import process_predict
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.fill(name, data, COL_TO_FILL)
@@ -1313,7 +1313,7 @@ class Jai:
         Example
         -------
         >>> import pandas as pd
-        >>> from jai.functions.utils_funcs import process_predict
+        >>> from jai.processing import process_predict
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.sanity(name, data)
