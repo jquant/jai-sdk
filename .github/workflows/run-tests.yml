@@ -37,7 +37,7 @@ jobs:
       - name: Removing response.json file
         uses: JesseTG/rm@v1.0.2
         with:
-          path: ~/mycelia-dev/mycelia-api/outputs/sdk_test/response/response.json
+          path: ~/mycelia-local/mycelia-api/outputs/sdk_test/response/response.json
       - name: Run tests & Generate coverage report
         # https://github.com/pytest-dev/pytest-cov
         # https://pytest-cov.readthedocs.io/en/latest/readme.html
