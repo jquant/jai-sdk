@@ -26,6 +26,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install flake8 pytest
+          pip install pytest-cov
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Lint with flake8
         run: |
@@ -37,7 +38,18 @@ jobs:
         uses: JesseTG/rm@v1.0.2
         with:
           path: ~/mycelia-dev/mycelia-api/outputs/sdk_test/response/response.json
-      - name: Test with pytest
+      - name: Run tests & Generate coverage report
+        # https://github.com/pytest-dev/pytest-cov
+        # https://pytest-cov.readthedocs.io/en/latest/readme.html
         run: |
-          pytest
-          # this is where you are supposed to stop your container
+          pytest --cov=./jai --cov-report=xml:coverage.xml
+      - name: Upload coverage to Codecov
+        # https://github.com/codecov/codecov-action
+        uses: codecov/codecov-action@v1
+        with:
+          files: coverage.xml
+          flags: unittests
+          name: jai-sdk
+          fail_ci_if_error: true
+          path_to_write_report: ./coverage/codecov_report.txt
+          verbose: true
