@@ -5,9 +5,8 @@ import numpy as np
 import requests
 import time
 
-from .functions.utils_funcs import data2json
+from .functions.utils_funcs import data2json, pbar_steps
 from .functions.classes import PossibleDtypes, Mode
-from .functions.auxiliar import pbar_steps, compare_regex
 from pandas.api.types import is_integer_dtype
 from tqdm import trange, tqdm
 
@@ -304,11 +303,7 @@ class Jai:
             results.extend(res["similarity"])
         return results
 
-    def _similar_id(self,
-                    name: str,
-                    id_item: int,
-                    top_k: int = 5,
-                    method="PUT"):
+    def _similar_id(self, name: str, id_item: int, top_k: int = 5):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given an id.
         This is a protected method.
@@ -329,38 +324,20 @@ class Jai:
         response : dict
             Dictionary with the index and distance of `the k most similar items`.
         """
-        if method == "GET":
-            if isinstance(id_item, list):
-                id_req = "&".join(["id=" + str(i) for i in set(id_item)])
-                url = self.url + \
-                    f"/similar/id/{name}?{id_req}&top_k={top_k}"
-            elif isinstance(id_item, int):
-                url = (self.url +
-                       f"/similar/id/{name}?id={id_item}&top_k={top_k}")
 
-            else:
-                raise TypeError(
-                    f"id_item param must be int or list, {type(id_item)} found."
-                )
-
-            response = requests.get(url, headers=self.header)
-        elif method == "PUT":
-            if isinstance(id_item, list):
-                pass
-            elif isinstance(id_item, int):
-                id_item = [id_item]
-            else:
-                raise TypeError(
-                    f"id_item param must be int or list, {type(id_item)} found."
-                )
-
-            response = requests.put(
-                self.url + f"/similar/id/{name}?top_k={top_k}",
-                headers=self.header,
-                data=json.dumps(id_item),
-            )
+        if isinstance(id_item, list):
+            pass
+        elif isinstance(id_item, int):
+            id_item = [id_item]
         else:
-            raise ValueError("method must be GET or PUT.")
+            raise TypeError(
+                f"id_item param must be int or list, {type(id_item)} found.")
+
+        response = requests.put(
+            self.url + f"/similar/id/{name}?top_k={top_k}",
+            headers=self.header,
+            data=json.dumps(id_item),
+        )
 
         if response.status_code == 200:
             return response.json()
@@ -1092,7 +1069,7 @@ class Jai:
         Example
         -------
         >>> import pandas as pd
-        >>> from jai.functions.utils_funcs import process_similar
+        >>> from jai.processing import process_similar
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.match(name, data1, data2)
@@ -1138,7 +1115,7 @@ class Jai:
         Example
         -------
         >>> import pandas as pd
-        >>> from jai.functions.utils_funcs import process_similar
+        >>> from jai.processing import process_similar
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.resolution(name, data)
@@ -1186,7 +1163,7 @@ class Jai:
         Example
         -------
         >>> import pandas as pd
-        >>> from jai.functions.utils_funcs import process_predict
+        >>> from jai.processing import process_predict
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.fill(name, data, COL_TO_FILL)
@@ -1292,7 +1269,7 @@ class Jai:
         Example
         -------
         >>> import pandas as pd
-        >>> from jai.functions.utils_funcs import process_predict
+        >>> from jai.processing import process_predict
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.sanity(name, data)

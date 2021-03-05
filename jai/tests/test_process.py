@@ -1,5 +1,5 @@
 import pytest
-from jai.functions.utils_funcs import process_similar, process_predict
+from jai.processing import process_similar, process_predict
 
 
 # =============================================================================
@@ -7,18 +7,11 @@ from jai.functions.utils_funcs import process_similar, process_predict
 # =============================================================================
 def test_process_similar_threshold():
     similar = [{
-        "query_id":
-        0,
+        "query_id": 0,
         "results": [{
-            'id': 0,
-            'distance': 0
-        }, {
-            'id': 1,
-            'distance': 1
-        }, {
-            'id': 2,
-            'distance': 2
-        }]
+            'id': i,
+            'distance': i
+        } for i in range(20)]
     }]
     gab = [{'id': 0, 'distance': 0, 'query_id': 0}]
     assert process_similar(
@@ -29,18 +22,11 @@ def test_process_similar_threshold():
 
 def test_process_similar_self():
     similar = [{
-        "query_id":
-        0,
+        "query_id": 0,
         "results": [{
-            'id': 0,
-            'distance': 0
-        }, {
-            'id': 1,
-            'distance': 1
-        }, {
-            'id': 2,
-            'distance': 2
-        }]
+            'id': i,
+            'distance': i
+        } for i in range(20)]
     }]
     assert process_similar(
         similar, 0,
@@ -54,18 +40,11 @@ def test_process_similar_self():
 
 def test_process_similar_null():
     similar = [{
-        "query_id":
-        0,
+        "query_id": 0,
         "results": [{
-            'id': 0,
-            'distance': 0
-        }, {
-            'id': 1,
-            'distance': 1
-        }, {
-            'id': 2,
-            'distance': 2
-        }]
+            'id': i,
+            'distance': i
+        } for i in range(20)]
     }]
     assert process_similar(similar, 0, False, False) == [{
         'query_id': 0,

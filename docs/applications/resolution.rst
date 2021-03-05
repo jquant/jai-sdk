@@ -7,7 +7,7 @@ Find possible duplicated values within the data.
 .. code-block:: python
 
     >>> import pandas as pd
-    >>> from jai.functions.utils_funcs import process_similar
+    >>> from jai.processing import process_similar
     >>>
     >>> j = Jai(AUTH_KEY)
     >>> results = j.resolution(name, data)

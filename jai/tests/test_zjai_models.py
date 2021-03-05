@@ -1,13 +1,12 @@
 from jai import Jai
 from pandas.api.types import infer_dtype
+from .test_utils import setup_dataframe
 import pandas as pd
 import numpy as np
 import pytest
 
 URL = 'http://localhost:8001'
 AUTH_KEY = "sdk_test"
-TITANIC_TRAIN = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/train.csv"
-TITANIC_TEST = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/test.csv"
 
 np.random.seed(42)
 
@@ -19,10 +18,9 @@ np.random.seed(42)
                          [("test_nlp", "list", "Text"),
                           ("test_fasttext", "array", "FastText"),
                           ("test_edittext", "series", "TextEdit")])
-def test_text(name, data, dtype):
-    train = pd.read_csv(TITANIC_TRAIN).rename(columns={
-        "PassengerId": "id"
-    }).set_index("id")['Name']
+def test_text(name, data, dtype, setup_dataframe):
+    train, _ = setup_dataframe
+    train = train.rename(columns={"PassengerId": "id"}).set_index("id")['Name']
     ids = train.index.tolist()
     query = train.loc[np.random.choice(ids, 10, replace=False)]
 
@@ -47,7 +45,19 @@ def test_text(name, data, dtype):
     assert sorted(j.ids(name, 'complete')) == ids, "ids complete failed"
 
     result = j.similar(name, query)
-    assert isinstance(result, list), "similar result failed"
+    assert isinstance(result, list), "similar data result failed"
+
+    result = j.similar(name, pd.Series(query.index))
+    assert isinstance(result, list), "similar id series result failed"
+
+    result = j.similar(name, query.index)
+    assert isinstance(result, list), "similar id index result failed"
+
+    result = j.similar(name, query.index.tolist())
+    assert isinstance(result, list), "similar id list result failed"
+
+    result = j.similar(name, query.index.values)
+    assert isinstance(result, list), "similar id array result failed"
 
     j.delete_database(name)
     assert not j.is_valid(name), "valid name after delete failed"
@@ -56,10 +66,11 @@ def test_text(name, data, dtype):
 # =============================================================================
 # Test Unsupervised
 # =============================================================================
-def test_unsupervised():
+def test_unsupervised(setup_dataframe):
     name = 'test_unsupervised'
 
-    train = pd.read_csv(TITANIC_TRAIN).drop(columns=["PassengerId"])
+    train, _ = setup_dataframe
+    train = train.drop(columns=["PassengerId"])
     query = train.loc[np.random.choice(len(train), 10, replace=False)]
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
@@ -92,11 +103,12 @@ def test_unsupervised():
 # =============================================================================
 # Test Supervised
 # =============================================================================
-def test_supervised():
+def test_supervised(setup_dataframe):
     name = 'test_supervised'
 
-    train = pd.read_csv(TITANIC_TRAIN).rename(columns={"PassengerId": "id"})
-    test = pd.read_csv(TITANIC_TEST).rename(columns={"PassengerId": "id"})
+    train, test = setup_dataframe
+    train = train.rename(columns={"PassengerId": "id"})
+    test = test.rename(columns={"PassengerId": "id"})
     query = test.loc[np.random.choice(len(test), 10, replace=False)]
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
