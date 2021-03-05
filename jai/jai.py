@@ -303,10 +303,7 @@ class Jai:
             results.extend(res["similarity"])
         return results
 
-    def _similar_id(self,
-                    name: str,
-                    id_item: int,
-                    top_k: int = 5):
+    def _similar_id(self, name: str, id_item: int, top_k: int = 5):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given an id.
         This is a protected method.
@@ -334,8 +331,7 @@ class Jai:
             id_item = [id_item]
         else:
             raise TypeError(
-                f"id_item param must be int or list, {type(id_item)} found."
-            )
+                f"id_item param must be int or list, {type(id_item)} found.")
 
         response = requests.put(
             self.url + f"/similar/id/{name}?top_k={top_k}",
