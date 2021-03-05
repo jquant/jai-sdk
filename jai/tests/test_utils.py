@@ -5,7 +5,6 @@ from jai.functions.utils_funcs import (list2json, series2json, df2json,
                                        data2json)
 
 
-
 @pytest.fixture(scope="session")
 def setup_dataframe():
     TITANIC_TRAIN = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/train.csv"
@@ -13,6 +12,7 @@ def setup_dataframe():
     train = pd.read_csv(TITANIC_TRAIN)
     test = pd.read_csv(TITANIC_TEST)
     return train, test
+
 
 # =============================================================================
 # Tests for data2json
@@ -50,8 +50,6 @@ def test_df2json(col1, col2, ids):
     assert df2json(df) == '[' + out + ']', 'df2json failed.'
 
 
-
-
 @pytest.mark.parametrize("dtype", ["list", "array", "series", "df", "df_id"])
 def test_data2json(setup_dataframe, dtype):
     db_type = "Text"
@@ -71,7 +69,9 @@ def test_data2json(setup_dataframe, dtype):
     elif dtype == 'df':
         data = data.to_frame()
         ids = data.index
-        s = pd.Series(data['Name'], index=pd.Index(ids, name='id'), name="text")
+        s = pd.Series(data['Name'],
+                      index=pd.Index(ids, name='id'),
+                      name="text")
         gab = s.reset_index().to_json(orient='records')
     elif dtype == 'df_id':
         data = data.reset_index().rename(columns={"index": "id"})
@@ -81,7 +81,6 @@ def test_data2json(setup_dataframe, dtype):
         gab = data.reset_index().to_json(orient='records')
 
     assert data2json(data, db_type) == gab, 'df2json failed.'
-
 
 
 @pytest.mark.parametrize('data', [list('ab'), np.array(['abc', 'def'])])

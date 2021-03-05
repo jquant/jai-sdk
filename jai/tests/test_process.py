@@ -7,8 +7,7 @@ from jai.processing import process_similar, process_predict
 # =============================================================================
 def test_process_similar_threshold():
     similar = [{
-        "query_id":
-        0,
+        "query_id": 0,
         "results": [{
             'id': i,
             'distance': i
