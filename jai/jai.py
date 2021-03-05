@@ -306,8 +306,7 @@ class Jai:
     def _similar_id(self,
                     name: str,
                     id_item: int,
-                    top_k: int = 5,
-                    method="PUT"):
+                    top_k: int = 5):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given an id.
         This is a protected method.
@@ -328,38 +327,21 @@ class Jai:
         response : dict
             Dictionary with the index and distance of `the k most similar items`.
         """
-        if method == "GET":
-            if isinstance(id_item, list):
-                id_req = "&".join(["id=" + str(i) for i in set(id_item)])
-                url = self.url + \
-                    f"/similar/id/{name}?{id_req}&top_k={top_k}"
-            elif isinstance(id_item, int):
-                url = (self.url +
-                       f"/similar/id/{name}?id={id_item}&top_k={top_k}")
 
-            else:
-                raise TypeError(
-                    f"id_item param must be int or list, {type(id_item)} found."
-                )
-
-            response = requests.get(url, headers=self.header)
-        elif method == "PUT":
-            if isinstance(id_item, list):
-                pass
-            elif isinstance(id_item, int):
-                id_item = [id_item]
-            else:
-                raise TypeError(
-                    f"id_item param must be int or list, {type(id_item)} found."
-                )
-
-            response = requests.put(
-                self.url + f"/similar/id/{name}?top_k={top_k}",
-                headers=self.header,
-                data=json.dumps(id_item),
-            )
+        if isinstance(id_item, list):
+            pass
+        elif isinstance(id_item, int):
+            id_item = [id_item]
         else:
-            raise ValueError("method must be GET or PUT.")
+            raise TypeError(
+                f"id_item param must be int or list, {type(id_item)} found."
+            )
+
+        response = requests.put(
+            self.url + f"/similar/id/{name}?top_k={top_k}",
+            headers=self.header,
+            data=json.dumps(id_item),
+        )
 
         if response.status_code == 200:
             return response.json()
