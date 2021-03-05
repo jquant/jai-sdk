@@ -47,7 +47,19 @@ def test_text(name, data, dtype):
     assert sorted(j.ids(name, 'complete')) == ids, "ids complete failed"
 
     result = j.similar(name, query)
-    assert isinstance(result, list), "similar result failed"
+    assert isinstance(result, list), "similar data result failed"
+
+    result = j.similar(name, pd.Series(query.index))
+    assert isinstance(result, list), "similar id series result failed"
+
+    result = j.similar(name, query.index)
+    assert isinstance(result, list), "similar id index result failed"
+
+    result = j.similar(name, query.index.tolist())
+    assert isinstance(result, list), "similar id list result failed"
+
+    result = j.similar(name, query.index.values)
+    assert isinstance(result, list), "similar id array result failed"
 
     j.delete_database(name)
     assert not j.is_valid(name), "valid name after delete failed"
