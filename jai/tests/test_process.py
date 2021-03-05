@@ -22,8 +22,6 @@ def test_process_similar_threshold():
     }]
     gab = [{'id': 0, 'distance': 0, 'query_id': 0}]
     assert process_similar(
-        similar) == gab, "process similar results failed. (threshold)"
-    assert process_similar(
         similar, 0, True) == gab, "process similar results failed. (threshold)"
     assert process_similar(
         similar, 1, True) == gab, "process similar results failed. (threshold)"
