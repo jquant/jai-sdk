@@ -35,9 +35,13 @@ jobs:
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Removing response.json file
+          FILE = ~/mycelia-local/mycelia-api/outputs/sdk_test/response/response.json
+          if [ -f "$FILE" ]; then
+            rm $FILE
+          fi
         uses: JesseTG/rm@v1.0.2
         with:
-          path: ~/mycelia-dev/mycelia-api/outputs/sdk_test/response/response.json
+          path: ~/mycelia-local/mycelia-api/outputs/sdk_test/response/response.json
       - name: Run tests & Generate coverage report
         # https://github.com/pytest-dev/pytest-cov
         # https://pytest-cov.readthedocs.io/en/latest/readme.html
