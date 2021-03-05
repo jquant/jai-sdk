@@ -10,15 +10,6 @@ AUTH_KEY = "sdk_test"
 np.random.seed(42)
 
 
-@pytest.fixture(scope="module")
-def setup_dataframe():
-    TITANIC_TRAIN = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/train.csv"
-    TITANIC_TEST = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/test.csv"
-    train = pd.read_csv(TITANIC_TRAIN)
-    test = pd.read_csv(TITANIC_TEST)
-    return train, test
-
-
 # =============================================================================
 # Test Text
 # =============================================================================
