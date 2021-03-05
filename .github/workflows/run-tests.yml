@@ -39,6 +39,7 @@ jobs:
           FILE=~/mycelia-local/mycelia-api/outputs/sdk_test/response/response.json
           if [ -f "$FILE" ]; then
             rm $FILE
+            echo Response file deleted.
           fi
       - name: Run tests & Generate coverage report
         # https://github.com/pytest-dev/pytest-cov
