@@ -9,6 +9,7 @@ AUTH_KEY = "sdk_test"
 
 np.random.seed(42)
 
+
 @pytest.fixture(scope="module")
 def setup_dataframe():
     TITANIC_TRAIN = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/train.csv"
@@ -27,9 +28,7 @@ def setup_dataframe():
                           ("test_edittext", "series", "TextEdit")])
 def test_text(name, data, dtype, setup_dataframe):
     train, _ = setup_dataframe
-    train = train.rename(columns={
-        "PassengerId": "id"
-    }).set_index("id")['Name']
+    train = train.rename(columns={"PassengerId": "id"}).set_index("id")['Name']
     ids = train.index.tolist()
     query = train.loc[np.random.choice(ids, 10, replace=False)]
 
