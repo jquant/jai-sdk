@@ -112,13 +112,13 @@ class Name():
             name = 'r' + self.gen_name + column.lower().replace(
                 "-", "_").replace(" ", "_")
             results = self.__jai.resolution(name, self.data[column])
-            return process_similar(results, return_self=True)
+            return pd.DataFrame(process_similar(results, return_self=False))
 
         elif task == "fill":
             name = 'f' + self.gen_name + column.lower().replace(
                 "-", "_").replace(" ", "_")
             results = self.__jai.fill(name, self.data, column)
-            return process_predict(results)
+            return pd.DataFrame(process_predict(results))
 
         elif task == "sanity":
             name = 's' + self.gen_name
@@ -126,6 +126,6 @@ class Name():
                 name,
                 self.data,
                 columns_ref=self.columns[self._process.loc['sanity']])
-            return process_predict(results)
+            return pd.DataFrame(process_predict(results))
         else:
             raise ValueError(f"unable to do task {task}")
