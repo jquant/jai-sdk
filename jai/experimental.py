@@ -5,14 +5,13 @@ Created on Sat Mar  6 16:17:31 2021
 @author: Kazu
 """
 
-
 import pandas as pd
 import numpy as np
 from .jai import Jai
 
 
 class Name():
-    def __init__ (self, auth):
+    def __init__(self, auth):
         self.__jai = Jai(auth)
         self.__data = None
 
