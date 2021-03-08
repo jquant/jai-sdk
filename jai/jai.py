@@ -940,7 +940,7 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def wait_setup(self, name: str, frequency_seconds: int=5):
+    def wait_setup(self, name: str, frequency_seconds: int = 5):
         """
         Wait for the setup (model training) to finish
 
