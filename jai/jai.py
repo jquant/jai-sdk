@@ -157,7 +157,10 @@ class Jai:
         return self.assert_status_code(response)
 
     @staticmethod
-    def get_auth_key(email: str, firstName: str, lastName: str):
+    def get_auth_key(email: str,
+                     firstName: str,
+                     lastName: str,
+                     company: str = ""):
         """
         Request an auth key to use JAI-SDK with.
 
@@ -176,7 +179,12 @@ class Jai:
             A Response object with whether or not the auth key was created.
         """
         url = "https://mycelia.azure-api.net/clone"
-        body = {"email": email, "firstName": firstName, "lastName": lastName}
+        body = {
+            "email": email,
+            "firstName": firstName,
+            "lastName": lastName,
+            "company": company
+        }
         response = requests.put(url + "/auth", data=json.dumps(body))
         return response
 
