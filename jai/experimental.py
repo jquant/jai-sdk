@@ -39,6 +39,6 @@ class Name():
         self._analysis.loc['dtype', :] = self.data.dtypes
         pd.set_option("display.max_columns", max(self._analysis.shape))
         n, m = self._analysis.shape
-        ind_order = self._analysis.T.columns[[-1, -2] + list(range(n-2))]
+        ind_order = self._analysis.T.columns[[-1, -2] + list(range(n - 2))]
         self._analysis = self._analysis.loc[ind_order]
         return self._analysis
