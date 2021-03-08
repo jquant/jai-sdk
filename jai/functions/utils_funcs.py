@@ -15,19 +15,17 @@ from .classes import FieldName, PossibleDtypes
 __all__ = ["data2json", "pbar_steps"]
 
 
-def get_status_json(file_path="./jai/auxiliar/pbar_status.json"):
+def get_status_json(file_path="pbar_status.json"):
     pbar_status_path = Path(file_path)
     with open(pbar_status_path, 'r') as f:
         status_dict = json.load(f)
     return status_dict
 
-
 def compare_regex(setup_task: str):
     return re.findall('\[(.*?)\]', setup_task)[0]
 
-
 def pbar_steps(status: List = None, step: int = 0):
-    PBAR_STATUS_PATH = "./jai/auxiliar/pbar_status.json"
+    PBAR_STATUS_PATH = Path(__file__).parent.parent / "auxiliar/pbar_status.json"
     setup_task = status['Description']
 
     try:

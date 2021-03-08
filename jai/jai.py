@@ -1,3 +1,4 @@
+from os import execl
 import secrets
 import json
 import pandas as pd
@@ -939,7 +940,7 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def wait_setup(self, name: str, frequency_seconds: int = 5):
+    def wait_setup(self, name: str, frequency_seconds: int=5):
         """
         Wait for the setup (model training) to finish
 
@@ -957,10 +958,18 @@ class Jai:
         None.
         """
         max_steps = None
+        count = 0
         while max_steps is None:
-            status = self.status[name]
-            starts_at, max_steps = pbar_steps(status=status)
-            time.sleep(1)
+            try:
+                status = self.status[name]
+                starts_at, max_steps = pbar_steps(status=status)
+                time.sleep(1)
+            except KeyError:
+                time.sleep(2)
+                if (count > 5):
+                    raise ValueError("Max number of retries reached.")
+            count += 1
+
         step = starts_at
         aux = 0
         with tqdm(total=max_steps, desc="JAI is working") as pbar:
@@ -1167,7 +1176,7 @@ class Jai:
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.fill(name, data, COL_TO_FILL)
-        >>> processed = process_similar(results)
+        >>> processed = process_predict(results)
         >>> pd.DataFrame(processed).sort_values('id')
                   id   sanity_prediction    confidence_level (%)
            0       1             value_1                    70.9

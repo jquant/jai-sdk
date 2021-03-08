@@ -10,7 +10,7 @@ with open("requirements.txt", "r") as f:
 
 setup(
     name="jai-sdk",
-    version="0.2.1",
+    version="0.3.1",
     author="JQuant",
     author_email="jedis@jquant.com.br",
     description="JAI - Trust your data",
@@ -18,6 +18,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/jquant/jai-sdk",
     packages=find_packages(exclude=['tests', 'jai.tests']),
+    include_package_data=True,
     license="MIT",
     classifiers=[
         "License :: OSI Approved :: MIT License",
