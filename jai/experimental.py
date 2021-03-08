@@ -31,10 +31,14 @@ class Name():
             self.__data = pd.DataFrame(data)
         else:
             raise ValueError("Data type not recognized.")
+        self._analyze()
 
     def _analyze(self):
-        pd.set_option("display.max_columns", self.data.shape[1])
-        self._analysis = self.data.describe(include='O')
+        self._analysis = self.data.describe(include='all')
         self._analysis.loc['empty', :] = self.data.isna().sum()
         self._analysis.loc['dtype', :] = self.data.dtypes
+        pd.set_option("display.max_columns", max(self._analysis.shape))
+        n, m = self._analysis.shape
+        ind_order = self._analysis.T.columns[[-1, -2] + list(range(n-2))]
+        self._analysis = self._analysis.loc[ind_order]
         return self._analysis

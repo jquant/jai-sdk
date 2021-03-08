@@ -1040,51 +1040,6 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def match(self,
-              name: str,
-              data_left,
-              data_right,
-              top_k: int = 20,
-              overwrite=False):
-        """
-        Match two datasets with their possible equal values.
-
-        Queries the data right to get the similar results in data left.
-
-        Parameters
-        ----------
-        name: str
-            String with the name of a database in your JAI environment.
-        data_left, data_right : pd.Series
-            data to be matched.
-
-        Returns
-        -------
-        dict
-            each key is the id from data_right and the value is a list of ids from data_left
-            that match.
-
-        Example
-        -------
-        >>> import pandas as pd
-        >>> from jai.processing import process_similar
-        >>>
-        >>> j = Jai(AUTH_KEY)
-        >>> results = j.match(name, data1, data2)
-        >>> processed = process_similar(results, return_self=True)
-        >>> pd.DataFrame(processed).sort_values('query_id')
-        >>> # query_id is from data_right and id is from data_left
-                 query_id           id     distance
-           0            1            2         0.11
-           1            2            1         0.11
-           2            3          NaN          NaN
-           3            4          NaN          NaN
-           4            5            5         0.15
-        """
-        self.embedding(name, data_left, overwrite=overwrite)
-
-        return self.similar(name, data_right, top_k=top_k)
-
     def embedding(self,
                   name: str,
                   data,
@@ -1137,6 +1092,50 @@ class Jai:
                 self.add_data(name, data.loc[missing])
         return ids
 
+    def match(self,
+              name: str,
+              data_left,
+              data_right,
+              top_k: int = 20,
+              overwrite=False):
+        """
+        Match two datasets with their possible equal values.
+
+        Queries the data right to get the similar results in data left.
+
+        Parameters
+        ----------
+        name: str
+            String with the name of a database in your JAI environment.
+        data_left, data_right : pd.Series
+            data to be matched.
+
+        Returns
+        -------
+        dict
+            each key is the id from data_right and the value is a list of ids from data_left
+            that match.
+
+        Example
+        -------
+        >>> import pandas as pd
+        >>> from jai.processing import process_similar
+        >>>
+        >>> j = Jai(AUTH_KEY)
+        >>> results = j.match(name, data1, data2)
+        >>> processed = process_similar(results, return_self=True)
+        >>> pd.DataFrame(processed).sort_values('query_id')
+        >>> # query_id is from data_right and id is from data_left
+                 query_id           id     distance
+           0            1            2         0.11
+           1            2            1         0.11
+           2            3          NaN          NaN
+           3            4          NaN          NaN
+           4            5            5         0.15
+        """
+        self.embedding(name, data_left, overwrite=overwrite)
+        return self.similar(name, data_right, top_k=top_k)
+
     def resolution(self, name: str, data, top_k: int = 20, overwrite=False):
         """
         Find possible duplicated values within the data.
@@ -1168,8 +1167,8 @@ class Jai:
            2            3          NaN          NaN
            3            4            5         0.15
         """
-        self.embedding(name, data, overwrite=overwrite)
-        return self.similar(name, data.index, top_k=top_k)
+        ids = self.embedding(name, data, overwrite=overwrite)
+        return self.similar(name, ids, top_k=top_k)
 
     def fill(self, name: str, data, column: str, **kwargs):
         """
