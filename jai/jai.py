@@ -961,6 +961,7 @@ class Jai:
             status = self.status[name]
             starts_at, max_steps = pbar_steps(status=status)
             time.sleep(1)
+
         step = starts_at
         aux = 0
         with tqdm(total=max_steps, desc="JAI is working") as pbar:
