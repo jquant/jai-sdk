@@ -961,7 +961,6 @@ class Jai:
             status = self.status[name]
             starts_at, max_steps = pbar_steps(status=status)
             time.sleep(1)
-            
 
         step = starts_at
         aux = 0
