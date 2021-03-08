@@ -1,4 +1,3 @@
-from os import execl
 import secrets
 import json
 import pandas as pd
@@ -958,17 +957,11 @@ class Jai:
         None.
         """
         max_steps = None
-        count = 0
         while max_steps is None:
-            try:
-                status = self.status[name]
-                starts_at, max_steps = pbar_steps(status=status)
-                time.sleep(1)
-            except KeyError:
-                time.sleep(2)
-                if (count > 5):
-                    raise ValueError("Max number of retries reached.")
-            count += 1
+            status = self.status[name]
+            starts_at, max_steps = pbar_steps(status=status)
+            time.sleep(1)
+            
 
         step = starts_at
         aux = 0
