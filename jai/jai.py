@@ -1085,14 +1085,12 @@ class Jai:
 
         return self.similar(name, data_right, top_k=top_k)
 
-    def embedding(
-        self,
-        name: str,
-        data,
-        db_type="FastText",
-        hyperparams=None,
-        overwrite=False
-    ):
+    def embedding(self,
+                  name: str,
+                  data,
+                  db_type="FastText",
+                  hyperparams=None,
+                  overwrite=False):
         """
         Quick embedding for high numbers of categories in columns.
 
@@ -1121,7 +1119,9 @@ class Jai:
         ids = data.index
 
         if db_type == "TextEdit":
-            hyperparams = {"nt": np.clip(np.round(len(data) / 10, -3), 1000, 10000)}
+            hyperparams = {
+                "nt": np.clip(np.round(len(data) / 10, -3), 1000, 10000)
+            }
 
         if name not in self.names or overwrite:
             self.setup(
@@ -1345,8 +1345,8 @@ class Jai:
             origin = origin.lower().replace("-", "_").replace(" ", "_")[:35]
             data[id_col] = self.embedding(origin, data[col])
             if data_validate is not None:
-                data_validate[id_col] = self.embedding(
-                    origin, data_validate[col])
+                data_validate[id_col] = self.embedding(origin,
+                                                       data_validate[col])
 
             prep_bases.append({"id_name": id_col, "db_parent": origin})
 
