@@ -9,7 +9,7 @@ Queries the `data right` to get the similar results in `data left`.
 .. code-block:: python
 
     >>> import pandas as pd
-    >>> from jai.functions.utils_funcs import process_similar
+    >>> from jai.processing import process_similar
     >>>
     >>> j = Jai(AUTH_KEY)
     >>> results = j.match(name, data1, data2)

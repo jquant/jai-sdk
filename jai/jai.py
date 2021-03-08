@@ -5,9 +5,8 @@ import numpy as np
 import requests
 import time
 
-from .functions.utils_funcs import data2json
+from .functions.utils_funcs import data2json, pbar_steps
 from .functions.classes import PossibleDtypes, Mode
-from .functions.auxiliar import pbar_steps, compare_regex
 from pandas.api.types import is_integer_dtype
 from tqdm import trange, tqdm
 
@@ -145,10 +144,17 @@ class Jai:
         """
         response = requests.get(self.url + "/status", headers=self.header)
 
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return self.assert_status_code(response)
+        max_trials = 5
+        patience = 25  # time in seconds that we'll wait
+        trials = 0
+
+        while trials < max_trials:
+            if response.status_code == 200:
+                return response.json()
+            time.sleep(patience // max_trials)
+            trials += 1
+            response = requests.get(self.url + "/status", headers=self.header)
+        return self.assert_status_code(response)
 
     @staticmethod
     def get_auth_key(email: str, firstName: str, lastName: str):
@@ -297,11 +303,7 @@ class Jai:
             results.extend(res["similarity"])
         return results
 
-    def _similar_id(self,
-                    name: str,
-                    id_item: int,
-                    top_k: int = 5,
-                    method="PUT"):
+    def _similar_id(self, name: str, id_item: int, top_k: int = 5):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given an id.
         This is a protected method.
@@ -322,38 +324,20 @@ class Jai:
         response : dict
             Dictionary with the index and distance of `the k most similar items`.
         """
-        if method == "GET":
-            if isinstance(id_item, list):
-                id_req = "&".join(["id=" + str(i) for i in set(id_item)])
-                url = self.url + \
-                    f"/similar/id/{name}?{id_req}&top_k={top_k}"
-            elif isinstance(id_item, int):
-                url = (self.url +
-                       f"/similar/id/{name}?id={id_item}&top_k={top_k}")
 
-            else:
-                raise TypeError(
-                    f"id_item param must be int or list, {type(id_item)} found."
-                )
-
-            response = requests.get(url, headers=self.header)
-        elif method == "PUT":
-            if isinstance(id_item, list):
-                pass
-            elif isinstance(id_item, int):
-                id_item = [id_item]
-            else:
-                raise TypeError(
-                    f"id_item param must be int or list, {type(id_item)} found."
-                )
-
-            response = requests.put(
-                self.url + f"/similar/id/{name}?top_k={top_k}",
-                headers=self.header,
-                data=json.dumps(id_item),
-            )
+        if isinstance(id_item, list):
+            pass
+        elif isinstance(id_item, int):
+            id_item = [id_item]
         else:
-            raise ValueError("method must be GET or PUT.")
+            raise TypeError(
+                f"id_item param must be int or list, {type(id_item)} found.")
+
+        response = requests.put(
+            self.url + f"/similar/id/{name}?top_k={top_k}",
+            headers=self.header,
+            data=json.dumps(id_item),
+        )
 
         if response.status_code == 200:
             return response.json()
@@ -955,34 +939,6 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def _wait_status(self, name):
-        """
-        Auxiliar functions for wait_setup method.
-
-        Parameters
-        ----------
-        name : str
-            String with the name of a database in your JAI environment.
-
-        Returns
-        -------
-        dict
-            Status dict.
-
-        """
-        status = self.status
-        max_trials = 5
-        patience = 25  # time in seconds that we'll wait
-        trials = 0
-        while trials < max_trials:
-            if name in status.keys():
-                status = status[name]
-                return status
-            else:
-                time.sleep(patience // max_trials)
-                trials += 1
-        raise ValueError(f"Could not find a status for database '{name}'.")
-
     def wait_setup(self, name: str, frequency_seconds: int = 5):
         """
         Wait for the setup (model training) to finish
@@ -1002,7 +958,7 @@ class Jai:
         """
         max_steps = None
         while max_steps is None:
-            status = self._wait_status(name)
+            status = self.status[name]
             starts_at, max_steps = pbar_steps(status=status)
             time.sleep(1)
         step = starts_at
@@ -1019,7 +975,7 @@ class Jai:
                     starts_at = step
                 step, _ = pbar_steps(status=status, step=step)
                 time.sleep(frequency_seconds)
-                status = self._wait_status(name)
+                status = self.status[name]
                 aux += 1
             if (starts_at != max_steps) and aux != 0:
                 diff = max_steps - starts_at
@@ -1113,7 +1069,7 @@ class Jai:
         Example
         -------
         >>> import pandas as pd
-        >>> from jai.functions.utils_funcs import process_similar
+        >>> from jai.processing import process_similar
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.match(name, data1, data2)
@@ -1159,7 +1115,7 @@ class Jai:
         Example
         -------
         >>> import pandas as pd
-        >>> from jai.functions.utils_funcs import process_similar
+        >>> from jai.processing import process_similar
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.resolution(name, data)
@@ -1207,11 +1163,11 @@ class Jai:
         Example
         -------
         >>> import pandas as pd
-        >>> from jai.functions.utils_funcs import process_predict
+        >>> from jai.processing import process_predict
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.fill(name, data, COL_TO_FILL)
-        >>> processed = process_similar(results)
+        >>> processed = process_predict(results)
         >>> pd.DataFrame(processed).sort_values('id')
                   id   sanity_prediction    confidence_level (%)
            0       1             value_1                    70.9
@@ -1313,7 +1269,7 @@ class Jai:
         Example
         -------
         >>> import pandas as pd
-        >>> from jai.functions.utils_funcs import process_predict
+        >>> from jai.processing import process_predict
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.sanity(name, data)
