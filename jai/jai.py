@@ -1168,7 +1168,7 @@ class Jai:
            3            4            5         0.15
         """
         ids = self.embedding(name, data, overwrite=overwrite)
-        return self.similar(name, ids, top_k=top_k)
+        return self.similar(name, data, top_k=top_k)
 
     def fill(self, name: str, data, column: str, **kwargs):
         """
@@ -1336,6 +1336,8 @@ class Jai:
         pre = cat.columns[cat.nunique() > cat_threshold].tolist()
         if columns_ref is None:
             columns_ref = cat.columns.tolist()
+        elif not isinstance(columns_ref, list):
+            columns_ref = columns_ref.tolist()
 
         prep_bases = []
         for col in pre:
