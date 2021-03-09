@@ -12,9 +12,11 @@ from pathlib import Path
 def setup_dataframe():
     TITANIC_TRAIN = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/train.csv"
     TITANIC_TEST = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/test.csv"
+    IMG_FILE = Path("jai/test_data/test_imgs/img_data.pkl")
     train = pd.read_csv(TITANIC_TRAIN)
     test = pd.read_csv(TITANIC_TEST)
-    return train, test
+    img_file = pd.read_pickle(IMG_FILE)
+    return train, test, img_file
 
 
 # =============================================================================
@@ -55,35 +57,43 @@ def test_df2json(col1, col2, ids):
 
 @pytest.mark.parametrize("dtype", ["list", "array", "series", "df", "df_id"])
 def test_data2json(setup_dataframe, dtype):
-    db_type = "Text"
-    train, _ = setup_dataframe
-    data = train.rename(columns={"PassengerId": "id"}).set_index("id")['Name']
+    dict_dbtype = {"Text": "text", "Image": "image_base64"}
+    db_types = ["Text", "Image"]
+    train, _, img_data = setup_dataframe
 
-    if dtype == 'list':
-        data = data.tolist()
-        ids = range(len(data))
-        s = pd.Series(data, index=pd.Index(ids, name='id'), name="text")
-        gab = s.reset_index().to_json(orient='records')
-    elif dtype == 'array':
-        data = data.values
-        ids = range(len(data))
-        s = pd.Series(data, index=pd.Index(ids, name='id'), name="text")
-        gab = s.reset_index().to_json(orient='records')
-    elif dtype == 'df':
-        data = data.to_frame()
-        ids = data.index
-        s = pd.Series(data['Name'],
-                      index=pd.Index(ids, name='id'),
-                      name="text")
-        gab = s.reset_index().to_json(orient='records')
-    elif dtype == 'df_id':
-        data = data.reset_index().rename(columns={"index": "id"})
-        gab = data.rename(columns={'Name': "text"}).to_json(orient='records')
-    else:
-        data = data.rename("text")
-        gab = data.reset_index().to_json(orient='records')
+    for db_type in db_types:
+        col_name = dict_dbtype[db_type]
 
-    assert data2json(data, db_type) == gab, 'df2json failed.'
+        if db_type == "Text":
+            data = train.rename(columns={"PassengerId": "id", "Name": col_name}).set_index("id")[col_name]
+        else:
+            data = img_data
+
+        if dtype == 'list':
+            data = data.tolist()
+            ids = range(len(data))
+            s = pd.Series(data, index=pd.Index(ids, name='id'), name=col_name)
+            gab = s.reset_index().to_json(orient='records')
+        elif dtype == 'array':
+            data = data.values
+            ids = range(len(data))
+            s = pd.Series(data, index=pd.Index(ids, name='id'), name=col_name)
+            gab = s.reset_index().to_json(orient='records')
+        elif dtype == 'df':
+            data = data.to_frame()
+            ids = data.index
+            s = pd.Series(data[col_name],
+                        index=pd.Index(ids, name='id'),
+                        name=col_name)
+            gab = s.reset_index().to_json(orient='records')
+        elif dtype == 'df_id':
+            data = data.reset_index().rename(columns={"index": "id"})
+            gab = data.rename(columns={'Name': col_name}).to_json(orient='records')
+        else:
+            data = data.rename(col_name)
+            gab = data.reset_index().to_json(orient='records')
+
+        assert data2json(data, db_type) == gab, 'df2json failed.'
 
 
 @pytest.mark.parametrize('data', [list('ab'), np.array(['abc', 'def'])])
@@ -104,7 +114,7 @@ def test_df_error(col1, col2, ids):
         df = pd.DataFrame({"col1": col1, "col2": col2}, index=ids)
         df2json(df)
 
-def test_read_image_folder(img_file=Path("jai/test_data/test_imgs/img_data.pkl")):
-    data = pd.read_pickle(img_file)
-    img_data = read_image_folder(image_folder=img_file.parent)
-    assert_series_equal(data, img_data) 
+def test_read_image_folder(setup_dataframe, img_folder=Path("jai/test_data/test_imgs")):
+    _, _, img_data = setup_dataframe
+    data = read_image_folder(image_folder=img_folder)
+    assert_series_equal(img_data, data) 
