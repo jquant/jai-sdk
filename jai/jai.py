@@ -241,7 +241,6 @@ class Jai:
     def assert_status_code(self, response):
         # find a way to process this
         # what errors to raise, etc.
-        print(response.json())
         print(f"\n\nSTATUS: {response.status_code}\n\n")
         raise ValueError(f"Something went wrong.\n{response.content}")
 
