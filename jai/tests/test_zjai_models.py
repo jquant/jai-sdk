@@ -19,7 +19,7 @@ np.random.seed(42)
                           ("test_fasttext", "array", "FastText"),
                           ("test_edittext", "series", "TextEdit")])
 def test_text(name, data, dtype, setup_dataframe):
-    train, _, _ = setup_dataframe
+    train, _= setup_dataframe
     train = train.rename(columns={"PassengerId": "id"}).set_index("id")['Name']
     ids = train.index.tolist()
     query = train.loc[np.random.choice(ids, 10, replace=False)]
@@ -69,7 +69,7 @@ def test_text(name, data, dtype, setup_dataframe):
 def test_unsupervised(setup_dataframe):
     name = 'test_unsupervised'
 
-    train, _, _ = setup_dataframe
+    train, _ = setup_dataframe
     train = train.drop(columns=["PassengerId"])
     query = train.loc[np.random.choice(len(train), 10, replace=False)]
 
@@ -106,7 +106,7 @@ def test_unsupervised(setup_dataframe):
 def test_supervised(setup_dataframe):
     name = 'test_supervised'
 
-    train, test, _ = setup_dataframe
+    train, test = setup_dataframe
     train = train.rename(columns={"PassengerId": "id"})
     test = test.rename(columns={"PassengerId": "id"})
     query = test.loc[np.random.choice(len(test), 10, replace=False)]

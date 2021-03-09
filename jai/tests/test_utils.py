@@ -12,11 +12,15 @@ from pathlib import Path
 def setup_dataframe():
     TITANIC_TRAIN = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/train.csv"
     TITANIC_TEST = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/test.csv"
-    IMG_FILE = Path("jai/test_data/test_imgs/img_data.pkl")
     train = pd.read_csv(TITANIC_TRAIN)
     test = pd.read_csv(TITANIC_TEST)
+    return train, test
+
+@pytest.fixture(scope="session")
+def setup_img_data():
+    IMG_FILE = Path("jai/test_data/test_imgs/img_data.pkl")
     img_file = pd.read_pickle(IMG_FILE)
-    return train, test, img_file
+    return img_file
 
 
 # =============================================================================
@@ -56,10 +60,11 @@ def test_df2json(col1, col2, ids):
 
 
 @pytest.mark.parametrize("dtype", ["list", "array", "series", "df", "df_id"])
-def test_data2json(setup_dataframe, dtype):
+def test_data2json(setup_dataframe, setup_img_data, dtype):
     dict_dbtype = {"Text": "text", "Image": "image_base64"}
     db_types = ["Text", "Image"]
-    train, _, img_data = setup_dataframe
+    train, _, = setup_dataframe
+    img_data = setup_img_data
 
     for db_type in db_types:
         col_name = dict_dbtype[db_type]
@@ -120,8 +125,8 @@ def test_df_error(col1, col2, ids):
         df2json(df)
 
 
-def test_read_image_folder(setup_dataframe,
+def test_read_image_folder(setup_img_data,
                            img_folder=Path("jai/test_data/test_imgs")):
-    _, _, img_data = setup_dataframe
+    img_data = setup_img_data
     data = read_image_folder(image_folder=img_folder)
     assert_series_equal(img_data, data)
