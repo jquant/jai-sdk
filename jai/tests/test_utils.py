@@ -104,7 +104,9 @@ def test_df_error(col1, col2, ids):
         df = pd.DataFrame({"col1": col1, "col2": col2}, index=ids)
         df2json(df)
 
-def test_read_image_folder(img_file=Path("jai/test_data/test_imgs/img_data.pkl")):
+
+def test_read_image_folder(
+        img_file=Path("jai/test_data/test_imgs/img_data.pkl")):
     data = pd.read_pickle(img_file)
     img_data = read_image_folder(image_folder=img_file.parent)
-    assert_series_equal(data, img_data) 
+    assert_series_equal(data, img_data)
