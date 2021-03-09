@@ -47,7 +47,7 @@ def pbar_steps(status: List = None, step: int = 0):
 def read_image_folder(image_folder: str = None,
                       images: List = None,
                       ignore_corrupt=False,
-                      extentions=["*.png", "*.jpg", "*.jpeg"]):
+                      extensions=["*.png", "*.jpg", "*.jpeg"]):
 
     if image_folder is not None:
         images = Path(image_folder).iterdir()
@@ -62,7 +62,7 @@ def read_image_folder(image_folder: str = None,
     ids = []
     corrupted_files = []
     for i, filename in enumerate(tqdm(images)):
-        if filename.suffix in extentions:
+        if filename.suffix in extensions:
             try:
                 im = Image.open(filename)
                 im.verify(

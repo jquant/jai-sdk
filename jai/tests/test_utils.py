@@ -2,7 +2,10 @@ import numpy as np
 import pandas as pd
 import pytest
 from jai.functions.utils_funcs import (list2json, series2json, df2json,
-                                       data2json)
+                                       data2json, read_image_folder)
+
+from pandas._testing import assert_series_equal
+from pathlib import Path
 
 
 @pytest.fixture(scope="session")
@@ -100,3 +103,8 @@ def test_df_error(col1, col2, ids):
     with pytest.raises(ValueError):
         df = pd.DataFrame({"col1": col1, "col2": col2}, index=ids)
         df2json(df)
+
+def test_read_image_folder(img_file=Path("jai/test_data/test_imgs/img_data.pkl")):
+    data = pd.read_pickle(img_file)
+    img_data = read_image_folder(image_folder=img_file.parent)
+    assert_series_equal(data, img_data) 
