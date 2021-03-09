@@ -64,7 +64,7 @@ def test_df2json(col1, col2, ids):
 def test_data2json(setup_dataframe, setup_img_data, dtype):
     dict_dbtype = {"Text": "text", "Image": "image_base64"}
     db_types = ["Text", "Image"]
-    train, _, = setup_dataframe
+    train, _ = setup_dataframe
     img_data = setup_img_data
 
     for db_type in db_types:
