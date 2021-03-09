@@ -65,7 +65,10 @@ def test_data2json(setup_dataframe, dtype):
         col_name = dict_dbtype[db_type]
 
         if db_type == "Text":
-            data = train.rename(columns={"PassengerId": "id", "Name": col_name}).set_index("id")[col_name]
+            data = train.rename(columns={
+                "PassengerId": "id",
+                "Name": col_name
+            }).set_index("id")[col_name]
         else:
             data = img_data
 
@@ -83,12 +86,14 @@ def test_data2json(setup_dataframe, dtype):
             data = data.to_frame()
             ids = data.index
             s = pd.Series(data[col_name],
-                        index=pd.Index(ids, name='id'),
-                        name=col_name)
+                          index=pd.Index(ids, name='id'),
+                          name=col_name)
             gab = s.reset_index().to_json(orient='records')
         elif dtype == 'df_id':
             data = data.reset_index().rename(columns={"index": "id"})
-            gab = data.rename(columns={'Name': col_name}).to_json(orient='records')
+            gab = data.rename(columns={
+                'Name': col_name
+            }).to_json(orient='records')
         else:
             data = data.rename(col_name)
             gab = data.reset_index().to_json(orient='records')
@@ -114,7 +119,9 @@ def test_df_error(col1, col2, ids):
         df = pd.DataFrame({"col1": col1, "col2": col2}, index=ids)
         df2json(df)
 
-def test_read_image_folder(setup_dataframe, img_folder=Path("jai/test_data/test_imgs")):
+
+def test_read_image_folder(setup_dataframe,
+                           img_folder=Path("jai/test_data/test_imgs")):
     _, _, img_data = setup_dataframe
     data = read_image_folder(image_folder=img_folder)
-    assert_series_equal(img_data, data) 
+    assert_series_equal(img_data, data)
