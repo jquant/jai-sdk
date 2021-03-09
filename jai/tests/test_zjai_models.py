@@ -19,7 +19,7 @@ np.random.seed(42)
                           ("test_fasttext", "array", "FastText"),
                           ("test_edittext", "series", "TextEdit")])
 def test_text(name, data, dtype, setup_dataframe):
-    train, _= setup_dataframe
+    train, _ = setup_dataframe
     train = train.rename(columns={"PassengerId": "id"}).set_index("id")['Name']
     ids = train.index.tolist()
     query = train.loc[np.random.choice(ids, 10, replace=False)]

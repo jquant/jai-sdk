@@ -16,6 +16,7 @@ def setup_dataframe():
     test = pd.read_csv(TITANIC_TEST)
     return train, test
 
+
 @pytest.fixture(scope="session")
 def setup_img_data():
     IMG_FILE = Path("jai/test_data/test_imgs/img_data.pkl")
