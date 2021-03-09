@@ -1,5 +1,6 @@
 import numpy as np
 
+from copy import deepcopy
 from tqdm import tqdm
 from .functions.utils_funcs import multikeysort
 
@@ -37,6 +38,7 @@ def process_similar(results,
         mapping the query id to the similar value.
 
     """
+    results = deepcopy(results)
     if threshold is None:
         samples = np.random.randint(0, len(results), len(results) // (100))
         distribution = []
@@ -47,7 +49,7 @@ def process_similar(results,
     print(f"threshold: {threshold}\n")
 
     similar = []
-    for q in tqdm(results.copy(), desc='Process'):
+    for q in tqdm(results, desc='Process'):
         sort = multikeysort(q['results'], ['distance', 'id'])
         zero, one = sort[0], sort[1]
         if zero['distance'] <= threshold and (zero['id'] != q['query_id']
@@ -85,6 +87,7 @@ def process_predict(predicts):
         mapping the query id to the predicted value.
 
     """
+    predicts = deepcopy(predicts)
     example = predicts[0]['predict']
     if isinstance(example, dict):
         predict_proba = True
