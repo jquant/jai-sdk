@@ -1287,6 +1287,9 @@ class Jai:
            2       7             Invalid                    80.6
            3      13               Valid                    74.2
         """
+        if "id" in data.columns:
+            data = data.set_index("id")
+
         frac = kwargs.get("frac", 0.1)
         random_seed = kwargs.get("random_seed", 42)
         cat_threshold = kwargs.get("cat_threshold", 512)
@@ -1348,13 +1351,12 @@ class Jai:
                 sample[target] = "Invalid"
 
                 # set index of samples with different values as data
+
                 idx = np.arange(len(data) + len(sample))
                 mask_idx = np.logical_not(np.isin(idx, data.index))
                 sample.index = idx[mask_idx][:len(sample)]
-
                 data[target] = "Valid"
                 train = pd.concat([data, sample])
-
             else:
                 train = data
 
@@ -1364,6 +1366,7 @@ class Jai:
                 "split_column": target,
                 "test_size": 0.2
             }
+
             mycelia_bases = kwargs.get("mycelia_bases", [])
             mycelia_bases.extend(prep_bases)
 
@@ -1411,10 +1414,12 @@ class Jai:
             name of the base where the data was embedded.
 
         """
+
         if isinstance(train, pd.Series):
             train = train.copy()
         else:
             raise ValueError("train must be a Series")
+
         n = len(train)
         if test is None:
             values, inverse = np.unique(train, return_inverse=True)
@@ -1446,9 +1451,9 @@ class Jai:
             i_test = np.unique(inverse[n:])
             settest = pd.Series(values[i_test], index=i_test)
             missing = i_test[~np.isin(i_test, self.ids(name, "complete"))]
+
             if len(missing) > 0:
                 self.add_data(name, settest.loc[missing])
-
             return train, test
         else:
             return train
