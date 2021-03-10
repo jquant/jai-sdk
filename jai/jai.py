@@ -1230,14 +1230,12 @@ class Jai:
 
         return self.predict(name, test, predict_proba=True)
 
-    def sanity(
-        self,
-        name: str,
-        data,
-        data_validate=None,
-        columns_ref: list = None,
-        **kwargs,
-    ):
+    def sanity(self,
+               name: str,
+               data,
+               data_validate=None,
+               columns_ref: list = None,
+               **kwargs):
         """
         Experimental
 
@@ -1356,6 +1354,9 @@ class Jai:
 
                 data[target] = "Valid"
                 train = pd.concat([data, sample])
+
+            else:
+                train = data
 
             label = {"task": "metric_classification", "label_name": target}
             split = {
