@@ -1291,23 +1291,23 @@ class Jai:
         """
         if "id" in data.columns:
             data = data.set_index("id")
-        
+
         frac = kwargs.get("frac", 0.1)
         random_seed = kwargs.get("random_seed", 42)
         cat_threshold = kwargs.get("cat_threshold", 512)
         target = kwargs.get("target", "is_valid")
 
         SKIP_SHUFFLING = target in data.columns
-        
+
         np.random.seed(random_seed)
 
         data = data.copy()
-        if data_validate is not None:    
+        if data_validate is not None:
             data_validate = data_validate.copy()
 
         cat = data.select_dtypes(exclude="number")
         pre = cat.columns[cat.nunique() > cat_threshold].tolist()
-        if columns_ref is None:            
+        if columns_ref is None:
             columns_ref = cat.columns.tolist()
 
         prep_bases = []
@@ -1326,8 +1326,7 @@ class Jai:
             if col in columns_ref:
                 columns_ref.remove(col)
                 columns_ref.append(id_col)
-        
-        
+
         data = data.drop(columns=pre)
         if data_validate is not None:
             data_validate = data_validate.drop(columns=pre)
@@ -1336,7 +1335,7 @@ class Jai:
             test = data.copy()
 
         if name not in self.names:
-            if not SKIP_SHUFFLING:   
+            if not SKIP_SHUFFLING:
 
                 def change(options, original):
                     return np.random.choice(options[options != original])
@@ -1352,9 +1351,9 @@ class Jai:
 
                 # set target column values
                 sample[target] = "Invalid"
-                
+
                 # set index of samples with different values as data
-                    
+
                 idx = np.arange(len(data) + len(sample))
                 mask_idx = np.logical_not(np.isin(idx, data.index))
                 sample.index = idx[mask_idx][:len(sample)]
@@ -1363,14 +1362,13 @@ class Jai:
             else:
                 train = data
 
-            
             label = {"task": "metric_classification", "label_name": target}
             split = {
                 "type": "stratified",
                 "split_column": target,
                 "test_size": 0.2
             }
-            
+
             mycelia_bases = kwargs.get("mycelia_bases", [])
             mycelia_bases.extend(prep_bases)
 
@@ -1418,13 +1416,13 @@ class Jai:
             name of the base where the data was embedded.
 
         """
-        
-        if isinstance(train, pd.Series):    
+
+        if isinstance(train, pd.Series):
             train = train.copy()
         else:
             raise ValueError("train must be a Series")
 
-        n = len(train)        
+        n = len(train)
         if test is None:
             values, inverse = np.unique(train, return_inverse=True)
         else:
@@ -1435,8 +1433,7 @@ class Jai:
             test = test.copy()
             values, inverse = np.unique(train.tolist() + test.tolist(),
                                         return_inverse=True)
-        
-        
+
         train.loc[:] = inverse[:n]
         i_train = np.unique(inverse[:n])
         settrain = pd.Series(values[i_train], index=i_train)
@@ -1456,7 +1453,7 @@ class Jai:
             i_test = np.unique(inverse[n:])
             settest = pd.Series(values[i_test], index=i_test)
             missing = i_test[~np.isin(i_test, self.ids(name, "complete"))]
-            
+
             if len(missing) > 0:
                 self.add_data(name, settest.loc[missing])
             return train, test
