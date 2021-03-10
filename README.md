@@ -52,9 +52,6 @@ name = 'text_data'
 # if data is a pandas type, then the ids will be the index values.
 # heads-up: index values must not contain duplicates.
 j.setup(name, data, db_type='FastText')
-
-# wait for the training to finish
-j.wait_setup(name, 10)
 ```
 
 Aplication using the NLP BERT model
@@ -65,7 +62,6 @@ name = j.generate_name(20, prefix='sdk_', suffix='_text')
 
 # this time we choose db_type="Text", applying the pre-trained BERT model
 j.setup(name, data, db_type='Text', batch_size=1024)
-j.wait_setup(name, 10)
 ```
 
 ## Checking database
