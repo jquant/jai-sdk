@@ -1230,14 +1230,12 @@ class Jai:
 
         return self.predict(name, test, predict_proba=True)
 
-    def sanity(
-        self,
-        name: str,
-        data,
-        data_validate=None,
-        columns_ref: list = None,
-        **kwargs,
-    ):
+    def sanity(self,
+               name: str,
+               data,
+               data_validate=None,
+               columns_ref: list = None,
+               **kwargs):
         """
         Experimental
 
@@ -1359,6 +1357,9 @@ class Jai:
                 sample.index = idx[mask_idx][:len(sample)]
                 data[target] = "Valid"
                 train = pd.concat([data, sample])
+            else:
+                train = data
+
             else:
                 train = data
 
