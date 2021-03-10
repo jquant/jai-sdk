@@ -1360,9 +1360,6 @@ class Jai:
             else:
                 train = data
 
-            else:
-                train = data
-
             label = {"task": "metric_classification", "label_name": target}
             split = {
                 "type": "stratified",
