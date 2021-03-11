@@ -1155,7 +1155,9 @@ class Jai:
         """
         self.embedding(name, data_left, overwrite=overwrite)
         similar = self.similar(name, data_right, top_k=top_k)
-        processed = process_similar(similar, threshold=threshold, return_self=True)
+        processed = process_similar(similar,
+                                    threshold=threshold,
+                                    return_self=True)
         match = pd.DataFrame(processed).sort_values('query_id')
         match = match.rename(columns={"id": "id_left", "query_id": "id_right"})
         if original_data:
@@ -1221,12 +1223,15 @@ class Jai:
 
         ids = self.embedding(name, series_unique, overwrite=overwrite)
         simliar = self.similar(name, ids, top_k=top_k)
-        connect = process_resolution(simliar, threshold=threshold, return_self=True)
+        connect = process_resolution(simliar,
+                                     threshold=threshold,
+                                     return_self=True)
         r = pd.DataFrame(connect).set_index('id').sort_index()
 
         if False:
             r['Original'] = series_unique.loc[r.index.values].values
-            r['Resolution'] = series_unique.loc[r["resolution_id"].values].values
+            r['Resolution'] = series_unique.loc[
+                r["resolution_id"].values].values
 
         resolution = r.loc[inverse].copy()
         return resolution
