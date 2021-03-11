@@ -17,7 +17,7 @@ __all__ = ["read_image_folder"]
 def read_image_folder(image_folder: str = None,
                       images: List = None,
                       ignore_corrupt=False,
-                      extensions=["*.png", "*.jpg", "*.jpeg"]):
+                      extensions=[".png", ".jpg", ".jpeg"]):
 
     if image_folder is not None:
         images = Path(image_folder).iterdir()
