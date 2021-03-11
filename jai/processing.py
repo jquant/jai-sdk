@@ -4,7 +4,45 @@ from copy import deepcopy
 from tqdm import tqdm
 from .functions.utils_funcs import multikeysort
 
-__all__ = ["process_similar", "process_predict"]
+__all__ = ["process_similar", "process_predict", "process_resolution"]
+
+
+def find_threshold(results, sample_size=0.01, quantile=0.1):
+    """
+    Auxiliar function to find a threshold value.
+
+    Takes a sample of size **sample_size** of the **results** list and uses the
+    **quantile** of the distances of the sample to use as threshold.
+
+    Parameters
+    ----------
+    results : list of dicts, output of similar
+        DESCRIPTION.
+    sample_size : float, optional
+        Percentage of the results taken to calculate the threshold. If
+        **len(results)** is too small, i.e., **len(results) * sample_size** is
+        less than 1, then we use **sample_size=0.5** or 1. The default is 0.01.
+    quantile : TYPE, optional
+        DESCRIPTION. The default is 0.1.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    """
+    if len(results) <= 1//sample_size:
+        n = len(results) // 2
+    else:
+        n = int(len(results) * sample_size)
+    n = max(n, 1)
+
+    samples = np.random.randint(0, len(results), n)
+    distribution = []
+    for s in tqdm(samples, desc="Fiding threshold"):
+        d = [l['distance'] for l in results[s]['results'][1:]]
+        distribution.extend(d)
+    return np.quantile(distribution, quantile)
 
 
 def process_similar(results,
@@ -40,12 +78,7 @@ def process_similar(results,
     """
     results = deepcopy(results)
     if threshold is None:
-        samples = np.random.randint(0, len(results), len(results) // (100))
-        distribution = []
-        for s in tqdm(samples, desc="Fiding threshold"):
-            d = [l['distance'] for l in results[s]['results'][1:]]
-            distribution.extend(d)
-        threshold = np.quantile(distribution, .1)
+        threshold = find_threshold(results)
     print(f"\nthreshold: {threshold}\n")
 
     similar = []
@@ -118,12 +151,7 @@ def process_resolution(results,
 
     results = deepcopy(results)
     if threshold is None:
-        samples = np.random.randint(0, len(results), len(results) // (100))
-        distribution = []
-        for s in tqdm(samples, desc="Fiding threshold"):
-            d = [l['distance'] for l in results[s]['results'][1:]]
-            distribution.extend(d)
-        threshold = np.quantile(distribution, .1)
+        threshold = find_threshold(results)
     print(f"\nthreshold: {threshold}\n")
 
     # The if A is similar to B and B is similar to C, then C should be A
