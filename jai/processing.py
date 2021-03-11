@@ -206,7 +206,7 @@ def process_resolution(results,
         for item in filt:
             _id = item['id']
             # if id hasn't been solved
-            if _id not in con_aux.keys():
+            if qid not in con_aux.keys():
                 # if is itself (root solution)
                 if _id == qid:
                     con_aux[_id] = qid
@@ -216,7 +216,7 @@ def process_resolution(results,
                 # if not itself or distance less than threshold
                 else:
                     temp = {"id": _id, res_id: qid}
-                    con_aux[_id] = qid
+                    con_aux[qid] = _id
                     connect.append(temp)
             # if id has been solved, keep going
             else:
