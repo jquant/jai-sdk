@@ -129,7 +129,8 @@ def test_process_predict_error(predict):
 # =============================================================================
 def test_process_resolution():
     similar = [{
-        "query_id": 0,
+        "query_id":
+        0,
         "results": [{
             'id': 0,
             'distance': 0
@@ -151,7 +152,8 @@ def test_process_resolution():
             'distance': 0.2
         }]
     }, {
-        "query_id": 2,
+        "query_id":
+        2,
         "results": [{
             'id': 2,
             'distance': 0
@@ -160,7 +162,8 @@ def test_process_resolution():
             'distance': 0.2
         }]
     }, {
-        "query_id": 3,
+        "query_id":
+        3,
         "results": [{
             'id': 3,
             'distance': 0
@@ -169,7 +172,8 @@ def test_process_resolution():
             'distance': 0.15
         }]
     }, {
-        "query_id": 4,
+        "query_id":
+        4,
         "results": [{
             'id': 4,
             'distance': 0
