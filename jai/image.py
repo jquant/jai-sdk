@@ -14,6 +14,7 @@ from tqdm import tqdm
 
 __all__ = ["read_image_folder"]
 
+
 def read_image_folder(image_folder: str = None,
                       images: List = None,
                       ignore_corrupt=False,
