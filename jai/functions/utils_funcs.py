@@ -41,7 +41,6 @@ def pbar_steps(status: List = None, step: int = 0):
         return step, None
 
 
-
 def list2json(data_list, name):
     index = pd.Index(range(len(data_list)), name='id')
     series = pd.Series(data_list, index=index, name=name)
