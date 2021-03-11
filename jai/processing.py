@@ -1,4 +1,5 @@
 import numpy as np
+import warning
 
 from copy import deepcopy
 from tqdm import tqdm
@@ -7,12 +8,15 @@ from .functions.utils_funcs import multikeysort
 __all__ = ["process_similar", "process_predict", "process_resolution"]
 
 
-def find_threshold(results, sample_size=0.01, quantile=0.1):
+def find_threshold(results, sample_size=0.1, quantile=0.05):
     """
     Auxiliar function to find a threshold value.
 
     Takes a sample of size **sample_size** of the **results** list and uses the
     **quantile** of the distances of the sample to use as threshold.
+
+    This is a automated function, we strongly advise to set the threshold manualy
+    to get more accurate results.
 
     Parameters
     ----------
@@ -21,14 +25,19 @@ def find_threshold(results, sample_size=0.01, quantile=0.1):
     sample_size : float, optional
         Percentage of the results taken to calculate the threshold. If
         **len(results)** is too small, i.e., **len(results) * sample_size** is
-        less than 1, then we use **sample_size=0.5** or 1. The default is 0.01.
-    quantile : TYPE, optional
-        DESCRIPTION. The default is 0.1.
+        less than 1, then we use **sample_size=0.5** or 1. The default is 0.1.
+    quantile : float, optional
+        Quantile of the distances of all the query results of the sample taken.
+        We suggest to use the similar method with a top_k big enough for the quantile,
+        i.e., the total number of distances is `len(results) * sample_size * top_k`,
+        top_k helps to get more values of distances as of using a small top_k
+        will make a distance group of only distances close to 0 and threshold
+        may not be representative. The default is 0.05.
 
     Returns
     -------
-    TYPE
-        DESCRIPTION.
+    float
+        Threshold result.
 
     """
     results = deepcopy(results)
@@ -43,7 +52,10 @@ def find_threshold(results, sample_size=0.01, quantile=0.1):
     for s in tqdm(samples, desc="Fiding threshold"):
         d = [l['distance'] for l in results[s]['results'][1:]]
         distribution.extend(d)
-    return np.quantile(distribution, quantile)
+    threshold = np.quantile(distribution, quantile)
+    warning.warn("Threshold calculated automatically.", )
+    print(f"\nrandom sample size: {n}\nthreshold: {threshold}\n")
+    return threshold
 
 
 def process_similar(results,
@@ -80,7 +92,6 @@ def process_similar(results,
     results = deepcopy(results)
     if threshold is None:
         threshold = find_threshold(results)
-    print(f"\nthreshold: {threshold}\n")
 
     similar = []
     for q in tqdm(results, desc='Process'):
@@ -153,7 +164,6 @@ def process_resolution(results,
     results = deepcopy(results)
     if threshold is None:
         threshold = find_threshold(results)
-    print(f"\nthreshold: {threshold}\n")
 
     # The if A is similar to B and B is similar to C, then C should be A
     connect = []  # all connected relations
