@@ -1294,8 +1294,6 @@ class Jai:
         train = train.drop(columns=pre)
         test = test.drop(columns=pre)
 
-        ids = train.index
-
         if name not in self.names:
             label = {"task": "metric_classification", "label_name": column}
             split = {
@@ -1315,6 +1313,7 @@ class Jai:
                 **kwargs,
             )
         else:
+            ids = train.index
             missing = ids[~np.isin(ids, self.ids(name, "complete"))]
             if len(missing) > 0:
                 self.add_data(name, data.loc[missing])
@@ -1423,8 +1422,6 @@ class Jai:
             test = data_validate.copy()
         else:
             test = data.copy()
-        train = data.copy()
-        ids = train.index
 
         if name not in self.names:
             if not SKIP_SHUFFLING:
@@ -1452,7 +1449,7 @@ class Jai:
                 data[target] = "Valid"
                 train = pd.concat([data, sample])
             else:
-                train = data
+                train = data.copy()
 
             label = {"task": "metric_classification", "label_name": target}
             split = {
@@ -1474,6 +1471,7 @@ class Jai:
                 **kwargs,
             )
         else:
+            ids = data.index
             missing = ids[~np.isin(ids, self.ids(name, "complete"))]
             if len(missing) > 0:
                 self.add_data(name, data.loc[missing])
