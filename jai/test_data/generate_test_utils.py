@@ -8,7 +8,9 @@ from jai.image import read_image_folder
 
 def generate_read_image_folder(image_folder=Path("test_imgs")):
     img_data = read_image_folder(image_folder=image_folder)
-    img_data.to_pickle(Path("test_imgs/img_data.pkl"))
+    print()
+    print(img_data)
+    img_data.to_pickle(Path("test_imgs/dataframe_img.pkl"))
 
 
 if __name__ == '__main__':
