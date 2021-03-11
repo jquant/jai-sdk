@@ -31,7 +31,7 @@ def find_threshold(results, sample_size=0.01, quantile=0.1):
         DESCRIPTION.
 
     """
-    if len(results) <= 1//sample_size:
+    if len(results) <= 1 // sample_size:
         n = len(results) // 2
     else:
         n = int(len(results) * sample_size)
