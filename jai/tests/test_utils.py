@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 from jai.functions.utils_funcs import (list2json, series2json, df2json,
-                                       data2json, read_image_folder)
+                                       data2json)
+from jai.image import read_image_folder
 
 from pandas._testing import assert_series_equal
 from pathlib import Path
