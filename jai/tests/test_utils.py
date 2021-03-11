@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 from jai.functions.utils_funcs import (list2json, series2json, df2json,
-                                       data2json, read_image_folder)
+                                       data2json)
+from jai.image import read_image_folder
 
 from pandas._testing import assert_series_equal
 from pathlib import Path
@@ -19,7 +20,7 @@ def setup_dataframe():
 
 @pytest.fixture(scope="session")
 def setup_img_data():
-    IMG_FILE = Path("jai/test_data/test_imgs/img_data.pkl")
+    IMG_FILE = Path("jai/test_data/test_imgs/dataframe_img.pkl")
     img_file = pd.read_pickle(IMG_FILE)
     return img_file
 
