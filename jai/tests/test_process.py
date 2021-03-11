@@ -22,14 +22,14 @@ from jai.processing import (find_threshold, process_similar, process_predict,
              'id': i + j,
              'distance': i // 50 + j
          } for j in range(20)]
-     } for i in range(20)], 2.),
+     } for i in range(20)], 1.85),
      ([{
          "query_id": 0,
          "results": [{
              'id': j,
              'distance': j
          } for j in range(65)]
-     }], 7.)])
+     }], 4.15)])
 def test_find_threshold(similar, threshold):
     np.random.seed(42)
     assert find_threshold(similar) == threshold, "find threshold failed."

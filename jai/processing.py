@@ -1,5 +1,5 @@
 import numpy as np
-import warning
+import warnings
 
 from copy import deepcopy
 from tqdm import tqdm
@@ -53,7 +53,7 @@ def find_threshold(results, sample_size=0.1, quantile=0.05):
         d = [l['distance'] for l in results[s]['results'][1:]]
         distribution.extend(d)
     threshold = np.quantile(distribution, quantile)
-    warning.warn("Threshold calculated automatically.", )
+    warnings.warn("Threshold calculated automatically.")
     print(f"\nrandom sample size: {n}\nthreshold: {threshold}\n")
     return threshold
 
