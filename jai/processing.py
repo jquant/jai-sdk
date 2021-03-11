@@ -46,7 +46,7 @@ def process_similar(results,
             d = [l['distance'] for l in results[s]['results'][1:]]
             distribution.extend(d)
         threshold = np.quantile(distribution, .1)
-    print(f"threshold: {threshold}\n")
+    print(f"\nthreshold: {threshold}\n")
 
     similar = []
     for q in tqdm(results, desc='Process'):
@@ -109,3 +109,46 @@ def process_predict(predicts):
                 'probability(%)': confidence_level
             })
     return sanity_check
+
+
+def process_resolution(results, threshold = None, return_self = True, res_id = "resolution_id"):
+
+    results = deepcopy(results)
+    if threshold is None:
+        samples = np.random.randint(0, len(results), len(results) // (100))
+        distribution = []
+        for s in tqdm(samples, desc="Fiding threshold"):
+            d = [l['distance'] for l in results[s]['results'][1:]]
+            distribution.extend(d)
+        threshold = np.quantile(distribution, .1)
+    print(f"\nthreshold: {threshold}\n")
+
+
+    # The if A is similar to B and B is similar to C, then C should be A
+    connect = []  # all connected relations
+    con_aux = {}  # past relationships
+    for q in tqdm(results, desc='Process'):
+        qid = q['query_id']
+        if qid in con_aux.keys():
+            qid = con_aux[qid]
+        res = multikeysort(q['results'], ['distance', 'id'])
+        filt = filter(lambda x: x['distance'] <= threshold, res)
+        for item in filt:
+            _id = item['id']
+            # if id hasn't been solved
+            if _id not in con_aux.keys():
+                # if is itself (root solution)
+                if _id == qid:
+                    con_aux[_id] = qid
+                    if return_self:
+                        temp = {"id": _id, res_id: qid}
+                        connect.append(temp)
+                # if not itself or distance less than threshold
+                else:
+                    temp = {"id": _id, res_id: qid}
+                    con_aux[_id] = qid
+                    connect.append(temp)
+            # if id has been solved, keep going
+            else:
+                continue
+    return connect
