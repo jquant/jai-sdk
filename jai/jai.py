@@ -5,6 +5,7 @@ import numpy as np
 import requests
 import time
 
+from .processing import process_predict, process_similar, process_resolution
 from .functions.utils_funcs import data2json, pbar_steps
 from .functions.classes import PossibleDtypes, Mode
 from pandas.api.types import is_integer_dtype
@@ -1051,7 +1052,7 @@ class Jai:
     def embedding(self,
                   name: str,
                   data,
-                  db_type="FastText",
+                  db_type="TextEdit",
                   hyperparams=None,
                   overwrite=False):
         """
@@ -1104,8 +1105,10 @@ class Jai:
               name: str,
               data_left,
               data_right,
-              top_k: int = 20,
-              overwrite=False):
+              top_k: int = 100,
+              threshold: float = None,
+              original_data: bool = False,
+              overwrite: bool = False):
         """
         Match two datasets with their possible equal values.
 
@@ -1117,12 +1120,23 @@ class Jai:
             String with the name of a database in your JAI environment.
         data_left, data_right : pd.Series
             data to be matched.
+        top_k : int, optional
+            Number of similars to query. Default is 100.
+        threshold : float, optional
+            Distance threshold to decide if the result is the same item or not.
+            Smaller distances give more strict results. Default is None.
+            The threshold is automatically set by default, but may need manual
+            setting for more accurate results.
+        original_data : bool, optional
+            If True, returns the values of the original data along with the ids.
+            Default is False.
+        overwrite : bool, optional
+            If True, then the model is always retrained. Default is False.
 
         Returns
         -------
-        dict
-            each key is the id from data_right and the value is a list of ids from data_left
-            that match.
+        pd.DataFrame
+            Returns a dataframe with the matching ids of data_left and data_right.
 
         Example
         -------
@@ -1130,11 +1144,9 @@ class Jai:
         >>> from jai.processing import process_similar
         >>>
         >>> j = Jai(AUTH_KEY)
-        >>> results = j.match(name, data1, data2)
-        >>> processed = process_similar(results, return_self=True)
-        >>> pd.DataFrame(processed).sort_values('query_id')
-        >>> # query_id is from data_right and id is from data_left
-                 query_id           id     distance
+        >>> match = j.match(name, data1, data2)
+        >>> match
+                  id_left     id_right     distance
            0            1            2         0.11
            1            2            1         0.11
            2            3          NaN          NaN
@@ -1142,9 +1154,23 @@ class Jai:
            4            5            5         0.15
         """
         self.embedding(name, data_left, overwrite=overwrite)
-        return self.similar(name, data_right, top_k=top_k)
+        similar = self.similar(name, data_right, top_k=top_k)
+        processed = process_similar(similar, threshold=threshold, return_self=True)
+        match = pd.DataFrame(processed).sort_values('query_id')
+        match = match.rename(columns={"id": "id_left", "query_id": "id_right"})
+        if original_data:
+            match['data_letf'] = data_left.loc[match['id_left']].values
+            match['data_rigth'] = data_right.loc[match['id_right']].values
 
-    def resolution(self, name: str, data, top_k: int = 20, overwrite=False):
+        return match
+
+    def resolution(self,
+                   name: str,
+                   data,
+                   top_k: int = 20,
+                   threshold: float = None,
+                   original_data: bool = False,
+                   overwrite=False):
         """
         Find possible duplicated values within the data.
 
@@ -1154,6 +1180,18 @@ class Jai:
             String with the name of a database in your JAI environment.
         data : pd.Series
             data to find duplicates.
+        top_k : int, optional
+            Number of similars to query. Default is 100.
+        threshold : float, optional
+            Distance threshold to decide if the result is the same item or not.
+            Smaller distances give more strict results. Default is None.
+            The threshold is automatically set by default, but may need manual
+            setting for more accurate results.
+        original_data : bool, optional
+            If True, returns the values of the original data along with the ids.
+            Default is False.
+        overwrite : bool, optional
+            If True, then the model is always retrained. Default is False.
 
         Returns
         -------
@@ -1167,16 +1205,31 @@ class Jai:
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.resolution(name, data)
-        >>> processed = process_similar(results, return_self=True)
-        >>> pd.DataFrame(processed).sort_values('query_id')
-                 query_id           id     distance
-           0            1            2         0.11
-           1            2            1         0.11
-           2            3          NaN          NaN
-           3            4            5         0.15
+        >>> results
+          id  resolution_id
+           0              0
+           1              0
+           2              0
+           3              3
+           4              3
+           5              5
         """
-        ids = self.embedding(name, data, overwrite=overwrite)
-        return self.similar(name, data, top_k=top_k)
+
+        inverse, uniques = data.factorize()
+        series_unique = data.drop_duplicates()
+        inverse = series_unique.index[inverse]
+
+        ids = self.embedding(name, series_unique, overwrite=overwrite)
+        simliar = self.similar(name, ids, top_k=top_k)
+        connect = process_resolution(simliar, threshold=threshold, return_self=True)
+        r = pd.DataFrame(connect).set_index('id').sort_index()
+
+        if False:
+            r['Original'] = series_unique.loc[r.index.values].values
+            r['Resolution'] = series_unique.loc[r["resolution_id"].values].values
+
+        resolution = r.loc[inverse].copy()
+        return resolution
 
     def fill(self, name: str, data, column: str, **kwargs):
         """
