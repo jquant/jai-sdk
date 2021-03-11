@@ -157,7 +157,10 @@ class Jai:
         return self.assert_status_code(response)
 
     @staticmethod
-    def get_auth_key(email: str, firstName: str, lastName: str):
+    def get_auth_key(email: str,
+                     firstName: str,
+                     lastName: str,
+                     company: str = ""):
         """
         Request an auth key to use JAI-SDK with.
 
@@ -176,7 +179,12 @@ class Jai:
             A Response object with whether or not the auth key was created.
         """
         url = "https://mycelia.azure-api.net/clone"
-        body = {"email": email, "firstName": firstName, "lastName": lastName}
+        body = {
+            "email": email,
+            "firstName": firstName,
+            "lastName": lastName,
+            "company": company
+        }
         response = requests.put(url + "/auth", data=json.dumps(body))
         return response
 
@@ -233,7 +241,6 @@ class Jai:
     def assert_status_code(self, response):
         # find a way to process this
         # what errors to raise, etc.
-        print(response.json())
         print(f"\n\nSTATUS: {response.status_code}\n\n")
         raise ValueError(f"Something went wrong.\n{response.content}")
 
@@ -961,6 +968,7 @@ class Jai:
             status = self.status[name]
             starts_at, max_steps = pbar_steps(status=status)
             time.sleep(1)
+
         step = starts_at
         aux = 0
         with tqdm(total=max_steps, desc="JAI is working") as pbar:
@@ -1260,14 +1268,12 @@ class Jai:
 
         return self.predict(name, test, predict_proba=True)
 
-    def sanity(
-        self,
-        name: str,
-        data,
-        data_validate=None,
-        columns_ref: list = None,
-        **kwargs,
-    ):
+    def sanity(self,
+               name: str,
+               data,
+               data_validate=None,
+               columns_ref: list = None,
+               **kwargs):
         """
         Experimental
 
@@ -1319,6 +1325,9 @@ class Jai:
            2       7             Invalid                    80.6
            3      13               Valid                    74.2
         """
+        if "id" in data.columns:
+            data = data.set_index("id")
+
         frac = kwargs.get("frac", 0.1)
         random_seed = kwargs.get("random_seed", 42)
         cat_threshold = kwargs.get("cat_threshold", 512)
@@ -1383,12 +1392,14 @@ class Jai:
                 sample[target] = "Invalid"
 
                 # set index of samples with different values as data
+
                 idx = np.arange(len(data) + len(sample))
                 mask_idx = np.logical_not(np.isin(idx, data.index))
                 sample.index = idx[mask_idx][:len(sample)]
-
                 data[target] = "Valid"
                 train = pd.concat([data, sample])
+            else:
+                train = data
 
             label = {"task": "metric_classification", "label_name": target}
             split = {
@@ -1396,6 +1407,7 @@ class Jai:
                 "split_column": target,
                 "test_size": 0.2
             }
+
             mycelia_bases = kwargs.get("mycelia_bases", [])
             mycelia_bases.extend(prep_bases)
 

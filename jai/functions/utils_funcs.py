@@ -15,7 +15,7 @@ from .classes import FieldName, PossibleDtypes
 __all__ = ["data2json", "pbar_steps"]
 
 
-def get_status_json(file_path="./jai/auxiliar/pbar_status.json"):
+def get_status_json(file_path="pbar_status.json"):
     pbar_status_path = Path(file_path)
     with open(pbar_status_path, 'r') as f:
         status_dict = json.load(f)
@@ -27,7 +27,8 @@ def compare_regex(setup_task: str):
 
 
 def pbar_steps(status: List = None, step: int = 0):
-    PBAR_STATUS_PATH = "./jai/auxiliar/pbar_status.json"
+    PBAR_STATUS_PATH = Path(
+        __file__).parent.parent / "auxiliar/pbar_status.json"
     setup_task = status['Description']
 
     try:
@@ -46,7 +47,7 @@ def pbar_steps(status: List = None, step: int = 0):
 def read_image_folder(image_folder: str = None,
                       images: List = None,
                       ignore_corrupt=False,
-                      extentions=["*.png", "*.jpg", "*.jpeg"]):
+                      extensions=["*.png", "*.jpg", "*.jpeg"]):
 
     if image_folder is not None:
         images = Path(image_folder).iterdir()
@@ -61,7 +62,7 @@ def read_image_folder(image_folder: str = None,
     ids = []
     corrupted_files = []
     for i, filename in enumerate(tqdm(images)):
-        if filename.suffix in extentions:
+        if filename.suffix in extensions:
             try:
                 im = Image.open(filename)
                 im.verify(
