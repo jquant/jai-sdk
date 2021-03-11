@@ -65,18 +65,22 @@ def process_similar(results,
     """
     Process the output from the similar methods.
 
+    For each of the inputs, gives back the closest value. If result_self is False,
+    avoids returning cases where 'id' is equal to 'query_id' and returns the
+    next closest if necessary.
+
     Parameters
     ----------
     results : List of Dicts.
         output from similar methods.
     threshold : float, optional
         value for the distance threshold. The default is None.
-        if set to None, takes a random 1% of the results and uses the 10%
-        quantile of the distances distributions as the threshold.
+        if set to None, we used the auxiliar function find_threshold.
     return_self : bool, optional
         option to return the queried id from the query result or not. The default is True.
     skip_null: bool, optional
-        option to skip ids without similar results. The default is True.
+        option to skip ids without similar results, if False, returns empty results.
+        The default is True.
 
     Raises
     ------
@@ -160,6 +164,31 @@ def process_resolution(results,
                        threshold=None,
                        return_self=True,
                        res_id="resolution_id"):
+    """
+    Process the results of similarity for resolution goals.
+
+    Differs from process_similiar on cases where A is similar to B and B is
+    similar to C, it should give the result of both A and B are similar to C,
+    and so on.
+
+    Parameters
+    ----------
+    results : List of Dicts.
+        output from similar methods.
+    threshold : float, optional
+        value for the distance threshold. The default is None.
+        if set to None, we used the auxiliar function find_threshold.
+    return_self : bool, optional
+        option to return the queried id from the query result or not. The default is True.
+    res_id: str, optional
+        name of the key for the resolution. The default is "resolution_id".
+
+    Returns
+    -------
+    connect : list of dicts
+        List of dicts with each id and their correspondent resolution.
+
+    """
 
     results = deepcopy(results)
     if threshold is None:
