@@ -111,7 +111,10 @@ def process_predict(predicts):
     return sanity_check
 
 
-def process_resolution(results, threshold = None, return_self = True, res_id = "resolution_id"):
+def process_resolution(results,
+                       threshold=None,
+                       return_self=True,
+                       res_id="resolution_id"):
 
     results = deepcopy(results)
     if threshold is None:
@@ -122,7 +125,6 @@ def process_resolution(results, threshold = None, return_self = True, res_id = "
             distribution.extend(d)
         threshold = np.quantile(distribution, .1)
     print(f"\nthreshold: {threshold}\n")
-
 
     # The if A is similar to B and B is similar to C, then C should be A
     connect = []  # all connected relations
