@@ -28,7 +28,7 @@ from jai.processing import (find_threshold, process_similar, process_predict,
          "results": [{
              'id': j,
              'distance': j
-         } for j in range(50)]
+         } for j in range(65)]
      }], 7.)])
 def test_find_threshold(similar, threshold):
     np.random.seed(42)
@@ -127,9 +127,8 @@ def test_process_predict_error(predict):
 # =============================================================================
 # Tests for process resolution
 # =============================================================================
-@pytest.mark.parametrize(
-    'similar',
-    [{
+def test_process_resolution():
+    similar = [{
         "query_id": 0,
         "results": [{
             'id': 0,
@@ -184,8 +183,7 @@ def test_process_predict_error(predict):
             'id': 5,
             'distance': 0
         }]
-    }])
-def test_process_resolution(similar):
+    }]
     expect = [{
         'id': 0,
         'resolution_id': 0
