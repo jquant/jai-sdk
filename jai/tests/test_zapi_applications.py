@@ -57,7 +57,7 @@ def test_match(name):
 
     expected = [
         12, 14, 0, 10, 8, 13, 4, 4, 6, 8, 11, 10, 4, 1, 5, 8, 1, 14, 11, 8, 1,
-        6, 11, 13
+        14, 11, 13
     ]
 
     data_left = pd.Series(A)
