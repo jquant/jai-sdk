@@ -76,9 +76,15 @@ def test_match(name):
     j = Jai(url=URL, auth_key=AUTH_KEY)
     if j.is_valid(name):
         j.delete_database(name)
-    ok = j.match(name, data_left, data_right, top_k=40, threshold=.1, original_data=True)
+    ok = j.match(name,
+                 data_left,
+                 data_right,
+                 top_k=40,
+                 threshold=.1,
+                 original_data=True)
 
     assert ok['id_left'].tolist() == expected, "match failed"
+
 
 # =============================================================================
 # Test Resolution Application
