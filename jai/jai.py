@@ -1114,8 +1114,8 @@ class Jai:
               top_k: int = 100,
               threshold: float = None,
               original_data: bool = False,
-                  db_type="TextEdit",
-                  hyperparams=None,
+              db_type="TextEdit",
+              hyperparams=None,
               overwrite: bool = False):
         """
         Match two datasets with their possible equal values.
@@ -1165,10 +1165,11 @@ class Jai:
            3            4          NaN          NaN
            4            5            5         0.15
         """
-        self.embedding(name, data_left,
-                  db_type=db_type,
-                  hyperparams=hyperparams,
-                  overwrite=overwrite)
+        self.embedding(name,
+                       data_left,
+                       db_type=db_type,
+                       hyperparams=hyperparams,
+                       overwrite=overwrite)
         similar = self.similar(name, data_right, top_k=top_k)
         processed = process_similar(similar,
                                     threshold=threshold,
@@ -1187,8 +1188,8 @@ class Jai:
                    top_k: int = 20,
                    threshold: float = None,
                    original_data: bool = False,
-                  db_type="TextEdit",
-                  hyperparams=None,
+                   db_type="TextEdit",
+                   hyperparams=None,
                    overwrite=False):
         """
         Experimental
@@ -1244,9 +1245,11 @@ class Jai:
         series_unique = data.drop_duplicates()
         inverse = series_unique.index[inverse]
 
-        ids = self.embedding(name, series_unique,
-                  db_type=db_type,
-                  hyperparams=hyperparams, overwrite=overwrite)
+        ids = self.embedding(name,
+                             series_unique,
+                             db_type=db_type,
+                             hyperparams=hyperparams,
+                             overwrite=overwrite)
         simliar = self.similar(name, ids, top_k=top_k)
         connect = process_resolution(simliar,
                                      threshold=threshold,
