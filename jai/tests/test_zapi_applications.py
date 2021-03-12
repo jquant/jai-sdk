@@ -6,7 +6,6 @@ import numpy as np
 import pytest
 
 URL = 'http://localhost:8001'
-URL = 'http://23.96.99.211:8001'
 AUTH_KEY = "sdk_test"
 
 np.random.seed(42)
@@ -43,29 +42,23 @@ def test_embedding(name, setup_dataframe):
 def test_match(name):
 
     A = [
-        "Apple", "Watermelon", "Orange", "Pear", "Cherry", "Strawberry",
-        "Nectarine", "Grape", "Mango", "Blueberry", "Pomegranate", "Plum",
-        "Banana", "Raspberry", "Mandarin", "Jackfruit", "Papaya", "Kiwi",
-        "Pineapple", "Lime", "Lemon", "Apricot", "Grapefruit", "Melon",
-        "Coconut", "Avocado", "Peach"
+        "Apple", "Watermelon", "Orange", "Strawberry", "Nectarine", "Grape",
+        "Blueberry", "Pomegranate", "Banana", "Raspberry", "Papaya",
+        "Pineapple", "Lemon", "Grapefruit", "Coconut", "Avocado", "Peach"
     ]
 
     B = [
-        'Blyeberry', 'Otsnge', 'Mcngo', 'Wqtetmelob', 'Jaxofruif', 'Lear',
-        'Leoon', 'Bludbecry', 'Kamgo', 'Aoricog', 'Zppke', 'Oaoaya', 'Appkr',
-        'Chsrrt', 'Lapwya', 'Pescj', 'Plym', 'Xnerry', 'Avocarp', 'Mqhgo',
-        'Nrctafije', 'Waterjepkn', 'Mwnearin', 'Apricov', 'Necgarinx',
-        'Grapwfeuiy', 'Bsnaha', 'Apppe', 'Xtrswgerry', 'Apold', 'Peqr',
-        'Nekon', 'Ljneaople', 'Hwnana', 'Mekoj', 'Oime', 'Lokegrahate',
-        'Aoricit', 'Pineapoie', 'Avkcaeo', 'Avpvado', 'Cuerrg', 'Peqr',
-        'Lsmin', 'Lemoj', 'Pomqgranatw', 'Aopls', 'Mxngi', 'Llmegranate',
-        'Gfapd'
-    ]
-    expected = [
-        9, 2, 8, 15, 3, 20, 9, 8, 21, 0, 16, 0, 4, 16, 3, 11, 3, 25, 23, 14,
-        21, 6, 22, 12, 0, 0, 3, 23, 12, 23, 19, 21, 18, 25, 25, 4, 3, 20, 20,
-        0, 8, 10, 7
-    ]
+        'Coconit', 'Pdach', 'Appld', 'Piheapplr', 'Banxna', 'Avocado',
+         'Grwpe', 'Grapw', 'Bluebeffy', 'Banwna', 'Strzwherry', 'Gdapefruir',
+         'Aatermelon', 'Piheaplle', 'Grzpe', 'Watermelon', 'Kemon', 'Bqnana',
+         'Bljwberry', 'Gralefruig', 'Rsspherry', 'Bahana', 'Watrrmeloh',
+         'Pezch', 'Blusberrt', 'Grapegruit', 'Avocaeo'
+         ]
+
+    expected =[
+        14, 16,  0, 11,  8, 15,  5,  5,  6,  8,  3, 13,  1, 11,  5,  1, 12,
+        8,  6, 13,  9,  8,  1, 16, 6, 13, 15
+        ]
 
     data_left = pd.Series(A)
     data_right = pd.Series(B)
@@ -76,8 +69,8 @@ def test_match(name):
     ok = j.match(name,
                  data_left,
                  data_right,
-                 top_k=20,
-                 threshold=.35,
+                 top_k=15,
+                 threshold=0.5,
                  original_data=True)
 
     assert ok['id_left'].tolist() == expected, "match failed"
@@ -90,24 +83,16 @@ def test_match(name):
 def test_resolution(name):
 
     data = [
-        'Mandarin', 'Raspberry', 'Plum', 'Coconut', 'Kiwi', 'Grapefruit',
-        'Grape', 'Lemon', 'Nectarine', 'Orange', 'Raspberry', 'Cherry', 'Plum',
-        'Apple', 'Raspberry', 'Apricot', 'Watermelon', 'Blueberry', 'Banana',
-        'Strawberry', 'Pineapple', 'Peach', 'Lime', 'Coconut', 'Mango',
-        'Papaya', 'Pomegranate', 'Grape', 'Avocado', 'Apricot', 'Jackfruit',
-        'Pineapple', 'Avocado', 'Apple', 'Avocado', 'Lemon', 'Lime', 'Cherry',
-        'Mandarin', 'Lime', 'Avocado', 'Papaya', 'Mandarin', 'Apple', 'Apple',
-        'Pear', 'Papaya', 'Papaya', 'Apple', 'Avocado', 'Kiwi', 'Plum',
-        'Pomsgranate', 'Kiwi', 'Javkfruit', 'Apple', 'Peach', 'Melon', 'Kiwi',
-        'Melon', 'Orangd', 'Cjerry', 'Cocknut', 'Watermslon', 'Mango', 'Mango',
-        'Plum', 'Pinrapple', 'Chwrry', 'Peach', 'Banxna', 'Orxnge', 'Mandarim',
-        'Pomegrabate', 'Mandafin', 'Xherry', 'Strawberty', 'Neftarine',
-        'Mandqrin', 'Stfawberry', 'Apple', 'Apeicot', 'Avocwdo', 'Lime',
-        'Palaya', 'Melon', 'Lemon', 'Apple', 'Lime', 'Blueberrt', 'Easpberry',
-        'Qvocado', 'Strawbsrry', 'Apple', 'Psar', 'Pwar', 'Watermelom',
-        'Peach', 'Prange', 'Kiqi'
-    ]
-    expected = np.arange(41)
+        "Apple", "Watermelon", "Orange", "Strawberry", "Nectarine", "Grape",
+        "Blueberry", "Pomegranate", "Banana", "Raspberry", "Papaya",
+        "Pineapple", "Lemon", "Grapefruit", "Coconut", "Avocado", "Peach",
+        'Coconit', 'Pdach', 'Appld', 'Piheapplr', 'Banxna', 'Avocado',
+         'Grwpe', 'Grapw', 'Bluebeffy', 'Banwna', 'Strzwherry', 'Gdapefruir',
+         'Aatermelon', 'Piheaplle', 'Grzpe', 'Watermelon', 'Kemon', 'Bqnana',
+         'Bljwberry', 'Rsspherry', 'Bahana', 'Watrrmeloh',
+         'Pezch', 'Blusberrt', 'Grapegruit', 'Avocaeo'
+         ]
+    expected = np.arange(19)
     data = pd.Series(data)
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
