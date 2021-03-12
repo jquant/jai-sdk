@@ -37,7 +37,7 @@ def test_embedding(name, setup_dataframe):
 
 
 @pytest.mark.parametrize("name", ["test_match"])
-def test_embedding(name, setup_dataframe):
+def test_match(name):
 
     A = ['Mandarin', 'Raspberry', 'Plum', 'Coconut', 'Kiwi', 'Grapefruit',
          'Grape', 'Lemon', 'Mandarin', 'Grape', 'Raspberry', 'Cherry', 'Plum',
@@ -128,3 +128,87 @@ def test_embedding(name, setup_dataframe):
 
     assert ok['id_left'].tolist() == expected, "match failed"
 
+
+@pytest.mark.parametrize("name", ["test_resolution"])
+def test_resolution(name):
+
+    data = ['Mandarin', 'Raspberry', 'Plum', 'Coconut', 'Kiwi', 'Grapefruit',
+             'Grape', 'Lemon', 'Mandarin', 'Grape', 'Raspberry', 'Cherry', 'Plum',
+            'Apple', 'Raspberry', 'Apricot', 'Watermelon', 'Blueberry', 'Pineapple',
+            'Peach', 'Lime', 'Coconut', 'Mango', 'Grape', 'Avocado', 'Apricot',
+            'Avocado', 'Pineapple', 'Avocado', 'Apple', 'Avocado',
+         'Lemon',
+         'Lime',
+         'Cherry',
+         'Mandarin',
+         'Lime',
+         'Avocado',
+         'Papaya',
+         'Mandarin',
+         'Apple',
+         'Apple',
+         'Pear',
+         'Papaya',
+         'Papaya',
+         'Apple',
+         'Nectarine',
+         'Avocado',
+         'Kiwi',
+         'Plum',
+         'Pomsgranate',
+         'Kiwi',
+         'Javkfruit',
+         'Apple',
+         'Peach',
+         'Melon',
+         'Kiwi',
+         'Melon',
+         'Orangd',
+         'Cjerry',
+         'Cocknut',
+         'Watermslon',
+         'Mango',
+         'Mango',
+         'Plum',
+         'Pinrapple',
+         'Chwrry',
+         'Peach',
+         'Banxna',
+         'Orxnge',
+         'Mandarim',
+         'Pomegrabate',
+         'Mandafin',
+         'Xherry',
+         'Strawberty',
+         'Neftarine',
+         'Mandqrin',
+         'Stfawberry',
+         'Apple',
+         'Apeicot',
+         'Avocwdo',
+         'Lime',
+         'Palaya',
+         'Melon',
+         'Lemon',
+         'Apple',
+         'Lime',
+         'Blueberrt',
+         'Easpberry',
+         'Qvocado',
+         'Strawbsrry',
+         'Apple',
+         'Pear',
+         'Pear',
+         'Watermelom',
+         'Peach',
+         'Prange',
+         'Kiwi']
+    expected = [ 0,  1,  2,  3,  4,  5,  6,  7, 11, 13, 15, 16, 17, 18, 19, 20, 22,
+       24, 37, 45, 49, 51, 57, 67, 73]
+    data = pd.Series(data)
+
+    j = Jai(url=URL, auth_key=AUTH_KEY)
+    if j.is_valid(name):
+        j.delete_database(name)
+    ok = j.resolution(name, data, top_k=20, original_data=True)
+    assert ok['resolution_id'].unique().tolist() == expected, "resolution failed"

@@ -1228,7 +1228,7 @@ class Jai:
                                      return_self=True)
         r = pd.DataFrame(connect).set_index('id').sort_index()
 
-        if False:
+        if original_data:
             r['Original'] = series_unique.loc[r.index.values].values
             r['Resolution'] = series_unique.loc[
                 r["resolution_id"].values].values
