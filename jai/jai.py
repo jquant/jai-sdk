@@ -82,7 +82,7 @@ class Jai:
                                 headers=self.header)
 
         if response.status_code == 200:
-            return response.json()
+            return sorted(response.json())
         else:
             return self.assert_status_code(response)
 
