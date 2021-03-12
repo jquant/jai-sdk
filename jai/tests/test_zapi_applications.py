@@ -50,7 +50,7 @@ def test_match(name):
     B = [
         'Coconit', 'Pdach', 'Appld', 'Piheapplr', 'Banxna', 'Avocado', 'Grwpe',
         'Grapw', 'Bluebeffy', 'Banwna', 'Gdapefruir', 'Piheaplle', 'Grzpe',
-        'Wateemelon', 'Kemon', 'Bqnana', 'Aatermelon', 'Bljwberry', 'Pezch',
+        'Wateemelon', 'Kemon', 'Bqnana', 'Aatermelon', 'Bluwberry', 'Pezch',
         'Gralefruig', 'Bahana', 'Watrrmeloh', 'Pexch', 'Grapegruit', 'Avocaeo'
     ]
 
