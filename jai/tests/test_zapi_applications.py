@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 URL = 'http://localhost:8001'
+URL = 'http://23.96.99.211:8001'
 AUTH_KEY = "sdk_test"
 
 np.random.seed(42)
@@ -79,6 +80,7 @@ def test_match(name):
                  data_left,
                  data_right,
                  top_k=40,
+                 threshold=.4,
                  original_data=True)
 
     assert ok['id_left'].tolist() == expected, "match failed"
