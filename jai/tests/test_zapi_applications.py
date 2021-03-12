@@ -98,5 +98,5 @@ def test_resolution(name):
     j = Jai(url=URL, auth_key=AUTH_KEY)
     if j.is_valid(name):
         j.delete_database(name)
-    ok = j.resolution(name, data, top_k=20, threshold=.3, original_data=True)
+    ok = j.resolution(name, data, top_k=20, threshold=.4, original_data=True)
     assert ok['resolution_id'].isin(expected).all(), "resolution failed"
