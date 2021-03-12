@@ -79,7 +79,6 @@ def test_match(name):
                  data_left,
                  data_right,
                  top_k=40,
-                 threshold=.1,
                  original_data=True)
 
     assert ok['id_left'].tolist() == expected, "match failed"
