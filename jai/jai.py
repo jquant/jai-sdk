@@ -5,6 +5,7 @@ import numpy as np
 import requests
 import time
 
+from .processing import process_predict, process_similar, process_resolution
 from .functions.utils_funcs import data2json, pbar_steps
 from .functions.classes import PossibleDtypes, Mode
 from pandas.api.types import is_integer_dtype
@@ -81,7 +82,7 @@ class Jai:
                                 headers=self.header)
 
         if response.status_code == 200:
-            return response.json()
+            return sorted(response.json())
         else:
             return self.assert_status_code(response)
 
@@ -155,6 +156,11 @@ class Jai:
             trials += 1
             response = requests.get(self.url + "/status", headers=self.header)
         return self.assert_status_code(response)
+
+    def _delete_status(self, name):
+        response = requests.delete(self.url + f"/status?db_name={name}",
+                                   headers=self.header)
+        return response.text
 
     @staticmethod
     def get_auth_key(email: str,
@@ -990,6 +996,7 @@ class Jai:
                 pbar.update(diff)
             elif (starts_at != max_steps) and aux == 0:
                 pbar.update(max_steps)
+        self._delete_status(name)
         return status
 
     def delete_raw_data(self, name: str):
@@ -1048,15 +1055,69 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
+    def embedding(self,
+                  name: str,
+                  data,
+                  db_type="TextEdit",
+                  hyperparams=None,
+                  overwrite=False):
+        """
+        Quick embedding for high numbers of categories in columns.
+
+        Parameters
+        ----------
+        name: str
+            String with the name of a database in your JAI environment.
+        data : pd.Series
+            Data for your text based model.
+        db_type : str, optional
+            type of model to be trained. The default is 'FastText'.
+        hyperparams: optional
+            See setup documentation for the db_type used.
+
+        Returns
+        -------
+        name : str
+            name of the base where the data was embedded.
+
+        """
+        if isinstance(data, pd.Series):
+            data = data.copy()
+        else:
+            raise ValueError("data must be a Series")
+
+        ids = data.index
+
+        if db_type == "TextEdit":
+            hyperparams = {
+                "nt": np.clip(np.round(len(data) / 10, -3), 1000, 10000)
+            }
+
+        if name not in self.names or overwrite:
+            self.setup(
+                name,
+                data,
+                db_type=db_type,
+                overwrite=overwrite,
+                hyperparams=hyperparams,
+            )
+        else:
+            missing = ids[~np.isin(ids, self.ids(name, "complete"))]
+            if len(missing) > 0:
+                self.add_data(name, data.loc[missing])
+        return ids
+
     def match(self,
               name: str,
               data_left,
               data_right,
-              top_k: int = 20,
-              overwrite=False):
+              top_k: int = 100,
+              threshold: float = None,
+              original_data: bool = False,
+              db_type="TextEdit",
+              hyperparams=None,
+              overwrite: bool = False):
         """
-        Experimental
-
         Match two datasets with their possible equal values.
 
         Queries the data right to get the similar results in data left.
@@ -1067,12 +1128,27 @@ class Jai:
             String with the name of a database in your JAI environment.
         data_left, data_right : pd.Series
             data to be matched.
+        top_k : int, optional
+            Number of similars to query. Default is 100.
+        threshold : float, optional
+            Distance threshold to decide if the result is the same item or not.
+            Smaller distances give more strict results. Default is None.
+            The threshold is automatically set by default, but may need manual
+            setting for more accurate results.
+        original_data : bool, optional
+            If True, returns the values of the original data along with the ids.
+            Default is False.
+        db_type : str, optional
+            type of model to be trained. The default is 'FastText'.
+        hyperparams: dict, optional
+            See setup documentation for the db_type used.
+        overwrite : bool, optional
+            If True, then the model is always retrained. Default is False.
 
         Returns
         -------
-        dict
-            each key is the id from data_right and the value is a list of ids from data_left
-            that match.
+        pd.DataFrame
+            Returns a dataframe with the matching ids of data_left and data_right.
 
         Example
         -------
@@ -1080,29 +1156,41 @@ class Jai:
         >>> from jai.processing import process_similar
         >>>
         >>> j = Jai(AUTH_KEY)
-        >>> results = j.match(name, data1, data2)
-        >>> processed = process_similar(results, return_self=True)
-        >>> pd.DataFrame(processed).sort_values('query_id')
-        >>> # query_id is from data_right and id is from data_left
-                 query_id           id     distance
+        >>> match = j.match(name, data1, data2)
+        >>> match
+                  id_left     id_right     distance
            0            1            2         0.11
            1            2            1         0.11
            2            3          NaN          NaN
            3            4          NaN          NaN
            4            5            5         0.15
         """
-        if name not in self.names or overwrite:
-            nt = np.clip(np.round(len(data_left) / 10, -3), 1000, 10000)
-            self.setup(
-                name,
-                data_left,
-                db_type="TextEdit",
-                overwrite=overwrite,
-                hyperparams={"nt": nt},
-            )
-        return self.similar(name, data_right, top_k=top_k)
+        self.embedding(name,
+                       data_left,
+                       db_type=db_type,
+                       hyperparams=hyperparams,
+                       overwrite=overwrite)
+        similar = self.similar(name, data_right, top_k=top_k)
+        processed = process_similar(similar,
+                                    threshold=threshold,
+                                    return_self=True)
+        match = pd.DataFrame(processed).sort_values('query_id')
+        match = match.rename(columns={"id": "id_left", "query_id": "id_right"})
+        if original_data:
+            match['data_letf'] = data_left.loc[match['id_left']].values
+            match['data_rigth'] = data_right.loc[match['id_right']].values
 
-    def resolution(self, name: str, data, top_k: int = 20, overwrite=False):
+        return match
+
+    def resolution(self,
+                   name: str,
+                   data,
+                   top_k: int = 20,
+                   threshold: float = None,
+                   original_data: bool = False,
+                   db_type="TextEdit",
+                   hyperparams=None,
+                   overwrite=False):
         """
         Experimental
 
@@ -1114,6 +1202,22 @@ class Jai:
             String with the name of a database in your JAI environment.
         data : pd.Series
             data to find duplicates.
+        top_k : int, optional
+            Number of similars to query. Default is 100.
+        threshold : float, optional
+            Distance threshold to decide if the result is the same item or not.
+            Smaller distances give more strict results. Default is None.
+            The threshold is automatically set by default, but may need manual
+            setting for more accurate results.
+        original_data : bool, optional
+            If True, returns the values of the original data along with the ids.
+            Default is False.
+        db_type : str, optional
+            type of model to be trained. The default is 'FastText'.
+        hyperparams: dict, optional
+            See setup documentation for the db_type used.
+        overwrite : bool, optional
+            If True, then the model is always retrained. Default is False.
 
         Returns
         -------
@@ -1127,24 +1231,38 @@ class Jai:
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.resolution(name, data)
-        >>> processed = process_similar(results, return_self=True)
-        >>> pd.DataFrame(processed).sort_values('query_id')
-                 query_id           id     distance
-           0            1            2         0.11
-           1            2            1         0.11
-           2            3          NaN          NaN
-           3            4            5         0.15
+        >>> results
+          id  resolution_id
+           0              0
+           1              0
+           2              0
+           3              3
+           4              3
+           5              5
         """
-        if name not in self.names or overwrite:
-            nt = np.clip(np.round(len(data) / 10, -3), 1000, 10000)
-            self.setup(
-                name,
-                data,
-                db_type="TextEdit",
-                overwrite=overwrite,
-                hyperparams={"nt": nt},
-            )
-        return self.similar(name, data.index, top_k=top_k)
+
+        inverse, uniques = data.factorize()
+        series_unique = data.drop_duplicates()
+        inverse = series_unique.index[inverse]
+
+        ids = self.embedding(name,
+                             series_unique,
+                             db_type=db_type,
+                             hyperparams=hyperparams,
+                             overwrite=overwrite)
+        simliar = self.similar(name, ids, top_k=top_k)
+        connect = process_resolution(simliar,
+                                     threshold=threshold,
+                                     return_self=True)
+        r = pd.DataFrame(connect).set_index('id').sort_index()
+
+        if original_data:
+            r['Original'] = series_unique.loc[r.index.values].values
+            r['Resolution'] = series_unique.loc[
+                r["resolution_id"].values].values
+
+        resolution = r.loc[inverse].copy()
+        return resolution
 
     def fill(self, name: str, data, column: str, **kwargs):
         """
@@ -1203,8 +1321,8 @@ class Jai:
             id_col = "id_" + col
             origin = name + "_" + col
             origin = origin.lower().replace("-", "_").replace(" ", "_")[:35]
-            train[id_col], test[id_col] = self.embedding(
-                origin, train[col], test[col])
+            train[id_col] = self.embedding(origin, train[col])
+            test[id_col] = self.embedding(origin, test[col])
             prep_bases.append({"id_name": id_col, "db_parent": origin})
         train = train.drop(columns=pre)
         test = test.drop(columns=pre)
@@ -1227,6 +1345,11 @@ class Jai:
                 split=split,
                 **kwargs,
             )
+        else:
+            ids = train.index
+            missing = ids[~np.isin(ids, self.ids(name, "complete"))]
+            if len(missing) > 0:
+                self.add_data(name, data.loc[missing])
 
         return self.predict(name, test, predict_proba=True)
 
@@ -1307,17 +1430,18 @@ class Jai:
         pre = cat.columns[cat.nunique() > cat_threshold].tolist()
         if columns_ref is None:
             columns_ref = cat.columns.tolist()
+        elif not isinstance(columns_ref, list):
+            columns_ref = columns_ref.tolist()
 
         prep_bases = []
         for col in pre:
             id_col = "id_" + col
             origin = name + "_" + col
             origin = origin.lower().replace("-", "_").replace(" ", "_")[:35]
+            data[id_col] = self.embedding(origin, data[col])
             if data_validate is not None:
-                data[id_col], data_validate[id_col] = self.embedding(
-                    origin, data[col], data_validate[col])
-            else:
-                data[id_col] = self.embedding(origin, data[col])
+                data_validate[id_col] = self.embedding(origin,
+                                                       data_validate[col])
 
             prep_bases.append({"id_name": id_col, "db_parent": origin})
 
@@ -1358,7 +1482,7 @@ class Jai:
                 data[target] = "Valid"
                 train = pd.concat([data, sample])
             else:
-                train = data
+                train = data.copy()
 
             label = {"task": "metric_classification", "label_name": target}
             split = {
@@ -1379,81 +1503,10 @@ class Jai:
                 split=split,
                 **kwargs,
             )
+        else:
+            ids = data.index
+            missing = ids[~np.isin(ids, self.ids(name, "complete"))]
+            if len(missing) > 0:
+                self.add_data(name, data.loc[missing])
 
         return self.predict(name, test, predict_proba=True)
-
-    def embedding(
-        self,
-        name: str,
-        train,
-        test=None,
-        db_type="FastText",
-        hyperparams=None,
-    ):
-        """
-        Experimental
-
-        Quick embedding for high numbers of categories in columns.
-
-        Parameters
-        ----------
-        name: str
-            String with the name of a database in your JAI environment.
-        train : pd.Series
-            Data to train your text based model.
-        test : pd.Series, optional
-            Extra data do be added to the database.
-        db_type : str, optional
-            type of model to be trained. The default is 'FastText'.
-        hyperparams: optional
-            See setup documentation for the db_type used.
-
-        Returns
-        -------
-        name : str
-            name of the base where the data was embedded.
-
-        """
-
-        if isinstance(train, pd.Series):
-            train = train.copy()
-        else:
-            raise ValueError("train must be a Series")
-
-        n = len(train)
-        if test is None:
-            values, inverse = np.unique(train, return_inverse=True)
-        else:
-            if isinstance(test, pd.Series):
-                train = train.copy()
-            else:
-                raise ValueError("test must be a Series")
-            test = test.copy()
-            values, inverse = np.unique(train.tolist() + test.tolist(),
-                                        return_inverse=True)
-
-        train.loc[:] = inverse[:n]
-        i_train = np.unique(inverse[:n])
-        settrain = pd.Series(values[i_train], index=i_train)
-
-        if name not in self.names:
-            self.setup(name,
-                       settrain,
-                       db_type=db_type,
-                       hyperparams=hyperparams)
-        else:
-            missing = i_train[~np.isin(i_train, self.ids(name, "complete"))]
-            if len(missing) > 0:
-                self.add_data(name, settrain.loc[missing])
-
-        if test is not None:
-            test.loc[:] = inverse[n:]
-            i_test = np.unique(inverse[n:])
-            settest = pd.Series(values[i_test], index=i_test)
-            missing = i_test[~np.isin(i_test, self.ids(name, "complete"))]
-
-            if len(missing) > 0:
-                self.add_data(name, settest.loc[missing])
-            return train, test
-        else:
-            return train
