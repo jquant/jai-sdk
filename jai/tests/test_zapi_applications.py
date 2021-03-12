@@ -48,17 +48,17 @@ def test_match(name):
     ]
 
     B = [
-        'Coconit', 'Pdach', 'Appld', 'Piheapplr', 'Banxna', 'Avocado',
-         'Grwpe', 'Grapw', 'Bluebeffy', 'Banwna', 'Strzwherry', 'Gdapefruir',
-         'Aatermelon', 'Piheaplle', 'Grzpe', 'Watermelon', 'Kemon', 'Bqnana',
-         'Bljwberry', 'Gralefruig', 'Rsspherry', 'Bahana', 'Watrrmeloh',
-         'Pezch', 'Blusberrt', 'Grapegruit', 'Avocaeo'
-         ]
+        'Coconit', 'Pdach', 'Appld', 'Piheapplr', 'Banxna', 'Avocado', 'Grwpe',
+        'Grapw', 'Bluebeffy', 'Banwna', 'Strzwherry', 'Gdapefruir',
+        'Aatermelon', 'Piheaplle', 'Grzpe', 'Watermelon', 'Kemon', 'Bqnana',
+        'Bljwberry', 'Gralefruig', 'Rsspherry', 'Bahana', 'Watrrmeloh',
+        'Pezch', 'Blusberrt', 'Grapegruit', 'Avocaeo'
+    ]
 
-    expected =[
-        14, 16,  0, 11,  8, 15,  5,  5,  6,  8,  3, 13,  1, 11,  5,  1, 12,
-        8,  6, 13,  9,  8,  1, 16, 6, 13, 15
-        ]
+    expected = [
+        14, 16, 0, 11, 8, 15, 5, 5, 6, 8, 3, 13, 1, 11, 5, 1, 12, 8, 6, 13, 9,
+        8, 1, 16, 6, 13, 15
+    ]
 
     data_left = pd.Series(A)
     data_right = pd.Series(B)
@@ -86,12 +86,12 @@ def test_resolution(name):
         "Apple", "Watermelon", "Orange", "Strawberry", "Nectarine", "Grape",
         "Blueberry", "Pomegranate", "Banana", "Raspberry", "Papaya",
         "Pineapple", "Lemon", "Grapefruit", "Coconut", "Avocado", "Peach",
-        'Coconit', 'Pdach', 'Appld', 'Piheapplr', 'Banxna', 'Avocado',
-         'Grwpe', 'Grapw', 'Bluebeffy', 'Banwna', 'Strzwherry', 'Gdapefruir',
-         'Aatermelon', 'Piheaplle', 'Grzpe', 'Watermelon', 'Kemon', 'Bqnana',
-         'Bljwberry', 'Rsspherry', 'Bahana', 'Watrrmeloh',
-         'Pezch', 'Blusberrt', 'Grapegruit', 'Avocaeo'
-         ]
+        'Coconit', 'Pdach', 'Appld', 'Piheapplr', 'Banxna', 'Avocado', 'Grwpe',
+        'Grapw', 'Bluebeffy', 'Banwna', 'Strzwherry', 'Gdapefruir',
+        'Aatermelon', 'Piheaplle', 'Grzpe', 'Watermelon', 'Kemon', 'Bqnana',
+        'Bljwberry', 'Rsspherry', 'Bahana', 'Watrrmeloh', 'Pezch', 'Blusberrt',
+        'Grapegruit', 'Avocaeo'
+    ]
     expected = np.arange(19)
     data = pd.Series(data)
 
