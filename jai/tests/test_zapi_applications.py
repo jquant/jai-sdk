@@ -42,33 +42,13 @@ def test_embedding(name, setup_dataframe):
 @pytest.mark.parametrize("name", ["test_match"])
 def test_match(name):
 
-    A = ["Apple",
-"Watermelon",
-"Orange",
-"Pear",
-"Cherry",
-"Strawberry",
-"Nectarine",
-"Grape",
-"Mango",
-"Blueberry",
-"Pomegranate",
-"Plum",
-"Banana",
-"Raspberry",
-"Mandarin",
-"Jackfruit",
-"Papaya",
-"Kiwi",
-"Pineapple",
-"Lime",
-"Lemon",
-"Apricot",
-"Grapefruit",
-"Melon",
-"Coconut",
-"Avocado",
-"Peach"]
+    A = [
+        "Apple", "Watermelon", "Orange", "Pear", "Cherry", "Strawberry",
+        "Nectarine", "Grape", "Mango", "Blueberry", "Pomegranate", "Plum",
+        "Banana", "Raspberry", "Mandarin", "Jackfruit", "Papaya", "Kiwi",
+        "Pineapple", "Lime", "Lemon", "Apricot", "Grapefruit", "Melon",
+        "Coconut", "Avocado", "Peach"
+    ]
 
     B = [
         'Blyeberry', 'Otsnge', 'Mcngo', 'Wqtetmelob', 'Jaxofruif', 'Lear',
@@ -81,49 +61,11 @@ def test_match(name):
         'Lsmin', 'Lemoj', 'Pomqgranatw', 'Aopls', 'Mxngi', 'Llmegranate',
         'Gfapd'
     ]
-    expected = [9,
- 2,
- 8,
- 15,
- 3,
- 20,
- 9,
- 8,
- 21,
- 0,
- 16,
- 0,
- 4,
- 16,
- 3,
- 11,
- 3,
- 25,
- 23,
- 14,
- 21,
- 6,
- 22,
- 12,
- 0,
- 0,
- 3,
- 23,
- 12,
- 23,
- 19,
- 21,
- 18,
- 25,
- 25,
- 4,
- 3,
- 20,
- 20,
- 0,
- 8,
- 10,
- 7]
+    expected = [
+        9, 2, 8, 15, 3, 20, 9, 8, 21, 0, 16, 0, 4, 16, 3, 11, 3, 25, 23, 14,
+        21, 6, 22, 12, 0, 0, 3, 23, 12, 23, 19, 21, 18, 25, 25, 4, 3, 20, 20,
+        0, 8, 10, 7
+    ]
 
     data_left = pd.Series(A)
     data_right = pd.Series(B)
