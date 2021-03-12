@@ -51,8 +51,7 @@ def test_match(name):
         'Coconit', 'Pdach', 'Appld', 'Piheapplr', 'Banxna', 'Avocado', 'Grwpe',
         'Grapw', 'Bluebeffy', 'Banwna', 'Gdapefruir', 'Piheaplle', 'Grzpe',
         'Wateemelon', 'Kemon', 'Bqnana', 'Aatermelon', 'Bljwberry', 'Pezch',
-        'Gralefruig', 'Bahana', 'Watrrmeloh', 'Pexch', 'Grapegruit',
-        'Avocaeo'
+        'Gralefruig', 'Bahana', 'Watrrmeloh', 'Pexch', 'Grapegruit', 'Avocaeo'
     ]
 
     expected = [
