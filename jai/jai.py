@@ -1114,6 +1114,8 @@ class Jai:
               top_k: int = 100,
               threshold: float = None,
               original_data: bool = False,
+                  db_type="TextEdit",
+                  hyperparams=None,
               overwrite: bool = False):
         """
         Match two datasets with their possible equal values.
@@ -1136,6 +1138,10 @@ class Jai:
         original_data : bool, optional
             If True, returns the values of the original data along with the ids.
             Default is False.
+        db_type : str, optional
+            type of model to be trained. The default is 'FastText'.
+        hyperparams: dict, optional
+            See setup documentation for the db_type used.
         overwrite : bool, optional
             If True, then the model is always retrained. Default is False.
 
@@ -1159,7 +1165,10 @@ class Jai:
            3            4          NaN          NaN
            4            5            5         0.15
         """
-        self.embedding(name, data_left, overwrite=overwrite)
+        self.embedding(name, data_left,
+                  db_type=db_type,
+                  hyperparams=hyperparams,
+                  overwrite=overwrite)
         similar = self.similar(name, data_right, top_k=top_k)
         processed = process_similar(similar,
                                     threshold=threshold,
@@ -1178,6 +1187,8 @@ class Jai:
                    top_k: int = 20,
                    threshold: float = None,
                    original_data: bool = False,
+                  db_type="TextEdit",
+                  hyperparams=None,
                    overwrite=False):
         """
         Experimental
@@ -1200,6 +1211,10 @@ class Jai:
         original_data : bool, optional
             If True, returns the values of the original data along with the ids.
             Default is False.
+        db_type : str, optional
+            type of model to be trained. The default is 'FastText'.
+        hyperparams: dict, optional
+            See setup documentation for the db_type used.
         overwrite : bool, optional
             If True, then the model is always retrained. Default is False.
 
@@ -1229,7 +1244,9 @@ class Jai:
         series_unique = data.drop_duplicates()
         inverse = series_unique.index[inverse]
 
-        ids = self.embedding(name, series_unique, overwrite=overwrite)
+        ids = self.embedding(name, series_unique,
+                  db_type=db_type,
+                  hyperparams=hyperparams, overwrite=overwrite)
         simliar = self.similar(name, ids, top_k=top_k)
         connect = process_resolution(simliar,
                                      threshold=threshold,
