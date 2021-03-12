@@ -191,6 +191,7 @@ def process_resolution(results,
     """
 
     results = deepcopy(results)
+    results = sorted(results, key=lambda x: x['query_id'])
     if threshold is None:
         threshold = find_threshold(results)
 

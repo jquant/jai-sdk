@@ -6,17 +6,15 @@ Match two datasets with their possible equal values.
 
 Queries the `data right` to get the similar results in `data left`.
 
-.. code-block:: python
+This method matches similar values in between text columns of two databases.
 
-    >>> import pandas as pd
-    >>> from jai.processing import process_similar
+.. code-block:: python
+    >>> data1, data2 = dataframe1['name'], dataframe2['name']
     >>>
     >>> j = Jai(AUTH_KEY)
-    >>> results = j.match(name, data1, data2)
-    >>> processed = process_similar(results, return_self=True)
-    >>> pd.DataFrame(processed).sort_values('query_id')
-    >>> # query_id is from data_right and id is from data_left
-             query_id           id     distance
+    >>> match = j.match(name, data1, data2)
+    >>> match
+              id_left     id_right     distance
        0            1            2         0.11
        1            2            1         0.11
        2            3          NaN          NaN

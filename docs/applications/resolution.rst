@@ -4,17 +4,17 @@ Resolution of duplicated values
 
 Find possible duplicated values within the data.
 
-.. code-block:: python
+This method finds similar values in text columns of your database.
 
-    >>> import pandas as pd
-    >>> from jai.processing import process_similar
-    >>>
+.. code-block:: python
+    >>> data = dataframe['name']
     >>> j = Jai(AUTH_KEY)
     >>> results = j.resolution(name, data)
-    >>> processed = process_similar(results, return_self=True)
-    >>> pd.DataFrame(processed).sort_values('query_id')
-             query_id           id     distance
-       0            1            2         0.11
-       1            2            1         0.11
-       2            3          NaN          NaN
-       3            4            5         0.15
+    >>> results
+      id  resolution_id
+       0              0
+       1              0
+       2              0
+       3              3
+       4              3
+       5              5
