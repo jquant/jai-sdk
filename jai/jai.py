@@ -157,6 +157,11 @@ class Jai:
             response = requests.get(self.url + "/status", headers=self.header)
         return self.assert_status_code(response)
 
+    def _delete_status(self, name):
+        response = requests.delete(self.url + f"/status?db_name={name}",
+                                   headers=self.header)
+        return response.text
+
     @staticmethod
     def get_auth_key(email: str,
                      firstName: str,
@@ -991,6 +996,7 @@ class Jai:
                 pbar.update(diff)
             elif (starts_at != max_steps) and aux == 0:
                 pbar.update(max_steps)
+        self._delete_status(name)
         return status
 
     def delete_raw_data(self, name: str):
