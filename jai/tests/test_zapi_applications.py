@@ -42,22 +42,22 @@ def test_embedding(name, setup_dataframe):
 def test_match(name):
 
     A = [
-        "Apple", "Watermelon", "Orange", "Strawberry", "Nectarine", "Grape",
-        "Blueberry", "Pomegranate", "Banana", "Raspberry", "Papaya",
-        "Pineapple", "Lemon", "Grapefruit", "Coconut", "Avocado", "Peach"
+        "Apple", "Watermelon", "Orange", "Nectarine", "Grape", "Lemon",
+        "Blueberry", "Pomegranate", "Banana", "Papaya", "Pineapple",
+        "Grapefruit", "Coconut", "Avocado", "Peach"
     ]
 
     B = [
         'Coconit', 'Pdach', 'Appld', 'Piheapplr', 'Banxna', 'Avocado', 'Grwpe',
-        'Grapw', 'Bluebeffy', 'Banwna', 'Strzwherry', 'Gdapefruir',
-        'Aatermelon', 'Piheaplle', 'Grzpe', 'Watermelon', 'Kemon', 'Bqnana',
-        'Bljwberry', 'Gralefruig', 'Rsspherry', 'Bahana', 'Watrrmeloh',
-        'Pezch', 'Blusberrt', 'Grapegruit', 'Avocaeo'
+        'Grapw', 'Bluebeffy', 'Banwna', 'Gdapefruir', 'Piheaplle', 'Grzpe',
+        'Wateemelon', 'Kemon', 'Bqnana', 'Aatermelon', 'Bljwberry', 'Pezch',
+        'Gralefruig', 'Bahana', 'Watrrmeloh', 'Blusberrt', 'Grapegruit',
+        'Avocaeo'
     ]
 
     expected = [
-        14, 16, 0, 11, 8, 15, 5, 5, 6, 8, 3, 13, 1, 11, 5, 1, 12, 8, 6, 13, 9,
-        8, 1, 16, 6, 13, 15
+        12, 14,  0, 10,  8, 13,  4,  4,  6,  8, 11, 10,  4,  1,  5,  8,  1,
+        14, 11,  8,  1,  6, 11, 13
     ]
 
     data_left = pd.Series(A)
