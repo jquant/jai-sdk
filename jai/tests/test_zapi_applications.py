@@ -73,7 +73,7 @@ def test_match(name):
     j = Jai(url=URL, auth_key=AUTH_KEY)
     if j.is_valid(name):
         j.delete_database(name)
-    ok = j.match(name, data_left, data_right, top_k=40, original_data=True)
+    ok = j.match(name, data_left, data_right, top_k=40, threshold=.1, original_data=True)
 
     assert ok['id_left'].tolist() == expected, "match failed"
 
@@ -100,14 +100,14 @@ def test_resolution(name):
         'Peach', 'Prange', 'Kiwi'
     ]
     expected = [
-        0, 1, 2, 3, 4, 5, 6, 7, 11, 13, 15, 16, 17, 18, 19, 20, 22, 24, 37, 45,
-        49, 51, 57, 67, 73
+        0, 1, 2, 3, 4, 5, 6, 7, 11, 13, 15, 16, 17, 18, 22, 24, 37, 45,
+        49, 51, 67, 70, 73
     ]
     data = pd.Series(data)
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
     if j.is_valid(name):
         j.delete_database(name)
-    ok = j.resolution(name, data, top_k=20, original_data=True)
+    ok = j.resolution(name, data, top_k=20, threshold=.2, original_data=True)
     assert ok['resolution_id'].unique().tolist(
     ) == expected, "resolution failed"
