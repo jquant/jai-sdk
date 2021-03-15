@@ -126,11 +126,13 @@ def test_df_error(col1, col2, ids):
         df = pd.DataFrame({"col1": col1, "col2": col2}, index=ids)
         df2json(df)
 
+
 def test_read_image_folder(setup_img_data,
                            img_folder=Path("jai/test_data/test_imgs")):
     img_data = setup_img_data
     data = read_image_folder(image_folder=img_folder)
     assert_series_equal(img_data, data)
+
 
 def test_resize_image_folder(img_folder=Path("jai/test_data/test_imgs"),
                              extensions=[".png", ".jpg", ".jpeg"]):
@@ -139,8 +141,10 @@ def test_resize_image_folder(img_folder=Path("jai/test_data/test_imgs"),
 
     # if things go well
     resize_image_folder(img_folder=img_folder)
-    set_previous = set([item.name for item in list(previously_generated_imgs.iterdir())])
-    set_current = set([item.name for item in list(test_generated_imgs.iterdir())])
+    set_previous = set(
+        [item.name for item in list(previously_generated_imgs.iterdir())])
+    set_current = set(
+        [item.name for item in list(test_generated_imgs.iterdir())])
     assert set_previous == set_current
 
     # if things go south
