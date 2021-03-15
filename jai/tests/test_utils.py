@@ -150,6 +150,7 @@ def test_read_image_folder_corrupted_ignore(
 
 
 def test_read_image_folder_no_parameters():
+    # just call function with no parameters
     with pytest.raises(ValueError):
         read_image_folder()
 
