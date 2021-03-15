@@ -106,8 +106,6 @@ def read_image_folder(image_folder: str = None,
         error later on. The default is False.
     extensions : List, optional
         List of acceptable extensions. The default is [".png", ".jpg", ".jpeg"].
-    basewidth: int, optional
-        Basewidth to rescale the images to. Default is 300.
 
     Raises
     ------
