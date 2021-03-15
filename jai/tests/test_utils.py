@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 from jai.functions.utils_funcs import (list2json, series2json, df2json,
                                        data2json)
-from jai.image import read_image_folder
+from jai.image import read_image_folder, resize_image_folder
 
 from pandas._testing import assert_series_equal
 from pathlib import Path
@@ -126,9 +126,23 @@ def test_df_error(col1, col2, ids):
         df = pd.DataFrame({"col1": col1, "col2": col2}, index=ids)
         df2json(df)
 
-
 def test_read_image_folder(setup_img_data,
                            img_folder=Path("jai/test_data/test_imgs")):
     img_data = setup_img_data
     data = read_image_folder(image_folder=img_folder)
     assert_series_equal(img_data, data)
+
+def test_resize_image_folder(img_folder=Path("jai/test_data/test_imgs"),
+                             extensions=[".png", ".jpg", ".jpeg"]):
+    previously_generated_imgs = img_folder / "generate_resize"
+    test_generated_imgs = img_folder / "resized"
+
+    # if things go well
+    resize_image_folder(img_folder=img_folder)
+    set_previous = set([item.name for item in list(previously_generated_imgs.iterdir())])
+    set_current = set([item.name for item in list(test_generated_imgs.iterdir())])
+    assert set_previous == set_current
+
+    # if things go south
+    with pytest.raises(Exception):
+        resize_image_folder(img_folder="not_found")

@@ -3,7 +3,7 @@ import sys
 jai_folder = Path.cwd().parent.parent  # no one's proud of this
 sys.path.append(jai_folder.as_posix())
 
-from jai.image import read_image_folder
+from jai.image import read_image_folder, resize_image_folder
 
 
 def generate_read_image_folder(image_folder=Path("test_imgs")):
@@ -13,5 +13,11 @@ def generate_read_image_folder(image_folder=Path("test_imgs")):
     img_data.to_pickle(Path("test_imgs/dataframe_img.pkl"))
 
 
+def generate_resize_image_folder(image_folder=Path("test_imgs"),
+                                 output_folder="generate_resize"):
+    resize_image_folder(img_folder=image_folder, output_folder=output_folder)
+
+
 if __name__ == '__main__':
     generate_read_image_folder()
+    generate_resize_image_folder()
