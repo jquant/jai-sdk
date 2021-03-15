@@ -8,6 +8,8 @@ Every item in a database should have an id, so we can easily identify each item 
 
 For this reason, although some data types could be inserted grouped in a :code:`list` or an :code:`numpy.ndarray`, we strongly recommend the use of :code:`pandas.Series` and :code:`pandas.DataFrame`, because of the structure with :code:`.index` attributes (or optionally the use of a column named :code:`'id'`, which has priority over the :code:`.index` attribute). In case you choose to use the pandas classes, make sure the id values are always unique.
 
+The model is used with the similarity queries and predicts (methods :code:`.similar()` and :code:`.predict()`). The similiarity query will return for each input, identified with the 'query_id', the 'id' values of similiar items, the 'distance' in between them. The number of results is controlled by the 'top_k' parameter. The predict method will return for each input, identified with 'id', the expected value for each item 'predict'.
+
 ************************
 Setup for Text type data
 ************************
