@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 from jai.functions.utils_funcs import (list2json, series2json, df2json,
                                        data2json)
-from jai.image import read_image_folder
+from jai.image import read_image_folder, resize_image_folder
 
 from pandas._testing import assert_series_equal
 from pathlib import Path
@@ -128,7 +128,36 @@ def test_df_error(col1, col2, ids):
 
 
 def test_read_image_folder(setup_img_data,
-                           img_folder=Path("jai/test_data/test_imgs")):
+                           image_folder=Path("jai/test_data/test_imgs")):
     img_data = setup_img_data
-    data = read_image_folder(image_folder=img_folder)
+    data = read_image_folder(image_folder=image_folder)
     assert_series_equal(img_data, data)
+
+
+def test_read_image_folder_corrupted(
+        image_folder=Path("jai/test_data/test_imgs_corrupted")):
+    with pytest.raises(ValueError):
+        read_image_folder(image_folder=image_folder)
+
+
+def test_resize_image_folder(image_folder=Path("jai/test_data/test_imgs")):
+    # paths
+    previously_generated_imgs = image_folder / "generate_resize"
+    test_generated_imgs = image_folder / "resized"
+
+    # if things go well
+    resize_image_folder(image_folder=image_folder)
+    set_previous = set(
+        [item.name for item in list(previously_generated_imgs.iterdir())])
+    set_current = set(
+        [item.name for item in list(test_generated_imgs.iterdir())])
+    assert set_previous == set_current
+
+    # if things go south
+    with pytest.raises(Exception):
+        resize_image_folder(image_folder="not_found")
+
+
+def test_resize_image_folder_corrupted(
+        image_folder=Path("jai/test_data/test_imgs_corrupted")):
+    assert len(resize_image_folder(image_folder=image_folder))
