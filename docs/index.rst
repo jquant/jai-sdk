@@ -11,8 +11,7 @@ JAI-SDK - Trust your data!
    :maxdepth: 2
    :caption: Getting Started
 
-   installation
-   get_auth
+   getting_started/quick_start
 
 .. toctree::
    :maxdepth: 1
