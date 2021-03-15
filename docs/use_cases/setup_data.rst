@@ -79,7 +79,7 @@ For any uses of image-type data, data should be first encoded before inserting i
     >>>     encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
 
 Then the encoded string can be inserted into a list, pandas Series or DataFrame.
-We provide :code:`read_image_folder` function for reading images from a local folder.
+We provide :code:`read_image_folder` and :code:`resize_image_folder` functions for reading images from a local folder. Resizing images before inserting is recommended as reduces writing, reading and processing time on model's inference.
 
 Setup applying Image Model
 ==========================
