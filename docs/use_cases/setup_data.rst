@@ -28,7 +28,7 @@ Setup for Text type data
 For any uses of text-type data, data can be a list of texts, pandas Series or DataFrame.
 
 * If data is a list, then the ids will be set with :code:`range(len(data_list))`.
-* If data is a pandas type, then the ids will be the index values.
+* If data is a pandas type, then the ids will be set as described above.
 
 Setup applying NLP FastText model
 =================================
