@@ -136,6 +136,7 @@ def test_read_image_folder(setup_img_data,
 
 def test_resize_image_folder(img_folder=Path("jai/test_data/test_imgs"),
                              extensions=[".png", ".jpg", ".jpeg"]):
+    # paths
     previously_generated_imgs = img_folder / "generate_resize"
     test_generated_imgs = img_folder / "resized"
 
