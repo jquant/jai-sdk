@@ -155,10 +155,13 @@ def test_read_image_folder_no_parameters():
         read_image_folder()
 
 
-def test_read_image_folder_single_img(setup_img_data,
-                           images=[Path("jai/test_data/test_imgs/img0.jpg"),
-                                   Path("jai/test_data/test_imgs/img1.jpg")]):
-    # the idea for this particular test is to simply make use of the 
+def test_read_image_folder_single_img(
+    setup_img_data,
+    images=[
+        Path("jai/test_data/test_imgs/img0.jpg"),
+        Path("jai/test_data/test_imgs/img1.jpg")
+    ]):
+    # the idea for this particular test is to simply make use of the
     # previously generated dataframe for the read_image_folder test; since
     # we are passing the paths to each image file DIRECTLY, the indexes will
     # differ. That is why we reset it and rename it to "id" again

@@ -86,7 +86,7 @@ def resize_image_folder(image_folder,
     return fails
 
 
-def read_image_folder(image_folder: str=None,
+def read_image_folder(image_folder: str = None,
                       images: List = None,
                       ignore_corrupt=False,
                       extensions: List = [".png", ".jpg", ".jpeg"]):
