@@ -6,7 +6,7 @@ For every database you setup, you'll need a name identifier so you can reuse it.
 
 Every item in a database should have an id, so we can easily identify each item without the need of manipulating the raw data except on the setup phase.
 
-For this reason, although some data types could be inserted grouped in a :code:`list` or an :code:`numpy.ndarray`, we strongly recommend the use of :code:`pandas.Series` and :code:`pandas.DataFrame`, because of the structure with :code:`.index` attributes (or optionally the use of a column named :code:`'id'`). In case you choose to use the pandas classes, make sure the id values are always unique.
+For this reason, although some data types could be inserted grouped in a :code:`list` or an :code:`numpy.ndarray`, we strongly recommend the use of :code:`pandas.Series` and :code:`pandas.DataFrame`, because of the structure with :code:`.index` attributes (or optionally the use of a column named :code:`'id'`, which has priority over the :code:`.index` attribute). In case you choose to use the pandas classes, make sure the id values are always unique.
 
 ************************
 Setup for Text type data

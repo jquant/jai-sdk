@@ -272,8 +272,12 @@ class Jai:
 
         Return
         ------
-        results : dict
-            Dictionary with the index and distance of the k most similar items.
+        results : list of dicts
+            A list with a dictionary for each input value identified with
+            'query_id' and 'result' which is a list with 'top_k' most similar
+            items dictionaries, each dictionary has the 'id' from the database
+            previously setup and 'distance' in between the correspondent 'id'
+            and 'query_id'.
 
         Example
         -------
@@ -473,7 +477,8 @@ class Jai:
         Return
         ------
         results : list of dicts
-            List of predictions for the data passed as parameter.
+            List of dictionaries with 'id' of the inputed data and 'predict'
+            as predictions for the data passed as input.
 
         Example
         ----------
@@ -514,7 +519,7 @@ class Jai:
         name : str
             String with the name of a database in your JAI environment.
         data_json : JSON file (dict)
-            Data to be queried for similar inputs in your database.
+            Data to be inferred by the previosly trained model.
         predict_proba : bool
             Whether or not to return the probabilities of each prediction. `Default is False`.
 
@@ -1269,6 +1274,9 @@ class Jai:
         Experimental
 
         Fills the column in data with the most likely value given the other columns.
+
+        Only works with categorical columns. Can not fill missing values for
+        numerical columns.
 
         Parameters
         ----------
