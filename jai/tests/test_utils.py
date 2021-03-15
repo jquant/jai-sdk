@@ -134,7 +134,8 @@ def test_read_image_folder(setup_img_data,
     assert_series_equal(img_data, data)
 
 
-def test_read_image_folder_corrupted(image_folder=Path("jai/test_data/test_imgs_corrupted")):
+def test_read_image_folder_corrupted(
+        image_folder=Path("jai/test_data/test_imgs_corrupted")):
     with pytest.raises(ValueError):
         read_image_folder(image_folder=image_folder)
 
@@ -157,5 +158,6 @@ def test_resize_image_folder(image_folder=Path("jai/test_data/test_imgs")):
         resize_image_folder(image_folder="not_found")
 
 
-def test_resize_image_folder_corrupted(image_folder=Path("jai/test_data/test_imgs_corrupted")):
+def test_resize_image_folder_corrupted(
+        image_folder=Path("jai/test_data/test_imgs_corrupted")):
     assert len(resize_image_folder(image_folder=image_folder))
