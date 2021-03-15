@@ -10,6 +10,12 @@ For this reason, although some data types could be inserted grouped in a :code:`
 
 The model is used with the similarity queries and predicts (methods :code:`.similar()` and :code:`.predict()`). The similiarity query will return for each input, identified with the 'query_id', the 'id' values of similiar items, the 'distance' in between them. The number of results is controlled by the 'top_k' parameter. The predict method will return for each input, identified with 'id', the expected value for each item 'predict'.
 
+.. note::
+	The use of a column named 'id' will overwrite the pandas index attribute with :code:`.set_index('id')`. We consider a good pratice the strict usage of '.index' to identify items: 
+	- the existence of both 'id' column and '.index' could cause ambiguity leading to misinterpretation results, 
+	- it allows the usage of native pandas structures, e. g., indexing data with '.loc', 
+	- better understanding of your data as the column 'id' will **not** be used for any model inferrence unlike any other columns of your data.
+
 ************************
 Setup for Text type data
 ************************
