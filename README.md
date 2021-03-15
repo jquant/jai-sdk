@@ -30,7 +30,7 @@ If the response code is 201, then you should be receiving an email with your Aut
 
 
 # Get Started
-If you already have an Auth Key, the you can use the sdk:
+If you already have an Auth Key, then you can use the sdk:
 ```python
 from jai import Jai
 j = Jai(AUTH_KEY)

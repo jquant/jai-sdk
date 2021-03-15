@@ -2,15 +2,13 @@
 Quick Start
 ###########
 
-This is a quick start guide to help users getting used to Jai 
+This is a quick start guide to help users improve their data with Jai. 
 
 ************
 Installation
 ************
 
-You can install JAI-SDK via the Python Package Index (PyPI).
-
-To install using pip:
+You can install JAI-SDK via the Python Package Index (PyPI). To install using pip:
 
 .. code-block:: console
 
@@ -20,15 +18,27 @@ To install using pip:
 Getting your Authentication Key
 *******************************
 
-You need an Authorization Key to use the backend of our API.
-
-To get an Trial key, please fill in the values with your information:
+You need an Authorization Key to use the API backend of Jai. To get an Trial key, please fill in the values with your information:
 
 .. code-block:: python
 
 	>>> from jai import Jai
-	>>> r = Jai.get_auth_key(email=EMAIL, firstName=FIRSTNAME, lastName=LASTNAME)
+	>>> r = Jai.get_auth_key(email=EMAIL, firstName=FIRSTNAME, lastName=LASTNAME, company=COMPANY)
 	>>> r.status_code
 	201
 
 If the response code is 201, you should receive an email with your Auth Key.
+
+*********
+Hello Jai
+*********
+
+When you have your Auth Key, then you can use the sdk:
+
+.. code-block:: python
+
+	>>> from jai import Jai
+	>>> AUTH_KEY = "your_auth_key"
+	>>> j = Jai(AUTH_KEY)
+
+
