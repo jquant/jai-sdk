@@ -18,7 +18,7 @@ __all__ = ["read_image_folder"]
 def resize_image_folder(img_folder,
                         output_folder="resized",
                         basewidth=300,
-                        extensions: List=[".png", ".jpg", ".jpeg"]):
+                        extensions: List = [".png", ".jpg", ".jpeg"]):
     """
     Helper function to read images from a folder and resize them.
 
@@ -51,7 +51,10 @@ def resize_image_folder(img_folder,
     if not output_folder.exists():
         output_folder.mkdir(parents=True, exist_ok=True)
 
-    img_files = [Path(item) for item in img_folder.iterdir() if item.suffix in extensions]
+    img_files = [
+        Path(item) for item in img_folder.iterdir()
+        if item.suffix in extensions
+    ]
     fails = []
     for img_file in tqdm(img_files):
         try:
@@ -66,22 +69,25 @@ def resize_image_folder(img_folder,
         wpercent = (basewidth / float(img.size[0]))
         hsize = int((float(img.size[1]) * float(wpercent)))
         res_img = img.resize((basewidth, hsize), Image.ANTIALIAS)
-        
+
         try:
             res_img.save(res_img_path)
         except:
             print(f"Could not save img '{res_img_path}' to file!")
             fails.append(res_img_path)
-    
+
     if len(fails):
-        print(f"The following files could not be read to memory or written to disk:\n{fails}")
+        print(
+            f"The following files could not be read to memory or written to disk:\n{fails}"
+        )
     else:
         print("Files successfully resized.")
-    
+
     return fails
 
-def read_image_folder(image_folder: str=None,
-                      images: List=None,
+
+def read_image_folder(image_folder: str = None,
+                      images: List = None,
                       ignore_corrupt=False,
                       extensions: List = [".png", ".jpg", ".jpeg"]):
     """

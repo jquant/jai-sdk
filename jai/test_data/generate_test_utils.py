@@ -1,5 +1,6 @@
 from pathlib import Path
 import sys
+
 jai_folder = Path.cwd().parent.parent  # no one's proud of this
 sys.path.append(jai_folder.as_posix())
 
