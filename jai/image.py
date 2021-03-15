@@ -15,7 +15,7 @@ from tqdm import tqdm
 __all__ = ["read_image_folder"]
 
 
-def resize_image_folder(img_folder,
+def resize_image_folder(image_folder,
                         output_folder="resized",
                         basewidth=300,
                         extensions: List = [".png", ".jpg", ".jpeg"]):
@@ -27,7 +27,7 @@ def resize_image_folder(img_folder,
     image_folder: str or Path
         Path to images folder.
     output_folder: str of Path, optional
-        Folder to save resized images to disk. Default is "resized", created at the root of img_folder
+        Folder to save resized images to disk. Default is "resized", created at the root of image_folder
     basewidth: int, optional
         Basewidth to rescale the images to. Default is 300.
     extensions: List, optional
@@ -36,23 +36,23 @@ def resize_image_folder(img_folder,
     Raises
     ------
     Exception
-        If img_folder does not exist.
+        If image_folder does not exist.
 
     Returns
     -------
     List
         List of images that could not be read to memory or written to disk
     """
-    img_folder = Path(img_folder)
-    if not img_folder.exists():
-        raise Exception(f"Folder '{img_folder.as_posix()}' not found!")
+    image_folder = Path(image_folder)
+    if not image_folder.exists():
+        raise Exception(f"Folder '{image_folder.as_posix()}' not found!")
 
-    output_folder = img_folder / output_folder
+    output_folder = image_folder / output_folder
     if not output_folder.exists():
         output_folder.mkdir(parents=True, exist_ok=True)
 
     img_files = [
-        Path(item) for item in img_folder.iterdir()
+        Path(item) for item in image_folder.iterdir()
         if item.suffix in extensions
     ]
     fails = []
