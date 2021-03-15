@@ -133,7 +133,7 @@ def read_image_folder(image_folder: str = None,
     temp_img = []
     ids = []
     corrupted_files = []
-    for i, filename in enumerate(tqdm(images)):
+    for i, filename in enumerate(tqdm(sorted(images))):
         if filename.suffix in extensions:
             try:
                 im = Image.open(filename)
