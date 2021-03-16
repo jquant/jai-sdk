@@ -9,6 +9,7 @@ Queries the `data right` to get the similar results in `data left`.
 This method matches similar values in between text columns of two databases.
 
 .. code-block:: python
+
     >>> data1, data2 = dataframe1['name'], dataframe2['name']
     >>>
     >>> j = Jai(AUTH_KEY)

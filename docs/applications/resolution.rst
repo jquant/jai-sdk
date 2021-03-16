@@ -7,6 +7,7 @@ Find possible duplicated values within the data.
 This method finds similar values in text columns of your database.
 
 .. code-block:: python
+
     >>> data = dataframe['name']
     >>> j = Jai(AUTH_KEY)
     >>> results = j.resolution(name, data)
