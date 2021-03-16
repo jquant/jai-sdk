@@ -140,6 +140,37 @@ def test_read_image_folder_corrupted(
         read_image_folder(image_folder=image_folder)
 
 
+def test_read_image_folder_corrupted_ignore(
+        image_folder=Path("jai/test_data/test_imgs_corrupted")):
+    #create empty Series
+    index = pd.Index([], name='id')
+    empty_series = pd.Series([], index=index, name='image_base64')
+    data = read_image_folder(image_folder=image_folder, ignore_corrupt=True)
+    assert_series_equal(empty_series, data)
+
+
+def test_read_image_folder_no_parameters():
+    # just call function with no parameters
+    with pytest.raises(ValueError):
+        read_image_folder()
+
+
+def test_read_image_folder_single_img(
+    setup_img_data,
+    images=[
+        Path("jai/test_data/test_imgs/img0.jpg"),
+        Path("jai/test_data/test_imgs/img1.jpg")
+    ]):
+    # the idea for this particular test is to simply make use of the
+    # previously generated dataframe for the read_image_folder test; since
+    # we are passing the paths to each image file DIRECTLY, the indexes will
+    # differ. That is why we reset it and rename it to "id" again
+    img_data = setup_img_data
+    img_data = img_data.reset_index(drop=True).rename_axis(index="id")
+    data = read_image_folder(images=images)
+    assert_series_equal(img_data, data)
+
+
 def test_resize_image_folder(image_folder=Path("jai/test_data/test_imgs")):
     # paths
     previously_generated_imgs = image_folder / "generate_resize"
