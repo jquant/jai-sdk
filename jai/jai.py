@@ -253,8 +253,8 @@ class Jai:
     def similar(self,
                 name: str,
                 data,
-                top_k: int=5,
-                batch_size: int=16384):
+                top_k: int = 5,
+                batch_size: int = 16384):
         """
         Query a database in search for the `top_k` most similar entries for each
         input data passed as argument.
