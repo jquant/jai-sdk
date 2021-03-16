@@ -145,15 +145,15 @@ class Jai:
         """
         response = requests.get(self.url + "/status", headers=self.header)
 
-        max_trials = 5
+        max_tries = 5
         patience = 25  # time in seconds that we'll wait
-        trials = 0
+        tries = 0
 
-        while trials < max_trials:
+        while tries < max_tries:
             if response.status_code == 200:
                 return response.json()
-            time.sleep(patience // max_trials)
-            trials += 1
+            time.sleep(patience // max_tries)
+            tries += 1
             response = requests.get(self.url + "/status", headers=self.header)
         return self.assert_status_code(response)
 
