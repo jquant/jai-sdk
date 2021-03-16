@@ -263,7 +263,7 @@ class Jai:
         ----
         name : str
             String with the name of a database in your JAI environment.
-        data : list, pd.Series or pd.DataFrame
+        data : list, np.ndarray, pd.Series or pd.DataFrame
             Data to be queried for similar inputs in your database.
         top_k : int
             Number of k similar items that we want to return. `Default is 5`.
@@ -320,7 +320,7 @@ class Jai:
             results.extend(res["similarity"])
         return results
 
-    def _similar_id(self, name: str, id_item: int, top_k: int = 5):
+    def _similar_id(self, name: str, id_item: list, top_k: int = 5):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given an id.
         This is a protected method.
@@ -330,8 +330,8 @@ class Jai:
         name : str
             String with the name of a database in your JAI environment.
 
-        idx_tem : int
-            Index of the item the user is looking for.
+        idx_tem : list
+            List of ids of the item the user is looking for.
 
         top_k : int
             Number of k similar items we want to return. `Default is 5`.
@@ -342,11 +342,7 @@ class Jai:
             Dictionary with the index and distance of `the k most similar items`.
         """
 
-        if isinstance(id_item, list):
-            pass
-        elif isinstance(id_item, int):
-            id_item = [id_item]
-        else:
+        if not isinstance(id_item, list):
             raise TypeError(
                 f"id_item param must be int or list, {type(id_item)} found.")
 
@@ -466,7 +462,7 @@ class Jai:
         ----
         name : str
             String with the name of a database in your JAI environment.
-        data : list, pd.Series or pd.DataFrame
+        data : pd.Series or pd.DataFrame
             Data to be queried for similar inputs in your database.
         predict_proba : bool
             Whether or not to return the probabilities of each prediction is
@@ -496,13 +492,14 @@ class Jai:
         dtype = self._get_dtype(name)
         if dtype != "Supervised":
             raise ValueError("predict is only available to dtype Supervised.")
+        if not isinstance(data, (pd.Series, pd.DataFrame)):
+            raise ValueError(
+                f"data must be a pandas Series or DataFrame. (data type {type(data)})"
+            )
 
         results = []
         for i in trange(0, len(data), batch_size, desc="Predict"):
-            if isinstance(data, (pd.Series, pd.DataFrame)):
-                _batch = data.iloc[i:i + batch_size]
-            else:
-                _batch = data[i:i + batch_size]
+            _batch = data.iloc[i:i + batch_size]
             res = self._predict(name,
                                 data2json(_batch, dtype=dtype),
                                 predict_proba=predict_proba)
