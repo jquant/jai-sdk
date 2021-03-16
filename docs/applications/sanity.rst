@@ -2,7 +2,7 @@
 Check data sanity
 #################
 
-Validates consistency in the columns (columns_ref).
+Validates consistency in the columns (*columns_ref*).
 
 .. code-block:: python
 

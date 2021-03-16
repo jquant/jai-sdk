@@ -13,8 +13,7 @@ Fills the column in data with the most likely value given the other columns.
     >>> results = j.fill(name, data, COL_TO_FILL)
     >>> processed = process_predict(results)
     >>> pd.DataFrame(processed).sort_values('id')
-              id   sanity_prediction    confidence_level (%)
+              id     fill_prediction    confidence_level (%)
        0       1             value_1                    70.9
        1       4             value_1                    67.3
        2       7             value_1                    80.2
-

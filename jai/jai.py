@@ -1073,7 +1073,7 @@ class Jai:
         data : pd.Series
             Data for your text based model.
         db_type : str, optional
-            type of model to be trained. The default is 'FastText'.
+            type of model to be trained. The default is 'TextEdit'.
         hyperparams: optional
             See setup documentation for the db_type used.
 
@@ -1358,12 +1358,7 @@ class Jai:
 
         return self.predict(name, test, predict_proba=True)
 
-    def sanity(self,
-               name: str,
-               data,
-               data_validate=None,
-               columns_ref: list = None,
-               **kwargs):
+    def sanity(self, name: str, data, columns_ref: list = None, **kwargs):
         """
         Experimental
 
@@ -1375,8 +1370,6 @@ class Jai:
             String with the name of a database in your JAI environment.
         data : pd.DataFrame
             Data reference of sound data.
-        data_validate : TYPE, optional
-            Data to be checked if is valid or not. The default is None.
         columns_ref : list, optional
             Columns that can have inconsistencies. As default we use all non numeric columns.
         kwargs :
@@ -1428,9 +1421,6 @@ class Jai:
         np.random.seed(random_seed)
 
         data = data.copy()
-        if data_validate is not None:
-            data_validate = data_validate.copy()
-
         cat = data.select_dtypes(exclude="number")
         pre = cat.columns[cat.nunique() > cat_threshold].tolist()
         if columns_ref is None:
@@ -1444,10 +1434,6 @@ class Jai:
             origin = name + "_" + col
             origin = origin.lower().replace("-", "_").replace(" ", "_")[:35]
             data[id_col] = self.embedding(origin, data[col])
-            if data_validate is not None:
-                data_validate[id_col] = self.embedding(origin,
-                                                       data_validate[col])
-
             prep_bases.append({"id_name": id_col, "db_parent": origin})
 
             if col in columns_ref:
@@ -1455,11 +1441,7 @@ class Jai:
                 columns_ref.append(id_col)
 
         data = data.drop(columns=pre)
-        if data_validate is not None:
-            data_validate = data_validate.drop(columns=pre)
-            test = data_validate.copy()
-        else:
-            test = data.copy()
+        test = data.copy()
 
         if name not in self.names:
             if not SKIP_SHUFFLING:
