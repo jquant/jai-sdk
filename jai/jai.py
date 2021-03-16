@@ -145,15 +145,15 @@ class Jai:
         """
         response = requests.get(self.url + "/status", headers=self.header)
 
-        max_trials = 5
+        max_tries = 5
         patience = 25  # time in seconds that we'll wait
-        trials = 0
+        tries = 0
 
-        while trials < max_trials:
+        while tries < max_tries:
             if response.status_code == 200:
                 return response.json()
-            time.sleep(patience // max_trials)
-            trials += 1
+            time.sleep(patience // max_tries)
+            tries += 1
             response = requests.get(self.url + "/status", headers=self.header)
         return self.assert_status_code(response)
 
@@ -253,8 +253,8 @@ class Jai:
     def similar(self,
                 name: str,
                 data,
-                top_k: int = 5,
-                batch_size: int = 16384):
+                top_k: int=5,
+                batch_size: int=16384):
         """
         Query a database in search for the `top_k` most similar entries for each
         input data passed as argument.
