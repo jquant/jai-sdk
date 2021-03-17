@@ -263,7 +263,7 @@ class Jai:
         ----
         name : str
             String with the name of a database in your JAI environment.
-        data : list, pd.Series or pd.DataFrame
+        data : list, np.ndarray, pd.Series or pd.DataFrame
             Data to be queried for similar inputs in your database.
         top_k : int
             Number of k similar items that we want to return. `Default is 5`.
@@ -320,7 +320,7 @@ class Jai:
             results.extend(res["similarity"])
         return results
 
-    def _similar_id(self, name: str, id_item: int, top_k: int = 5):
+    def _similar_id(self, name: str, id_item: list, top_k: int = 5):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given an id.
         This is a protected method.
@@ -330,8 +330,8 @@ class Jai:
         name : str
             String with the name of a database in your JAI environment.
 
-        idx_tem : int
-            Index of the item the user is looking for.
+        idx_tem : list
+            List of ids of the item the user is looking for.
 
         top_k : int
             Number of k similar items we want to return. `Default is 5`.
@@ -342,11 +342,7 @@ class Jai:
             Dictionary with the index and distance of `the k most similar items`.
         """
 
-        if isinstance(id_item, list):
-            pass
-        elif isinstance(id_item, int):
-            id_item = [id_item]
-        else:
+        if not isinstance(id_item, list):
             raise TypeError(
                 f"id_item param must be int or list, {type(id_item)} found.")
 
@@ -466,7 +462,7 @@ class Jai:
         ----
         name : str
             String with the name of a database in your JAI environment.
-        data : list, pd.Series or pd.DataFrame
+        data : pd.Series or pd.DataFrame
             Data to be queried for similar inputs in your database.
         predict_proba : bool
             Whether or not to return the probabilities of each prediction is
@@ -496,13 +492,14 @@ class Jai:
         dtype = self._get_dtype(name)
         if dtype != "Supervised":
             raise ValueError("predict is only available to dtype Supervised.")
+        if not isinstance(data, (pd.Series, pd.DataFrame)):
+            raise ValueError(
+                f"data must be a pandas Series or DataFrame. (data type {type(data)})"
+            )
 
         results = []
         for i in trange(0, len(data), batch_size, desc="Predict"):
-            if isinstance(data, (pd.Series, pd.DataFrame)):
-                _batch = data.iloc[i:i + batch_size]
-            else:
-                _batch = data[i:i + batch_size]
+            _batch = data.iloc[i:i + batch_size]
             res = self._predict(name,
                                 data2json(_batch, dtype=dtype),
                                 predict_proba=predict_proba)
@@ -1076,7 +1073,7 @@ class Jai:
         data : pd.Series
             Data for your text based model.
         db_type : str, optional
-            type of model to be trained. The default is 'FastText'.
+            type of model to be trained. The default is 'TextEdit'.
         hyperparams: optional
             See setup documentation for the db_type used.
 
@@ -1322,20 +1319,21 @@ class Jai:
         train = data.loc[~mask].copy()
         test = data.loc[mask].drop(columns=[column])
 
-        cat = train.select_dtypes(exclude="number")
-        pre = cat.columns[cat.nunique() > cat_threshold].tolist()
-        prep_bases = []
-        for col in pre:
-            id_col = "id_" + col
-            origin = name + "_" + col
-            origin = origin.lower().replace("-", "_").replace(" ", "_")[:35]
-            train[id_col] = self.embedding(origin, train[col])
-            test[id_col] = self.embedding(origin, test[col])
-            prep_bases.append({"id_name": id_col, "db_parent": origin})
-        train = train.drop(columns=pre)
-        test = test.drop(columns=pre)
-
         if name not in self.names:
+            cat = train.select_dtypes(exclude="number")
+            pre = cat.columns[cat.nunique() > cat_threshold].tolist()
+            prep_bases = []
+            for col in pre:
+                id_col = "id_" + col
+                origin = name + "_" + col
+                origin = origin.lower().replace("-", "_").replace(" ",
+                                                                  "_")[:32]
+                train[id_col] = self.embedding(origin, train[col])
+                test[id_col] = self.embedding(origin, test[col])
+                prep_bases.append({"id_name": id_col, "db_parent": origin})
+            train = train.drop(columns=pre)
+            test = test.drop(columns=pre)
+
             label = {"task": "metric_classification", "label_name": column}
             split = {
                 "type": "stratified",
@@ -1354,6 +1352,21 @@ class Jai:
                 **kwargs,
             )
         else:
+
+            drop_cols = []
+            for col in cat.columns:
+                id_col = "id_" + col
+                origin = name + "_" + col
+                origin = origin.lower().replace("-", "_").replace(" ",
+                                                                  "_")[:32]
+                if name in self.names:
+                    train[id_col] = self.embedding(origin, train[col])
+                    test[id_col] = self.embedding(origin, test[col])
+                    drop_cols.append(col)
+
+            train = train.drop(columns=drop_cols)
+            test = test.drop(columns=drop_cols)
+
             ids = train.index
             missing = ids[~np.isin(ids, self.ids(name, "complete"))]
             if len(missing) > 0:
@@ -1361,12 +1374,7 @@ class Jai:
 
         return self.predict(name, test, predict_proba=True)
 
-    def sanity(self,
-               name: str,
-               data,
-               data_validate=None,
-               columns_ref: list = None,
-               **kwargs):
+    def sanity(self, name: str, data, columns_ref: list = None, **kwargs):
         """
         Experimental
 
@@ -1378,8 +1386,6 @@ class Jai:
             String with the name of a database in your JAI environment.
         data : pd.DataFrame
             Data reference of sound data.
-        data_validate : TYPE, optional
-            Data to be checked if is valid or not. The default is None.
         columns_ref : list, optional
             Columns that can have inconsistencies. As default we use all non numeric columns.
         kwargs :
@@ -1431,40 +1437,31 @@ class Jai:
         np.random.seed(random_seed)
 
         data = data.copy()
-        if data_validate is not None:
-            data_validate = data_validate.copy()
-
         cat = data.select_dtypes(exclude="number")
-        pre = cat.columns[cat.nunique() > cat_threshold].tolist()
-        if columns_ref is None:
-            columns_ref = cat.columns.tolist()
-        elif not isinstance(columns_ref, list):
-            columns_ref = columns_ref.tolist()
-
-        prep_bases = []
-        for col in pre:
-            id_col = "id_" + col
-            origin = name + "_" + col
-            origin = origin.lower().replace("-", "_").replace(" ", "_")[:35]
-            data[id_col] = self.embedding(origin, data[col])
-            if data_validate is not None:
-                data_validate[id_col] = self.embedding(origin,
-                                                       data_validate[col])
-
-            prep_bases.append({"id_name": id_col, "db_parent": origin})
-
-            if col in columns_ref:
-                columns_ref.remove(col)
-                columns_ref.append(id_col)
-
-        data = data.drop(columns=pre)
-        if data_validate is not None:
-            data_validate = data_validate.drop(columns=pre)
-            test = data_validate.copy()
-        else:
-            test = data.copy()
+        test = data.copy()
 
         if name not in self.names:
+            pre = cat.columns[cat.nunique() > cat_threshold].tolist()
+            if columns_ref is None:
+                columns_ref = cat.columns.tolist()
+            elif not isinstance(columns_ref, list):
+                columns_ref = columns_ref.tolist()
+
+            prep_bases = []
+            for col in pre:
+                id_col = "id_" + col
+                origin = name + "_" + col
+                origin = origin.lower().replace("-", "_").replace(" ",
+                                                                  "_")[:32]
+                data[id_col] = self.embedding(origin, data[col])
+                prep_bases.append({"id_name": id_col, "db_parent": origin})
+
+                if col in columns_ref:
+                    columns_ref.remove(col)
+                    columns_ref.append(id_col)
+
+            data = data.drop(columns=pre)
+
             if not SKIP_SHUFFLING:
 
                 def change(options, original):
@@ -1512,6 +1509,19 @@ class Jai:
                 **kwargs,
             )
         else:
+
+            drop_cols = []
+            for col in cat.columns:
+                id_col = "id_" + col
+                origin = name + "_" + col
+                origin = origin.lower().replace("-", "_").replace(" ",
+                                                                  "_")[:32]
+                if name in self.names:
+                    data[id_col] = self.embedding(origin, data[col])
+                    drop_cols.append(col)
+
+            data = data.drop(columns=drop_cols)
+
             ids = data.index
             missing = ids[~np.isin(ids, self.ids(name, "complete"))]
             if len(missing) > 0:
