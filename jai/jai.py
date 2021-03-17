@@ -1444,6 +1444,7 @@ class Jai:
         SKIP_SHUFFLING = target in data.columns
 
         np.random.seed(random_seed)
+        
         cat = data.select_dtypes(exclude="number")
 
         if name not in self.names:
