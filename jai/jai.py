@@ -1076,7 +1076,7 @@ class Jai:
         data : pd.Series
             Data for your text based model.
         db_type : str, optional
-            type of model to be trained. The default is 'FastText'.
+            type of model to be trained. The default is 'TextEdit'.
         hyperparams: optional
             See setup documentation for the db_type used.
 
