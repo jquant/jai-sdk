@@ -12,11 +12,6 @@ JAI-SDK - Trust your data!
    :caption: Getting Started
 
    source/quick_start
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Applications
-
    source/applications
    
 .. toctree::
