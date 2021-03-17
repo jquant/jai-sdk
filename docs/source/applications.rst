@@ -1,11 +1,13 @@
+
+############
 Applications
-============
+############
 
 Here are some applications developed using the basic perations, to allow a more direct approach to the specific goals listed bellow. They should work as standalone without the need of any of the basic operations
 
-#################################
+*********************************
 Matching values from two datasets
-#################################
+*********************************
 
 Match two datasets with their possible equal values. This method matches similar values in between text columns of two databases.
 
@@ -25,9 +27,9 @@ Queries the *data right* to get the similar results in *data left*.
        3            4          NaN          NaN
        4            5            5         0.15
 
-###############################
+*******************************
 Resolution of duplicated values
-###############################
+*******************************
 
 Find possible duplicated values within the data. This method finds similar values in text columns of your database.
 
@@ -45,9 +47,9 @@ Find possible duplicated values within the data. This method finds similar value
        4              3
        5              5
 
-######################
+**********************
 Filling missing values
-######################
+**********************
 
 Fills the column in data with the most likely value given the other columns.
 
@@ -65,9 +67,9 @@ Fills the column in data with the most likely value given the other columns.
        1       4             value_1                    67.3
        2       7             value_1                    80.2
        
-#################
+*****************
 Check data sanity
-#################
+*****************
 
 Validates consistency in the columns (columns_ref).
 
