@@ -1112,6 +1112,14 @@ class Jai:
                 self.add_data(name, data.loc[missing])
         return ids
 
+    def _resolve_db_type(self, db_type, col):
+        if isinstance(db_type, str):
+            return db_type
+        elif isinstance(db_type, dict) and col in db_type:
+            return db_type[col]
+        else:
+            return "TextEdit"
+
     def match(self,
               name: str,
               data_left,
@@ -1269,7 +1277,7 @@ class Jai:
         resolution = r.loc[inverse].copy()
         return resolution
 
-    def fill(self, name: str, data, column: str, **kwargs):
+    def fill(self, name: str, data, column: str, db_type="TextEdit", **kwargs):
         """
         Experimental
 
@@ -1286,6 +1294,12 @@ class Jai:
             data to fill NaN.
         column : str
             name of the column to be filled.
+        db_type : str or dict
+            which db_type to use for embedding high dimensional categorical columns.
+            If a string is provided, we assume that all columns will be embedded using that db_type;
+            if a dict-like structure {"col1": "TextEdit", "col2": "FastText", ...} is provided, we embed the
+            specified columns with their respective db_types, and columns not in dict are by default embedded
+            with "TextEdit"
         **kwargs : TYPE
             Extra args for supervised model. See setup method.
 
@@ -1329,8 +1343,12 @@ class Jai:
             id_col = "id_" + col
             origin = name + "_" + col
             origin = origin.lower().replace("-", "_").replace(" ", "_")[:35]
-            train[id_col] = self.embedding(origin, train[col])
-            test[id_col] = self.embedding(origin, test[col])
+            
+            # find out which db_type to use for this particular column    
+            curr_db_type = self._resolve_db_type(db_type, col)
+            
+            train[id_col] = self.embedding(origin, train[col], db_type=curr_db_type)
+            test[id_col] = self.embedding(origin, test[col], db_type=curr_db_type)
             prep_bases.append({"id_name": id_col, "db_parent": origin})
         train = train.drop(columns=pre)
         test = test.drop(columns=pre)
@@ -1366,6 +1384,7 @@ class Jai:
                data,
                data_validate=None,
                columns_ref: list = None,
+               db_type = "TextEdit",
                **kwargs):
         """
         Experimental
@@ -1382,6 +1401,12 @@ class Jai:
             Data to be checked if is valid or not. The default is None.
         columns_ref : list, optional
             Columns that can have inconsistencies. As default we use all non numeric columns.
+        db_type : str or dict
+            which db_type to use for embedding high dimensional categorical columns.
+            If a string is provided, we assume that all columns will be embedded using that db_type;
+            if a dict-like structure {"col1": "TextEdit", "col2": "FastText", "col3": "Text", ...} is provided,
+            we embed the specified columns with their respective db_types,
+            and columns not in dict are by default embedded with "TextEdit"
         kwargs :
             Extra args for supervised model except label and split. See setup method. Also:
 
@@ -1446,10 +1471,15 @@ class Jai:
             id_col = "id_" + col
             origin = name + "_" + col
             origin = origin.lower().replace("-", "_").replace(" ", "_")[:35]
-            data[id_col] = self.embedding(origin, data[col])
+            
+            # find out which db_type to use for this particular column    
+            curr_db_type = self._resolve_db_type(db_type, col)
+
+            data[id_col] = self.embedding(origin, data[col], db_type=curr_db_type)
             if data_validate is not None:
                 data_validate[id_col] = self.embedding(origin,
-                                                       data_validate[col])
+                                                       data_validate[col],
+                                                       db_type=curr_db_type)
 
             prep_bases.append({"id_name": id_col, "db_parent": origin})
 
