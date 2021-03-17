@@ -1086,7 +1086,7 @@ class Jai:
         if isinstance(data, pd.Series):
             data = data.copy()
         else:
-            raise ValueError("data must be a Series")
+            raise ValueError(f"data must be a Series. data is {type(data)}")
 
         ids = data.index
 
@@ -1283,7 +1283,7 @@ class Jai:
             data to fill NaN.
         column : str
             name of the column to be filled.
-        **kwargs : TYPE
+        **kwargs : 
             Extra args for supervised model. See setup method.
 
         Returns
@@ -1305,34 +1305,42 @@ class Jai:
            1       4             value_1                    67.3
            2       7             value_1                    80.2
         """
-        cat_threshold = kwargs.get("cat_threshold", 512)
+        if "id" in data.columns:
+            data = data.set_index("id")
         data = data.copy()
-        vals = data[column].value_counts() < 2
-        if vals.sum() > 0:
-            eliminate = vals[vals].index.tolist()
-            print(
-                f"values {eliminate} from column {column} were removed for having less than 2 examples."
-            )
-            data.loc[data[column].isin(eliminate), column] = None
+        cat_threshold = kwargs.get("cat_threshold", 512)
 
-        mask = data[column].isna()
-        train = data.loc[~mask].copy()
-        test = data.loc[mask].drop(columns=[column])
+        if column in data.columns:
+            vals = data.loc[:, column].value_counts() < 2
+            if vals.sum() > 0:
+                eliminate = vals[vals].index.tolist()
+                print(
+                    f"values {eliminate} from column {column} were removed for having less than 2 examples."
+                )
+                data.loc[data[column].isin(eliminate), column] = None
+        else:
+            data.loc[:, column] = None
 
-        cat = train.select_dtypes(exclude="number")
-        pre = cat.columns[cat.nunique() > cat_threshold].tolist()
-        prep_bases = []
-        for col in pre:
-            id_col = "id_" + col
-            origin = name + "_" + col
-            origin = origin.lower().replace("-", "_").replace(" ", "_")[:35]
-            train[id_col] = self.embedding(origin, train[col])
-            test[id_col] = self.embedding(origin, test[col])
-            prep_bases.append({"id_name": id_col, "db_parent": origin})
-        train = train.drop(columns=pre)
-        test = test.drop(columns=pre)
+        cat = data.select_dtypes(exclude="number")
 
         if name not in self.names:
+            mask = data.loc[:, column].isna()
+            train = data.loc[~mask].copy()
+            test = data.loc[mask].drop(columns=[column])
+
+            pre = cat.columns[cat.nunique() > cat_threshold].tolist()
+            prep_bases = []
+            for col in pre:
+                id_col = "id_" + col
+                origin = name + "_" + col
+                origin = origin.lower().replace("-", "_").replace(" ",
+                                                                  "_")[:32]
+                train[id_col] = self.embedding(origin, train[col])
+                test[id_col] = self.embedding(origin, test[col])
+                prep_bases.append({"id_name": id_col, "db_parent": origin})
+            train = train.drop(columns=pre)
+            test = test.drop(columns=pre)
+
             label = {"task": "metric_classification", "label_name": column}
             split = {
                 "type": "stratified",
@@ -1341,6 +1349,8 @@ class Jai:
             }
             mycelia_bases = kwargs.get("mycelia_bases", [])
             mycelia_bases.extend(prep_bases)
+            kwargs['mycelia_bases'] = mycelia_bases
+
             self.setup(
                 name,
                 train,
@@ -1351,10 +1361,24 @@ class Jai:
                 **kwargs,
             )
         else:
-            ids = train.index
-            missing = ids[~np.isin(ids, self.ids(name, "complete"))]
-            if len(missing) > 0:
-                self.add_data(name, data.loc[missing])
+
+            drop_cols = []
+            for col in cat.columns:
+                id_col = "id_" + col
+                origin = name + "_" + col
+                origin = origin.lower().replace("-", "_").replace(" ",
+                                                                  "_")[:32]
+                if origin in self.names:
+                    data[id_col] = self.embedding(origin, data[col])
+                    drop_cols.append(col)
+            if column in data.columns:
+                drop_cols.append(column)
+            test = data.drop(columns=drop_cols)
+
+        ids_test = test.index
+        missing_test = ids_test[~np.isin(ids_test, self.ids(name, "complete"))]
+        if len(missing_test) > 0:
+            self.add_data(name, test.loc[missing_test])
 
         return self.predict(name, test, predict_proba=True)
 
@@ -1410,6 +1434,7 @@ class Jai:
         """
         if "id" in data.columns:
             data = data.set_index("id")
+        data = data.copy()
 
         frac = kwargs.get("frac", 0.1)
         random_seed = kwargs.get("random_seed", 42)
@@ -1419,31 +1444,30 @@ class Jai:
         SKIP_SHUFFLING = target in data.columns
 
         np.random.seed(random_seed)
-
-        data = data.copy()
         cat = data.select_dtypes(exclude="number")
-        pre = cat.columns[cat.nunique() > cat_threshold].tolist()
-        if columns_ref is None:
-            columns_ref = cat.columns.tolist()
-        elif not isinstance(columns_ref, list):
-            columns_ref = columns_ref.tolist()
-
-        prep_bases = []
-        for col in pre:
-            id_col = "id_" + col
-            origin = name + "_" + col
-            origin = origin.lower().replace("-", "_").replace(" ", "_")[:35]
-            data[id_col] = self.embedding(origin, data[col])
-            prep_bases.append({"id_name": id_col, "db_parent": origin})
-
-            if col in columns_ref:
-                columns_ref.remove(col)
-                columns_ref.append(id_col)
-
-        data = data.drop(columns=pre)
-        test = data.copy()
 
         if name not in self.names:
+            pre = cat.columns[cat.nunique() > cat_threshold].tolist()
+            if columns_ref is None:
+                columns_ref = cat.columns.tolist()
+            elif not isinstance(columns_ref, list):
+                columns_ref = columns_ref.tolist()
+
+            prep_bases = []
+            for col in pre:
+                id_col = "id_" + col
+                origin = name + "_" + col
+                origin = origin.lower().replace("-", "_").replace(" ",
+                                                                  "_")[:32]
+                data[id_col] = self.embedding(origin, data[col])
+                prep_bases.append({"id_name": id_col, "db_parent": origin})
+
+                if col in columns_ref:
+                    columns_ref.remove(col)
+                    columns_ref.append(id_col)
+
+            data = data.drop(columns=pre)
+
             if not SKIP_SHUFFLING:
 
                 def change(options, original):
@@ -1463,9 +1487,8 @@ class Jai:
 
                 # set index of samples with different values as data
 
-                idx = np.arange(len(data) + len(sample))
-                mask_idx = np.logical_not(np.isin(idx, data.index))
-                sample.index = idx[mask_idx][:len(sample)]
+                sample.index = 10**int(np.log10(data.shape[0]) +
+                                       2) + np.arange(len(sample))
                 data[target] = "Valid"
                 train = pd.concat([data, sample])
             else:
@@ -1480,6 +1503,7 @@ class Jai:
 
             mycelia_bases = kwargs.get("mycelia_bases", [])
             mycelia_bases.extend(prep_bases)
+            kwargs['mycelia_bases'] = mycelia_bases
 
             self.setup(
                 name,
@@ -1491,9 +1515,23 @@ class Jai:
                 **kwargs,
             )
         else:
+
+            drop_cols = []
+            for col in cat.columns:
+                id_col = "id_" + col
+                origin = name + "_" + col
+                origin = origin.lower().replace("-", "_").replace(" ",
+                                                                  "_")[:32]
+                if origin in self.names:
+                    data[id_col] = self.embedding(origin, data[col])
+                    drop_cols.append(col)
+
+            data = data.drop(columns=drop_cols)
+
             ids = data.index
             missing = ids[~np.isin(ids, self.ids(name, "complete"))]
+
             if len(missing) > 0:
                 self.add_data(name, data.loc[missing])
 
-        return self.predict(name, test, predict_proba=True)
+        return self.predict(name, data, predict_proba=True)
