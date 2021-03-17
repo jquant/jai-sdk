@@ -1310,20 +1310,23 @@ class Jai:
         data = data.copy()
         cat_threshold = kwargs.get("cat_threshold", 512)
 
-        vals = data.loc[:, column].value_counts() < 2
-        if vals.sum() > 0:
-            eliminate = vals[vals].index.tolist()
-            print(
-                f"values {eliminate} from column {column} were removed for having less than 2 examples."
-            )
-            data.loc[data[column].isin(eliminate), column] = None
+        if column in data.columns:
+            vals = data.loc[:, column].value_counts() < 2
+            if vals.sum() > 0:
+                eliminate = vals[vals].index.tolist()
+                print(
+                    f"values {eliminate} from column {column} were removed for having less than 2 examples."
+                )
+                data.loc[data[column].isin(eliminate), column] = None
+        else:
+            data.loc[:, column] = None
 
         mask = data.loc[:, column].isna()
         train = data.loc[~mask].copy()
         test = data.loc[mask].drop(columns=[column])
+        cat = train.select_dtypes(exclude="number")
 
         if name not in self.names:
-            cat = train.select_dtypes(exclude="number")
             pre = cat.columns[cat.nunique() > cat_threshold].tolist()
             prep_bases = []
             for col in pre:
@@ -1345,6 +1348,8 @@ class Jai:
             }
             mycelia_bases = kwargs.get("mycelia_bases", [])
             mycelia_bases.extend(prep_bases)
+            kwargs['mycelia_bases'] = mycelia_bases
+
             self.setup(
                 name,
                 train,
@@ -1362,7 +1367,7 @@ class Jai:
                 origin = name + "_" + col
                 origin = origin.lower().replace("-", "_").replace(" ",
                                                                   "_")[:32]
-                if name in self.names:
+                if origin in self.names:
                     train[id_col] = self.embedding(origin, train[col])
                     test[id_col] = self.embedding(origin, test[col])
                     drop_cols.append(col)
@@ -1500,6 +1505,7 @@ class Jai:
 
             mycelia_bases = kwargs.get("mycelia_bases", [])
             mycelia_bases.extend(prep_bases)
+            kwargs['mycelia_bases'] = mycelia_bases
 
             self.setup(
                 name,
@@ -1518,7 +1524,7 @@ class Jai:
                 origin = name + "_" + col
                 origin = origin.lower().replace("-", "_").replace(" ",
                                                                   "_")[:32]
-                if name in self.names:
+                if origin in self.names:
                     data[id_col] = self.embedding(origin, data[col])
                     drop_cols.append(col)
 
