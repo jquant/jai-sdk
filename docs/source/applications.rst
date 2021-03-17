@@ -1,12 +1,15 @@
+Applications
+============
+
+Here are some applications developed using the basic perations, to allow a more direct approach to the specific goals listed bellow. They should work as standalone without the need of any of the basic operations
+
 #################################
 Matching values from two datasets
 #################################
 
-Match two datasets with their possible equal values.
+Match two datasets with their possible equal values. This method matches similar values in between text columns of two databases.
 
-Queries the `data right` to get the similar results in `data left`.
-
-This method matches similar values in between text columns of two databases.
+Queries the *data right* to get the similar results in *data left*.
 
 .. code-block:: python
 
@@ -26,9 +29,7 @@ This method matches similar values in between text columns of two databases.
 Resolution of duplicated values
 ###############################
 
-Find possible duplicated values within the data.
-
-This method finds similar values in text columns of your database.
+Find possible duplicated values within the data. This method finds similar values in text columns of your database.
 
 .. code-block:: python
 
