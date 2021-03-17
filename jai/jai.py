@@ -1086,7 +1086,7 @@ class Jai:
         if isinstance(data, pd.Series):
             data = data.copy()
         else:
-            raise ValueError("data must be a Series")
+            raise ValueError(f"data must be a Series. data is {type(data)}")
 
         ids = data.index
 
@@ -1283,7 +1283,7 @@ class Jai:
             data to fill NaN.
         column : str
             name of the column to be filled.
-        **kwargs : TYPE
+        **kwargs : 
             Extra args for supervised model. See setup method.
 
         Returns
@@ -1305,9 +1305,12 @@ class Jai:
            1       4             value_1                    67.3
            2       7             value_1                    80.2
         """
-        cat_threshold = kwargs.get("cat_threshold", 512)
+        if "id" in data.columns:
+            data = data.set_index("id")
         data = data.copy()
-        vals = data[column].value_counts() < 2
+        cat_threshold = kwargs.get("cat_threshold", 512)
+
+        vals = data.loc[:, column].value_counts() < 2
         if vals.sum() > 0:
             eliminate = vals[vals].index.tolist()
             print(
@@ -1315,7 +1318,7 @@ class Jai:
             )
             data.loc[data[column].isin(eliminate), column] = None
 
-        mask = data[column].isna()
+        mask = data.loc[:, column].isna()
         train = data.loc[~mask].copy()
         test = data.loc[mask].drop(columns=[column])
 
@@ -1426,6 +1429,7 @@ class Jai:
         """
         if "id" in data.columns:
             data = data.set_index("id")
+        data = data.copy()
 
         frac = kwargs.get("frac", 0.1)
         random_seed = kwargs.get("random_seed", 42)
@@ -1436,9 +1440,7 @@ class Jai:
 
         np.random.seed(random_seed)
 
-        data = data.copy()
         cat = data.select_dtypes(exclude="number")
-        test = data.copy()
 
         if name not in self.names:
             pre = cat.columns[cat.nunique() > cat_threshold].tolist()
@@ -1527,4 +1529,4 @@ class Jai:
             if len(missing) > 0:
                 self.add_data(name, data.loc[missing])
 
-        return self.predict(name, test, predict_proba=True)
+        return self.predict(name, data, predict_proba=True)

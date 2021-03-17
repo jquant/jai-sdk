@@ -44,14 +44,14 @@ def test_fill(name, setup_dataframe):
     train, test = setup_dataframe
     train = train.set_index("PassengerId")
     test = test.set_index("PassengerId")
-    data = pd.concat([train, test], axis=1)
+    data = pd.concat([train, test])
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
     if j.is_valid(name):
         j.delete_database(name)
 
-    j.fill(name, data, column="Supervised")
-    assert j.is_valid(name), f"valid name {name} after train embedding"
+    j.fill(name, data, column="Survived")
+    assert j.is_valid(name), f"valid name {name} after train fill"
 
     j.delete_database(name)
     assert not j.is_valid(name), "valid name after delete failed"
@@ -66,14 +66,14 @@ def test_sanity(name, setup_dataframe):
     train, test = setup_dataframe
     train = train.set_index("PassengerId")
     test = test.set_index("PassengerId")
-    data = pd.concat([train, test], axis=1).drop(columns=['Survived'])
+    data = pd.concat([train, test]).drop(columns=['Survived'])
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
     if j.is_valid(name):
         j.delete_database(name)
 
     j.sanity(name, data)
-    assert j.is_valid(name), f"valid name {name} after train embedding"
+    assert j.is_valid(name), f"valid name {name} after train sanity"
 
     j.delete_database(name)
     assert not j.is_valid(name), "valid name after delete failed"
