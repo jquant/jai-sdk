@@ -18,7 +18,7 @@ You can install JAI-SDK via the Python Package Index (PyPI). To install using pi
 Getting your Authentication Key
 *******************************
 
-You need an Authorization Key to use the API backend of Jai. To get an Trial key, please fill in the values with your information:
+You need an Authorization Key to use the API backend of Jai. To get a Trial key, please fill in the values with your information:
 
 .. code-block:: python
 
@@ -30,10 +30,10 @@ You need an Authorization Key to use the API backend of Jai. To get an Trial key
 If the response code is 201, you should receive an email with your Auth Key.
 
 *********
-Hello Jai
+Hello Jai!
 *********
 
-When you have your Auth Key, then you can use the sdk:
+Now that you have your Auth Key, you can start using Jai:
 
 .. code-block:: python
 

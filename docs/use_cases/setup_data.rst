@@ -71,15 +71,16 @@ It's also possible to use an model trained to reproduce the neighboring relation
 Setup for Image type data
 *************************
 
-For any uses of image-type data, data should be first encoded before inserting into the Jai class.
+For any uses of image-type data, data should be encoded before inserting it into the Jai class.
 
 .. code-block:: python
 
     >>> with open(filename, "rb") as image_file:
     >>>     encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
 
-Then the encoded string can be inserted into a list, pandas Series or DataFrame.
-We provide :code:`read_image_folder` and :code:`resize_image_folder` functions for reading images from a local folder. Resizing images before inserting is recommended as reduces writing, reading and processing time on model's inference.
+The encoded string can then be inserted into a list, pandas Series or DataFrame.
+We provide :code:`read_image_folder` and :code:`resize_image_folder` functions for reading and resizing images from a local folder.
+Resizing images before inserting is recommended because it reduces writing, reading and processing time during model inference.
 
 Setup applying Image Model
 ==========================
