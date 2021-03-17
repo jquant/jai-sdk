@@ -11,7 +11,7 @@ JAI-SDK - Trust your data!
    :maxdepth: 2
    :caption: Getting Started
 
-   getting_started/quick_start
+   source/quick_start
 
 .. toctree::
    :maxdepth: 1
@@ -27,10 +27,7 @@ JAI-SDK - Trust your data!
    :maxdepth: 1
    :caption: Experimental
 
-   applications/match
-   applications/resolution
-   applications/fill
-   applications/sanity
+   source/applications
    
 .. toctree::
    :maxdepth: 2
