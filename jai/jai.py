@@ -1343,12 +1343,16 @@ class Jai:
             id_col = "id_" + col
             origin = name + "_" + col
             origin = origin.lower().replace("-", "_").replace(" ", "_")[:35]
-            
-            # find out which db_type to use for this particular column    
+
+            # find out which db_type to use for this particular column
             curr_db_type = self._resolve_db_type(db_type, col)
-            
-            train[id_col] = self.embedding(origin, train[col], db_type=curr_db_type)
-            test[id_col] = self.embedding(origin, test[col], db_type=curr_db_type)
+
+            train[id_col] = self.embedding(origin,
+                                           train[col],
+                                           db_type=curr_db_type)
+            test[id_col] = self.embedding(origin,
+                                          test[col],
+                                          db_type=curr_db_type)
             prep_bases.append({"id_name": id_col, "db_parent": origin})
         train = train.drop(columns=pre)
         test = test.drop(columns=pre)
@@ -1384,7 +1388,7 @@ class Jai:
                data,
                data_validate=None,
                columns_ref: list = None,
-               db_type = "TextEdit",
+               db_type="TextEdit",
                **kwargs):
         """
         Experimental
@@ -1471,11 +1475,13 @@ class Jai:
             id_col = "id_" + col
             origin = name + "_" + col
             origin = origin.lower().replace("-", "_").replace(" ", "_")[:35]
-            
-            # find out which db_type to use for this particular column    
+
+            # find out which db_type to use for this particular column
             curr_db_type = self._resolve_db_type(db_type, col)
 
-            data[id_col] = self.embedding(origin, data[col], db_type=curr_db_type)
+            data[id_col] = self.embedding(origin,
+                                          data[col],
+                                          db_type=curr_db_type)
             if data_validate is not None:
                 data_validate[id_col] = self.embedding(origin,
                                                        data_validate[col],
