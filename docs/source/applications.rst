@@ -1,10 +1,6 @@
-############
-Applications
-############
-
-*********************************
+#################################
 Matching values from two datasets
-*********************************
+#################################
 
 Match two datasets with their possible equal values.
 
@@ -13,6 +9,7 @@ Queries the `data right` to get the similar results in `data left`.
 This method matches similar values in between text columns of two databases.
 
 .. code-block:: python
+
     >>> data1, data2 = dataframe1['name'], dataframe2['name']
     >>>
     >>> j = Jai(AUTH_KEY)
@@ -25,15 +22,16 @@ This method matches similar values in between text columns of two databases.
        3            4          NaN          NaN
        4            5            5         0.15
 
-*******************************
+###############################
 Resolution of duplicated values
-*******************************
+###############################
 
 Find possible duplicated values within the data.
 
 This method finds similar values in text columns of your database.
 
 .. code-block:: python
+
     >>> data = dataframe['name']
     >>> j = Jai(AUTH_KEY)
     >>> results = j.resolution(name, data)
@@ -46,9 +44,9 @@ This method finds similar values in text columns of your database.
        4              3
        5              5
 
-**********************
+######################
 Filling missing values
-**********************
+######################
 
 Fills the column in data with the most likely value given the other columns.
 
@@ -66,9 +64,9 @@ Fills the column in data with the most likely value given the other columns.
        1       4             value_1                    67.3
        2       7             value_1                    80.2
        
-*****************
+#################
 Check data sanity
-*****************
+#################
 
 Validates consistency in the columns (columns_ref).
 
