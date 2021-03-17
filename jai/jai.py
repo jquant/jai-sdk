@@ -1321,12 +1321,13 @@ class Jai:
         else:
             data.loc[:, column] = None
 
-        mask = data.loc[:, column].isna()
-        train = data.loc[~mask].copy()
-        test = data.loc[mask].drop(columns=[column])
-        cat = train.select_dtypes(exclude="number")
+        cat = data.select_dtypes(exclude="number")
 
         if name not in self.names:
+            mask = data.loc[:, column].isna()
+            train = data.loc[~mask].copy()
+            test = data.loc[mask].drop(columns=[column])
+
             pre = cat.columns[cat.nunique() > cat_threshold].tolist()
             prep_bases = []
             for col in pre:
@@ -1368,17 +1369,16 @@ class Jai:
                 origin = origin.lower().replace("-", "_").replace(" ",
                                                                   "_")[:32]
                 if origin in self.names:
-                    train[id_col] = self.embedding(origin, train[col])
-                    test[id_col] = self.embedding(origin, test[col])
+                    data[id_col] = self.embedding(origin, data[col])
                     drop_cols.append(col)
+            if column in data.columns:
+                drop_cols.append(column)
+            test = data.drop(columns=drop_cols)
 
-            train = train.drop(columns=drop_cols)
-            test = test.drop(columns=drop_cols)
-
-            ids = train.index
-            missing = ids[~np.isin(ids, self.ids(name, "complete"))]
-            if len(missing) > 0:
-                self.add_data(name, data.loc[missing])
+        ids_test = test.index
+        missing_test = ids_test[~np.isin(ids_test, self.ids(name, "complete"))]
+        if len(missing_test) > 0:
+            self.add_data(name, test.loc[missing_test])
 
         return self.predict(name, test, predict_proba=True)
 
@@ -1488,9 +1488,8 @@ class Jai:
 
                 # set index of samples with different values as data
 
-                idx = np.arange(len(data) + len(sample))
-                mask_idx = np.logical_not(np.isin(idx, data.index))
-                sample.index = idx[mask_idx][:len(sample)]
+                sample.index = 10**int(np.log10(data.shape[0]) +
+                                       2) + np.arange(len(sample))
                 data[target] = "Valid"
                 train = pd.concat([data, sample])
             else:
@@ -1532,6 +1531,7 @@ class Jai:
 
             ids = data.index
             missing = ids[~np.isin(ids, self.ids(name, "complete"))]
+
             if len(missing) > 0:
                 self.add_data(name, data.loc[missing])
 
