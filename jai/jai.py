@@ -1323,7 +1323,7 @@ class Jai:
             data = data.set_index("id")
         data = data.copy()
         cat_threshold = kwargs.get("cat_threshold", 512)
-        
+
         if column in data.columns:
             vals = data.loc[:, column].value_counts() < 2
             if vals.sum() > 0:
@@ -1334,10 +1334,10 @@ class Jai:
                 data.loc[data[column].isin(eliminate), column] = None
         else:
             data.loc[:, column] = None
-            
+
         cat = data.select_dtypes(exclude="number")
-        
-        if name not in self.names:           
+
+        if name not in self.names:
             mask = data.loc[:, column].isna()
             train = data.loc[~mask].copy()
             test = data.loc[mask].drop(columns=[column])
@@ -1376,7 +1376,6 @@ class Jai:
                 name,
                 train,
                 db_type="Supervised",
-                hyperparams={"learning_rate": 0.001},
                 label=label,
                 split=split,
                 **kwargs,
@@ -1493,7 +1492,7 @@ class Jai:
                 origin = name + "_" + col
                 origin = origin.lower().replace("-", "_").replace(" ",
                                                                   "_")[:32]
-                
+
                 # find out which db_type to use for this particular column
                 curr_db_type = self._resolve_db_type(db_type, col)
 
@@ -1552,7 +1551,6 @@ class Jai:
                 name,
                 train,
                 db_type="Supervised",
-                hyperparams={"learning_rate": 0.001},
                 label=label,
                 split=split,
                 **kwargs,
