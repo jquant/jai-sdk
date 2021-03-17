@@ -45,7 +45,7 @@ def test_fill(name, setup_dataframe):
     train = train.set_index("PassengerId")
     test = test.set_index("PassengerId")
     half = test.shape[0] // 2
-    data = pd.concat([train, test.loc[:half]])
+    data = pd.concat([train, test.iloc[:half]])
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
     for n in j.names:
@@ -55,7 +55,7 @@ def test_fill(name, setup_dataframe):
     x = j.fill(name, data, column="Survived")
     assert j.is_valid(name), f"valid name {name} after train fill"
 
-    v = j.fill(name, test.loc[half:], column="Survived")
+    v = j.fill(name, test.iloc[half:], column="Survived")
 
     j.delete_database(name)
     assert not j.is_valid(name), "valid name after delete failed"
@@ -71,7 +71,7 @@ def test_sanity(name, setup_dataframe):
     train = train.set_index("PassengerId")
     test = test.set_index("PassengerId")
     half = test.shape[0] // 2
-    data = pd.concat([train, test.loc[:half]]).drop(columns=['Survived'])
+    data = pd.concat([train, test.iloc[:half]]).drop(columns=['Survived'])
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
     for n in j.names:
@@ -81,7 +81,7 @@ def test_sanity(name, setup_dataframe):
     x = j.sanity(name, data)
     assert j.is_valid(name), f"valid name {name} after train sanity"
 
-    v = j.sanity(name, test.loc[half:])
+    v = j.sanity(name, test.iloc[half:])
 
     j.delete_database(name)
     assert not j.is_valid(name), "valid name after delete failed"
