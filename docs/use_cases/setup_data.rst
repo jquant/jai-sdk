@@ -10,14 +10,14 @@ Make sure the id values are always unique.
 .. note::
 	Although some data types could be inserted structured in a :code:`list` or an :code:`numpy.ndarray`, we strongly recommend the use of :code:`pandas.Series` and :code:`pandas.DataFrame`, because of the structure with :code:`.index` attributes (or optionally the use of a column named :code:`'id'`, which has priority over the :code:`.index` attribute).
 
-The model is used with the similarity queries and predicts (methods :code:`.similar()` and :code:`.predict()`). The similiarity query will return for each input, identified with the :code:`'query_id'`, the :code:`'id'` values of similiar items, the :code:`'distance'` in between them. The number of results is controlled by the :code:`'top_k'` parameter. The predict method will return for each input, identified with :code:`'id'`, the expected value for each item :code:`'predict'`.
+The model is used with the similarity queries and predicts (methods :code:`.similar()` and :code:`.predict()`). The similiarity query will return for each input, identified with the :code:`'query_id'`, the :code:`'id'` values of similiar items, the :code:`'distance'` in between them. The number of results is controlled by the :code:`top_k` parameter. The predict method will return for each input, identified with :code:`'id'`, the expected value for each item :code:`'predict'`.
 
 .. note::
 	The use of a column named :code:`'id'` will overwrite the pandas index attribute with :code:`.set_index('id')`. We consider a good pratice the strict usage of '.index' to identify items: 
 
-	* the existence of both :code:`'id'` column and :code:`'.index'` could cause ambiguity leading to misinterpretation results, 
+	* the existence of both :code:`'id'` column and :code:`.index` could cause ambiguity leading to misinterpretation results, 
 
-	* it allows the usage of native pandas structures, e. g., indexing data with :code:`'.loc'`, 
+	* it allows the usage of native pandas structures, e. g., indexing data with :code:`.loc`, 
 
 	* better understanding of your data as the column :code:`'id'` will **NOT** be used for any model inferrence unlike any other columns of your data.
 
@@ -71,15 +71,16 @@ It's also possible to use an model trained to reproduce the neighboring relation
 Setup for Image type data
 *************************
 
-For any uses of image-type data, data should be first encoded before inserting into the Jai class.
+For any uses of image-type data, data should be encoded before inserting it into the Jai class.
 
 .. code-block:: python
 
     >>> with open(filename, "rb") as image_file:
     >>>     encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
 
-Then the encoded string can be inserted into a list, pandas Series or DataFrame.
-We provide :code:`read_image_folder` function for reading images from a local folder.
+The encoded string can then be inserted into a list, pandas Series or DataFrame.
+We provide :code:`read_image_folder` and :code:`resize_image_folder` functions for reading and resizing images from a local folder.
+Resizing images before inserting is recommended because it reduces writing, reading and processing time during model inference.
 
 Setup applying Image Model
 ==========================

@@ -11,12 +11,12 @@ JAI-SDK - Trust your data!
    :maxdepth: 2
    :caption: Getting Started
 
-   installation
-   get_auth
-
+   source/quick_start
+   source/applications
+   
 .. toctree::
    :maxdepth: 1
-   :caption: Use cases
+   :caption: Basic Operations
 
    use_cases/setup_data
    use_cases/check_database
@@ -24,15 +24,6 @@ JAI-SDK - Trust your data!
    use_cases/predict
    use_cases/remove_data
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Experimental
-
-   applications/match
-   applications/resolution
-   applications/fill
-   applications/sanity
-   
 .. toctree::
    :maxdepth: 2
    :caption: API Reference
