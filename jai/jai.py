@@ -1109,6 +1109,14 @@ class Jai:
                 self.add_data(name, data.loc[missing])
         return ids
 
+    def _resolve_db_type(self, db_type, col):
+        if isinstance(db_type, str):
+            return db_type
+        elif isinstance(db_type, dict) and col in db_type:
+            return db_type[col]
+        else:
+            return "TextEdit"
+
     def match(self,
               name: str,
               data_left,
@@ -1266,7 +1274,7 @@ class Jai:
         resolution = r.loc[inverse].copy()
         return resolution
 
-    def fill(self, name: str, data, column: str, **kwargs):
+    def fill(self, name: str, data, column: str, db_type="TextEdit", **kwargs):
         """
         Experimental
 
@@ -1283,7 +1291,13 @@ class Jai:
             data to fill NaN.
         column : str
             name of the column to be filled.
-        **kwargs : 
+        db_type : str or dict
+            which db_type to use for embedding high dimensional categorical columns.
+            If a string is provided, we assume that all columns will be embedded using that db_type;
+            if a dict-like structure {"col1": "TextEdit", "col2": "FastText", ...} is provided, we embed the
+            specified columns with their respective db_types, and columns not in dict are by default embedded
+            with "TextEdit"
+        **kwargs : TYPE
             Extra args for supervised model. See setup method.
 
         Returns
@@ -1335,8 +1349,15 @@ class Jai:
                 origin = name + "_" + col
                 origin = origin.lower().replace("-", "_").replace(" ",
                                                                   "_")[:32]
-                train[id_col] = self.embedding(origin, train[col])
-                test[id_col] = self.embedding(origin, test[col])
+                # find out which db_type to use for this particular column
+                curr_db_type = self._resolve_db_type(db_type, col)
+
+                train[id_col] = self.embedding(origin,
+                                               train[col],
+                                               db_type=curr_db_type)
+                test[id_col] = self.embedding(origin,
+                                              test[col],
+                                              db_type=curr_db_type)
                 prep_bases.append({"id_name": id_col, "db_parent": origin})
             train = train.drop(columns=pre)
             test = test.drop(columns=pre)
@@ -1355,7 +1376,6 @@ class Jai:
                 name,
                 train,
                 db_type="Supervised",
-                hyperparams={"learning_rate": 0.001},
                 label=label,
                 split=split,
                 **kwargs,
@@ -1382,7 +1402,13 @@ class Jai:
 
         return self.predict(name, test, predict_proba=True)
 
-    def sanity(self, name: str, data, columns_ref: list = None, **kwargs):
+    def sanity(self,
+               name: str,
+               data,
+               data_validate=None,
+               columns_ref: list = None,
+               db_type="TextEdit",
+               **kwargs):
         """
         Experimental
 
@@ -1396,6 +1422,12 @@ class Jai:
             Data reference of sound data.
         columns_ref : list, optional
             Columns that can have inconsistencies. As default we use all non numeric columns.
+        db_type : str or dict
+            which db_type to use for embedding high dimensional categorical columns.
+            If a string is provided, we assume that all columns will be embedded using that db_type;
+            if a dict-like structure {"col1": "TextEdit", "col2": "FastText", "col3": "Text", ...} is provided,
+            we embed the specified columns with their respective db_types,
+            and columns not in dict are by default embedded with "TextEdit"
         kwargs :
             Extra args for supervised model except label and split. See setup method. Also:
 
@@ -1460,6 +1492,15 @@ class Jai:
                 origin = name + "_" + col
                 origin = origin.lower().replace("-", "_").replace(" ",
                                                                   "_")[:32]
+
+                # find out which db_type to use for this particular column
+                curr_db_type = self._resolve_db_type(db_type, col)
+
+                data[id_col] = self.embedding(origin,
+                                              data[col],
+                                              db_type=curr_db_type)
+
+                prep_bases.append({"id_name": id_col, "db_parent": origin})
                 data[id_col] = self.embedding(origin, data[col])
                 prep_bases.append({"id_name": id_col, "db_parent": origin})
 
@@ -1510,7 +1551,6 @@ class Jai:
                 name,
                 train,
                 db_type="Supervised",
-                hyperparams={"learning_rate": 0.001},
                 label=label,
                 split=split,
                 **kwargs,
