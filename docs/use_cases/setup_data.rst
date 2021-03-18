@@ -15,9 +15,9 @@ The model is used with the similarity queries and predicts (methods :code:`.simi
 .. note::
 	The use of a column named :code:`'id'` will overwrite the pandas index attribute with :code:`.set_index('id')`. We consider a good pratice the strict usage of '.index' to identify items: 
 
-	* the existence of both :code:`'id'` column and :code:`'.index'` could cause ambiguity leading to misinterpretation results, 
+	* the existence of both :code:`'id'` column and :code:`.index` could cause ambiguity leading to misinterpretation results, 
 
-	* it allows the usage of native pandas structures, e. g., indexing data with :code:`'.loc'`, 
+	* it allows the usage of native pandas structures, e. g., indexing data with :code:`.loc`, 
 
 	* better understanding of your data as the column :code:`'id'` will **NOT** be used for any model inferrence unlike any other columns of your data.
 

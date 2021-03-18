@@ -3,7 +3,7 @@
 Applications
 ############
 
-Here are some applications developed using the basic perations, to allow a more direct approach to the specific goals listed bellow. They should work as standalone without the need of any of the basic operations
+Here are some applications developed using the basic operations, to allow a more direct approach to the specific goals listed bellow. They should work as standalone without the need of any of the basic operations
 
 *********************************
 Matching values from two datasets
