@@ -121,7 +121,7 @@ it were in the body of a POST method.
   * **max_length** (*int*) -- Controls the maximum length to use by one of the 
     truncation/padding parameters. *Default is 100*.
 
-* **mycelia_bases** (*dict*) -- (*Only for db_type Supervised and Unsupervised*) Related already 
+* **mycelia_bases** (*list of dicts*) -- (*Only for db_type Supervised and Unsupervised*) Related already 
   processed data that will be used in the setup of this new one. If a column has id values that 
   represent a database already preprocessed, then:
 

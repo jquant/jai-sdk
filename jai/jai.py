@@ -145,15 +145,15 @@ class Jai:
         """
         response = requests.get(self.url + "/status", headers=self.header)
 
-        max_trials = 5
+        max_tries = 5
         patience = 25  # time in seconds that we'll wait
-        trials = 0
+        tries = 0
 
-        while trials < max_trials:
+        while tries < max_tries:
             if response.status_code == 200:
                 return response.json()
-            time.sleep(patience // max_trials)
-            trials += 1
+            time.sleep(patience // max_tries)
+            tries += 1
             response = requests.get(self.url + "/status", headers=self.header)
         return self.assert_status_code(response)
 
@@ -263,7 +263,7 @@ class Jai:
         ----
         name : str
             String with the name of a database in your JAI environment.
-        data : list, pd.Series or pd.DataFrame
+        data : list, np.ndarray, pd.Series or pd.DataFrame
             Data to be queried for similar inputs in your database.
         top_k : int
             Number of k similar items that we want to return. `Default is 5`.
@@ -272,8 +272,12 @@ class Jai:
 
         Return
         ------
-        results : dict
-            Dictionary with the index and distance of the k most similar items.
+        results : list of dicts
+            A list with a dictionary for each input value identified with
+            'query_id' and 'result' which is a list with 'top_k' most similar
+            items dictionaries, each dictionary has the 'id' from the database
+            previously setup and 'distance' in between the correspondent 'id'
+            and 'query_id'.
 
         Example
         -------
@@ -316,7 +320,7 @@ class Jai:
             results.extend(res["similarity"])
         return results
 
-    def _similar_id(self, name: str, id_item: int, top_k: int = 5):
+    def _similar_id(self, name: str, id_item: list, top_k: int = 5):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given an id.
         This is a protected method.
@@ -326,8 +330,8 @@ class Jai:
         name : str
             String with the name of a database in your JAI environment.
 
-        idx_tem : int
-            Index of the item the user is looking for.
+        idx_tem : list
+            List of ids of the item the user is looking for.
 
         top_k : int
             Number of k similar items we want to return. `Default is 5`.
@@ -338,11 +342,7 @@ class Jai:
             Dictionary with the index and distance of `the k most similar items`.
         """
 
-        if isinstance(id_item, list):
-            pass
-        elif isinstance(id_item, int):
-            id_item = [id_item]
-        else:
+        if not isinstance(id_item, list):
             raise TypeError(
                 f"id_item param must be int or list, {type(id_item)} found.")
 
@@ -462,7 +462,7 @@ class Jai:
         ----
         name : str
             String with the name of a database in your JAI environment.
-        data : list, pd.Series or pd.DataFrame
+        data : pd.Series or pd.DataFrame
             Data to be queried for similar inputs in your database.
         predict_proba : bool
             Whether or not to return the probabilities of each prediction is
@@ -473,7 +473,8 @@ class Jai:
         Return
         ------
         results : list of dicts
-            List of predictions for the data passed as parameter.
+            List of dictionaries with 'id' of the inputed data and 'predict'
+            as predictions for the data passed as input.
 
         Example
         ----------
@@ -491,13 +492,14 @@ class Jai:
         dtype = self._get_dtype(name)
         if dtype != "Supervised":
             raise ValueError("predict is only available to dtype Supervised.")
+        if not isinstance(data, (pd.Series, pd.DataFrame)):
+            raise ValueError(
+                f"data must be a pandas Series or DataFrame. (data type {type(data)})"
+            )
 
         results = []
         for i in trange(0, len(data), batch_size, desc="Predict"):
-            if isinstance(data, (pd.Series, pd.DataFrame)):
-                _batch = data.iloc[i:i + batch_size]
-            else:
-                _batch = data[i:i + batch_size]
+            _batch = data.iloc[i:i + batch_size]
             res = self._predict(name,
                                 data2json(_batch, dtype=dtype),
                                 predict_proba=predict_proba)
@@ -514,7 +516,7 @@ class Jai:
         name : str
             String with the name of a database in your JAI environment.
         data_json : JSON file (dict)
-            Data to be queried for similar inputs in your database.
+            Data to be inferred by the previosly trained model.
         predict_proba : bool
             Whether or not to return the probabilities of each prediction. `Default is False`.
 
@@ -1071,7 +1073,7 @@ class Jai:
         data : pd.Series
             Data for your text based model.
         db_type : str, optional
-            type of model to be trained. The default is 'FastText'.
+            type of model to be trained. The default is 'TextEdit'.
         hyperparams: optional
             See setup documentation for the db_type used.
 
@@ -1084,7 +1086,7 @@ class Jai:
         if isinstance(data, pd.Series):
             data = data.copy()
         else:
-            raise ValueError("data must be a Series")
+            raise ValueError(f"data must be a Series. data is {type(data)}")
 
         ids = data.index
 
@@ -1106,6 +1108,14 @@ class Jai:
             if len(missing) > 0:
                 self.add_data(name, data.loc[missing])
         return ids
+
+    def _resolve_db_type(self, db_type, col):
+        if isinstance(db_type, str):
+            return db_type
+        elif isinstance(db_type, dict) and col in db_type:
+            return db_type[col]
+        else:
+            return "TextEdit"
 
     def match(self,
               name: str,
@@ -1264,11 +1274,14 @@ class Jai:
         resolution = r.loc[inverse].copy()
         return resolution
 
-    def fill(self, name: str, data, column: str, **kwargs):
+    def fill(self, name: str, data, column: str, db_type="TextEdit", **kwargs):
         """
         Experimental
 
         Fills the column in data with the most likely value given the other columns.
+
+        Only works with categorical columns. Can not fill missing values for
+        numerical columns.
 
         Parameters
         ----------
@@ -1278,6 +1291,12 @@ class Jai:
             data to fill NaN.
         column : str
             name of the column to be filled.
+        db_type : str or dict
+            which db_type to use for embedding high dimensional categorical columns.
+            If a string is provided, we assume that all columns will be embedded using that db_type;
+            if a dict-like structure {"col1": "TextEdit", "col2": "FastText", ...} is provided, we embed the
+            specified columns with their respective db_types, and columns not in dict are by default embedded
+            with "TextEdit"
         **kwargs : TYPE
             Extra args for supervised model. See setup method.
 
@@ -1300,34 +1319,49 @@ class Jai:
            1       4             value_1                    67.3
            2       7             value_1                    80.2
         """
-        cat_threshold = kwargs.get("cat_threshold", 512)
+        if "id" in data.columns:
+            data = data.set_index("id")
         data = data.copy()
-        vals = data[column].value_counts() < 2
-        if vals.sum() > 0:
-            eliminate = vals[vals].index.tolist()
-            print(
-                f"values {eliminate} from column {column} were removed for having less than 2 examples."
-            )
-            data.loc[data[column].isin(eliminate), column] = None
+        cat_threshold = kwargs.get("cat_threshold", 512)
 
-        mask = data[column].isna()
-        train = data.loc[~mask].copy()
-        test = data.loc[mask].drop(columns=[column])
+        if column in data.columns:
+            vals = data.loc[:, column].value_counts() < 2
+            if vals.sum() > 0:
+                eliminate = vals[vals].index.tolist()
+                print(
+                    f"values {eliminate} from column {column} were removed for having less than 2 examples."
+                )
+                data.loc[data[column].isin(eliminate), column] = None
+        else:
+            data.loc[:, column] = None
 
-        cat = train.select_dtypes(exclude="number")
-        pre = cat.columns[cat.nunique() > cat_threshold].tolist()
-        prep_bases = []
-        for col in pre:
-            id_col = "id_" + col
-            origin = name + "_" + col
-            origin = origin.lower().replace("-", "_").replace(" ", "_")[:35]
-            train[id_col] = self.embedding(origin, train[col])
-            test[id_col] = self.embedding(origin, test[col])
-            prep_bases.append({"id_name": id_col, "db_parent": origin})
-        train = train.drop(columns=pre)
-        test = test.drop(columns=pre)
+        cat = data.select_dtypes(exclude="number")
 
         if name not in self.names:
+            mask = data.loc[:, column].isna()
+            train = data.loc[~mask].copy()
+            test = data.loc[mask].drop(columns=[column])
+
+            pre = cat.columns[cat.nunique() > cat_threshold].tolist()
+            prep_bases = []
+            for col in pre:
+                id_col = "id_" + col
+                origin = name + "_" + col
+                origin = origin.lower().replace("-", "_").replace(" ",
+                                                                  "_")[:32]
+                # find out which db_type to use for this particular column
+                curr_db_type = self._resolve_db_type(db_type, col)
+
+                train[id_col] = self.embedding(origin,
+                                               train[col],
+                                               db_type=curr_db_type)
+                test[id_col] = self.embedding(origin,
+                                              test[col],
+                                              db_type=curr_db_type)
+                prep_bases.append({"id_name": id_col, "db_parent": origin})
+            train = train.drop(columns=pre)
+            test = test.drop(columns=pre)
+
             label = {"task": "metric_classification", "label_name": column}
             split = {
                 "type": "stratified",
@@ -1336,20 +1370,35 @@ class Jai:
             }
             mycelia_bases = kwargs.get("mycelia_bases", [])
             mycelia_bases.extend(prep_bases)
+            kwargs['mycelia_bases'] = mycelia_bases
+
             self.setup(
                 name,
                 train,
                 db_type="Supervised",
-                hyperparams={"learning_rate": 0.001},
                 label=label,
                 split=split,
                 **kwargs,
             )
         else:
-            ids = train.index
-            missing = ids[~np.isin(ids, self.ids(name, "complete"))]
-            if len(missing) > 0:
-                self.add_data(name, data.loc[missing])
+
+            drop_cols = []
+            for col in cat.columns:
+                id_col = "id_" + col
+                origin = name + "_" + col
+                origin = origin.lower().replace("-", "_").replace(" ",
+                                                                  "_")[:32]
+                if origin in self.names:
+                    data[id_col] = self.embedding(origin, data[col])
+                    drop_cols.append(col)
+            if column in data.columns:
+                drop_cols.append(column)
+            test = data.drop(columns=drop_cols)
+
+        ids_test = test.index
+        missing_test = ids_test[~np.isin(ids_test, self.ids(name, "complete"))]
+        if len(missing_test) > 0:
+            self.add_data(name, test.loc[missing_test])
 
         return self.predict(name, test, predict_proba=True)
 
@@ -1358,6 +1407,7 @@ class Jai:
                data,
                data_validate=None,
                columns_ref: list = None,
+               db_type="TextEdit",
                **kwargs):
         """
         Experimental
@@ -1370,10 +1420,14 @@ class Jai:
             String with the name of a database in your JAI environment.
         data : pd.DataFrame
             Data reference of sound data.
-        data_validate : TYPE, optional
-            Data to be checked if is valid or not. The default is None.
         columns_ref : list, optional
             Columns that can have inconsistencies. As default we use all non numeric columns.
+        db_type : str or dict
+            which db_type to use for embedding high dimensional categorical columns.
+            If a string is provided, we assume that all columns will be embedded using that db_type;
+            if a dict-like structure {"col1": "TextEdit", "col2": "FastText", "col3": "Text", ...} is provided,
+            we embed the specified columns with their respective db_types,
+            and columns not in dict are by default embedded with "TextEdit"
         kwargs :
             Extra args for supervised model except label and split. See setup method. Also:
 
@@ -1412,6 +1466,7 @@ class Jai:
         """
         if "id" in data.columns:
             data = data.set_index("id")
+        data = data.copy()
 
         frac = kwargs.get("frac", 0.1)
         random_seed = kwargs.get("random_seed", 42)
@@ -1422,41 +1477,39 @@ class Jai:
 
         np.random.seed(random_seed)
 
-        data = data.copy()
-        if data_validate is not None:
-            data_validate = data_validate.copy()
-
         cat = data.select_dtypes(exclude="number")
-        pre = cat.columns[cat.nunique() > cat_threshold].tolist()
-        if columns_ref is None:
-            columns_ref = cat.columns.tolist()
-        elif not isinstance(columns_ref, list):
-            columns_ref = columns_ref.tolist()
-
-        prep_bases = []
-        for col in pre:
-            id_col = "id_" + col
-            origin = name + "_" + col
-            origin = origin.lower().replace("-", "_").replace(" ", "_")[:35]
-            data[id_col] = self.embedding(origin, data[col])
-            if data_validate is not None:
-                data_validate[id_col] = self.embedding(origin,
-                                                       data_validate[col])
-
-            prep_bases.append({"id_name": id_col, "db_parent": origin})
-
-            if col in columns_ref:
-                columns_ref.remove(col)
-                columns_ref.append(id_col)
-
-        data = data.drop(columns=pre)
-        if data_validate is not None:
-            data_validate = data_validate.drop(columns=pre)
-            test = data_validate.copy()
-        else:
-            test = data.copy()
 
         if name not in self.names:
+            pre = cat.columns[cat.nunique() > cat_threshold].tolist()
+            if columns_ref is None:
+                columns_ref = cat.columns.tolist()
+            elif not isinstance(columns_ref, list):
+                columns_ref = columns_ref.tolist()
+
+            prep_bases = []
+            for col in pre:
+                id_col = "id_" + col
+                origin = name + "_" + col
+                origin = origin.lower().replace("-", "_").replace(" ",
+                                                                  "_")[:32]
+
+                # find out which db_type to use for this particular column
+                curr_db_type = self._resolve_db_type(db_type, col)
+
+                data[id_col] = self.embedding(origin,
+                                              data[col],
+                                              db_type=curr_db_type)
+
+                prep_bases.append({"id_name": id_col, "db_parent": origin})
+                data[id_col] = self.embedding(origin, data[col])
+                prep_bases.append({"id_name": id_col, "db_parent": origin})
+
+                if col in columns_ref:
+                    columns_ref.remove(col)
+                    columns_ref.append(id_col)
+
+            data = data.drop(columns=pre)
+
             if not SKIP_SHUFFLING:
 
                 def change(options, original):
@@ -1476,9 +1529,8 @@ class Jai:
 
                 # set index of samples with different values as data
 
-                idx = np.arange(len(data) + len(sample))
-                mask_idx = np.logical_not(np.isin(idx, data.index))
-                sample.index = idx[mask_idx][:len(sample)]
+                sample.index = 10**int(np.log10(data.shape[0]) +
+                                       2) + np.arange(len(sample))
                 data[target] = "Valid"
                 train = pd.concat([data, sample])
             else:
@@ -1493,20 +1545,34 @@ class Jai:
 
             mycelia_bases = kwargs.get("mycelia_bases", [])
             mycelia_bases.extend(prep_bases)
+            kwargs['mycelia_bases'] = mycelia_bases
 
             self.setup(
                 name,
                 train,
                 db_type="Supervised",
-                hyperparams={"learning_rate": 0.001},
                 label=label,
                 split=split,
                 **kwargs,
             )
         else:
+
+            drop_cols = []
+            for col in cat.columns:
+                id_col = "id_" + col
+                origin = name + "_" + col
+                origin = origin.lower().replace("-", "_").replace(" ",
+                                                                  "_")[:32]
+                if origin in self.names:
+                    data[id_col] = self.embedding(origin, data[col])
+                    drop_cols.append(col)
+
+            data = data.drop(columns=drop_cols)
+
             ids = data.index
             missing = ids[~np.isin(ids, self.ids(name, "complete"))]
+
             if len(missing) > 0:
                 self.add_data(name, data.loc[missing])
 
-        return self.predict(name, test, predict_proba=True)
+        return self.predict(name, data, predict_proba=True)
