@@ -8,6 +8,7 @@ import time
 from .processing import process_predict, process_similar, process_resolution
 from .functions.utils_funcs import data2json, pbar_steps
 from .functions.classes import PossibleDtypes, Mode
+from fnmatch import fnmatch
 from pandas.api.types import is_integer_dtype
 from tqdm import trange, tqdm
 
@@ -1117,22 +1118,30 @@ class Jai:
         else:
             return "TextEdit"
 
-    def _build_name(self, name, col):
+    def _build_name(self, name, col, retry=True):
         origin = name + "_" + col
         origin = origin.lower().replace("-", "_").replace(" ", "_")[:32]
-        i = -1
-
-        # trim both 'name' and 'col' until we reach a db_name
-        # that is not in the user's environment
-        while self.is_valid(origin):
-            if not (len(name[:i]) & len(col[:i])):
-                raise Exception(
-                    "Could not build name. Empty string on 'name' or 'col' reached."
-                )
-            origin = name[:i] + "_" + col[:i]
-            origin = origin.lower().replace("-", "_").replace(" ", "_")[:32]
-            i -= 1
+        
+        if retry:
+            i = -1
+            # trim both 'name' and 'col' until we reach a db_name
+            # that is not in the user's environment
+            while self.is_valid(origin):
+                if not (len(name[:i]) & len(col[:i])):
+                    raise Exception(
+                        "Could not build name. Empty string on 'name' or 'col' reached."
+                    )
+                origin = name[:i] + "_" + col[:i]
+                origin = origin.lower().replace("-", "_").replace(" ", "_")[:32]
+                i -= 1
         return origin
+
+    def _delete_tree(self, name):
+        names = self.names
+        bases_to_del = [item for item in names if fnmatch(item, f"{name}*")]
+        for base in bases_to_del:
+            self.delete_database(base)
+
 
     def match(self,
               name: str,
@@ -1340,6 +1349,12 @@ class Jai:
             data = data.set_index("id")
         data = data.copy()
         cat_threshold = kwargs.get("cat_threshold", 512)
+        overwrite = kwargs.get("overwrite", False)
+
+        # delete tree of databases derived from 'name',
+        # including 'name' itself
+        if overwrite:
+            self._delete_tree(name)
 
         if column in data.columns:
             vals = data.loc[:, column].value_counts() < 2
@@ -1353,6 +1368,7 @@ class Jai:
             data.loc[:, column] = None
 
         cat = data.select_dtypes(exclude="number")
+        
 
         if name not in self.names:
             mask = data.loc[:, column].isna()
@@ -1401,7 +1417,7 @@ class Jai:
             drop_cols = []
             for col in cat.columns:
                 id_col = "id_" + col
-                origin = self._build_name(name, col)
+                origin = self._build_name(name, col, retry=False)
 
                 if origin in self.names:
                     data[id_col] = self.embedding(origin, data[col])
@@ -1420,7 +1436,6 @@ class Jai:
     def sanity(self,
                name: str,
                data,
-               data_validate=None,
                columns_ref: list = None,
                db_type="TextEdit",
                **kwargs):
@@ -1487,6 +1502,12 @@ class Jai:
         random_seed = kwargs.get("random_seed", 42)
         cat_threshold = kwargs.get("cat_threshold", 512)
         target = kwargs.get("target", "is_valid")
+        overwrite = kwargs.get("overwrite", False)
+        
+        # delete tree of databases derived from 'name',
+        # including 'name' itself
+        if overwrite:
+            self._delete_tree(name)
 
         SKIP_SHUFFLING = target in data.columns
 
@@ -1573,7 +1594,7 @@ class Jai:
             drop_cols = []
             for col in cat.columns:
                 id_col = "id_" + col
-                origin = self._build_name(name, col)
+                origin = self._build_name(name, col, retry=False)
 
                 if origin in self.names:
                     data[id_col] = self.embedding(origin, data[col])
