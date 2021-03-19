@@ -1121,7 +1121,7 @@ class Jai:
     def _build_name(self, name, col, retry=True):
         origin = name + "_" + col
         origin = origin.lower().replace("-", "_").replace(" ", "_")[:32]
-        
+
         if retry:
             i = -1
             # trim both 'name' and 'col' until we reach a db_name
@@ -1132,7 +1132,8 @@ class Jai:
                         "Could not build name. Empty string on 'name' or 'col' reached."
                     )
                 origin = name[:i] + "_" + col[:i]
-                origin = origin.lower().replace("-", "_").replace(" ", "_")[:32]
+                origin = origin.lower().replace("-", "_").replace(" ",
+                                                                  "_")[:32]
                 i -= 1
         return origin
 
@@ -1141,7 +1142,6 @@ class Jai:
         bases_to_del = [item for item in names if fnmatch(item, f"{name}*")]
         for base in bases_to_del:
             self.delete_database(base)
-
 
     def match(self,
               name: str,
@@ -1368,7 +1368,6 @@ class Jai:
             data.loc[:, column] = None
 
         cat = data.select_dtypes(exclude="number")
-        
 
         if name not in self.names:
             mask = data.loc[:, column].isna()
@@ -1503,7 +1502,7 @@ class Jai:
         cat_threshold = kwargs.get("cat_threshold", 512)
         target = kwargs.get("target", "is_valid")
         overwrite = kwargs.get("overwrite", False)
-        
+
         # delete tree of databases derived from 'name',
         # including 'name' itself
         if overwrite:
