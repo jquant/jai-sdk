@@ -1149,7 +1149,7 @@ class Jai:
             If True, returns the values of the original data along with the ids.
             Default is False.
         db_type : str, optional
-            type of model to be trained. The default is 'FastText'.
+            type of model to be trained. The default is 'TextEdit'.
         hyperparams: dict, optional
             See setup documentation for the db_type used.
         overwrite : bool, optional
