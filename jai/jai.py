@@ -1117,6 +1117,22 @@ class Jai:
         else:
             return "TextEdit"
 
+    def _build_name(self, name, col):
+        origin = name + "_" + col
+        origin = origin.lower().replace("-", "_").replace(" ", "_")[:32]
+        i = -1
+
+        # trim both 'name' and 'col' until we reach a db_name
+        # that is not in the user's environment
+        while self.is_valid(origin):
+            if not (name[:i] & col[:i]):
+                raise Exception("Could not build name. Empty string on 'name' or 'col' reached.")
+            origin = name[:i] + "_" + col[:i]
+            origin = origin.lower().replace("-", "_").replace(" ", "_")[:32]
+            i -= 1
+        return origin
+
+
     def match(self,
               name: str,
               data_left,
@@ -1346,9 +1362,8 @@ class Jai:
             prep_bases = []
             for col in pre:
                 id_col = "id_" + col
-                origin = name + "_" + col
-                origin = origin.lower().replace("-", "_").replace(" ",
-                                                                  "_")[:32]
+                origin = self._build_name(name, col)
+                
                 # find out which db_type to use for this particular column
                 curr_db_type = self._resolve_db_type(db_type, col)
 
@@ -1385,9 +1400,8 @@ class Jai:
             drop_cols = []
             for col in cat.columns:
                 id_col = "id_" + col
-                origin = name + "_" + col
-                origin = origin.lower().replace("-", "_").replace(" ",
-                                                                  "_")[:32]
+                origin = self._build_name(name, col)
+
                 if origin in self.names:
                     data[id_col] = self.embedding(origin, data[col])
                     drop_cols.append(col)
@@ -1489,9 +1503,7 @@ class Jai:
             prep_bases = []
             for col in pre:
                 id_col = "id_" + col
-                origin = name + "_" + col
-                origin = origin.lower().replace("-", "_").replace(" ",
-                                                                  "_")[:32]
+                origin = self._build_name(name, col)
 
                 # find out which db_type to use for this particular column
                 curr_db_type = self._resolve_db_type(db_type, col)
@@ -1560,9 +1572,8 @@ class Jai:
             drop_cols = []
             for col in cat.columns:
                 id_col = "id_" + col
-                origin = name + "_" + col
-                origin = origin.lower().replace("-", "_").replace(" ",
-                                                                  "_")[:32]
+                origin = self._build_name(name, col)
+                
                 if origin in self.names:
                     data[id_col] = self.embedding(origin, data[col])
                     drop_cols.append(col)
