@@ -1125,7 +1125,7 @@ class Jai:
         # trim both 'name' and 'col' until we reach a db_name
         # that is not in the user's environment
         while self.is_valid(origin):
-            if not (name[:i] & col[:i]):
+            if not (len(name[:i]) & len(col[:i])):
                 raise Exception("Could not build name. Empty string on 'name' or 'col' reached.")
             origin = name[:i] + "_" + col[:i]
             origin = origin.lower().replace("-", "_").replace(" ", "_")[:32]
@@ -1573,7 +1573,7 @@ class Jai:
             for col in cat.columns:
                 id_col = "id_" + col
                 origin = self._build_name(name, col)
-                
+
                 if origin in self.names:
                     data[id_col] = self.embedding(origin, data[col])
                     drop_cols.append(col)
