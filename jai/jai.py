@@ -1146,7 +1146,7 @@ class Jai:
     # database 'name'
     def _delete_tree(self, name):
         names = self.names
-        bases_to_del = [item for item in names if fnmatch(item, f"{name}*")]
+        bases_to_del = [item for item in names if fnmatch(item, f"{name}_*")]
         for base in bases_to_del:
             self.delete_database(base)
 
