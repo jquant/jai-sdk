@@ -112,10 +112,13 @@ class Jai:
                                 headers=self.header)
 
         if response.status_code == 200:
-            df = pd.DataFrame(response.json()).rename({
-                "db_name": "name",
-                "db_type": "type"
-            })
+            df = pd.DataFrame(response.json()).rename(
+                columns={
+                    "db_name": "name",
+                    "db_type": "type",
+                    "db_version": "last modified",
+                    "db_parents": "parents"
+                })
             return df
         else:
             return self.assert_status_code(response)
@@ -379,7 +382,7 @@ class Jai:
         """
         dtypes = self.info
         if self.is_valid(name):
-            return dtypes.loc[dtypes["db_name"] == name, "db_type"].values[0]
+            return dtypes.loc[dtypes["name"] == name, "type"].values[0]
         else:
             raise ValueError(f"{name} is not a valid name.")
 
