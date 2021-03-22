@@ -5,7 +5,7 @@ import numpy as np
 import requests
 import time
 
-from .processing import process_predict, process_similar, process_resolution
+from .processing import process_similar, process_resolution
 from .functions.utils_funcs import data2json, pbar_steps
 from .functions.classes import PossibleDtypes, Mode
 from pandas.api.types import is_integer_dtype
