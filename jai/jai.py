@@ -1110,6 +1110,7 @@ class Jai:
                 self.add_data(name, data.loc[missing])
         return ids
 
+    # Helper function to decide which kind of text model to use
     def _resolve_db_type(self, db_type, col):
         if isinstance(db_type, str):
             return db_type
@@ -1118,24 +1119,26 @@ class Jai:
         else:
             return "TextEdit"
 
-    def _build_name(self, name, col, retry=True):
-        origin = name + "_" + col
-        origin = origin.lower().replace("-", "_").replace(" ", "_")[:32]
+    # Helper function to validate name lengths before training
+    def _check_name_lengths(self, name ,cols):
+        invalid_cols = []
+        for col in cols:
+            if len(name + "_" + col) > 32:
+                invalid_cols.append(col)
         
-        if retry:
-            i = -1
-            # trim both 'name' and 'col' until we reach a db_name
-            # that is not in the user's environment
-            while self.is_valid(origin):
-                if not (len(name[:i]) & len(col[:i])):
-                    raise Exception(
-                        "Could not build name. Empty string on 'name' or 'col' reached."
-                    )
-                origin = name[:i] + "_" + col[:i]
-                origin = origin.lower().replace("-", "_").replace(" ", "_")[:32]
-                i -= 1
-        return origin
+        if len(invalid_cols):
+            raise ValueError(f"The following column names are too large to concatenate\
+                with database '{name}':\n{invalid_cols}\nPlease enter a shorter database name or\
+                shorter column names; 'name_column' string must be at most 32 characters long.")
 
+    # Helper function to build the database names of columns that
+    # are automatically processed during 'sanity' and 'fill' methods
+    def _build_name(self, name, col):
+        origin = name + "_" + col
+        return origin.lower().replace("-", "_").replace(" ", "_")
+        
+    # Helper function to delete the whole tree of databases related with
+    # database 'name'
     def _delete_tree(self, name):
         names = self.names
         bases_to_del = [item for item in names if fnmatch(item, f"{name}*")]
@@ -1377,6 +1380,11 @@ class Jai:
 
             pre = cat.columns[cat.nunique() > cat_threshold].tolist()
             prep_bases = []
+
+            # check if database and column names will not overflow the 32-character
+            # concatenation limit
+            self._check_name_lengths(name, pre)
+
             for col in pre:
                 id_col = "id_" + col
                 origin = self._build_name(name, col)
@@ -1417,7 +1425,7 @@ class Jai:
             drop_cols = []
             for col in cat.columns:
                 id_col = "id_" + col
-                origin = self._build_name(name, col, retry=False)
+                origin = self._build_name(name, col)
 
                 if origin in self.names:
                     data[id_col] = self.embedding(origin, data[col])
@@ -1523,6 +1531,11 @@ class Jai:
                 columns_ref = columns_ref.tolist()
 
             prep_bases = []
+
+            # check if database and column names will not overflow the 32-character
+            # concatenation limit
+            self._check_name_lengths(name, pre)
+
             for col in pre:
                 id_col = "id_" + col
                 origin = self._build_name(name, col)
@@ -1594,7 +1607,7 @@ class Jai:
             drop_cols = []
             for col in cat.columns:
                 id_col = "id_" + col
-                origin = self._build_name(name, col, retry=False)
+                origin = self._build_name(name, col)
 
                 if origin in self.names:
                     data[id_col] = self.embedding(origin, data[col])
