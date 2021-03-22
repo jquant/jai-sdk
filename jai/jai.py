@@ -382,7 +382,7 @@ class Jai:
         """
         dtypes = self.info
         if self.is_valid(name):
-            return dtypes.loc[dtypes["db_name"] == name, "db_type"].values[0]
+            return dtypes.loc[dtypes["name"] == name, "type"].values[0]
         else:
             raise ValueError(f"{name} is not a valid name.")
 
