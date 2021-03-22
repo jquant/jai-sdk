@@ -1120,23 +1120,25 @@ class Jai:
             return "TextEdit"
 
     # Helper function to validate name lengths before training
-    def _check_name_lengths(self, name ,cols):
+    def _check_name_lengths(self, name, cols):
         invalid_cols = []
         for col in cols:
             if len(name + "_" + col) > 32:
                 invalid_cols.append(col)
-        
+
         if len(invalid_cols):
-            raise ValueError(f"The following column names are too large to concatenate\
+            raise ValueError(
+                f"The following column names are too large to concatenate\
                 with database '{name}':\n{invalid_cols}\nPlease enter a shorter database name or\
-                shorter column names; 'name_column' string must be at most 32 characters long.")
+                shorter column names; 'name_column' string must be at most 32 characters long."
+            )
 
     # Helper function to build the database names of columns that
     # are automatically processed during 'sanity' and 'fill' methods
     def _build_name(self, name, col):
         origin = name + "_" + col
         return origin.lower().replace("-", "_").replace(" ", "_")
-        
+
     # Helper function to delete the whole tree of databases related with
     # database 'name'
     def _delete_tree(self, name):
