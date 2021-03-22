@@ -1145,7 +1145,6 @@ class Jai:
         for base in bases_to_del:
             self.delete_database(base)
 
-
     def match(self,
               name: str,
               data_left,
@@ -1371,7 +1370,6 @@ class Jai:
             data.loc[:, column] = None
 
         cat = data.select_dtypes(exclude="number")
-        
 
         if name not in self.names:
             mask = data.loc[:, column].isna()
@@ -1511,7 +1509,7 @@ class Jai:
         cat_threshold = kwargs.get("cat_threshold", 512)
         target = kwargs.get("target", "is_valid")
         overwrite = kwargs.get("overwrite", False)
-        
+
         # delete tree of databases derived from 'name',
         # including 'name' itself
         if overwrite:
