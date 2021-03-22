@@ -5,7 +5,7 @@ import numpy as np
 import requests
 import time
 
-from .processing import process_predict, process_similar, process_resolution
+from .processing import process_similar, process_resolution
 from .functions.utils_funcs import data2json, pbar_steps
 from .functions.classes import PossibleDtypes, Mode
 from fnmatch import fnmatch
@@ -1182,7 +1182,7 @@ class Jai:
             If True, returns the values of the original data along with the ids.
             Default is False.
         db_type : str, optional
-            type of model to be trained. The default is 'FastText'.
+            type of model to be trained. The default is 'TextEdit'.
         hyperparams: dict, optional
             See setup documentation for the db_type used.
         overwrite : bool, optional
