@@ -51,6 +51,6 @@ jobs:
 
       # NOTE : only push changes when the source branch is being pushed to main (target branch)
       - name: push changes
-        if: github.ref != 'refs/heads/main'
+        if: github.ref != 'refs/heads/main' && startsWith( github.ref, 'refs/heads/' )
         run: |
           git push
