@@ -1230,6 +1230,7 @@ class Jai:
                    data,
                    top_k: int = 20,
                    threshold: float = None,
+                   return_self: bool = True,
                    original_data: bool = False,
                    db_type="TextEdit",
                    hyperparams=None,
@@ -1252,6 +1253,9 @@ class Jai:
             Smaller distances give more strict results. Default is None.
             The threshold is automatically set by default, but may need manual
             setting for more accurate results.
+        original_data : bool, optional
+            If True, returns the ids when resolution_id is the same as id.
+            Default is True.
         original_data : bool, optional
             If True, returns the values of the original data along with the ids.
             Default is False.
@@ -1292,7 +1296,7 @@ class Jai:
         simliar = self.similar(name, ids, top_k=top_k)
         connect = process_resolution(simliar,
                                      threshold=threshold,
-                                     return_self=True)
+                                     return_self=return_self)
         r = pd.DataFrame(connect).set_index('id').sort_index()
 
         if original_data:
