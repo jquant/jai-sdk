@@ -5,7 +5,8 @@ from copy import deepcopy
 from tqdm import tqdm
 from .functions.utils_funcs import multikeysort
 
-__all__ = ["process_similar", "process_predict", "process_resolution"]
+__all__ = ["find_threshold", "process_similar", "process_predict",
+           "process_resolution"]
 
 
 def find_threshold(results, sample_size=0.1, quantile=0.05):
