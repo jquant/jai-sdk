@@ -5,9 +5,10 @@ import numpy as np
 import requests
 import time
 
-from .processing import process_predict, process_similar, process_resolution
+from .processing import process_similar, process_resolution
 from .functions.utils_funcs import data2json, pbar_steps
 from .functions.classes import PossibleDtypes, Mode
+from fnmatch import fnmatch
 from pandas.api.types import is_integer_dtype
 from tqdm import trange, tqdm
 
@@ -112,10 +113,13 @@ class Jai:
                                 headers=self.header)
 
         if response.status_code == 200:
-            df = pd.DataFrame(response.json()).rename({
-                "db_name": "name",
-                "db_type": "type"
-            })
+            df = pd.DataFrame(response.json()).rename(
+                columns={
+                    "db_name": "name",
+                    "db_type": "type",
+                    "db_version": "last modified",
+                    "db_parents": "parents"
+                })
             return df
         else:
             return self.assert_status_code(response)
@@ -379,7 +383,7 @@ class Jai:
         """
         dtypes = self.info
         if self.is_valid(name):
-            return dtypes.loc[dtypes["db_name"] == name, "db_type"].values[0]
+            return dtypes.loc[dtypes["name"] == name, "type"].values[0]
         else:
             raise ValueError(f"{name} is not a valid name.")
 
@@ -1109,6 +1113,7 @@ class Jai:
                 self.add_data(name, data.loc[missing])
         return ids
 
+    # Helper function to decide which kind of text model to use
     def _resolve_db_type(self, db_type, col):
         if isinstance(db_type, str):
             return db_type
@@ -1116,6 +1121,34 @@ class Jai:
             return db_type[col]
         else:
             return "TextEdit"
+
+    # Helper function to validate name lengths before training
+    def _check_name_lengths(self, name, cols):
+        invalid_cols = []
+        for col in cols:
+            if len(name + "_" + col) > 32:
+                invalid_cols.append(col)
+
+        if len(invalid_cols):
+            raise ValueError(
+                f"The following column names are too large to concatenate\
+                with database '{name}':\n{invalid_cols}\nPlease enter a shorter database name or\
+                shorter column names; 'name_column' string must be at most 32 characters long."
+            )
+
+    # Helper function to build the database names of columns that
+    # are automatically processed during 'sanity' and 'fill' methods
+    def _build_name(self, name, col):
+        origin = name + "_" + col
+        return origin.lower().replace("-", "_").replace(" ", "_")
+
+    # Helper function to delete the whole tree of databases related with
+    # database 'name'
+    def _delete_tree(self, name):
+        names = self.names
+        bases_to_del = [item for item in names if fnmatch(item, f"{name}_*")]
+        for base in bases_to_del:
+            self.delete_database(base)
 
     def match(self,
               name: str,
@@ -1149,7 +1182,7 @@ class Jai:
             If True, returns the values of the original data along with the ids.
             Default is False.
         db_type : str, optional
-            type of model to be trained. The default is 'FastText'.
+            type of model to be trained. The default is 'TextEdit'.
         hyperparams: dict, optional
             See setup documentation for the db_type used.
         overwrite : bool, optional
@@ -1323,6 +1356,12 @@ class Jai:
             data = data.set_index("id")
         data = data.copy()
         cat_threshold = kwargs.get("cat_threshold", 512)
+        overwrite = kwargs.get("overwrite", False)
+
+        # delete tree of databases derived from 'name',
+        # including 'name' itself
+        if overwrite:
+            self._delete_tree(name)
 
         if column in data.columns:
             vals = data.loc[:, column].value_counts() < 2
@@ -1344,11 +1383,15 @@ class Jai:
 
             pre = cat.columns[cat.nunique() > cat_threshold].tolist()
             prep_bases = []
+
+            # check if database and column names will not overflow the 32-character
+            # concatenation limit
+            self._check_name_lengths(name, pre)
+
             for col in pre:
                 id_col = "id_" + col
-                origin = name + "_" + col
-                origin = origin.lower().replace("-", "_").replace(" ",
-                                                                  "_")[:32]
+                origin = self._build_name(name, col)
+
                 # find out which db_type to use for this particular column
                 curr_db_type = self._resolve_db_type(db_type, col)
 
@@ -1385,9 +1428,8 @@ class Jai:
             drop_cols = []
             for col in cat.columns:
                 id_col = "id_" + col
-                origin = name + "_" + col
-                origin = origin.lower().replace("-", "_").replace(" ",
-                                                                  "_")[:32]
+                origin = self._build_name(name, col)
+
                 if origin in self.names:
                     data[id_col] = self.embedding(origin, data[col])
                     drop_cols.append(col)
@@ -1405,7 +1447,6 @@ class Jai:
     def sanity(self,
                name: str,
                data,
-               data_validate=None,
                columns_ref: list = None,
                db_type="TextEdit",
                **kwargs):
@@ -1472,6 +1513,12 @@ class Jai:
         random_seed = kwargs.get("random_seed", 42)
         cat_threshold = kwargs.get("cat_threshold", 512)
         target = kwargs.get("target", "is_valid")
+        overwrite = kwargs.get("overwrite", False)
+
+        # delete tree of databases derived from 'name',
+        # including 'name' itself
+        if overwrite:
+            self._delete_tree(name)
 
         SKIP_SHUFFLING = target in data.columns
 
@@ -1487,11 +1534,14 @@ class Jai:
                 columns_ref = columns_ref.tolist()
 
             prep_bases = []
+
+            # check if database and column names will not overflow the 32-character
+            # concatenation limit
+            self._check_name_lengths(name, pre)
+
             for col in pre:
                 id_col = "id_" + col
-                origin = name + "_" + col
-                origin = origin.lower().replace("-", "_").replace(" ",
-                                                                  "_")[:32]
+                origin = self._build_name(name, col)
 
                 # find out which db_type to use for this particular column
                 curr_db_type = self._resolve_db_type(db_type, col)
@@ -1560,9 +1610,8 @@ class Jai:
             drop_cols = []
             for col in cat.columns:
                 id_col = "id_" + col
-                origin = name + "_" + col
-                origin = origin.lower().replace("-", "_").replace(" ",
-                                                                  "_")[:32]
+                origin = self._build_name(name, col)
+
                 if origin in self.names:
                     data[id_col] = self.embedding(origin, data[col])
                     drop_cols.append(col)
