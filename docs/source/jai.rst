@@ -1,18 +1,19 @@
-jai module
-==============
+##########
+Jai Module
+##########
 
+*********
 Jai class
----------
+*********
 
 .. automodule:: jai.jai
    :members:
    :undoc-members:
    :show-inheritance:
 
+************
 Setup kwargs
-------------
-
-
+************
 
 Parameters that should be passed as a dictionary in compliance with the
 API methods. In other words, every kwarg argument should be passed as if
