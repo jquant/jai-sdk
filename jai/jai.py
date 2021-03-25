@@ -1220,8 +1220,10 @@ class Jai:
         match = pd.DataFrame(processed).sort_values('query_id')
         match = match.rename(columns={"id": "id_left", "query_id": "id_right"})
         if original_data:
-            match['data_letf'] = data_left.loc[match['id_left']].to_numpy(copy=True)
-            match['data_rigth'] = data_right.loc[match['id_right']].to_numpy(copy=True)
+            match['data_letf'] = data_left.loc[match['id_left']].to_numpy(
+                copy=True)
+            match['data_rigth'] = data_right.loc[match['id_right']].to_numpy(
+                copy=True)
 
         return match
 
@@ -1301,7 +1303,8 @@ class Jai:
 
         if original_data:
             r['Original'] = data.loc[r.index.values].to_numpy(copy=True)
-            r['Resolution'] = data.loc[r["resolution_id"].values].to_numpy(copy=True)
+            r['Resolution'] = data.loc[r["resolution_id"].values].to_numpy(
+                copy=True)
         return r
 
     def fill(self, name: str, data, column: str, db_type="TextEdit", **kwargs):
