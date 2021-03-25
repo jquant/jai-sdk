@@ -9,9 +9,11 @@ Here are some applications developed using the basic operations, to allow a more
 Matching values from two datasets
 *********************************
 
-Match two datasets with their possible equal values. This method matches similar values in between text columns of two databases.
+Match two datasets with their possible equal values. This method matches similar values in between text columns of two databases. It queries *data right* to get the similar results in *data left*.
 
-Queries the *data right* to get the similar results in *data left*.
+You can find a complete `match example here <https://github.com/jquant/jai-sdk/blob/main/examples/match_example.ipynb>`_.
+
+
 
 .. code-block:: python
 
@@ -33,6 +35,8 @@ Resolution of duplicated values
 
 Find possible duplicated values within the data. This method finds similar values in text columns of your database.
 
+You can find a complete `resoultion example here <https://github.com/jquant/jai-sdk/blob/main/examples/resolution_example.ipynb>`_.
+
 .. code-block:: python
 
     >>> data = dataframe['name']
@@ -53,6 +57,8 @@ Filling missing values
 
 Fills the column in data with the most likely value given the other columns.
 
+You can find a complete `fill example here <https://github.com/jquant/jai-sdk/blob/main/examples/fill_example.ipynb>`_.
+
 .. code-block:: python
 
     >>> import pandas as pd
@@ -72,6 +78,8 @@ Check data sanity
 *****************
 
 Validates consistency in the columns (columns_ref).
+
+You can find a complete `sanity example here <https://github.com/jquant/jai-sdk/blob/main/examples/sanity_example.ipynb>`_.
 
 .. code-block:: python
 
