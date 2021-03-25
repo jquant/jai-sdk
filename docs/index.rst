@@ -29,9 +29,7 @@ JAI-SDK - Trust your data!
    :caption: API Reference
    
    source/jai
-   source/image
-   source/processing
-   
+   source/auxiliar
 
 ##################
 Indices and tables
