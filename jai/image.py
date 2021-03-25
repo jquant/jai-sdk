@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Mar 11 17:55:28 2021
-
-@author: Kazu
-"""
 import base64
 import pandas as pd
 
@@ -12,7 +6,7 @@ from PIL import Image
 from typing import List
 from tqdm import tqdm
 
-__all__ = ["read_image_folder"]
+__all__ = ["resize_image_folder", "read_image_folder"]
 
 
 def resize_image_folder(image_folder,
@@ -42,6 +36,7 @@ def resize_image_folder(image_folder,
     -------
     List
         List of images that could not be read to memory or written to disk
+
     """
     image_folder = Path(image_folder)
     if not image_folder.exists():
