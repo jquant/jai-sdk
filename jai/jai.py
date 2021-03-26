@@ -1549,9 +1549,6 @@ class Jai:
                 data[id_col] = self.embedding(origin,
                                               data[col],
                                               db_type=curr_db_type)
-
-                prep_bases.append({"id_name": id_col, "db_parent": origin})
-                data[id_col] = self.embedding(origin, data[col])
                 prep_bases.append({"id_name": id_col, "db_parent": origin})
 
                 if col in columns_ref:
