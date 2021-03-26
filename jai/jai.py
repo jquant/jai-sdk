@@ -992,12 +992,15 @@ class Jai:
                 elif fnmatch(status["Description"], "*Iteration:*"):
                     # create a second progress bar to track
                     # training progress
-                    numbers = status["Description"].split("Iteration:")[1].strip().split(" / ")
+                    numbers = status["Description"].split(
+                        "Iteration:")[1].strip().split(" / ")
                     max_iterations = int(numbers[1])
                     completed = int(numbers[0])
-                    with tqdm(total=max_iterations, desc=f"[{name}] Training") as iteration_bar:
+                    with tqdm(total=max_iterations,
+                              desc=f"[{name}] Training") as iteration_bar:
                         while fnmatch(status["Description"], "*Iteration:*"):
-                            numbers = status["Description"].split("Iteration:")[1].strip().split(" / ")
+                            numbers = status["Description"].split(
+                                "Iteration:")[1].strip().split(" / ")
                             curr_step = int(numbers[0])
                             step_update = curr_step - completed
                             iteration_bar.update(step_update)
