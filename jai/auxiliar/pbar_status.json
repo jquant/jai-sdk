@@ -44,7 +44,7 @@
         "^.*(Making database info available).*$", 
         "^.*(model training for).*(has ended).*$"
     ],
-    "Unsupervised": [
+    "SelfSupervised": [
         "^.*(is waiting for setup).*$",
         "^.*(setup has started).*$", 
         "^.*(Checking collection sanity).*$", 
