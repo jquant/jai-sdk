@@ -983,7 +983,9 @@ class Jai:
 
         step = starts_at
         aux = 0
-        with tqdm(total=max_steps, desc="JAI is working", bar_format='{l_bar}{bar}|{n_fmt}/{total_fmt}') as pbar:
+        with tqdm(total=max_steps,
+                  desc="JAI is working",
+                  bar_format='{l_bar}{bar}|{n_fmt}/{total_fmt}') as pbar:
             while status['Status'] != 'Task ended successfully.':
                 if status['Status'] == 'Something went wrong.':
                     raise BaseException(status['Description'])
