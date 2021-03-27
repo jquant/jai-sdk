@@ -996,7 +996,8 @@ class Jai:
                         "Iteration: ")[1].strip().split(" / ")
                     max_iterations = int(numbers[1])
                     with tqdm(total=max_iterations,
-                              desc=f"[{name}] Training", leave=False) as iteration_bar:
+                              desc=f"[{name}] Training",
+                              leave=False) as iteration_bar:
                         while fnmatch(status["Description"], "*Iteration:*"):
                             numbers = status["Description"].split(
                                 "Iteration: ")[1].strip().split(" / ")
