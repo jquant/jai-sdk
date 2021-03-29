@@ -102,7 +102,9 @@ def data2json(data, dtype):
         else:
             raise NotImplementedError(f"type {type(data)} is not implemented.")
     elif dtype == "Unsupervised":
-        raise ValueError(f"'Unsupervised' type has been replaced with {PossibleDtypes.selfsupervised} since version 0.6.0")
+        raise ValueError(
+            f"'Unsupervised' type has been replaced with {PossibleDtypes.selfsupervised} since version 0.6.0"
+        )
     else:
         raise ValueError(f"dtype {dtype} not recognized.")
 
