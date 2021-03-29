@@ -983,25 +983,56 @@ class Jai:
 
         step = starts_at
         aux = 0
-        with tqdm(total=max_steps, desc="JAI is working") as pbar:
-            while status['Status'] != 'Task ended successfully.':
-                if status['Status'] == 'Something went wrong.':
-                    raise BaseException(status['Description'])
-                if (step == starts_at) and (aux == 0):
-                    pbar.update(starts_at)
-                else:
-                    diff = step - starts_at
+        try:
+            with tqdm(total=max_steps,
+                      desc="JAI is working",
+                      bar_format='{l_bar}{bar}|{n_fmt}/{total_fmt}') as pbar:
+                while status['Status'] != 'Task ended successfully.':
+                    if status['Status'] == 'Something went wrong.':
+                        raise BaseException(status['Description'])
+                    elif fnmatch(status["Description"], "*Iteration:*"):
+                        # create a second progress bar to track
+                        # training progress
+                        numbers = status["Description"].split(
+                            "Iteration: ")[1].strip().split(" / ")
+                        max_iterations = int(numbers[1])
+                        with tqdm(total=max_iterations,
+                                  desc=f"[{name}] Training",
+                                  leave=False) as iteration_bar:
+                            while fnmatch(status["Description"],
+                                          "*Iteration:*"):
+                                numbers = status["Description"].split(
+                                    "Iteration: ")[1].strip().split(" / ")
+                                curr_step = int(numbers[0])
+                                step_update = curr_step - iteration_bar.n
+                                if step_update:
+                                    iteration_bar.update(step_update)
+                                status = self.status[name]
+                            # training might stop early, so we make the progress bar appear
+                            # full when early stopping is reached -- peace of mind
+                            iteration_bar.update(max_iterations -
+                                                 iteration_bar.n)
+
+                    if (step == starts_at) and (aux == 0):
+                        pbar.update(starts_at)
+                    else:
+                        diff = step - starts_at
+                        pbar.update(diff)
+                        starts_at = step
+                    step, _ = pbar_steps(status=status, step=step)
+                    time.sleep(frequency_seconds)
+                    status = self.status[name]
+                    aux += 1
+                if (starts_at != max_steps) and aux != 0:
+                    diff = max_steps - starts_at
                     pbar.update(diff)
-                    starts_at = step
-                step, _ = pbar_steps(status=status, step=step)
-                time.sleep(frequency_seconds)
-                status = self.status[name]
-                aux += 1
-            if (starts_at != max_steps) and aux != 0:
-                diff = max_steps - starts_at
-                pbar.update(diff)
-            elif (starts_at != max_steps) and aux == 0:
-                pbar.update(max_steps)
+                elif (starts_at != max_steps) and aux == 0:
+                    pbar.update(max_steps)
+        except KeyboardInterrupt:
+            print("\n\nInterruption caught!\n\n")
+            return requests.post(self.url + f"/cancel/{name}",
+                                 headers=self.header)
+
         self._delete_status(name)
         return status
 
@@ -1220,8 +1251,10 @@ class Jai:
         match = pd.DataFrame(processed).sort_values('query_id')
         match = match.rename(columns={"id": "id_left", "query_id": "id_right"})
         if original_data:
-            match['data_letf'] = data_left.loc[match['id_left']].values
-            match['data_rigth'] = data_right.loc[match['id_right']].values
+            match['data_letf'] = data_left.loc[match['id_left']].to_numpy(
+                copy=True)
+            match['data_rigth'] = data_right.loc[match['id_right']].to_numpy(
+                copy=True)
 
         return match
 
@@ -1230,6 +1263,7 @@ class Jai:
                    data,
                    top_k: int = 20,
                    threshold: float = None,
+                   return_self: bool = True,
                    original_data: bool = False,
                    db_type="TextEdit",
                    hyperparams=None,
@@ -1253,10 +1287,13 @@ class Jai:
             The threshold is automatically set by default, but may need manual
             setting for more accurate results.
         original_data : bool, optional
+            If True, returns the ids when resolution_id is the same as id.
+            Default is True.
+        original_data : bool, optional
             If True, returns the values of the original data along with the ids.
             Default is False.
         db_type : str, optional
-            type of model to be trained. The default is 'FastText'.
+            type of model to be trained. The default is 'TextEdit'.
         hyperparams: dict, optional
             See setup documentation for the db_type used.
         overwrite : bool, optional
@@ -1264,8 +1301,8 @@ class Jai:
 
         Returns
         -------
-        dict
-            each key is the id and the value is a list of ids that are duplicates.
+        pd.DataFrame
+            Each id with its resolution id. More columns depending on parameters.
 
         Example
         -------
@@ -1284,28 +1321,22 @@ class Jai:
            5              5
         """
 
-        inverse, uniques = data.factorize()
-        series_unique = data.drop_duplicates()
-        inverse = series_unique.index[inverse]
-
         ids = self.embedding(name,
-                             series_unique,
+                             data,
                              db_type=db_type,
                              hyperparams=hyperparams,
                              overwrite=overwrite)
         simliar = self.similar(name, ids, top_k=top_k)
         connect = process_resolution(simliar,
                                      threshold=threshold,
-                                     return_self=True)
+                                     return_self=return_self)
         r = pd.DataFrame(connect).set_index('id').sort_index()
 
         if original_data:
-            r['Original'] = series_unique.loc[r.index.values].values
-            r['Resolution'] = series_unique.loc[
-                r["resolution_id"].values].values
-
-        resolution = r.loc[inverse].copy()
-        return resolution
+            r['Original'] = data.loc[r.index.values].to_numpy(copy=True)
+            r['Resolution'] = data.loc[r["resolution_id"].values].to_numpy(
+                copy=True)
+        return r
 
     def fill(self, name: str, data, column: str, db_type="TextEdit", **kwargs):
         """
@@ -1549,9 +1580,6 @@ class Jai:
                 data[id_col] = self.embedding(origin,
                                               data[col],
                                               db_type=curr_db_type)
-
-                prep_bases.append({"id_name": id_col, "db_parent": origin})
-                data[id_col] = self.embedding(origin, data[col])
                 prep_bases.append({"id_name": id_col, "db_parent": origin})
 
                 if col in columns_ref:
