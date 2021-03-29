@@ -62,6 +62,24 @@
         "^.*(Making database info available).*$", 
         "^.*(model training for).*(has ended).*$"
     ],
+    "Unsupervised": [
+        "^.*(is waiting for setup).*$",
+        "^.*(setup has started).*$", 
+        "^.*(Checking collection sanity).*$", 
+        "^.*(Processing has started).*$",
+        "^.*(Checking for missing databases).*$",
+        "^.*(Sanitizing paths).*$",
+        "^.*(Sanitizing columns).*$",
+        "^.*(Getting preprocessed data).*$", 
+        "^.*(Training model).*$",
+        "^.*(Processing data).*$",
+        "^.*(Saving model).*$",
+        "^.*(Backing up to the cloud).*$",
+        "^.*(Saving processed data).*$", 
+        "^.*(Backing up vectors and IDs).*$", 
+        "^.*(Making database info available).*$", 
+        "^.*(model training for).*(has ended).*$"
+    ],
     "Text": [
         "^.*(is waiting for setup).*$",
         "^.*(setup has started).*$", 
