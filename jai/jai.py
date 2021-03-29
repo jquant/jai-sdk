@@ -983,25 +983,56 @@ class Jai:
 
         step = starts_at
         aux = 0
-        with tqdm(total=max_steps, desc="JAI is working") as pbar:
-            while status['Status'] != 'Task ended successfully.':
-                if status['Status'] == 'Something went wrong.':
-                    raise BaseException(status['Description'])
-                if (step == starts_at) and (aux == 0):
-                    pbar.update(starts_at)
-                else:
-                    diff = step - starts_at
+        try:
+            with tqdm(total=max_steps,
+                      desc="JAI is working",
+                      bar_format='{l_bar}{bar}|{n_fmt}/{total_fmt}') as pbar:
+                while status['Status'] != 'Task ended successfully.':
+                    if status['Status'] == 'Something went wrong.':
+                        raise BaseException(status['Description'])
+                    elif fnmatch(status["Description"], "*Iteration:*"):
+                        # create a second progress bar to track
+                        # training progress
+                        numbers = status["Description"].split(
+                            "Iteration: ")[1].strip().split(" / ")
+                        max_iterations = int(numbers[1])
+                        with tqdm(total=max_iterations,
+                                  desc=f"[{name}] Training",
+                                  leave=False) as iteration_bar:
+                            while fnmatch(status["Description"],
+                                          "*Iteration:*"):
+                                numbers = status["Description"].split(
+                                    "Iteration: ")[1].strip().split(" / ")
+                                curr_step = int(numbers[0])
+                                step_update = curr_step - iteration_bar.n
+                                if step_update:
+                                    iteration_bar.update(step_update)
+                                status = self.status[name]
+                            # training might stop early, so we make the progress bar appear
+                            # full when early stopping is reached -- peace of mind
+                            iteration_bar.update(max_iterations -
+                                                 iteration_bar.n)
+
+                    if (step == starts_at) and (aux == 0):
+                        pbar.update(starts_at)
+                    else:
+                        diff = step - starts_at
+                        pbar.update(diff)
+                        starts_at = step
+                    step, _ = pbar_steps(status=status, step=step)
+                    time.sleep(frequency_seconds)
+                    status = self.status[name]
+                    aux += 1
+                if (starts_at != max_steps) and aux != 0:
+                    diff = max_steps - starts_at
                     pbar.update(diff)
-                    starts_at = step
-                step, _ = pbar_steps(status=status, step=step)
-                time.sleep(frequency_seconds)
-                status = self.status[name]
-                aux += 1
-            if (starts_at != max_steps) and aux != 0:
-                diff = max_steps - starts_at
-                pbar.update(diff)
-            elif (starts_at != max_steps) and aux == 0:
-                pbar.update(max_steps)
+                elif (starts_at != max_steps) and aux == 0:
+                    pbar.update(max_steps)
+        except KeyboardInterrupt:
+            print("\n\nInterruption caught!\n\n")
+            return requests.post(self.url + f"/cancel/{name}",
+                                 headers=self.header)
+
         self._delete_status(name)
         return status
 
