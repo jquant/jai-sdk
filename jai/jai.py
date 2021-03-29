@@ -1243,8 +1243,10 @@ class Jai:
         match = pd.DataFrame(processed).sort_values('query_id')
         match = match.rename(columns={"id": "id_left", "query_id": "id_right"})
         if original_data:
-            match['data_letf'] = data_left.loc[match['id_left']].values
-            match['data_rigth'] = data_right.loc[match['id_right']].values
+            match['data_letf'] = data_left.loc[match['id_left']].to_numpy(
+                copy=True)
+            match['data_rigth'] = data_right.loc[match['id_right']].to_numpy(
+                copy=True)
 
         return match
 
@@ -1253,6 +1255,7 @@ class Jai:
                    data,
                    top_k: int = 20,
                    threshold: float = None,
+                   return_self: bool = True,
                    original_data: bool = False,
                    db_type="TextEdit",
                    hyperparams=None,
@@ -1276,10 +1279,13 @@ class Jai:
             The threshold is automatically set by default, but may need manual
             setting for more accurate results.
         original_data : bool, optional
+            If True, returns the ids when resolution_id is the same as id.
+            Default is True.
+        original_data : bool, optional
             If True, returns the values of the original data along with the ids.
             Default is False.
         db_type : str, optional
-            type of model to be trained. The default is 'FastText'.
+            type of model to be trained. The default is 'TextEdit'.
         hyperparams: dict, optional
             See setup documentation for the db_type used.
         overwrite : bool, optional
@@ -1287,8 +1293,8 @@ class Jai:
 
         Returns
         -------
-        dict
-            each key is the id and the value is a list of ids that are duplicates.
+        pd.DataFrame
+            Each id with its resolution id. More columns depending on parameters.
 
         Example
         -------
@@ -1307,28 +1313,22 @@ class Jai:
            5              5
         """
 
-        inverse, uniques = data.factorize()
-        series_unique = data.drop_duplicates()
-        inverse = series_unique.index[inverse]
-
         ids = self.embedding(name,
-                             series_unique,
+                             data,
                              db_type=db_type,
                              hyperparams=hyperparams,
                              overwrite=overwrite)
         simliar = self.similar(name, ids, top_k=top_k)
         connect = process_resolution(simliar,
                                      threshold=threshold,
-                                     return_self=True)
+                                     return_self=return_self)
         r = pd.DataFrame(connect).set_index('id').sort_index()
 
         if original_data:
-            r['Original'] = series_unique.loc[r.index.values].values
-            r['Resolution'] = series_unique.loc[
-                r["resolution_id"].values].values
-
-        resolution = r.loc[inverse].copy()
-        return resolution
+            r['Original'] = data.loc[r.index.values].to_numpy(copy=True)
+            r['Resolution'] = data.loc[r["resolution_id"].values].to_numpy(
+                copy=True)
+        return r
 
     def fill(self, name: str, data, column: str, db_type="TextEdit", **kwargs):
         """
@@ -1572,9 +1572,6 @@ class Jai:
                 data[id_col] = self.embedding(origin,
                                               data[col],
                                               db_type=curr_db_type)
-
-                prep_bases.append({"id_name": id_col, "db_parent": origin})
-                data[id_col] = self.embedding(origin, data[col])
                 prep_bases.append({"id_name": id_col, "db_parent": origin})
 
                 if col in columns_ref:
