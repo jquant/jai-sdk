@@ -66,8 +66,8 @@ def test_text(name, data, dtype, setup_dataframe):
 # =============================================================================
 # Test Unsupervised
 # =============================================================================
-def test_unsupervised(setup_dataframe):
-    name = 'test_unsupervised'
+def test_selfsupervised(setup_dataframe):
+    name = 'test_selfsupervised'
 
     train, _ = setup_dataframe
     train = train.drop(columns=["PassengerId"])

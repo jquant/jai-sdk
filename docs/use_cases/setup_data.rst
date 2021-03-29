@@ -110,7 +110,15 @@ Setup applying Supervised Model
 
     >>> j.setup(name, data, db_type='Supervised', label={"task": "metric_classification", "label_name": "my_label"})
 
-
+.. note::
+    In case of usage of datetime data types, make sure to use a good format. We suggest the format :code:`"%Y-%m-%d %H:%M:%S "`.
+    The code used to identify the datetime columns is as follows:
+    
+    .. code-block:: python
+    
+        cat_columns = dataframe.select_dtypes("O").columns
+        dataframe[cat_columns] = dataframe[cat_columns].apply(pd.to_datetime,
+                                                            errors="ignore")
 
 .. note::
     The method :code:`setup` has a default :code:`batch_size=16384`, which will result in a total of :code:`ceil(n_samples/batch_size) + n + 5` requests, where :code:`n = ceil(training_time/frequency_seconds)` is a variable number depending on the time it takes to finish the setup.

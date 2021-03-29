@@ -76,7 +76,7 @@ class Jai:
         Example
         -------
         >>> j.names
-        ['jai_database', 'jai_unsupervised', 'jai_supervised']
+        ['jai_database', 'jai_selfsupervised', 'jai_supervised']
 
         """
         response = requests.get(url=self.url + "/info?mode=names",
@@ -104,10 +104,10 @@ class Jai:
         Example
         -------
         >>> j.info
-                                db_name       db_type
-        0                  jai_database          Text
-        1              jai_unsupervised  Unsupervised
-        2                jai_supervised    Supervised
+                                db_name           db_type
+        0                  jai_database              Text
+        1            jai_selfsupervised    SelfSupervised
+        2                jai_supervised        Supervised
         """
         response = requests.get(url=self.url + "/info?mode=complete",
                                 headers=self.header)
