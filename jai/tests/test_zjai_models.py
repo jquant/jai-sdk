@@ -64,10 +64,10 @@ def test_text(name, data, dtype, setup_dataframe):
 
 
 # =============================================================================
-# Test Unsupervised
+# Test Self-supervised
 # =============================================================================
-def test_unsupervised(setup_dataframe):
-    name = 'test_unsupervised'
+def test_selfsupervised(setup_dataframe):
+    name = 'test_selfsupervised'
 
     train, _ = setup_dataframe
     train = train.drop(columns=["PassengerId"])
@@ -77,7 +77,7 @@ def test_unsupervised(setup_dataframe):
     if j.is_valid(name):
         j.delete_database(name)
 
-    j.setup(name, train, db_type="Unsupervised", overwrite=True)
+    j.setup(name, train, db_type="SelfSupervised", overwrite=True)
 
     assert j.is_valid(name), f"valid name {name} after setup failed"
 
