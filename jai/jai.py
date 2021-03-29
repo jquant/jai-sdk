@@ -985,8 +985,8 @@ class Jai:
         aux = 0
         try:
             with tqdm(total=max_steps,
-                    desc="JAI is working",
-                    bar_format='{l_bar}{bar}|{n_fmt}/{total_fmt}') as pbar:
+                      desc="JAI is working",
+                      bar_format='{l_bar}{bar}|{n_fmt}/{total_fmt}') as pbar:
                 while status['Status'] != 'Task ended successfully.':
                     if status['Status'] == 'Something went wrong.':
                         raise BaseException(status['Description'])
@@ -997,9 +997,10 @@ class Jai:
                             "Iteration: ")[1].strip().split(" / ")
                         max_iterations = int(numbers[1])
                         with tqdm(total=max_iterations,
-                                desc=f"[{name}] Training",
-                                leave=False) as iteration_bar:
-                            while fnmatch(status["Description"], "*Iteration:*"):
+                                  desc=f"[{name}] Training",
+                                  leave=False) as iteration_bar:
+                            while fnmatch(status["Description"],
+                                          "*Iteration:*"):
                                 numbers = status["Description"].split(
                                     "Iteration: ")[1].strip().split(" / ")
                                 curr_step = int(numbers[0])
@@ -1009,7 +1010,8 @@ class Jai:
                                 status = self.status[name]
                             # training might stop early, so we make the progress bar appear
                             # full when early stopping is reached -- peace of mind
-                            iteration_bar.update(max_iterations - iteration_bar.n)
+                            iteration_bar.update(max_iterations -
+                                                 iteration_bar.n)
 
                     if (step == starts_at) and (aux == 0):
                         pbar.update(starts_at)
@@ -1029,8 +1031,7 @@ class Jai:
         except KeyboardInterrupt:
             print("Interruption caught!")
             return requests.post(self.url + f"/cancel/{name}",
-                                   headers=self.header)
-            
+                                 headers=self.header)
 
         self._delete_status(name)
         return status
