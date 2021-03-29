@@ -96,11 +96,13 @@ def data2json(data, dtype):
                 )
         else:
             raise NotImplementedError(f"type {type(data)} is not implemented.")
-    elif dtype == PossibleDtypes.supervised or dtype == PossibleDtypes.unsupervised:
+    elif dtype == PossibleDtypes.supervised or dtype == PossibleDtypes.selfsupervised:
         if isinstance(data, pd.DataFrame):
             return df2json(data)
         else:
             raise NotImplementedError(f"type {type(data)} is not implemented.")
+    elif dtype == "Unsupervised":
+        raise ValueError(f"'Unsupervised' type has been replaced with {PossibleDtypes.selfsupervised} since version 0.6.0")
     else:
         raise ValueError(f"dtype {dtype} not recognized.")
 
