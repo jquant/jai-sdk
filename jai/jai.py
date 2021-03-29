@@ -1029,7 +1029,7 @@ class Jai:
                 elif (starts_at != max_steps) and aux == 0:
                     pbar.update(max_steps)
         except KeyboardInterrupt:
-            print("Interruption caught!")
+            print("\n\nInterruption caught!\n\n")
             return requests.post(self.url + f"/cancel/{name}",
                                  headers=self.header)
 
