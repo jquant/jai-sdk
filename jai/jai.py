@@ -361,32 +361,6 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def _get_dtype(self, name):
-        """
-        Return the database type.
-
-        Parameters
-        ----------
-        name : str
-            String with the name of a database in your JAI environment.
-
-        Raises
-        ------
-        ValueError
-            If the name is not valid.
-
-        Returns
-        -------
-        db_type : str
-            The name of the type of the database.
-
-        """
-        dtypes = self.info
-        if self.is_valid(name):
-            return dtypes.loc[dtypes["name"] == name, "type"].values[0]
-        else:
-            raise ValueError(f"{name} is not a valid name.")
-
     def _similar_json(self, name: str, data_json, top_k: int = 5):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given a JSON data entry.
@@ -416,6 +390,32 @@ class Jai:
             return response.json()
         else:
             return self.assert_status_code(response)
+
+    def _get_dtype(self, name):
+        """
+        Return the database type.
+
+        Parameters
+        ----------
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Raises
+        ------
+        ValueError
+            If the name is not valid.
+
+        Returns
+        -------
+        db_type : str
+            The name of the type of the database.
+
+        """
+        dtypes = self.info
+        if self.is_valid(name):
+            return dtypes.loc[dtypes["name"] == name, "type"].values[0]
+        else:
+            raise ValueError(f"{name} is not a valid name.")
 
     def _check_dtype_and_clean(self, data, db_type):
         """
@@ -619,33 +619,6 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def _insert_data(self, data, name, db_type, batch_size):
-        """
-        Insert raw data for training. This is a protected method.
-
-        Args
-        ----------
-        name : str
-            String with the name of a database in your JAI environment.
-        db_type : str
-            Database type (Supervised, Unsupervised, Text...)
-        batch_size : int
-            Size of batch to send the data.
-
-        Return
-        ------
-        insert_responses : dict
-            Dictionary of responses for each batch. Each response contains
-            information of whether or not that particular batch was successfully inserted.
-        """
-        insert_responses = {}
-        for i, b in enumerate(
-                trange(0, len(data), batch_size, desc="Insert Data")):
-            _batch = data.iloc[b:b + batch_size]
-            insert_responses[i] = self._insert_json(
-                name, data2json(_batch, dtype=db_type))
-        return insert_responses
-
     def _check_ids_consistency(self, name, data):
         """
         Check if inserted data is consistent with what we expect.
@@ -818,6 +791,33 @@ class Jai:
             return response.json()
         else:
             return self.assert_status_code(response)
+
+    def _insert_data(self, data, name, db_type, batch_size):
+        """
+        Insert raw data for training. This is a protected method.
+
+        Args
+        ----------
+        name : str
+            String with the name of a database in your JAI environment.
+        db_type : str
+            Database type (Supervised, Unsupervised, Text...)
+        batch_size : int
+            Size of batch to send the data.
+
+        Return
+        ------
+        insert_responses : dict
+            Dictionary of responses for each batch. Each response contains
+            information of whether or not that particular batch was successfully inserted.
+        """
+        insert_responses = {}
+        for i, b in enumerate(
+                trange(0, len(data), batch_size, desc="Insert Data")):
+            _batch = data.iloc[b:b + batch_size]
+            insert_responses[i] = self._insert_json(
+                name, data2json(_batch, dtype=db_type))
+        return insert_responses
 
     def _insert_json(self, name: str, df_json):
         """

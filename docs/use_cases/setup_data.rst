@@ -110,3 +110,9 @@ Setup applying Supervised Model
 
     >>> j.setup(name, data, db_type='Supervised', label={"task": "metric_classification", "label_name": "my_label"})
 
+
+
+.. note::
+    The method :code:`setup` has a default :code:`batch_size=16384`, which will result in a total of :code:`ceil(n_samples/batch_size) + n + 5` requests, where :code:`n = ceil(training_time/frequency_seconds)` is a variable number depending on the time it takes to finish the setup.
+    We do NOT recommend changing the :code:`batch_size` default value as it could reduce the performance of the API. 
+    As for the :code:`frequency_seconds`, it could be changed affecting only the frequecy of the progress bar's updates. If :code:`frequency_seconds = 0`, then there will be no progress bar printed, requiring the user to interpret the response from :code:`j.status`.

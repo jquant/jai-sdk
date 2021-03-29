@@ -1,4 +1,5 @@
 # Jai SDK - Trust your data
+
 [![PyPI Latest Release](https://img.shields.io/pypi/v/jai-sdk.svg)](https://pypi.org/project/jai-sdk/)
 [![Python Version](https://img.shields.io/badge/python-3.7%20%7C%203.8-blue)](https://img.shields.io/badge/python-3.7%20%7C%203.8-blue)
 [![Documentation Status](https://readthedocs.org/projects/jai-sdk/badge/?version=latest)](https://jai-sdk.readthedocs.io/en/latest/?badge=latest)
@@ -7,6 +8,7 @@
 [![Code style: yapf](https://img.shields.io/badge/code%20style-yapf-blue)](https://github.com/google/yapf)
 
 # Installation
+
 The source code is currently hosted on GitHub at: [https://github.com/jquant/jai-sdk](https://github.com/jquant/jai-sdk)
 
 Installing jai-sdk using `pip`:
@@ -15,7 +17,8 @@ Installing jai-sdk using `pip`:
 pip install jai-sdk
 ```
 
-# Get your Auth Key
+# [Get your Auth Key](https://jai-sdk.readthedocs.io/en/latest/source/quick_start.html#getting-your-authentication-key)
+
 First, you'll need and Authorization key to use the backend API.
 
 To get an Trial version API using the sdk, fill the values with your information:
@@ -28,9 +31,8 @@ r = Jai.get_auth_key(email=EMAIL, firstName=FIRSTNAME, lastName=LASTNAME)
 
 If the response code is 201, then you should be receiving an email with your Auth Key.
 
-The Free Trial version is limited to 20 requests/minute and 1000 requests/week. If you want to try our 30 day trial with unlimited request or know more about our paid plans, please get in touch with us on support@getjai.com.
-
 # Get Started
+
 If you already have an Auth Key, then you can use the sdk:
 
 ```python
