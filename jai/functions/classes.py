@@ -6,7 +6,7 @@ __all__ = ['FieldName', 'Mode', 'PossibleDtypes']
 class PossibleDtypes(str, Enum):
     image = "Image"
     fasttext = "FastText"
-    unsupervised = "Unsupervised"
+    selfsupervised = "SelfSupervised"
     supervised = "Supervised"
     text = "Text"
     edit = "TextEdit"
