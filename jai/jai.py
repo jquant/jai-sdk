@@ -76,7 +76,7 @@ class Jai:
         Example
         -------
         >>> j.names
-        ['jai_database', 'jai_unsupervised', 'jai_supervised']
+        ['jai_database', 'jai_selfsupervised', 'jai_supervised']
 
         """
         response = requests.get(url=self.url + "/info?mode=names",
@@ -104,10 +104,10 @@ class Jai:
         Example
         -------
         >>> j.info
-                                db_name       db_type
-        0                  jai_database          Text
-        1              jai_unsupervised  Unsupervised
-        2                jai_supervised    Supervised
+                                db_name           db_type
+        0                  jai_database              Text
+        1              jai_selfsupervised  SelfSupervised
+        2                jai_supervised        Supervised
         """
         response = requests.get(url=self.url + "/info?mode=complete",
                                 headers=self.header)
@@ -428,7 +428,7 @@ class Jai:
             Data to be checked and cleaned.
 
         db_type : str
-            Database type (Supervised, Unsupervised, Text...)
+            Database type (Supervised, SelfSupervised, Text...)
 
         Return
         ------
@@ -628,7 +628,7 @@ class Jai:
         name : str
             String with the name of a database in your JAI environment.
         db_type : str
-            Database type (Supervised, Unsupervised, Text...)
+            Database type (Supervised, SelSupervised, Text...)
         batch_size : int
             Size of batch to send the data.
 
@@ -687,7 +687,7 @@ class Jai:
         data : pandas.DataFrame or pandas.Series
             Data to be inserted and used for training.
         db_type : str
-            Database type {Supervised, Unsupervised, Text, FastText, TextEdit, Image}
+            Database type {Supervised, SelfSupervised, Text, FastText, TextEdit, Image}
         batch_size : int
             Size of batch to insert the data.`Default is 16384 (2**14)`.
         frequency_seconds : int
@@ -851,7 +851,7 @@ class Jai:
         Args
         ----
         db_type : str
-            Database type (Supervised, Unsupervised, Text...)
+            Database type (Supervised, SelfSupervised, Text...)
 
         Return
         ------
@@ -860,11 +860,11 @@ class Jai:
         """
         possible = ["hyperparams", "callback_url"]
         must = []
-        if db_type == "Unsupervised":
+        if db_type == PossibleDtypes.selfsupervised:
             possible.extend([
                 'num_process', 'cat_process', 'high_process', 'mycelia_bases'
             ])
-        elif db_type == "Supervised":
+        elif db_type == PossibleDtypes.supervised:
             possible.extend([
                 'num_process', 'cat_process', 'high_process', 'mycelia_bases',
                 'label', 'split'
@@ -899,7 +899,7 @@ class Jai:
         name : str
             String with the name of a database in your JAI environment.
         db_type : str
-            Database type (Supervised, Unsupervised, Text...)
+            Database type (Supervised, SelfSupervised, Text...)
         overwrite : bool
             [Optional] Whether of not to overwrite the given database. `Default is False`.
         **kwargs:
@@ -925,7 +925,7 @@ class Jai:
 
     def fields(self, name: str):
         """
-        Get the table fields for a Supervised/Unsupervised database.
+        Get the table fields for a Supervised/SelfSupervised database.
 
         Args
         ----
@@ -946,9 +946,9 @@ class Jai:
         {'id': 0, 'feature1': 0.01, 'feature2': 'string', 'feature3': 0}
         """
         dtype = self._get_dtype(name)
-        if dtype != "Unsupervised" and dtype != "Supervised":
+        if dtype != PossibleDtypes.selfsupervised and dtype != PossibleDtypes.supervised:
             raise ValueError(
-                "'fields' method is only available to dtype Unsupervised and Supervised."
+                "'fields' method is only available to dtype SelSupervised and Supervised."
             )
 
         response = requests.get(self.url + f"/table/fields/{name}",
