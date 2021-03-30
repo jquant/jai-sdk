@@ -118,7 +118,7 @@ class Jai:
                     "db_name": "name",
                     "db_type": "type",
                     "db_version": "last modified",
-                    "db_parents": "parents"
+                    "db_parents": "dependencies"
                 })
             return df
         else:
@@ -1176,10 +1176,16 @@ class Jai:
     # Helper function to delete the whole tree of databases related with
     # database 'name'
     def _delete_tree(self, name):
-        names = self.names
-        bases_to_del = [item for item in names if fnmatch(item, f"{name}_*")]
-        for base in bases_to_del:
-            self.delete_database(base)
+        df = self.info
+        try:
+            bases_to_del = df.loc[df["name"] == name, "dependencies"].values[0]
+            bases_to_del.append(name)
+            for base in bases_to_del:
+                self.delete_database(base)
+        except:
+            print(
+                f"Database '{name}' does not exist in your environment. Nothing to overwrite yet."
+            )
 
     def match(self,
               name: str,
