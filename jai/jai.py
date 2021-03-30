@@ -691,9 +691,11 @@ class Jai:
             "Description": "Training of database chosen_name has started."
         }
         """
-
-        # delete data reamains
-        self.delete_raw_data(name)
+        if "overwrite" in kwargs and name in self.names:
+            self.delete_database(name)
+        else:
+            # delete data reamains
+            self.delete_raw_data(name)
 
         # make sure our data has the correct type and is free of NAs
         data = self._check_dtype_and_clean(data=data, db_type=db_type)
