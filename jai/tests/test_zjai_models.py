@@ -1,5 +1,4 @@
 from jai import Jai
-from pandas.api.types import infer_dtype
 from .test_utils import setup_dataframe
 import pandas as pd
 import numpy as np
@@ -90,6 +89,8 @@ def test_selfsupervised(setup_dataframe):
         if k == 'id':
             continue
         original = str(train[k].dtype)
+        if original == 'object':
+            original = 'string'
         assert original == from_api, "dtype from api {from_api} differ from data {original}"
 
     result = j.similar(name, query)
@@ -139,6 +140,8 @@ def test_supervised(setup_dataframe):
         if k == 'Survived':
             continue
         original = str(train[k].dtype)
+        if original == 'object':
+            original = 'string'
         assert original == from_api, "dtype from api {from_api} differ from data {original}"
 
     result = j.similar(name, query)
