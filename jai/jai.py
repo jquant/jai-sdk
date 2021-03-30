@@ -862,12 +862,13 @@ class Jai:
         must = []
         if db_type == PossibleDtypes.selfsupervised:
             possible.extend([
-                'num_process', 'cat_process', 'datetime_process', 'mycelia_bases'
+                'num_process', 'cat_process', 'datetime_process',
+                'mycelia_bases'
             ])
         elif db_type == PossibleDtypes.supervised:
             possible.extend([
-                'num_process', 'cat_process', 'datetime_process', 'mycelia_bases',
-                'label', 'split'
+                'num_process', 'cat_process', 'datetime_process',
+                'mycelia_bases', 'label', 'split'
             ])
             must.extend(['label'])
 
