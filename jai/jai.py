@@ -709,8 +709,6 @@ class Jai:
         # check if we inserted everything we were supposed to
         self._check_ids_consistency(name=name, data=data)
 
-        
-
         # train model
         setup_response = self._setup_database(name, db_type, **kwargs)
 
