@@ -1183,7 +1183,9 @@ class Jai:
             for base in bases_to_del:
                 self.delete_database(base)
         except:
-            print(f"Database '{name}' does not exist in your environment. Nothing to overwrite yet.")
+            print(
+                f"Database '{name}' does not exist in your environment. Nothing to overwrite yet."
+            )
 
     def match(self,
               name: str,
