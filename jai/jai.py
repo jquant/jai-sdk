@@ -106,7 +106,7 @@ class Jai:
         >>> j.info
                                 db_name           db_type
         0                  jai_database              Text
-        1              jai_selfsupervised  SelfSupervised
+        1            jai_selfsupervised    SelfSupervised
         2                jai_supervised        Supervised
         """
         response = requests.get(url=self.url + "/info?mode=complete",
@@ -118,7 +118,7 @@ class Jai:
                     "db_name": "name",
                     "db_type": "type",
                     "db_version": "last modified",
-                    "db_parents": "parents"
+                    "db_parents": "dependencies"
                 })
             return df
         else:
@@ -361,32 +361,6 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def _get_dtype(self, name):
-        """
-        Return the database type.
-
-        Parameters
-        ----------
-        name : str
-            String with the name of a database in your JAI environment.
-
-        Raises
-        ------
-        ValueError
-            If the name is not valid.
-
-        Returns
-        -------
-        db_type : str
-            The name of the type of the database.
-
-        """
-        dtypes = self.info
-        if self.is_valid(name):
-            return dtypes.loc[dtypes["name"] == name, "type"].values[0]
-        else:
-            raise ValueError(f"{name} is not a valid name.")
-
     def _similar_json(self, name: str, data_json, top_k: int = 5):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given a JSON data entry.
@@ -416,6 +390,32 @@ class Jai:
             return response.json()
         else:
             return self.assert_status_code(response)
+
+    def _get_dtype(self, name):
+        """
+        Return the database type.
+
+        Parameters
+        ----------
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Raises
+        ------
+        ValueError
+            If the name is not valid.
+
+        Returns
+        -------
+        db_type : str
+            The name of the type of the database.
+
+        """
+        dtypes = self.info
+        if self.is_valid(name):
+            return dtypes.loc[dtypes["name"] == name, "type"].values[0]
+        else:
+            raise ValueError(f"{name} is not a valid name.")
 
     def _check_dtype_and_clean(self, data, db_type):
         """
@@ -619,33 +619,6 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def _insert_data(self, data, name, db_type, batch_size):
-        """
-        Insert raw data for training. This is a protected method.
-
-        Args
-        ----------
-        name : str
-            String with the name of a database in your JAI environment.
-        db_type : str
-            Database type (Supervised, SelSupervised, Text...)
-        batch_size : int
-            Size of batch to send the data.
-
-        Return
-        ------
-        insert_responses : dict
-            Dictionary of responses for each batch. Each response contains
-            information of whether or not that particular batch was successfully inserted.
-        """
-        insert_responses = {}
-        for i, b in enumerate(
-                trange(0, len(data), batch_size, desc="Insert Data")):
-            _batch = data.iloc[b:b + batch_size]
-            insert_responses[i] = self._insert_json(
-                name, data2json(_batch, dtype=db_type))
-        return insert_responses
-
     def _check_ids_consistency(self, name, data):
         """
         Check if inserted data is consistent with what we expect.
@@ -819,6 +792,33 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
+    def _insert_data(self, data, name, db_type, batch_size):
+        """
+        Insert raw data for training. This is a protected method.
+
+        Args
+        ----------
+        name : str
+            String with the name of a database in your JAI environment.
+        db_type : str
+            Database type (Supervised, SelSupervised, Text...)
+        batch_size : int
+            Size of batch to send the data.
+
+        Return
+        ------
+        insert_responses : dict
+            Dictionary of responses for each batch. Each response contains
+            information of whether or not that particular batch was successfully inserted.
+        """
+        insert_responses = {}
+        for i, b in enumerate(
+                trange(0, len(data), batch_size, desc="Insert Data")):
+            _batch = data.iloc[b:b + batch_size]
+            insert_responses[i] = self._insert_json(
+                name, data2json(_batch, dtype=db_type))
+        return insert_responses
+
     def _insert_json(self, name: str, df_json):
         """
         Insert data in JSON format. This is a protected method.
@@ -862,12 +862,13 @@ class Jai:
         must = []
         if db_type == PossibleDtypes.selfsupervised:
             possible.extend([
-                'num_process', 'cat_process', 'high_process', 'mycelia_bases'
+                'num_process', 'cat_process', 'datetime_process',
+                'mycelia_bases'
             ])
         elif db_type == PossibleDtypes.supervised:
             possible.extend([
-                'num_process', 'cat_process', 'high_process', 'mycelia_bases',
-                'label', 'split'
+                'num_process', 'cat_process', 'datetime_process',
+                'mycelia_bases', 'label', 'split'
             ])
             must.extend(['label'])
 
@@ -1176,10 +1177,16 @@ class Jai:
     # Helper function to delete the whole tree of databases related with
     # database 'name'
     def _delete_tree(self, name):
-        names = self.names
-        bases_to_del = [item for item in names if fnmatch(item, f"{name}_*")]
-        for base in bases_to_del:
-            self.delete_database(base)
+        df = self.info
+        try:
+            bases_to_del = df.loc[df["name"] == name, "dependencies"].values[0]
+            bases_to_del.append(name)
+            for base in bases_to_del:
+                self.delete_database(base)
+        except:
+            print(
+                f"Database '{name}' does not exist in your environment. Nothing to overwrite yet."
+            )
 
     def match(self,
               name: str,

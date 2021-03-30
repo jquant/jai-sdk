@@ -68,26 +68,22 @@ it were in the body of a POST method.
     * **nt** (*int*) -- Amount of training samples. *Default is 1000*.
     * **nr** (*int*) -- Amount of generated training samples. *Default is 1000*.
     * **nb** (*int*) -- Amount of  base items. *Default is 1385451*.
-    * **k** (*int*) -- Amount sampling threshold. *Default is 100*.
+    * **k** (*int*) -- Amount sampling threshold for knn. Only trains with samples below 2*k closest pairs. *Default is 100*.
     * **epochs** (*int*) -- Amount of epochs. *Default is 20*.
     * **shuffle_seed** (*int*) -- Seed for shuffle. *Default is 808*.
     * **batch_size** (*int*) -- Batch size for sgd. *Default is 128*.
     * **test_batch_size** (*int*) -- Batch size for test. *Default is 1024*.
     * **channel** (*int*) -- Amount of channels. *Default is 8*.
-    * **mtc** (*bool*) -- Does we use multi channel as for input. *Default is 
-      False*.
     * **embed_dim** (*int*) -- Output dimension. *Default is 128*.
     * **random_train** (*bool*) -- Generate random training samples and replace. 
       *Default is False*.
     * **random_append_train** (*bool*) -- Generate random training samples and 
       append. *Default is False*.
-    * **bert** (*bool*) -- Using bert or not. *Default is False*.
     * **maxl** (*int*) -- Max length of strings. *Default is 0*.
 
   * **"Supervised" or "Unsupervised"**:
 
     * **batch_size** (*int*) -- Batch size for training. *Default is 512*.
-    * **dropout_rate** (*float*) -- Dropout rate. *Default is 0.25*.
     * **learning_rate** (*float*) -- Initial learning rate. *Default is 0.001*.
     * **encoder_layer** (*str*) -- Structure for the encoder layer {"2L", "tabnet"}. 
       *Default is "tabnet"*.
@@ -114,13 +110,10 @@ it were in the body of a POST method.
   * **min_freq** (*str*) -- Number of times a category has to occur to be valid,
     otherwise we substitute by fill_value. *Default is 3*.
 
-* **high_process** (*dict*) -- (*Only for db_type Supervised and Unsupervised*) 
-  Parameters defining how high dimensional vector values will be processed.
-  
+* **datetime_process** (*dict*) -- (*Only for db_type Supervised and Unsupervised*) 
+  Parameters defining how datetime values will be processed.
+    
   * **embedding_dim** (*int*) -- Initial embedding dimension. *Default is 32*.
-  * **nlp_model** (*transformers*) -- Model for high dim features preprocessing.
-  * **max_length** (*int*) -- Controls the maximum length to use by one of the 
-    truncation/padding parameters. *Default is 100*.
 
 * **mycelia_bases** (*list of dicts*) -- (*Only for db_type Supervised and Unsupervised*) Related already 
   processed data that will be used in the setup of this new one. If a column has id values that 
