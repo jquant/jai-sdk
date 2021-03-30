@@ -102,7 +102,7 @@ def data2json(data, dtype):
                 return df2json(data)
             else:
                 raise ValueError(
-                    "Data must be a DataFrame with at least 2 columns not named 'id'."
+                    "Data must be a DataFrame with at least 2 columns other than 'id'."
                 )
         else:
             raise NotImplementedError(f"type {type(data)} is not implemented.")
