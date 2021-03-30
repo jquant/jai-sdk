@@ -68,3 +68,6 @@ The output will be a list of dictionaries with ("query_id") being the id of the 
         ...
     ]
 
+
+.. note::
+    The method :code:`similar` has a default :code:`batch_size=16384`, which will result in :code:`ceil(n_samples/batch_size) + 2` requests. We do NOT recommend changing the default value as it could reduce the performance of the API.
