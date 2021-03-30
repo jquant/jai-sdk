@@ -86,11 +86,10 @@ def test_selfsupervised(setup_dataframe):
                            ], 'ids simple failed'
     assert j.ids(name, 'complete') == ids, "ids complete failed"
 
-    for k, v in j.fields(name).items():
+    for k, from_api in j.fields(name).items():
         if k == 'id':
             continue
-        original = infer_dtype(train[k])
-        from_api = infer_dtype([v])
+        original = str(train[k].dtype)
         assert original == from_api, "dtype from api {from_api} differ from data {original}"
 
     result = j.similar(name, query)
@@ -136,11 +135,10 @@ def test_supervised(setup_dataframe):
                            ], 'ids simple failed'
     assert j.ids(name, 'complete') == ids, "ids complete failed"
 
-    for k, v in j.fields(name).items():
+    for k, from_api in j.fields(name).items():
         if k == 'Survived':
             continue
-        original = infer_dtype(train[k])
-        from_api = infer_dtype([v])
+        original = str(train[k].dtype)
         assert original == from_api, "dtype from api {from_api} differ from data {original}"
 
     result = j.similar(name, query)
