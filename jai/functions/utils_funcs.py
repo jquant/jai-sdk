@@ -98,7 +98,12 @@ def data2json(data, dtype):
             raise NotImplementedError(f"type {type(data)} is not implemented.")
     elif dtype == PossibleDtypes.supervised or dtype == PossibleDtypes.selfsupervised:
         if isinstance(data, pd.DataFrame):
-            return df2json(data)
+            if (data.columns != 'id').sum() >= 2:
+                return df2json(data)
+            else:
+                raise ValueError(
+                    "Data must be a DataFrame with at least 2 columns not named 'id'."
+                )
         else:
             raise NotImplementedError(f"type {type(data)} is not implemented.")
     elif dtype == "Unsupervised":
