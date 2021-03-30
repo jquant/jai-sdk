@@ -1178,7 +1178,7 @@ class Jai:
     def _delete_tree(self, name):
         df = self.info
         try:
-            bases_to_del = df.loc[df["name"] == name]["parents"].values[0]
+            bases_to_del = df.loc[df["name"] == name]["dependencies"].values[0]
             bases_to_del.append(name)
             for base in bases_to_del:
                 self.delete_database(base)
