@@ -43,6 +43,7 @@ def test_ids_exception():
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
         j.ids(name="name")
 
+
 def test_temp_ids_exception():
     with pytest.raises(ValueError):
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
