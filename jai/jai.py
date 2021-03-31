@@ -691,8 +691,12 @@ class Jai:
             "Description": "Training of database chosen_name has started."
         }
         """
-        if "overwrite" in kwargs and name in self.names:
+        if kwargs.get("overwrite", False) and name in self.names:
             self.delete_database(name)
+        elif name in self.names:
+            raise KeyError(
+                f"Database '{name}' already exists in your environment. Set overwrite=True to overwrite it."
+            )
         else:
             # delete data reamains
             self.delete_raw_data(name)
