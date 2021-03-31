@@ -66,7 +66,7 @@ def df2json(dataframe):
     return dataframe.to_json(orient='records')
 
 
-def data2json(data, dtype):
+def data2json(data, dtype, predict=False):
     if (dtype == PossibleDtypes.edit or dtype == PossibleDtypes.text
             or dtype == PossibleDtypes.fasttext
             or dtype == PossibleDtypes.image):
@@ -96,13 +96,24 @@ def data2json(data, dtype):
                 )
         else:
             raise NotImplementedError(f"type {type(data)} is not implemented.")
-    elif dtype == PossibleDtypes.supervised or dtype == PossibleDtypes.selfsupervised:
+    elif dtype == PossibleDtypes.selfsupervised:
         if isinstance(data, pd.DataFrame):
             if (data.columns != 'id').sum() >= 2:
                 return df2json(data)
             else:
                 raise ValueError(
-                    "Data must be a DataFrame with at least 2 columns other than 'id'."
+                    f"Data must be a DataFrame with at least 2 columns other than 'id'. Current column(s) are:\n{data.columns}"
+                )
+        else:
+            raise NotImplementedError(f"type {type(data)} is not implemented.")
+    elif dtype == PossibleDtypes.supervised:
+        if isinstance(data, pd.DataFrame):
+            if ((data.columns != 'id').sum() >= 2 and not predict) or (
+                (data.columns != 'id').sum() >= 1 and predict):
+                return df2json(data)
+            else:
+                raise ValueError(
+                    f"Data must be a DataFrame with at least {2 - predict} column(s) other than 'id'. Current column(s) are:\n{data.columns}"
                 )
         else:
             raise NotImplementedError(f"type {type(data)} is not implemented.")
