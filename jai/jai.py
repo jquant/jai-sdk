@@ -125,7 +125,7 @@ class Jai:
             return self.assert_status_code(response)
 
     @property
-    def status(self):
+    def status(self, max_tries=5, patience=25):
         """
         Get the status of your JAI environment when training.
 
@@ -148,9 +148,6 @@ class Jai:
         }
         """
         response = requests.get(self.url + "/status", headers=self.header)
-
-        max_tries = 5
-        patience = 25  # time in seconds that we'll wait
         tries = 0
 
         while tries < max_tries:
@@ -505,7 +502,7 @@ class Jai:
         for i in trange(0, len(data), batch_size, desc="Predict"):
             _batch = data.iloc[i:i + batch_size]
             res = self._predict(name,
-                                data2json(_batch, dtype=dtype),
+                                data2json(_batch, dtype=dtype, predict=True),
                                 predict_proba=predict_proba)
             results.extend(res)
         return results
@@ -691,9 +688,15 @@ class Jai:
             "Description": "Training of database chosen_name has started."
         }
         """
-
-        # delete data reamains
-        self.delete_raw_data(name)
+        if kwargs.get("overwrite", False) and name in self.names:
+            self.delete_database(name)
+        elif name in self.names:
+            raise KeyError(
+                f"Database '{name}' already exists in your environment. Set overwrite=True to overwrite it."
+            )
+        else:
+            # delete data reamains
+            self.delete_raw_data(name)
 
         # make sure our data has the correct type and is free of NAs
         data = self._check_dtype_and_clean(data=data, db_type=db_type)
