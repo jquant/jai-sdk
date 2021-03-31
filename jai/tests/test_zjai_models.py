@@ -112,8 +112,8 @@ def test_selfsupervised(setup_dataframe):
 
     # try to set up the same database again
     # without overwriting it
-    with pytest.raises(KeyError):
-        j.setup(name, train, db_type="SelfSupervised")
+    # with pytest.raises(KeyError):
+    #     j.setup(name, train, db_type="SelfSupervised")
 
     j.delete_database(name)
     assert not j.is_valid(name), "valid name after delete failed"
