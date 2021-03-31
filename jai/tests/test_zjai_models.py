@@ -61,6 +61,11 @@ def test_text(name, data, dtype, setup_dataframe):
     result = j.similar(name, query.index.values)
     assert isinstance(result, list), "similar id array result failed"
 
+    # try to use the fields method on a text database
+    # this will raise an exception
+    with pytest.raises(ValueError):
+        j.fields(name)
+
     j.delete_database(name)
     assert not j.is_valid(name), "valid name after delete failed"
 
@@ -97,7 +102,18 @@ def test_selfsupervised(setup_dataframe):
         assert original == from_api, "dtype from api {from_api} differ from data {original}"
 
     result = j.similar(name, query)
+
+    # try to use j.predict on a self-supervised database
+    # this will raise an exception
+    with pytest.raises(ValueError):
+        j.predict(name, dict())
+
     assert isinstance(result, list), "similar result failed"
+
+    # try to set up the same database again
+    # without overwriting it
+    with pytest.raises(KeyError):
+        j.setup(name, train, db_type="SelfSupervised")
 
     j.delete_database(name)
     assert not j.is_valid(name), "valid name after delete failed"
@@ -151,6 +167,12 @@ def test_supervised(setup_dataframe):
     assert isinstance(result, list), "similar result failed"
 
     result = j.predict(name, query)
+
+    # since we have a supervised database already inplace
+    # we test one of its exceptions
+    with pytest.raises(ValueError):
+        j.predict(name, dict())
+
     assert isinstance(result, list), "predict result failed"
 
     j.add_data(name, test)
