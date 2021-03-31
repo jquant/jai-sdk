@@ -92,7 +92,7 @@ def test_similar_id_exceptions():
 
 
 def test_similar_json_exception():
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
         j._similar_json("test", data_json=dict())
 
