@@ -148,9 +148,6 @@ class Jai:
         }
         """
         response = requests.get(self.url + "/status", headers=self.header)
-
-        max_tries = max_tries
-        patience = patience  # time in seconds that we'll wait
         tries = 0
 
         while tries < max_tries:
