@@ -502,7 +502,7 @@ class Jai:
         for i in trange(0, len(data), batch_size, desc="Predict"):
             _batch = data.iloc[i:i + batch_size]
             res = self._predict(name,
-                                data2json(_batch, dtype=dtype),
+                                data2json(_batch, dtype=dtype, predict=True),
                                 predict_proba=predict_proba)
             results.extend(res)
         return results
