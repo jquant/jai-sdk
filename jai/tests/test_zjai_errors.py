@@ -148,3 +148,9 @@ def test_check_name_lengths_exception():
     with pytest.raises(ValueError):
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
         j._check_name_lengths(name="test", cols=[j.generate_name(length=35)])
+
+
+def test_check_name_lengths_exception():
+    with pytest.raises(ValueError):
+        j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
+        j._check_name_lengths(name="test", cols=[j.generate_name(length=35)])
