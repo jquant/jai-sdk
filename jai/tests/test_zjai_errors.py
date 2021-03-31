@@ -19,6 +19,7 @@ def test_info_exception():
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
         j.info
 
+
 def test_similar_exception_id():
     with pytest.raises(ValueError):
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
@@ -66,10 +67,12 @@ def test_delete_database_exception():
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
         j.delete_database(name="name")
 
+
 def test_status_exception():
     with pytest.raises(ValueError):
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
         j.status(max_tries=2, patience=4)
+
 
 def test_similar_id_exceptions():
     with pytest.raises(TypeError):
@@ -81,50 +84,60 @@ def test_similar_id_exceptions():
         j = Jai(url=VALID_URL, auth_key=AUTH_KEY)
         j._similar_id("test", id_item=[])
 
+
 def test_similar_json_exception():
     with pytest.raises(TypeError):
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
         j._similar_id("test", data_json=dict())
+
 
 def test_invalid_name_exception():
     with pytest.raises(ValueError):
         j = Jai(url=VALID_URL, auth_key=AUTH_KEY)
         j._get_dtype("test")
 
+
 def test_check_dtype_and_clean_exception():
     with pytest.raises(TypeError):
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
         j._check_dtype_and_clean(data=dict(), db_type="SelfSupervised")
+
 
 def test_predict_exception():
     with pytest.raises(ValueError):
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
         j._predict(name="test", data_json=dict())
 
+
 def test_append_exception():
     with pytest.raises(ValueError):
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
         j._append(name="test")
+
 
 def test_insert_json_exception():
     with pytest.raises(ValueError):
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
         j._insert_json(name="test", df_json=dict())
 
+
 def test_check_kwargs_exception():
     with pytest.raises(ValueError):
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
         j._check_kwargs(db_type="Supervised")
+
 
 def test_setup_database_exception():
     with pytest.raises(ValueError):
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
         j._setup_database(name="test", db_type="Supervised")
 
+
 def test_embedding_exception():
     with pytest.raises(ValueError):
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
         j.embedding(name="test", data=dict())
+
 
 def test_check_name_lengths_exception():
     with pytest.raises(ValueError):
