@@ -108,7 +108,8 @@ def data2json(data, dtype, predict=False):
             raise NotImplementedError(f"type {type(data)} is not implemented.")
     elif dtype == PossibleDtypes.supervised:
         if isinstance(data, pd.DataFrame):
-            if ((data.columns != 'id').sum() >= 2 and not predict) or ((data.columns != 'id').sum() >= 1 and predict):
+            if ((data.columns != 'id').sum() >= 2 and not predict) or (
+                (data.columns != 'id').sum() >= 1 and predict):
                 return df2json(data)
             else:
                 raise ValueError(
