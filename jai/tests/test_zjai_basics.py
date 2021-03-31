@@ -5,6 +5,13 @@ import pytest
 URL = 'http://localhost:8001'
 AUTH_KEY = "sdk_test"
 
+def test_url():
+    j = Jai(AUTH_KEY)
+    assert j.url == "https://mycelia.azure-api.net"
+
+def test_custom_url():
+    j = Jai(url=URL + "/", auth_key=AUTH_KEY)
+    assert j.url == URL
 
 def test_names():
     j = Jai(url=URL, auth_key=AUTH_KEY)

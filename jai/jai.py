@@ -125,7 +125,7 @@ class Jai:
             return self.assert_status_code(response)
 
     @property
-    def status(self):
+    def status(self, max_tries=5, patience=25):
         """
         Get the status of your JAI environment when training.
 
@@ -149,8 +149,8 @@ class Jai:
         """
         response = requests.get(self.url + "/status", headers=self.header)
 
-        max_tries = 5
-        patience = 25  # time in seconds that we'll wait
+        max_tries = max_tries
+        patience = patience  # time in seconds that we'll wait
         tries = 0
 
         while tries < max_tries:
