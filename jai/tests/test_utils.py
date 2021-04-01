@@ -108,9 +108,9 @@ def test_data2json(setup_dataframe, setup_img_data, dtype):
         assert data2json(data, db_type) == gab, 'df2json failed.'
 
 
-def test_data2json_exceptions():
+def test_data2json_exceptions(setup_dataframe):
     train, _ = setup_dataframe
-    train = train.rename(columns={"PassengerId": "id"}).set_index("id")['Name']
+    train = train.rename(columns={"PassengerId": "id"})
 
     with pytest.raises(ValueError):
         data2json(data=train[["Name", "Sex"]], dtype="Text")
