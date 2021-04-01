@@ -4,7 +4,6 @@ import pandas as pd
 import pytest
 import numpy as np
 
-
 URL = 'http://localhost:8001'
 AUTH_KEY = "sdk_test"
 
@@ -57,14 +56,18 @@ def test_generate_error():
 
 def test_check_dtype_and_clean():
     j = Jai(url=URL, auth_key=AUTH_KEY)
-    
+
     # mock data
     r = 1100
-    data = pd.DataFrame({"category": [str(i) for i in range(r)], "number": [i for i in range(r)]})
+    data = pd.DataFrame({
+        "category": [str(i) for i in range(r)],
+        "number": [i for i in range(r)]
+    })
 
     # make a few lines on 'category' column NaN
     data.loc[1050:, "category"] = np.nan
-    assert_frame_equal(j._check_dtype_and_clean(data, "Supervised"), data.dropna(subset=["category"]))
+    assert_frame_equal(j._check_dtype_and_clean(data, "Supervised"),
+                       data.dropna(subset=["category"]))
 
 
 @pytest.mark.parametrize("db_type, col, ans", [({"col1": "FastText"}, "col1", "FastText"), ({"col1": "FastText"}, "col2", "TextEdit")])
