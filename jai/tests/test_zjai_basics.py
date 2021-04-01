@@ -5,7 +5,6 @@ import pytest
 import numpy as np
 
 
-
 URL = 'http://localhost:8001'
 AUTH_KEY = "sdk_test"
 
@@ -68,17 +67,7 @@ def test_check_dtype_and_clean():
     assert_frame_equal(j._check_dtype_and_clean(data, "Supervised"), data.dropna(subset=["category"]))
 
 
-@pytest.mark.parametrize("name, batch_size, db_type", [("test", 1024, "SelfSupervised")])
-def test_check_ids_consistency(name, batch_size, db_type):
+@pytest.mark.parametrize("db_type, col, ans", [({"col1": "FastText"}, "col1", "FastText"), ({"col1": "FastText"}, "col2", "TextEdit")])
+def test_resolve_db_type(db_type, col, ans):
     j = Jai(url=URL, auth_key=AUTH_KEY)
-    
-    # mock data
-    r = 1100
-    data = pd.DataFrame({"category": [str(i) for i in range(r)], "number": [i for i in range(r)]})
-
-    # insert it
-    j._insert_data(data=data, name=name, batch_size=batch_size, db_type=db_type)
-    
-    # intentionally break it
-    with pytest.raises(Exception):
-        j._check_ids_consistency(name=name, data=data.iloc[:r - 5])
+    assert j._resolve_db_type(db_type, col) == ans

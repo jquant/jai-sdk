@@ -85,8 +85,8 @@ def test_similar_id_exceptions():
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
         j._similar_id("test", id_item=dict())
 
-    # this one requires a valid URL
     with pytest.raises(ValueError):
+        # we need to use a valid URL for this one
         j = Jai(url=VALID_URL, auth_key=AUTH_KEY)
         j._similar_id("test", id_item=[])
 
@@ -99,6 +99,7 @@ def test_similar_json_exception():
 
 def test_invalid_name_exception():
     with pytest.raises(ValueError):
+        # we need to use a valid URL for this one
         j = Jai(url=VALID_URL, auth_key=AUTH_KEY)
         j._get_dtype("test")
 
@@ -147,5 +148,31 @@ def test_embedding_exception():
 
 def test_check_name_lengths_exception():
     with pytest.raises(ValueError):
-        j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
+        # we need to use a valid URL for this one
+        j = Jai(url=VALID_URL, auth_key=AUTH_KEY)
         j._check_name_lengths(name="test", cols=[j.generate_name(length=35)])
+
+
+@pytest.mark.parametrize("name, batch_size, db_type", [("test", 1024, "SelfSupervised")])
+def test_check_ids_consistency_exception(name, batch_size, db_type):
+    # we need to use a valid URL for this one
+    j = Jai(url=VALID_URL, auth_key=AUTH_KEY)
+    
+    # mock data
+    r = 1100
+    data = pd.DataFrame({"category": [str(i) for i in range(r)], "number": [i for i in range(r)]})
+
+    # insert it
+    j._insert_data(data=data, name=name, batch_size=batch_size, db_type=db_type)
+    
+    # intentionally break it
+    with pytest.raises(Exception):
+        j._check_ids_consistency(name=name, data=data.iloc[:r - 5])
+
+
+@pytest.mark.parametrize("name", ["invalid_test"])
+def test_delete_tree(name):
+    # we need to use a valid URL for this one
+    j = Jai(url=VALID_URL, auth_key=AUTH_KEY)
+    msg = "Database '{name}' does not exist in your environment. Nothing to overwrite yet."
+    assert j._delete_tree(name) == msg
