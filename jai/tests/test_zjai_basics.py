@@ -70,7 +70,11 @@ def test_check_dtype_and_clean():
                        data.dropna(subset=["category"]))
 
 
-@pytest.mark.parametrize("db_type, col, ans", [({"col1": "FastText"}, "col1", "FastText"), ({"col1": "FastText"}, "col2", "TextEdit")])
+@pytest.mark.parametrize("db_type, col, ans", [({
+    "col1": "FastText"
+}, "col1", "FastText"), ({
+    "col1": "FastText"
+}, "col2", "TextEdit")])
 def test_resolve_db_type(db_type, col, ans):
     j = Jai(url=URL, auth_key=AUTH_KEY)
     assert j._resolve_db_type(db_type, col) == ans

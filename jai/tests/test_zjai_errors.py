@@ -153,18 +153,25 @@ def test_check_name_lengths_exception():
         j._check_name_lengths(name="test", cols=[j.generate_name(length=35)])
 
 
-@pytest.mark.parametrize("name, batch_size, db_type", [("test", 1024, "SelfSupervised")])
+@pytest.mark.parametrize("name, batch_size, db_type",
+                         [("test", 1024, "SelfSupervised")])
 def test_check_ids_consistency_exception(name, batch_size, db_type):
     # we need to use a valid URL for this one
     j = Jai(url=VALID_URL, auth_key=AUTH_KEY)
-    
+
     # mock data
     r = 1100
-    data = pd.DataFrame({"category": [str(i) for i in range(r)], "number": [i for i in range(r)]})
+    data = pd.DataFrame({
+        "category": [str(i) for i in range(r)],
+        "number": [i for i in range(r)]
+    })
 
     # insert it
-    j._insert_data(data=data, name=name, batch_size=batch_size, db_type=db_type)
-    
+    j._insert_data(data=data,
+                   name=name,
+                   batch_size=batch_size,
+                   db_type=db_type)
+
     # intentionally break it
     with pytest.raises(Exception):
         j._check_ids_consistency(name=name, data=data.iloc[:r - 5])
