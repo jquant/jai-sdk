@@ -1,6 +1,8 @@
 from jai import Jai
+from pandas._testing import assert_frame_equal
 import pandas as pd
 import pytest
+import numpy as np
 
 URL = 'http://localhost:8001'
 AUTH_KEY = "sdk_test"
@@ -50,3 +52,29 @@ def test_generate_error():
     j = Jai(url=URL, auth_key=AUTH_KEY)
     with pytest.raises(ValueError):
         j.generate_name(8, "prefix", "suffix")
+
+
+def test_check_dtype_and_clean():
+    j = Jai(url=URL, auth_key=AUTH_KEY)
+
+    # mock data
+    r = 1100
+    data = pd.DataFrame({
+        "category": [str(i) for i in range(r)],
+        "number": [i for i in range(r)]
+    })
+
+    # make a few lines on 'category' column NaN
+    data.loc[1050:, "category"] = np.nan
+    assert_frame_equal(j._check_dtype_and_clean(data, "Supervised"),
+                       data.dropna(subset=["category"]))
+
+
+@pytest.mark.parametrize("db_type, col, ans", [({
+    "col1": "FastText"
+}, "col1", "FastText"), ({
+    "col1": "FastText"
+}, "col2", "TextEdit")])
+def test_resolve_db_type(db_type, col, ans):
+    j = Jai(url=URL, auth_key=AUTH_KEY)
+    assert j._resolve_db_type(db_type, col) == ans

@@ -445,7 +445,7 @@ class Jai:
             data = data.dropna()
         else:
             cols_to_drop = []
-            for col in data.select_dtypes(include="category").columns:
+            for col in data.select_dtypes(include=["category", "O"]).columns:
                 if data[col].nunique() > 1024:
                     cols_to_drop.append(col)
             data = data.dropna(subset=cols_to_drop)
@@ -1187,9 +1187,9 @@ class Jai:
             for base in bases_to_del:
                 self.delete_database(base)
         except:
-            print(
-                f"Database '{name}' does not exist in your environment. Nothing to overwrite yet."
-            )
+            msg = f"Database '{name}' does not exist in your environment. Nothing to overwrite yet."
+            print(msg)
+            return msg
 
     def match(self,
               name: str,
