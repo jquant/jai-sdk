@@ -136,7 +136,7 @@ def test_check_kwargs_exception():
 def test_setup_database_exception():
     with pytest.raises(ValueError):
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
-        j._setup_database(name="test", db_type="Supervised")
+        j._setup_database(name="test", db_type="SelfSupervised")
 
 
 def test_embedding_exception():

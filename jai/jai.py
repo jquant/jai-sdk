@@ -445,7 +445,7 @@ class Jai:
             data = data.dropna()
         else:
             cols_to_drop = []
-            for col in data.select_dtypes(include="category").columns:
+            for col in data.select_dtypes(include=["category", "O"]).columns:
                 if data[col].nunique() > 1024:
                     cols_to_drop.append(col)
             data = data.dropna(subset=cols_to_drop)
