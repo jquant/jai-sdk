@@ -1479,7 +1479,6 @@ class Jai:
                 **kwargs,
             )
         else:
-
             drop_cols = []
             for col in cat.columns:
                 id_col = "id_" + col
