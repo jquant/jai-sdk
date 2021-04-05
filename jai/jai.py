@@ -1423,7 +1423,21 @@ class Jai:
             train = data.loc[~mask].copy()
             test = data.loc[mask].drop(columns=[column])
 
+            # first columns to include are the ones that satisfy
+            # the cat_threshold
             pre = cat.columns[cat.nunique() > cat_threshold].tolist()
+
+            # check if db_type is a dict and has some keys in it
+            # that do not satisfy the cat_threshold, but must be
+            # processed anyway
+            if isinstance(db_type, dict):
+                pre.extend(
+                    [item for item in db_type.keys() if item in cat.columns])
+
+            # we make `pre` a set to ensure it has
+            # unique column names
+            pre = set(pre)
+
             prep_bases = []
 
             # check if database and column names will not overflow the 32-character
@@ -1466,7 +1480,6 @@ class Jai:
                 **kwargs,
             )
         else:
-
             drop_cols = []
             for col in cat.columns:
                 id_col = "id_" + col
@@ -1569,7 +1582,21 @@ class Jai:
         cat = data.select_dtypes(exclude="number")
 
         if name not in self.names:
+            # first columns to include are the ones that satisfy
+            # the cat_threshold
             pre = cat.columns[cat.nunique() > cat_threshold].tolist()
+
+            # check if db_type is a dict and has some keys in it
+            # that do not satisfy the cat_threshold, but must be
+            # processed anyway
+            if isinstance(db_type, dict):
+                pre.extend(
+                    [item for item in db_type.keys() if item in cat.columns])
+
+            # we make `pre` a set to ensure it has
+            # unique column names
+            pre = set(pre)
+
             if columns_ref is None:
                 columns_ref = cat.columns.tolist()
             elif not isinstance(columns_ref, list):
