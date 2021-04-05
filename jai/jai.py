@@ -1431,8 +1431,9 @@ class Jai:
             # that do not satisfy the cat_threshold, but must be
             # processed anyway
             if isinstance(db_type, dict):
-                pre.extend([item for item in db_type.keys() if item in cat.columns])
-            
+                pre.extend(
+                    [item for item in db_type.keys() if item in cat.columns])
+
             # we make `pre` a set to ensure it has
             # unique column names
             pre = set(pre)
@@ -1589,8 +1590,9 @@ class Jai:
             # that do not satisfy the cat_threshold, but must be
             # processed anyway
             if isinstance(db_type, dict):
-                pre.extend([item for item in db_type.keys() if item in cat.columns])
-            
+                pre.extend(
+                    [item for item in db_type.keys() if item in cat.columns])
+
             # we make `pre` a set to ensure it has
             # unique column names
             pre = set(pre)
