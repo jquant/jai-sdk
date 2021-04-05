@@ -109,7 +109,7 @@ class Jai:
         1            jai_selfsupervised    SelfSupervised
         2                jai_supervised        Supervised
         """
-        response = requests.get(url=self.url + "/info?mode=complete",
+        response = requests.get(url=self.url + "/info?mode=complete&get_size=true",
                                 headers=self.header)
 
         if response.status_code == 200:
@@ -118,7 +118,7 @@ class Jai:
                     "db_name": "name",
                     "db_type": "type",
                     "db_version": "last modified",
-                    "db_parents": "dependencies"
+                    "db_parents": "dependencies",
                 })
             return df
         else:
