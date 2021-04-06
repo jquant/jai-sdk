@@ -1012,6 +1012,7 @@ class Jai:
                                 step_update = curr_step - iteration_bar.n
                                 if step_update:
                                     iteration_bar.update(step_update)
+                                time.sleep(frequency_seconds)
                                 status = self.status[name]
                             # training might stop early, so we make the progress bar appear
                             # full when early stopping is reached -- peace of mind
