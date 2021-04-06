@@ -1038,7 +1038,7 @@ class Jai:
             print("\n\nInterruption caught!\n\n")
             response = requests.post(self.url + f'/cancel/{name}', headers=self.header)
             print(f"Cancel request status: {response.status_code}")
-            raise KeyboardInterrupt
+            raise KeyboardInterrupt(response.text)
 
         self._delete_status(name)
         return status
