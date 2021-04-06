@@ -1036,7 +1036,8 @@ class Jai:
                     pbar.update(max_steps)
         except KeyboardInterrupt:
             print("\n\nInterruption caught!\n\n")
-            response = requests.post(self.url + f'/cancel/{name}', headers=self.header)
+            response = requests.post(self.url + f'/cancel/{name}',
+                                     headers=self.header)
             print(f"Cancel request status: {response.status_code}")
             raise KeyboardInterrupt
 
