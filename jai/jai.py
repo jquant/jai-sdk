@@ -121,7 +121,7 @@ class Jai:
                     "db_version": "last modified",
                     "db_parents": "dependencies",
                 })
-            return df
+            return df.sort_values(by="name")
         else:
             return self.assert_status_code(response)
 
@@ -1036,8 +1036,9 @@ class Jai:
                     pbar.update(max_steps)
         except KeyboardInterrupt:
             print("\n\nInterruption caught!\n\n")
-            return requests.post(self.url + f"/cancel/{name}",
-                                 headers=self.header)
+            response = requests.post(self.url + f'/cancel/{name}', headers=self.header)
+            print(f"Cancel request status: {response.status_code}")
+            raise KeyboardInterrupt
 
         self._delete_status(name)
         return status
