@@ -770,7 +770,7 @@ class Jai:
         add_data_response = self._append(name=name)
 
         if frequency_seconds >= 1:
-            self.wait_setup(name=name, frequency_seconds=frequency_seconds)
+            self.wait_setup(name=name, frequency_seconds=frequency_seconds, add_data=True)
 
         return insert_responses, add_data_response
 
@@ -963,7 +963,7 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def wait_setup(self, name: str, frequency_seconds: int = 5):
+    def wait_setup(self, name: str, frequency_seconds: int = 5, add_data: bool = False):
         """
         Wait for the setup (model training) to finish
 
@@ -1036,7 +1036,7 @@ class Jai:
                     pbar.update(max_steps)
         except KeyboardInterrupt:
             print("\n\nInterruption caught!\n\n")
-            response = requests.post(self.url + f'/cancel/{name}',
+            response = requests.post(self.url + f'/cancel/{name}?add_data={json.dumps(add_data)}',
                                      headers=self.header)
             print(f"Cancel request status: {response.status_code}")
             raise KeyboardInterrupt(response.text)
