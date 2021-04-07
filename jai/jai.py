@@ -109,7 +109,8 @@ class Jai:
         1            jai_selfsupervised    SelfSupervised
         2                jai_supervised        Supervised
         """
-        response = requests.get(url=self.url + "/info?mode=complete",
+        response = requests.get(url=self.url +
+                                "/info?mode=complete&get_size=true",
                                 headers=self.header)
 
         if response.status_code == 200:
@@ -118,9 +119,9 @@ class Jai:
                     "db_name": "name",
                     "db_type": "type",
                     "db_version": "last modified",
-                    "db_parents": "dependencies"
+                    "db_parents": "dependencies",
                 })
-            return df
+            return df.sort_values(by="name")
         else:
             return self.assert_status_code(response)
 
@@ -445,7 +446,7 @@ class Jai:
             data = data.dropna()
         else:
             cols_to_drop = []
-            for col in data.select_dtypes(include="category").columns:
+            for col in data.select_dtypes(include=["category", "O"]).columns:
                 if data[col].nunique() > 1024:
                     cols_to_drop.append(col)
             data = data.dropna(subset=cols_to_drop)
@@ -1011,6 +1012,7 @@ class Jai:
                                 step_update = curr_step - iteration_bar.n
                                 if step_update:
                                     iteration_bar.update(step_update)
+                                time.sleep(frequency_seconds)
                                 status = self.status[name]
                             # training might stop early, so we make the progress bar appear
                             # full when early stopping is reached -- peace of mind
@@ -1034,8 +1036,10 @@ class Jai:
                     pbar.update(max_steps)
         except KeyboardInterrupt:
             print("\n\nInterruption caught!\n\n")
-            return requests.post(self.url + f"/cancel/{name}",
-                                 headers=self.header)
+            response = requests.post(self.url + f'/cancel/{name}',
+                                     headers=self.header)
+            print(f"Cancel request status: {response.status_code}")
+            raise KeyboardInterrupt(response.text)
 
         self._delete_status(name)
         return status
@@ -1187,9 +1191,9 @@ class Jai:
             for base in bases_to_del:
                 self.delete_database(base)
         except:
-            print(
-                f"Database '{name}' does not exist in your environment. Nothing to overwrite yet."
-            )
+            msg = f"Database '{name}' does not exist in your environment. Nothing to overwrite yet."
+            print(msg)
+            return msg
 
     def match(self,
               name: str,
@@ -1422,7 +1426,21 @@ class Jai:
             train = data.loc[~mask].copy()
             test = data.loc[mask].drop(columns=[column])
 
+            # first columns to include are the ones that satisfy
+            # the cat_threshold
             pre = cat.columns[cat.nunique() > cat_threshold].tolist()
+
+            # check if db_type is a dict and has some keys in it
+            # that do not satisfy the cat_threshold, but must be
+            # processed anyway
+            if isinstance(db_type, dict):
+                pre.extend(
+                    [item for item in db_type.keys() if item in cat.columns])
+
+            # we make `pre` a set to ensure it has
+            # unique column names
+            pre = set(pre)
+
             prep_bases = []
 
             # check if database and column names will not overflow the 32-character
@@ -1465,7 +1483,6 @@ class Jai:
                 **kwargs,
             )
         else:
-
             drop_cols = []
             for col in cat.columns:
                 id_col = "id_" + col
@@ -1568,7 +1585,21 @@ class Jai:
         cat = data.select_dtypes(exclude="number")
 
         if name not in self.names:
+            # first columns to include are the ones that satisfy
+            # the cat_threshold
             pre = cat.columns[cat.nunique() > cat_threshold].tolist()
+
+            # check if db_type is a dict and has some keys in it
+            # that do not satisfy the cat_threshold, but must be
+            # processed anyway
+            if isinstance(db_type, dict):
+                pre.extend(
+                    [item for item in db_type.keys() if item in cat.columns])
+
+            # we make `pre` a set to ensure it has
+            # unique column names
+            pre = set(pre)
+
             if columns_ref is None:
                 columns_ref = cat.columns.tolist()
             elif not isinstance(columns_ref, list):

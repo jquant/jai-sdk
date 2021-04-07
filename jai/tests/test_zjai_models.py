@@ -182,5 +182,6 @@ def test_supervised(setup_dataframe):
                            ], 'ids simple failed'
     assert j.ids(name, 'complete') == ids, "ids complete failed"
 
-    j.delete_database(name)
+    # test _delete_tree method here
+    j._delete_tree(name)
     assert not j.is_valid(name), "valid name after delete failed"

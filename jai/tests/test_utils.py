@@ -108,6 +108,38 @@ def test_data2json(setup_dataframe, setup_img_data, dtype):
         assert data2json(data, db_type) == gab, 'df2json failed.'
 
 
+def test_data2json_exceptions(setup_dataframe):
+    train, _ = setup_dataframe
+    train = train.rename(columns={"PassengerId": "id"})
+
+    with pytest.raises(ValueError):
+        data2json(data=train[["Name", "Sex"]], dtype="Text")
+
+    with pytest.raises(ValueError):
+        data2json(data=train, dtype="Text")
+
+    with pytest.raises(NotImplementedError):
+        data2json(data=dict(), dtype="Text")
+
+    with pytest.raises(ValueError):
+        data2json(data=train[["Name"]], dtype="SelfSupervised")
+
+    with pytest.raises(NotImplementedError):
+        data2json(data=dict(), dtype="SelfSupervised")
+
+    with pytest.raises(ValueError):
+        data2json(data=train[["Name"]], dtype="Supervised")
+
+    with pytest.raises(NotImplementedError):
+        data2json(data=dict(), dtype="Supervised")
+
+    with pytest.raises(ValueError):
+        data2json(data=train[["Name"]], dtype="Unsupervised")
+
+    with pytest.raises(ValueError):
+        data2json(data=train[["Name"]], dtype="Invalid")
+
+
 @pytest.mark.parametrize('data', [list('ab'), np.array(['abc', 'def'])])
 @pytest.mark.parametrize('name', ['text', 'image_base64'])
 @pytest.mark.parametrize('ids', [[1, 1], [10, 10]])
