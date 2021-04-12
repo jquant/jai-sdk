@@ -889,13 +889,13 @@ class Jai:
                     print("Recognized setup args:")
                     flag = False
                 if key == "patience" and val < 1:
-                    val = 7  # default patience value
+                    val = 7  # default patience value for our purposes
                     print(
                         f"'patience' value must be greater than or equal to 1, but got {val} instead. Setting it to 7 (default)"
                     )
 
                 if key == "min_delta" and val < 0:
-                    val = 1e-5  # default min_delta value
+                    val = 1e-5  # default min_delta value for our purposes
                     print(
                         f"'min_delta' value must be greater than or equal to 0, but got {val} instead. Setting it to 1e-5 (default)"
                     )
