@@ -889,12 +889,16 @@ class Jai:
                     print("Recognized setup args:")
                     flag = False
                 if key == "patience" and val < 1:
-                    val = 7 # default patience value
-                    print(f"'patience' value must be greater than or equal to 1, but got {val} instead. Setting it to 7 (default)")
+                    val = 7  # default patience value
+                    print(
+                        f"'patience' value must be greater than or equal to 1, but got {val} instead. Setting it to 7 (default)"
+                    )
 
                 if key == "min_delta" and val < 0:
-                    val = 1e-5 # default min_delta value
-                    print(f"'min_delta' value must be greater than or equal to 0, but got {val} instead. Setting it to 1e-5 (default)")
+                    val = 1e-5  # default min_delta value
+                    print(
+                        f"'min_delta' value must be greater than or equal to 0, but got {val} instead. Setting it to 1e-5 (default)"
+                    )
 
                 print(f"{key}: {val}")
                 body[key] = val
@@ -1029,7 +1033,6 @@ class Jai:
                                                  iteration_bar.n)
                             if last_n != max_iterations:
                                 print("Early stopping reached.")
-                            
 
                     if (step == starts_at) and (aux == 0):
                         pbar.update(starts_at)
