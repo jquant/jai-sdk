@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import pytest
 
-URL = 'http://23.96.99.211:8001'
+URL = 'http://localhost:8001'
 AUTH_KEY = "sdk_test"
 
 np.random.seed(42)
