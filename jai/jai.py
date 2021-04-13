@@ -868,12 +868,12 @@ class Jai:
         if db_type == PossibleDtypes.selfsupervised:
             possible.extend([
                 'num_process', 'cat_process', 'datetime_process',
-                'mycelia_bases'
+                'mycelia_bases', 'patience', 'min_delta'
             ])
         elif db_type == PossibleDtypes.supervised:
             possible.extend([
                 'num_process', 'cat_process', 'datetime_process',
-                'mycelia_bases', 'label', 'split'
+                'mycelia_bases', 'label', 'split', 'patience', 'min_delta'
             ])
             must.extend(['label'])
 
@@ -889,6 +889,18 @@ class Jai:
                 if flag:
                     print("Recognized setup args:")
                     flag = False
+                if key == "patience" and val < 1:
+                    val = 7  # default patience value for our purposes
+                    print(
+                        f"'patience' value must be greater than or equal to 1, but got {val} instead. Setting it to 7 (default)"
+                    )
+
+                if key == "min_delta" and val < 0:
+                    val = 1e-5  # default min_delta value for our purposes
+                    print(
+                        f"'min_delta' value must be greater than or equal to 0, but got {val} instead. Setting it to 1e-5 (default)"
+                    )
+
                 print(f"{key}: {val}")
                 body[key] = val
 
@@ -1024,8 +1036,11 @@ class Jai:
                                 status = self.status[name]
                             # training might stop early, so we make the progress bar appear
                             # full when early stopping is reached -- peace of mind
+                            last_n = iteration_bar.n
                             iteration_bar.update(max_iterations -
                                                  iteration_bar.n)
+                            if last_n != max_iterations:
+                                print("Early stopping reached.")
 
                     if (step == starts_at) and (aux == 0):
                         pbar.update(starts_at)
