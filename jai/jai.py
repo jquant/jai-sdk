@@ -2,6 +2,7 @@ import secrets
 import json
 import pandas as pd
 import numpy as np
+import re
 import requests
 import time
 
@@ -931,7 +932,7 @@ class Jai:
     def _process_fields(self, fields):
         for k, v in fields.items():
             if v == "embedding":
-                new_key = k.rstrip("_latent")
+                new_key = re.sub("\_latent$", "", k)
                 fields[new_key] = fields.pop(k)
         return fields
 
