@@ -2,6 +2,7 @@ import secrets
 import json
 import pandas as pd
 import numpy as np
+import re
 import requests
 import time
 
@@ -940,6 +941,13 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
+    def _process_fields(self, fields):
+        for k, v in fields.items():
+            if v == "embedding":
+                new_key = re.sub("\_latent$", "", k)
+                fields[new_key] = fields.pop(k)
+        return fields
+
     def fields(self, name: str):
         """
         Get the table fields for a Supervised/SelfSupervised database.
@@ -971,7 +979,7 @@ class Jai:
         response = requests.get(self.url + f"/table/fields/{name}",
                                 headers=self.header)
         if response.status_code == 200:
-            return response.json()
+            return self._process_fields(response.json())
         else:
             return self.assert_status_code(response)
 
