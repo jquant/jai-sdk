@@ -690,9 +690,7 @@ class Jai:
             "Description": "Training of database chosen_name has started."
         }
         """
-        if kwargs.get("overwrite", False) and name in self.names:
-            self.delete_database(name)
-        elif name in self.names:
+        if not kwargs.get("overwrite", False) and name in self.names:
             raise KeyError(
                 f"Database '{name}' already exists in your environment. Set overwrite=True to overwrite it."
             )
@@ -907,7 +905,7 @@ class Jai:
         body["db_type"] = db_type
         return body
 
-    def _setup_database(self, name: str, db_type, overwrite=False, **kwargs):
+    def _setup_database(self, name: str, db_type, **kwargs):
         """
         Call the API method for database setup.
         This is a protected method.
@@ -929,6 +927,7 @@ class Jai:
         response : dict
             Dictionary with the API response.
         """
+        overwrite = kwargs.get("overwrite", False)
         body = self._check_kwargs(db_type=db_type, **kwargs)
         response = requests.post(
             self.url + f"/setup/{name}?overwrite={overwrite}",
