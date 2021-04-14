@@ -19,9 +19,9 @@ pip install jai-sdk
 
 # [Get your Auth Key](https://jai-sdk.readthedocs.io/en/latest/source/quick_start.html#getting-your-authentication-key)
 
-First, you'll need and Authorization key to use the backend API.
+First, you'll need an Authorization key to use the backend API.
 
-To get an Trial version API using the sdk, fill the values with your information:
+To get a Trial version API using the sdk, fill the values with your information:
 
 ```python
 from jai import Jai
