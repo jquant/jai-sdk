@@ -223,16 +223,13 @@ class Jai:
         ...
         [-0.03121682 -0.2101511   0.4893339  ...  0.00758727  0.15916921  0.1226602 ]]
         """
-        response = requests.get(
-            self.url + f"/key/{name}",
-            headers=self.header
-        )
+        response = requests.get(self.url + f"/key/{name}", headers=self.header)
         if response.status_code == 200:
             r = requests.get(response.json())
             return np.load(BytesIO(r.content))
         else:
             return self.assert_status_code(response)
-        
+
     def generate_name(self,
                       length: int = 8,
                       prefix: str = "",
