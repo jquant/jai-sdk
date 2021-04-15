@@ -184,6 +184,7 @@ def test_delete_tree(name):
     msg = f"Database '{name}' does not exist in your environment. Nothing to overwrite yet."
     assert j._delete_tree(name) == msg
 
+
 def test_download_vectors_exception():
     with pytest.raises(ValueError):
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
