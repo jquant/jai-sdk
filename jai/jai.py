@@ -220,16 +220,13 @@ class Jai:
         >>> print(vectors)
         np.array([[0.567, 0.986, 0.854], [0.221, 0.467, 0.993], ...])
         """
-        response = requests.get(
-            self.url + f"/key/{name}",
-            headers=self.header
-        )
+        response = requests.get(self.url + f"/key/{name}", headers=self.header)
         if response.status_code == 200:
             r = requests.get(response.json())
             return np.load(BytesIO(r.content))
         else:
             return self.assert_status_code(response)
-        
+
     def generate_name(self,
                       length: int = 8,
                       prefix: str = "",
