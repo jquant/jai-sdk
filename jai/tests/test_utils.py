@@ -1,12 +1,16 @@
 import numpy as np
 import pandas as pd
 import pytest
+from jai import Jai
 from jai.functions.utils_funcs import (list2json, series2json, df2json,
                                        data2json)
 from jai.image import read_image_folder, resize_image_folder
 
 from pandas._testing import assert_series_equal
 from pathlib import Path
+
+URL = 'http://localhost:8001'
+AUTH_KEY = "sdk_test"
 
 
 @pytest.fixture(scope="session")
@@ -22,6 +26,13 @@ def setup_dataframe():
 def setup_img_data():
     IMG_FILE = Path("jai/test_data/test_imgs/dataframe_img.pkl")
     img_file = pd.read_pickle(IMG_FILE)
+    return img_file
+
+
+@pytest.fixture(scope="session")
+def setup_npy_file():
+    NPY_FILE = Path("jai/test_data/sdk_test_titanic_ssupervised.npy")
+    img_file = np.load(NPY_FILE)
     return img_file
 
 
@@ -224,3 +235,10 @@ def test_resize_image_folder(image_folder=Path("jai/test_data/test_imgs")):
 def test_resize_image_folder_corrupted(
         image_folder=Path("jai/test_data/test_imgs_corrupted")):
     assert len(resize_image_folder(image_folder=image_folder))
+
+
+@pytest.mark.parametrize('name', ['titanic_ssupervised'])
+def test_download_vectors(setup_npy_file, name):
+    npy_file = setup_npy_file
+    j = Jai(url=URL, auth_key=AUTH_KEY)
+    np.testing.assert_array_equal(npy_file, j.download_vectors(name=name))
