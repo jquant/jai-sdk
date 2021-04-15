@@ -107,9 +107,7 @@ def test_match(name):
         'Coconit', 'Pdach', 'Appld', 'Piheapplr', 'Banxna', 'Avocado', 'Grwpe'
     ]
 
-    expected = [
-        12, 14, 0, 10, 8, 13, 4
-    ]
+    expected = [12, 14, 0, 10, 8, 13, 4]
 
     data_left = pd.Series(A)
     data_right = pd.Series(B)
