@@ -104,15 +104,11 @@ def test_match(name):
     ]
 
     B = [
-        'Coconit', 'Pdach', 'Appld', 'Piheapplr', 'Banxna', 'Avocado', 'Grwpe',
-        'Grapw', 'Bluebeffy', 'Banwna', 'Gdapefruir', 'Piheaplle', 'Grzpe',
-        'Wateemelon', 'Kemon', 'Bqnana', 'Aatermelon', 'Pezch', 'Gralefruig',
-        'Bahana', 'Watrrmeloh', 'Pexch', 'Grapegruit', 'Avocaeo'
+        'Coconit', 'Pdach', 'Appld', 'Piheapplr', 'Banxna', 'Avocado', 'Grwpe'
     ]
 
     expected = [
-        12, 14, 0, 10, 8, 13, 4, 4, 6, 8, 11, 10, 4, 1, 5, 8, 1, 14, 11, 8, 1,
-        14, 11, 13
+        12, 14, 0, 10, 8, 13, 4
     ]
 
     data_left = pd.Series(A)
