@@ -1073,7 +1073,7 @@ class Jai:
                             iteration_bar.update(max_iterations -
                                                  iteration_bar.n)
                             if last_n != max_iterations:
-                                print("Early stopping reached.")
+                                print("\nEarly stopping reached.")
 
                     if (step == starts_at) and (aux == 0):
                         pbar.update(starts_at)
