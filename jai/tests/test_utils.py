@@ -12,6 +12,7 @@ from pathlib import Path
 URL = 'http://localhost:8001'
 AUTH_KEY = "sdk_test"
 
+
 @pytest.fixture(scope="session")
 def setup_dataframe():
     TITANIC_TRAIN = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/train.csv"
@@ -234,6 +235,7 @@ def test_resize_image_folder(image_folder=Path("jai/test_data/test_imgs")):
 def test_resize_image_folder_corrupted(
         image_folder=Path("jai/test_data/test_imgs_corrupted")):
     assert len(resize_image_folder(image_folder=image_folder))
+
 
 @pytest.mark.parametrize('name', ['titanic_ssupervised'])
 def test_download_vectors(setup_npy_file, name):
