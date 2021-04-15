@@ -6,6 +6,7 @@ import re
 import requests
 import time
 
+from io import BytesIO
 from .processing import process_similar, process_resolution
 from .functions.utils_funcs import data2json, pbar_steps
 from .functions.classes import PossibleDtypes, Mode
@@ -196,6 +197,38 @@ class Jai:
         }
         response = requests.put(url + "/auth", data=json.dumps(body))
         return response
+
+    def download_vectors(self, name: str):
+        """
+        Download vectors from a particular database.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Return
+        ------
+        vector : np.array
+            Numpy array with all vectors.
+
+        Example
+        -------
+        >>> name = 'chosen_name'
+        >>> j = Jai(AUTH_KEY)
+        >>> vectors = j.download_vectors(name=name)
+        >>> print(vectors)
+        [[ 0.03121682  0.2101511  -0.48933393 ...  0.05550333  0.21190546  0.19986008]
+        [-0.03121682 -0.21015109  0.48933393 ...  0.2267401   0.11074653  0.15064166]
+        ...
+        [-0.03121682 -0.2101511   0.4893339  ...  0.00758727  0.15916921  0.1226602 ]]
+        """
+        response = requests.get(self.url + f"/key/{name}", headers=self.header)
+        if response.status_code == 200:
+            r = requests.get(response.json())
+            return np.load(BytesIO(r.content))
+        else:
+            return self.assert_status_code(response)
 
     def generate_name(self,
                       length: int = 8,
@@ -1040,7 +1073,7 @@ class Jai:
                             iteration_bar.update(max_iterations -
                                                  iteration_bar.n)
                             if last_n != max_iterations:
-                                print("Early stopping reached.")
+                                print("\nEarly stopping reached.")
 
                     if (step == starts_at) and (aux == 0):
                         pbar.update(starts_at)
