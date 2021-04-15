@@ -6,6 +6,7 @@ import re
 import requests
 import time
 
+from io import BytesIO
 from .processing import process_similar, process_resolution
 from .functions.utils_funcs import data2json, pbar_steps
 from .functions.classes import PossibleDtypes, Mode
@@ -197,6 +198,38 @@ class Jai:
         response = requests.put(url + "/auth", data=json.dumps(body))
         return response
 
+    def download_vectors(self, name: str):
+        """
+        Download vectors from a particular database.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Return
+        ------
+        vector : np.array
+            Numpy array with all vectors.
+
+        Example
+        -------
+        >>> name = 'chosen_name'
+        >>> j = Jai(AUTH_KEY)
+        >>> vectors = j.download_vectors(name=name)
+        >>> print(vectors)
+        np.array([[0.567, 0.986, 0.854], [0.221, 0.467, 0.993], ...])
+        """
+        response = requests.get(
+            self.url + f"/key/{name}",
+            headers=self.header
+        )
+        if response.status_code == 200:
+            r = requests.get(response.json())
+            return np.load(BytesIO(r.content))
+        else:
+            return self.assert_status_code(response)
+        
     def generate_name(self,
                       length: int = 8,
                       prefix: str = "",
