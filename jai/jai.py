@@ -12,6 +12,7 @@ from .functions.utils_funcs import data2json, pbar_steps
 from .functions.classes import PossibleDtypes, Mode
 from fnmatch import fnmatch
 from pandas.api.types import is_integer_dtype
+from sklearn.model_selection import StratifiedShuffleSplit
 from tqdm import trange, tqdm
 
 __all__ = ["Jai"]
@@ -1694,10 +1695,24 @@ class Jai:
 
                 # get a sample of the data and shuffle it
                 sample = []
+                strat_split = StratifiedShuffleSplit(n_splits=1,
+                                                     test_size=frac,
+                                                     random_state=0)
                 for c in columns_ref:
-                    s = data.sample(frac=frac)
+                    indexes = []
+                    try:
+                        _, indexes = next(
+                            strat_split.split(data.dropna(subset=[c]),
+                                              data.dropna(subset=[c])[c]))
+                        s = data.dropna(subset=[c]).iloc[indexes].copy()
+                    except:
+                        pass
+
+                    if len(indexes) < data.shape[0] * frac:
+                        s = data.sample(frac=frac)
+
                     uniques = s[c].unique()
-                    s[c] = [change(uniques, v) for v in s[c]]
+                    s.loc[:, c] = [change(uniques, v) for v in s[c]]
                     sample.append(s)
                 sample = pd.concat(sample)
 
