@@ -102,7 +102,7 @@ def data2json(data, dtype, predict=False):
                 return df2json(data)
             else:
                 raise ValueError(
-                    f"Data must be a DataFrame with at least 2 columns other than 'id'. Current column(s) are:\n{data.columns}"
+                    f"Data must be a DataFrame with at least 2 columns other than 'id'. Current column(s):\n{data.columns}"
                 )
         else:
             raise NotImplementedError(f"type {type(data)} is not implemented.")
@@ -113,7 +113,7 @@ def data2json(data, dtype, predict=False):
                 return df2json(data)
             else:
                 raise ValueError(
-                    f"Data must be a DataFrame with at least {2 - predict} column(s) other than 'id'. Current column(s) are:\n{data.columns}"
+                    f"Data must be a DataFrame with at least {2 - predict} column(s) other than 'id'. Current column(s):\n{data.columns}"
                 )
         else:
             raise NotImplementedError(f"type {type(data)} is not implemented.")
