@@ -1696,9 +1696,9 @@ class Jai:
                 strat_split = StratifiedShuffleSplit(n_splits=1, test_size=frac, random_state=0)
                 for c in columns_ref:
                     _, indexes = next(strat_split.split(data, data[c]))
-                    s = data.iloc[indexes]
+                    s = data.iloc[indexes].copy()
                     uniques = s[c].unique()
-                    s[c] = [change(uniques, v) for v in s[c]]
+                    s.loc[:, c] = [change(uniques, v) for v in s[c]]
                     sample.append(s)
                 sample = pd.concat(sample)
 
