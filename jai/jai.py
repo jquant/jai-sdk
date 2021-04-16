@@ -758,7 +758,8 @@ class Jai:
                  name: str,
                  data,
                  batch_size: int = 16384,
-                 frequency_seconds: int = 10):
+                 frequency_seconds: int = 10,
+                 predict: bool = False):
         """
         Insert raw data and extract their latent representation.
 
@@ -796,7 +797,8 @@ class Jai:
         insert_responses = self._insert_data(data=data,
                                              name=name,
                                              batch_size=batch_size,
-                                             db_type=db_type)
+                                             db_type=db_type,
+                                             predict=predict)
 
         # check if we inserted everything we were supposed to
         self._check_ids_consistency(name=name, data=data)
@@ -831,7 +833,7 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def _insert_data(self, data, name, db_type, batch_size):
+    def _insert_data(self, data, name, db_type, batch_size, predict=False):
         """
         Insert raw data for training. This is a protected method.
 
@@ -855,7 +857,7 @@ class Jai:
                 trange(0, len(data), batch_size, desc="Insert Data")):
             _batch = data.iloc[b:b + batch_size]
             insert_responses[i] = self._insert_json(
-                name, data2json(_batch, dtype=db_type))
+                name, data2json(_batch, dtype=db_type, predict=predict))
         return insert_responses
 
     def _insert_json(self, name: str, df_json):
@@ -1555,7 +1557,7 @@ class Jai:
         ids_test = test.index
         missing_test = ids_test[~np.isin(ids_test, self.ids(name, "complete"))]
         if len(missing_test) > 0:
-            self.add_data(name, test.loc[missing_test])
+            self.add_data(name, test.loc[missing_test], predict=True)
 
         return self.predict(name, test, predict_proba=True)
 
