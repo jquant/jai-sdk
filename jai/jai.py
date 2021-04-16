@@ -1693,7 +1693,9 @@ class Jai:
 
                 # get a sample of the data and shuffle it
                 sample = []
-                strat_split = StratifiedShuffleSplit(n_splits=1, test_size=frac, random_state=0)
+                strat_split = StratifiedShuffleSplit(n_splits=1,
+                                                     test_size=frac,
+                                                     random_state=0)
                 for c in columns_ref:
                     _, indexes = next(strat_split.split(data, data[c]))
                     s = data.iloc[indexes].copy()
