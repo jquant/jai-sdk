@@ -1698,7 +1698,9 @@ class Jai:
                                                      random_state=0)
                 for c in columns_ref:
                     try:
-                        _, indexes = next(strat_split.split(data.dropna(subset=[c]), data.dropna(subset=[c])[c]))
+                        _, indexes = next(
+                            strat_split.split(data.dropna(subset=[c]),
+                                              data.dropna(subset=[c])[c]))
                         s = data.dropna(subset=[c]).iloc[indexes].copy()
                     except:
                         pass
