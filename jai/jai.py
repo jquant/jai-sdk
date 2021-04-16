@@ -1697,8 +1697,15 @@ class Jai:
                                                      test_size=frac,
                                                      random_state=0)
                 for c in columns_ref:
-                    _, indexes = next(strat_split.split(data, data[c]))
-                    s = data.iloc[indexes].copy()
+                    try:
+                        _, indexes = next(strat_split.split(data.dropna(subset=[c]), data.dropna(subset=[c])[c]))
+                        s = data.dropna(subset=[c]).iloc[indexes].copy()
+                    except:
+                        pass
+
+                    if len(indexes) < data.shape[0] * frac:
+                        s = data.sample(frac=frac)
+
                     uniques = s[c].unique()
                     s.loc[:, c] = [change(uniques, v) for v in s[c]]
                     sample.append(s)
