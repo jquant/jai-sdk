@@ -532,7 +532,7 @@ class Jai:
             raise ValueError(
                 f"data must be a pandas Series or DataFrame. (data type {type(data)})"
             )
-        
+
         results = []
         for i in trange(0, len(data), batch_size, desc="Predict"):
             _batch = data.iloc[i:i + batch_size]
