@@ -1697,6 +1697,7 @@ class Jai:
                                                      test_size=frac,
                                                      random_state=0)
                 for c in columns_ref:
+                    indexes = []
                     try:
                         _, indexes = next(
                             strat_split.split(data.dropna(subset=[c]),
