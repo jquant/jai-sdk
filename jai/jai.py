@@ -68,13 +68,9 @@ class Jai:
         """
         Retrieves databases already created for the provided Auth Key.
 
-        Args
-        ----
-            None
-
         Return
         ------
-            List with the databases created so far.
+            List with the sorted names of the databases created so far.
 
         Example
         -------
@@ -95,14 +91,11 @@ class Jai:
         """
         Get name and type of each database in your environment.
 
-        Args
-        ----
-            None
-
         Return
         ------
         pandas.DataFrame
-            Pandas dataframe with name and type of each database in your environment.
+            Pandas dataframe with name, type, creation date and parent
+            databases of each database in your environment.
 
         Example
         -------
@@ -132,10 +125,6 @@ class Jai:
     def status(self, max_tries=5, patience=25):
         """
         Get the status of your JAI environment when training.
-
-        Args
-        ----
-            None
 
         Return
         ------
@@ -183,6 +172,8 @@ class Jai:
             User's first name.
         `lastName`: str
             User's last name.
+        `company`: str
+            User's company.
 
         Return
         ----------
@@ -282,6 +273,15 @@ class Jai:
         return name
 
     def assert_status_code(self, response):
+        """
+        Method to process responses with unexpected response codes.
+
+        Args
+        ----
+        response: response
+            Response with an unexpeted code.
+
+        """
         # find a way to process this
         # what errors to raise, etc.
         print(f"\n\nSTATUS: {response.status_code}\n\n")
@@ -367,7 +367,7 @@ class Jai:
         name : str
             String with the name of a database in your JAI environment.
 
-        idx_tem : list
+        id_item : list
             List of ids of the item the user is looking for.
 
         top_k : int
@@ -444,8 +444,8 @@ class Jai:
             The name of the type of the database.
 
         """
-        dtypes = self.info
         if self.is_valid(name):
+            dtypes = self.info
             return dtypes.loc[dtypes["name"] == name, "type"].values[0]
         else:
             raise ValueError(f"{name} is not a valid name.")
@@ -777,6 +777,9 @@ class Jai:
             Size of batch to send the data. `Default is 16384`.
         frequency_seconds : int
             Time in between each check of status. `Default is 10`.
+        predict : bool
+            Allows table type data to have only one column for predictions,
+            if False, then tables must have at least 2 columns. `Default is False`.
 
         Return
         -------
@@ -845,6 +848,9 @@ class Jai:
             Database type (Supervised, SelSupervised, Text...)
         batch_size : int
             Size of batch to send the data.
+        predict : bool
+            Allows table type data to have only one column for predictions,
+            if False, then tables must have at least 2 columns. `Default is False`.        
 
         Return
         ------
@@ -903,12 +909,12 @@ class Jai:
         must = []
         if db_type == PossibleDtypes.selfsupervised:
             possible.extend([
-                'num_process', 'cat_process', 'datetime_process',
+                'num_process', 'cat_process', 'datetime_process', 'features',
                 'mycelia_bases', 'patience', 'min_delta'
             ])
         elif db_type == PossibleDtypes.supervised:
             possible.extend([
-                'num_process', 'cat_process', 'datetime_process',
+                'num_process', 'cat_process', 'datetime_process', 'features',
                 'mycelia_bases', 'label', 'split', 'patience', 'min_delta'
             ])
             must.extend(['label'])
