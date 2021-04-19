@@ -927,22 +927,19 @@ class Jai:
                     flag = False
 
                 if key == "hyperparams":
-                    if "patience" in val and val[
-                            "patience"] < 1:
+                    if "patience" in val and val["patience"] < 1:
                         val["patience"] = 7  # default patience value for our purposes
                         print(
                             f"'patience' value must be greater than or equal to 1, but got {val['patience']} instead. Setting it to 7 (default)"
                         )
 
-                    if "min_delta" in val and val[
-                            "min_delta"] < 0:
+                    if "min_delta" in val and val["min_delta"] < 0:
                         val["min_delta"] = 1e-5  # default min_delta value for our purposes
                         print(
                             f"'min_delta' value must be greater than or equal to 0, but got {val['min_delta']} instead. Setting it to 1e-5 (default)"
                         )
 
-                    if "max_epochs" in val and val[
-                            "max_epochs"] < 1:
+                    if "max_epochs" in val and val["max_epochs"] < 1:
                         val["max_epochs"] = 100  # default max_epochs value for our purposes
                         print(
                             f"'max_epochs' value must be greater than or equal to 1, but got {val['max_epochs']} instead. Setting it to 100 (default)"
