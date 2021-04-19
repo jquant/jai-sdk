@@ -12,6 +12,7 @@ from .functions.utils_funcs import data2json, pbar_steps
 from .functions.classes import PossibleDtypes, Mode
 from fnmatch import fnmatch
 from pandas.api.types import is_integer_dtype
+from sklearn.model_selection import StratifiedShuffleSplit
 from tqdm import trange, tqdm
 
 __all__ = ["Jai"]
@@ -67,13 +68,9 @@ class Jai:
         """
         Retrieves databases already created for the provided Auth Key.
 
-        Args
-        ----
-            None
-
         Return
         ------
-            List with the databases created so far.
+            List with the sorted names of the databases created so far.
 
         Example
         -------
@@ -94,14 +91,11 @@ class Jai:
         """
         Get name and type of each database in your environment.
 
-        Args
-        ----
-            None
-
         Return
         ------
         pandas.DataFrame
-            Pandas dataframe with name and type of each database in your environment.
+            Pandas dataframe with name, type, creation date and parent
+            databases of each database in your environment.
 
         Example
         -------
@@ -131,10 +125,6 @@ class Jai:
     def status(self, max_tries=5, patience=25):
         """
         Get the status of your JAI environment when training.
-
-        Args
-        ----
-            None
 
         Return
         ------
@@ -182,6 +172,8 @@ class Jai:
             User's first name.
         `lastName`: str
             User's last name.
+        `company`: str
+            User's company.
 
         Return
         ----------
@@ -281,6 +273,15 @@ class Jai:
         return name
 
     def assert_status_code(self, response):
+        """
+        Method to process responses with unexpected response codes.
+
+        Args
+        ----
+        response: response
+            Response with an unexpeted code.
+
+        """
         # find a way to process this
         # what errors to raise, etc.
         print(f"\n\nSTATUS: {response.status_code}\n\n")
@@ -366,7 +367,7 @@ class Jai:
         name : str
             String with the name of a database in your JAI environment.
 
-        idx_tem : list
+        id_item : list
             List of ids of the item the user is looking for.
 
         top_k : int
@@ -443,8 +444,8 @@ class Jai:
             The name of the type of the database.
 
         """
-        dtypes = self.info
         if self.is_valid(name):
+            dtypes = self.info
             return dtypes.loc[dtypes["name"] == name, "type"].values[0]
         else:
             raise ValueError(f"{name} is not a valid name.")
@@ -757,7 +758,8 @@ class Jai:
                  name: str,
                  data,
                  batch_size: int = 16384,
-                 frequency_seconds: int = 10):
+                 frequency_seconds: int = 10,
+                 predict: bool = False):
         """
         Insert raw data and extract their latent representation.
 
@@ -775,6 +777,9 @@ class Jai:
             Size of batch to send the data. `Default is 16384`.
         frequency_seconds : int
             Time in between each check of status. `Default is 10`.
+        predict : bool
+            Allows table type data to have only one column for predictions,
+            if False, then tables must have at least 2 columns. `Default is False`.
 
         Return
         -------
@@ -795,7 +800,8 @@ class Jai:
         insert_responses = self._insert_data(data=data,
                                              name=name,
                                              batch_size=batch_size,
-                                             db_type=db_type)
+                                             db_type=db_type,
+                                             predict=predict)
 
         # check if we inserted everything we were supposed to
         self._check_ids_consistency(name=name, data=data)
@@ -830,7 +836,7 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def _insert_data(self, data, name, db_type, batch_size):
+    def _insert_data(self, data, name, db_type, batch_size, predict=False):
         """
         Insert raw data for training. This is a protected method.
 
@@ -842,6 +848,9 @@ class Jai:
             Database type (Supervised, SelSupervised, Text...)
         batch_size : int
             Size of batch to send the data.
+        predict : bool
+            Allows table type data to have only one column for predictions,
+            if False, then tables must have at least 2 columns. `Default is False`.        
 
         Return
         ------
@@ -854,7 +863,7 @@ class Jai:
                 trange(0, len(data), batch_size, desc="Insert Data")):
             _batch = data.iloc[b:b + batch_size]
             insert_responses[i] = self._insert_json(
-                name, data2json(_batch, dtype=db_type))
+                name, data2json(_batch, dtype=db_type, predict=predict))
         return insert_responses
 
     def _insert_json(self, name: str, df_json):
@@ -900,13 +909,13 @@ class Jai:
         must = []
         if db_type == PossibleDtypes.selfsupervised:
             possible.extend([
-                'num_process', 'cat_process', 'datetime_process',
-                'mycelia_bases', 'patience', 'min_delta'
+                'num_process', 'cat_process', 'datetime_process', 'features',
+                'mycelia_bases'
             ])
         elif db_type == PossibleDtypes.supervised:
             possible.extend([
-                'num_process', 'cat_process', 'datetime_process',
-                'mycelia_bases', 'label', 'split', 'patience', 'min_delta'
+                'num_process', 'cat_process', 'datetime_process', 'features',
+                'mycelia_bases', 'label', 'split'
             ])
             must.extend(['label'])
 
@@ -922,17 +931,25 @@ class Jai:
                 if flag:
                     print("Recognized setup args:")
                     flag = False
-                if key == "patience" and val < 1:
-                    val = 7  # default patience value for our purposes
-                    print(
-                        f"'patience' value must be greater than or equal to 1, but got {val} instead. Setting it to 7 (default)"
-                    )
 
-                if key == "min_delta" and val < 0:
-                    val = 1e-5  # default min_delta value for our purposes
-                    print(
-                        f"'min_delta' value must be greater than or equal to 0, but got {val} instead. Setting it to 1e-5 (default)"
-                    )
+                if key == "hyperparams":
+                    if "patience" in val and val["patience"] < 1:
+                        val["patience"] = 10  # default patience value for our purposes
+                        print(
+                            f"'patience' value must be greater than or equal to 1, but got {val['patience']} instead. Setting it to 10 (default)"
+                        )
+
+                    if "min_delta" in val and val["min_delta"] < 0:
+                        val["min_delta"] = 1e-5  # default min_delta value for our purposes
+                        print(
+                            f"'min_delta' value must be greater than or equal to 0, but got {val['min_delta']} instead. Setting it to 1e-5 (default)"
+                        )
+
+                    if "max_epochs" in val and val["max_epochs"] < 1:
+                        val["max_epochs"] = 500  # default max_epochs value for our purposes
+                        print(
+                            f"'max_epochs' value must be greater than or equal to 1, but got {val['max_epochs']} instead. Setting it to 500 (default)"
+                        )
 
                 print(f"{key}: {val}")
                 body[key] = val
@@ -1554,7 +1571,7 @@ class Jai:
         ids_test = test.index
         missing_test = ids_test[~np.isin(ids_test, self.ids(name, "complete"))]
         if len(missing_test) > 0:
-            self.add_data(name, test.loc[missing_test])
+            self.add_data(name, test.loc[missing_test], predict=True)
 
         return self.predict(name, test, predict_proba=True)
 
@@ -1692,10 +1709,24 @@ class Jai:
 
                 # get a sample of the data and shuffle it
                 sample = []
+                strat_split = StratifiedShuffleSplit(n_splits=1,
+                                                     test_size=frac,
+                                                     random_state=0)
                 for c in columns_ref:
-                    s = data.sample(frac=frac)
+                    indexes = []
+                    try:
+                        _, indexes = next(
+                            strat_split.split(data.dropna(subset=[c]),
+                                              data.dropna(subset=[c])[c]))
+                        s = data.dropna(subset=[c]).iloc[indexes].copy()
+                    except:
+                        pass
+
+                    if len(indexes) < int(np.floor(data.shape[0] * frac)):
+                        s = data.sample(frac=frac)
+
                     uniques = s[c].unique()
-                    s[c] = [change(uniques, v) for v in s[c]]
+                    s.loc[:, c] = [change(uniques, v) for v in s[c]]
                     sample.append(s)
                 sample = pd.concat(sample)
 
