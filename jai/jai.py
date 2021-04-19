@@ -1708,7 +1708,7 @@ class Jai:
                     except:
                         pass
 
-                    if len(indexes) < data.shape[0] * frac:
+                    if len(indexes) < int(np.floor(data.shape[0] * frac)):
                         s = data.sample(frac=frac)
 
                     uniques = s[c].unique()
