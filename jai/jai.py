@@ -931,17 +931,25 @@ class Jai:
                 if flag:
                     print("Recognized setup args:")
                     flag = False
-                if key == "patience" and val < 1:
-                    val = 7  # default patience value for our purposes
-                    print(
-                        f"'patience' value must be greater than or equal to 1, but got {val} instead. Setting it to 7 (default)"
-                    )
 
-                if key == "min_delta" and val < 0:
-                    val = 1e-5  # default min_delta value for our purposes
-                    print(
-                        f"'min_delta' value must be greater than or equal to 0, but got {val} instead. Setting it to 1e-5 (default)"
-                    )
+                if key == "hyperparams":
+                    if "patience" in val and val["patience"] < 1:
+                        val["patience"] = 10  # default patience value for our purposes
+                        print(
+                            f"'patience' value must be greater than or equal to 1, but got {val['patience']} instead. Setting it to 10 (default)"
+                        )
+
+                    if "min_delta" in val and val["min_delta"] < 0:
+                        val["min_delta"] = 1e-5  # default min_delta value for our purposes
+                        print(
+                            f"'min_delta' value must be greater than or equal to 0, but got {val['min_delta']} instead. Setting it to 1e-5 (default)"
+                        )
+
+                    if "max_epochs" in val and val["max_epochs"] < 1:
+                        val["max_epochs"] = 500  # default max_epochs value for our purposes
+                        print(
+                            f"'max_epochs' value must be greater than or equal to 1, but got {val['max_epochs']} instead. Setting it to 500 (default)"
+                        )
 
                 print(f"{key}: {val}")
                 body[key] = val
@@ -1714,7 +1722,7 @@ class Jai:
                     except:
                         pass
 
-                    if len(indexes) < data.shape[0] * frac:
+                    if len(indexes) < int(np.floor(data.shape[0] * frac)):
                         s = data.sample(frac=frac)
 
                     uniques = s[c].unique()
