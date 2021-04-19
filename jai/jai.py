@@ -910,12 +910,12 @@ class Jai:
         if db_type == PossibleDtypes.selfsupervised:
             possible.extend([
                 'num_process', 'cat_process', 'datetime_process', 'features',
-                'mycelia_bases', 'patience', 'min_delta'
+                'mycelia_bases'
             ])
         elif db_type == PossibleDtypes.supervised:
             possible.extend([
                 'num_process', 'cat_process', 'datetime_process', 'features',
-                'mycelia_bases', 'label', 'split', 'patience', 'min_delta'
+                'mycelia_bases', 'label', 'split'
             ])
             must.extend(['label'])
 
