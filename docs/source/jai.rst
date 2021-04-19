@@ -96,6 +96,11 @@ it were in the body of a POST method.
     * **hidden_latent_dim** (*int*) -- Hidden layer size. *Default is 64*.
     * **encoder_steps** (*int*) -- Number of sucessive steps in the newtork (usually 
       between 3 and 10), only when encoder is tabnet. *Default is 3*.
+    * **max_epochs** (*int*) -- Number of epochs for training. *Default is 500*.    
+    * **patience** (*int*) -- Number of validation checks with no improvement after which training will be stopped.
+      *Default is 10*.    
+    * **min_delta** (*float*) -- Minimum change in the monitored quantity (loss) to qualify as an improvement,
+      i.e. an absolute change of less than min_delta, will count as no improvement. *Default is 1e-5*.
 
 
 * **num_process** (*dict*) -- (*Only for db_type Supervised and Unsupervised*) 
@@ -141,9 +146,3 @@ it were in the body of a POST method.
   * **type** (*str*) -- How to split the data in train and test {random, stratified}. *Default is "random"*.
   * **split_column** (*str*) -- (*Mandatory when type is stratified*) Name of column as reference for the split. *Default is ""*.
   * **test_size** (*float*) -- Size of test for the split. *Default is 0.2*.
-
-* **patience** (*int*) -- (Supervised and Self-Supervised only) Number of validation checks with no improvement after which training will be stopped.
-  *Default is 7*.
-
-* **min_delta** (*float*) -- (Supervised and Self-Supervised only) Minimum change in the monitored quantity (loss) to qualify as an improvement,
-  i.e. an absolute change of less than min_delta, will count as no improvement. *Default is 1e-5*.
