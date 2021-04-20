@@ -84,7 +84,11 @@ def test_selfsupervised(setup_dataframe):
     if j.is_valid(name):
         j.delete_database(name)
 
-    j.setup(name, train, db_type="SelfSupervised", overwrite=True)
+    j.setup(name,
+            train,
+            db_type="SelfSupervised",
+            hyperparams={"max_epochs": "3"},
+            overwrite=True)
 
     assert j.is_valid(name), f"valid name {name} after setup failed"
 
@@ -138,6 +142,7 @@ def test_supervised(setup_dataframe):
             train,
             db_type="Supervised",
             overwrite=True,
+            hyperparams={"max_epochs": "3"},
             label={
                 "task": "metric_classification",
                 "label_name": "Survived"
