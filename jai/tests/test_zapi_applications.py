@@ -18,8 +18,12 @@ np.random.seed(42)
 def test_embedding(name, setup_dataframe):
 
     train, test = setup_dataframe
-    train = train.rename(columns={"PassengerId": "id"}).set_index("id")['Name']
-    test = test.rename(columns={"PassengerId": "id"}).set_index("id")['Name']
+    train = train.rename(columns={
+        "PassengerId": "id"
+    }).set_index("id")['Name'].iloc[:10]
+    test = test.rename(columns={
+        "PassengerId": "id"
+    }).set_index("id")['Name'].iloc[:10]
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
     if j.is_valid(name):
@@ -42,8 +46,8 @@ def test_embedding(name, setup_dataframe):
 def test_fill(name, setup_dataframe):
 
     train, test = setup_dataframe
-    train = train.set_index("PassengerId")
-    test = test.set_index("PassengerId")
+    train = train.set_index("PassengerId").iloc[:10]
+    test = test.set_index("PassengerId").iloc[:10]
     half = test.shape[0] // 2
     data = pd.concat([train, test.iloc[:half]])
 
@@ -54,13 +58,11 @@ def test_fill(name, setup_dataframe):
 
     x = j.fill(name, data, column="Survived")
     assert j.is_valid(name), f"valid name {name} after train fill"
-    assert j.ids(name) == ['1100 items from 1 to 1100'
-                           ], 'wrong ids values sanity'
+    assert j.ids(name) == ['15 items from 1 to 896'], 'wrong ids values sanity'
 
     v = j.fill(name, test.iloc[half:], column="Survived")
 
-    assert j.ids(name) == ['1309 items from 1 to 1309'
-                           ], 'wrong ids values sanity'
+    assert j.ids(name) == ['20 items from 1 to 901'], 'wrong ids values sanity'
     j.delete_database(name)
     assert not j.is_valid(name), "valid name after delete failed"
 
@@ -72,8 +74,8 @@ def test_fill(name, setup_dataframe):
 def test_sanity(name, setup_dataframe):
 
     train, test = setup_dataframe
-    train = train.set_index("PassengerId")
-    test = test.set_index("PassengerId")
+    train = train.set_index("PassengerId").iloc[:50]
+    test = test.set_index("PassengerId").iloc[:50]
     half = test.shape[0] // 2
     data = pd.concat([train, test.iloc[:half]]).drop(columns=['Survived'])
 
