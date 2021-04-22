@@ -258,8 +258,10 @@ class Jai:
 
         if length <= len_prefix + len_suffix:
             raise ValueError(
-                f"length {length} is should be larger than {len_prefix+len_suffix} for prefix and suffix inputed."
+                f"length ({length}) should be larger than {len_prefix+len_suffix} for prefix and suffix inputed."
             )
+        if length > 32:
+            raise ValueError(f"length ({length}) should be smaller than 32.")
 
         length -= len_prefix + len_suffix
         code = secrets.token_hex(length)[:length].lower()
@@ -424,69 +426,6 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def _get_dtype(self, name):
-        """
-        Return the database type.
-
-        Parameters
-        ----------
-        name : str
-            String with the name of a database in your JAI environment.
-
-        Raises
-        ------
-        ValueError
-            If the name is not valid.
-
-        Returns
-        -------
-        db_type : str
-            The name of the type of the database.
-
-        """
-        if self.is_valid(name):
-            dtypes = self.info
-            return dtypes.loc[dtypes["name"] == name, "type"].values[0]
-        else:
-            raise ValueError(f"{name} is not a valid name.")
-
-    def _check_dtype_and_clean(self, data, db_type):
-        """
-        Check data type and remove NAs from the data.
-        This is a protected method.
-
-        Args
-        ----
-        data : pandas.DataFrame or pandas.Series
-            Data to be checked and cleaned.
-
-        db_type : str
-            Database type (Supervised, SelfSupervised, Text...)
-
-        Return
-        ------
-        data : pandas.DataFrame or pandas.Series
-            Data without NAs
-        """
-        if isinstance(data, (list, np.ndarray)):
-            data = pd.Series(data)
-        elif not isinstance(data, (pd.Series, pd.DataFrame)):
-            raise TypeError(f"Inserted data is of type {type(data)},\
- but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame")
-        if db_type in [
-                PossibleDtypes.text,
-                PossibleDtypes.fasttext,
-                PossibleDtypes.edit,
-        ]:
-            data = data.dropna()
-        else:
-            cols_to_drop = []
-            for col in data.select_dtypes(include=["category", "O"]).columns:
-                if data[col].nunique() > 1024:
-                    cols_to_drop.append(col)
-            data = data.dropna(subset=cols_to_drop)
-        return data
-
     def predict(self,
                 name: str,
                 data,
@@ -627,54 +566,6 @@ class Jai:
             return response.json()["value"]
         else:
             return self.assert_status_code(response)
-
-    def _temp_ids(self, name: str, mode: Mode = "simple"):
-        """
-        Get id information of a RAW database (i.e., before training). This is a protected method
-
-        Args
-        ----
-        name : str
-            String with the name of a database in your JAI environment.
-        mode : str, optional
-            Level of detail to return. Possible values are 'simple', 'summarized' or 'complete'.
-
-        Return
-        -------
-        response: list
-            List with the actual ids (mode: 'complete') or a summary of ids
-            ('simple'/'summarized') of the given database.
-        """
-        response = requests.get(self.url + f"/setup/ids/{name}?mode={mode}",
-                                headers=self.header)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return self.assert_status_code(response)
-
-    def _check_ids_consistency(self, name, data):
-        """
-        Check if inserted data is consistent with what we expect.
-        This is mainly to assert that all data was properly inserted.
-
-        Args
-        ----
-        name : str
-            Database name.
-        data : pandas.DataFrame or pandas.Series
-            Inserted data.
-
-        Return
-        ------
-        None or Exception
-            If an inconsistency is found, an error is raised.
-        """
-        inserted_ids = self._temp_ids(name)
-        if len(data) != int(inserted_ids[0].split()[0]):
-            print(f"Found invalid ids: {inserted_ids[0]}")
-            print(self.delete_raw_data(name))
-            raise Exception(
-                "Something went wrong on data insertion. Please try again.")
 
     def setup(self,
               name: str,
@@ -991,6 +882,117 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
+    def _get_dtype(self, name):
+        """
+        Return the database type.
+
+        Parameters
+        ----------
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Raises
+        ------
+        ValueError
+            If the name is not valid.
+
+        Returns
+        -------
+        db_type : str
+            The name of the type of the database.
+
+        """
+        if self.is_valid(name):
+            dtypes = self.info
+            return dtypes.loc[dtypes["name"] == name, "type"].values[0]
+        else:
+            raise ValueError(f"{name} is not a valid name.")
+
+    def _temp_ids(self, name: str, mode: Mode = "simple"):
+        """
+        Get id information of a RAW database (i.e., before training). This is a protected method
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+        mode : str, optional
+            Level of detail to return. Possible values are 'simple', 'summarized' or 'complete'.
+
+        Return
+        -------
+        response: list
+            List with the actual ids (mode: 'complete') or a summary of ids
+            ('simple'/'summarized') of the given database.
+        """
+        response = requests.get(self.url + f"/setup/ids/{name}?mode={mode}",
+                                headers=self.header)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
+
+    def _check_ids_consistency(self, name, data):
+        """
+        Check if inserted data is consistent with what we expect.
+        This is mainly to assert that all data was properly inserted.
+
+        Args
+        ----
+        name : str
+            Database name.
+        data : pandas.DataFrame or pandas.Series
+            Inserted data.
+
+        Return
+        ------
+        None or Exception
+            If an inconsistency is found, an error is raised.
+        """
+        inserted_ids = self._temp_ids(name)
+        if len(data) != int(inserted_ids[0].split()[0]):
+            print(f"Found invalid ids: {inserted_ids[0]}")
+            print(self.delete_raw_data(name))
+            raise Exception(
+                "Something went wrong on data insertion. Please try again.")
+
+    def _check_dtype_and_clean(self, data, db_type):
+        """
+        Check data type and remove NAs from the data.
+        This is a protected method.
+
+        Args
+        ----
+        data : pandas.DataFrame or pandas.Series
+            Data to be checked and cleaned.
+
+        db_type : str
+            Database type (Supervised, SelfSupervised, Text...)
+
+        Return
+        ------
+        data : pandas.DataFrame or pandas.Series
+            Data without NAs
+        """
+        if isinstance(data, (list, np.ndarray)):
+            data = pd.Series(data)
+        elif not isinstance(data, (pd.Series, pd.DataFrame)):
+            raise TypeError(f"Inserted data is of type {type(data)},\
+ but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame")
+        if db_type in [
+                PossibleDtypes.text,
+                PossibleDtypes.fasttext,
+                PossibleDtypes.edit,
+        ]:
+            data = data.dropna()
+        else:
+            cols_to_drop = []
+            for col in data.select_dtypes(include=["category", "O"]).columns:
+                if data[col].nunique() > 1024:
+                    cols_to_drop.append(col)
+            data = data.dropna(subset=cols_to_drop)
+        return data
+
     def _process_fields(self, fields):
         for k, v in fields.items():
             if v == "embedding":
@@ -1173,6 +1175,49 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
+    # Helper function to decide which kind of text model to use
+    def _resolve_db_type(self, db_type, col):
+        if isinstance(db_type, str):
+            return db_type
+        elif isinstance(db_type, dict) and col in db_type:
+            return db_type[col]
+        else:
+            return "TextEdit"
+
+    # Helper function to validate name lengths before training
+    def _check_name_lengths(self, name, cols):
+        invalid_cols = []
+        for col in cols:
+            if len(name + "_" + col) > 32:
+                invalid_cols.append(col)
+
+        if len(invalid_cols):
+            raise ValueError(
+                f"The following column names are too large to concatenate\
+                with database '{name}':\n{invalid_cols}\nPlease enter a shorter database name or\
+                shorter column names; 'name_column' string must be at most 32 characters long."
+            )
+
+    # Helper function to build the database names of columns that
+    # are automatically processed during 'sanity' and 'fill' methods
+    def _build_name(self, name, col):
+        origin = name + "_" + col
+        return origin.lower().replace("-", "_").replace(" ", "_")
+
+    # Helper function to delete the whole tree of databases related with
+    # database 'name'
+    def _delete_tree(self, name):
+        df = self.info
+        try:
+            bases_to_del = df.loc[df["name"] == name, "dependencies"].values[0]
+            bases_to_del.append(name)
+            for base in bases_to_del:
+                self.delete_database(base)
+        except:
+            msg = f"Database '{name}' does not exist in your environment. Nothing to overwrite yet."
+            print(msg)
+            return msg
+
     def embedding(self,
                   name: str,
                   data,
@@ -1231,49 +1276,6 @@ class Jai:
                               batch_size=batch_size,
                               frequency_seconds=frequency_seconds)
         return ids
-
-    # Helper function to decide which kind of text model to use
-    def _resolve_db_type(self, db_type, col):
-        if isinstance(db_type, str):
-            return db_type
-        elif isinstance(db_type, dict) and col in db_type:
-            return db_type[col]
-        else:
-            return "TextEdit"
-
-    # Helper function to validate name lengths before training
-    def _check_name_lengths(self, name, cols):
-        invalid_cols = []
-        for col in cols:
-            if len(name + "_" + col) > 32:
-                invalid_cols.append(col)
-
-        if len(invalid_cols):
-            raise ValueError(
-                f"The following column names are too large to concatenate\
-                with database '{name}':\n{invalid_cols}\nPlease enter a shorter database name or\
-                shorter column names; 'name_column' string must be at most 32 characters long."
-            )
-
-    # Helper function to build the database names of columns that
-    # are automatically processed during 'sanity' and 'fill' methods
-    def _build_name(self, name, col):
-        origin = name + "_" + col
-        return origin.lower().replace("-", "_").replace(" ", "_")
-
-    # Helper function to delete the whole tree of databases related with
-    # database 'name'
-    def _delete_tree(self, name):
-        df = self.info
-        try:
-            bases_to_del = df.loc[df["name"] == name, "dependencies"].values[0]
-            bases_to_del.append(name)
-            for base in bases_to_del:
-                self.delete_database(base)
-        except:
-            msg = f"Database '{name}' does not exist in your environment. Nothing to overwrite yet."
-            print(msg)
-            return msg
 
     def match(self,
               name: str,
