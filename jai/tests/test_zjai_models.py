@@ -6,8 +6,10 @@ import pytest
 
 URL = 'http://localhost:8001'
 AUTH_KEY = "sdk_test"
+MAX_SIZE = 50
 
 np.random.seed(42)
+
 
 
 # =============================================================================
@@ -19,7 +21,7 @@ np.random.seed(42)
                           ("test_edittext", "series", "TextEdit")])
 def test_text(name, data, dtype, setup_dataframe):
     train, _ = setup_dataframe
-    train = train.rename(columns={"PassengerId": "id"}).set_index("id")['Name']
+    train = train.rename(columns={"PassengerId": "id"}).set_index("id")['Name'].iloc[:MAX_SIZE]
     ids = train.index.tolist()
     query = train.loc[np.random.choice(ids, 10, replace=False)]
 
@@ -77,7 +79,7 @@ def test_selfsupervised(setup_dataframe):
     name = 'test_selfsupervised'
 
     train, _ = setup_dataframe
-    train = train.drop(columns=["PassengerId"])
+    train = train.drop(columns=["PassengerId"]).iloc[:MAX_SIZE]
     query = train.loc[np.random.choice(len(train), 10, replace=False)]
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
@@ -130,8 +132,8 @@ def test_supervised(setup_dataframe):
     name = 'test_supervised'
 
     train, test = setup_dataframe
-    train = train.rename(columns={"PassengerId": "id"})
-    test = test.rename(columns={"PassengerId": "id"})
+    train = train.rename(columns={"PassengerId": "id"}).iloc[:MAX_SIZE]
+    test = test.rename(columns={"PassengerId": "id"}).iloc[:MAX_SIZE]
     query = test.loc[np.random.choice(len(test), 10, replace=False)]
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
