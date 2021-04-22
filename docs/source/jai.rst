@@ -90,12 +90,12 @@ it were in the body of a POST method.
     * **decoder_layer** (*str*) -- Structure for the decoder layer {"2L", "2L_LN", "2L_BN", "1L"}. 
       *Default is "2L"*.
     * **dropout_rate** (*int*) -- Dropout rate for the encoder layer. *Default is 0.1*.
-    * **momentum** (*int*) -- momentum param for batch norm for the encoder layer. *Default is 64*.
+    * **momentum** (*int*) -- momentum param for batch norm for the encoder layer. *Default is 0.001*.
     * **pretraining_ratio** (*int*) -- rate of feature masking on self-supervised training. 
       *Default is 0.1*.
     * **hidden_latent_dim** (*int*) -- Hidden layer size. *Default is 64*.
     * **encoder_steps** (*int*) -- Number of sucessive steps in the newtork (usually 
-      between 3 and 10), only when encoder is tabnet. *Default is 3*.
+      between 3 and 10), only when encoder is tabnet. *Default is 3*. 
     * **max_epochs** (*int*) -- Number of epochs for training. *Default is 500*.    
     * **patience** (*int*) -- Number of validation checks with no improvement after which training will be stopped.
       *Default is 10*.    
