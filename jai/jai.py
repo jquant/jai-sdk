@@ -850,7 +850,7 @@ class Jai:
             Size of batch to send the data.
         predict : bool
             Allows table type data to have only one column for predictions,
-            if False, then tables must have at least 2 columns. `Default is False`.        
+            if False, then tables must have at least 2 columns. `Default is False`.
 
         Return
         ------
@@ -933,19 +933,19 @@ class Jai:
                     flag = False
 
                 if key == "hyperparams":
-                    if "patience" in val and val["patience"] < 1:
+                    if "patience" in val and int(val["patience"]) < 1:
                         val["patience"] = 10  # default patience value for our purposes
                         print(
                             f"'patience' value must be greater than or equal to 1, but got {val['patience']} instead. Setting it to 10 (default)"
                         )
 
-                    if "min_delta" in val and val["min_delta"] < 0:
+                    if "min_delta" in val and float(val["min_delta"]) < 0:
                         val["min_delta"] = 1e-5  # default min_delta value for our purposes
                         print(
                             f"'min_delta' value must be greater than or equal to 0, but got {val['min_delta']} instead. Setting it to 1e-5 (default)"
                         )
 
-                    if "max_epochs" in val and val["max_epochs"] < 1:
+                    if "max_epochs" in val and int(val["max_epochs"]) < 1:
                         val["max_epochs"] = 500  # default max_epochs value for our purposes
                         print(
                             f"'max_epochs' value must be greater than or equal to 1, but got {val['max_epochs']} instead. Setting it to 500 (default)"
@@ -1177,6 +1177,8 @@ class Jai:
                   name: str,
                   data,
                   db_type="TextEdit",
+                  batch_size: int = 16384,
+                  frequency_seconds: int = 10,
                   hyperparams=None,
                   overwrite=False):
         """
@@ -1216,13 +1218,18 @@ class Jai:
                 name,
                 data,
                 db_type=db_type,
+                batch_size=batch_size,
                 overwrite=overwrite,
+                frequency_seconds=frequency_seconds,
                 hyperparams=hyperparams,
             )
         else:
             missing = ids[~np.isin(ids, self.ids(name, "complete"))]
             if len(missing) > 0:
-                self.add_data(name, data.loc[missing])
+                self.add_data(name,
+                              data.loc[missing],
+                              batch_size=batch_size,
+                              frequency_seconds=frequency_seconds)
         return ids
 
     # Helper function to decide which kind of text model to use
@@ -1273,6 +1280,7 @@ class Jai:
               data_left,
               data_right,
               top_k: int = 100,
+              batch_size: int = 16384,
               threshold: float = None,
               original_data: bool = False,
               db_type="TextEdit",
@@ -1329,9 +1337,13 @@ class Jai:
         self.embedding(name,
                        data_left,
                        db_type=db_type,
+                       batch_size=batch_size,
                        hyperparams=hyperparams,
                        overwrite=overwrite)
-        similar = self.similar(name, data_right, top_k=top_k)
+        similar = self.similar(name,
+                               data_right,
+                               top_k=top_k,
+                               batch_size=batch_size)
         processed = process_similar(similar,
                                     threshold=threshold,
                                     return_self=True)
@@ -1349,6 +1361,7 @@ class Jai:
                    name: str,
                    data,
                    top_k: int = 20,
+                   batch_size: int = 16384,
                    threshold: float = None,
                    return_self: bool = True,
                    original_data: bool = False,
@@ -1411,9 +1424,10 @@ class Jai:
         ids = self.embedding(name,
                              data,
                              db_type=db_type,
+                             batch_size=batch_size,
                              hyperparams=hyperparams,
                              overwrite=overwrite)
-        simliar = self.similar(name, ids, top_k=top_k)
+        simliar = self.similar(name, ids, top_k=top_k, batch_size=batch_size)
         connect = process_resolution(simliar,
                                      threshold=threshold,
                                      return_self=return_self)
@@ -1425,7 +1439,13 @@ class Jai:
                 copy=True)
         return r
 
-    def fill(self, name: str, data, column: str, db_type="TextEdit", **kwargs):
+    def fill(self,
+             name: str,
+             data,
+             column: str,
+             batch_size: int = 16384,
+             db_type="TextEdit",
+             **kwargs):
         """
         Experimental
 
@@ -1551,6 +1571,7 @@ class Jai:
                 name,
                 train,
                 db_type="Supervised",
+                batch_size=batch_size,
                 label=label,
                 split=split,
                 **kwargs,
@@ -1571,13 +1592,20 @@ class Jai:
         ids_test = test.index
         missing_test = ids_test[~np.isin(ids_test, self.ids(name, "complete"))]
         if len(missing_test) > 0:
-            self.add_data(name, test.loc[missing_test], predict=True)
+            self.add_data(name,
+                          test.loc[missing_test],
+                          predict=True,
+                          batch_size=batch_size)
 
-        return self.predict(name, test, predict_proba=True)
+        return self.predict(name,
+                            test,
+                            predict_proba=True,
+                            batch_size=batch_size)
 
     def sanity(self,
                name: str,
                data,
+               batch_size: int = 16384,
                columns_ref: list = None,
                db_type="TextEdit",
                **kwargs):
@@ -1757,6 +1785,7 @@ class Jai:
                 name,
                 train,
                 db_type="Supervised",
+                batch_size=batch_size,
                 label=label,
                 split=split,
                 **kwargs,
@@ -1778,6 +1807,9 @@ class Jai:
             missing = ids[~np.isin(ids, self.ids(name, "complete"))]
 
             if len(missing) > 0:
-                self.add_data(name, data.loc[missing])
+                self.add_data(name, data.loc[missing], batch_size=batch_size)
 
-        return self.predict(name, data, predict_proba=True)
+        return self.predict(name,
+                            data,
+                            predict_proba=True,
+                            batch_size=batch_size)
