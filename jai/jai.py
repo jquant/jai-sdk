@@ -1066,6 +1066,9 @@ class Jai:
                         numbers = status["Description"].split(
                             "Iteration: ")[1].strip().split(" / ")
                         max_iterations = int(numbers[1])
+                        print(
+                            f"Training might not take {max_iterations} steps due to early stopping criteria."
+                        )
                         with tqdm(total=max_iterations,
                                   desc=f"[{name}] Training",
                                   leave=False) as iteration_bar:
@@ -1075,17 +1078,15 @@ class Jai:
                                     "Iteration: ")[1].strip().split(" / ")
                                 curr_step = int(numbers[0])
                                 step_update = curr_step - iteration_bar.n
-                                if step_update:
+                                if step_update > 0:
                                     iteration_bar.update(step_update)
                                 time.sleep(frequency_seconds)
                                 status = self.status[name]
                             # training might stop early, so we make the progress bar appear
                             # full when early stopping is reached -- peace of mind
-                            last_n = iteration_bar.n
                             iteration_bar.update(max_iterations -
                                                  iteration_bar.n)
-                            if last_n != max_iterations:
-                                print("\nEarly stopping reached.")
+                            print("\nDone training.")
 
                     if (step == starts_at) and (aux == 0):
                         pbar.update(starts_at)
