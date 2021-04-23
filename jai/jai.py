@@ -260,7 +260,7 @@ class Jai:
             raise ValueError(
                 f"length ({length}) should be larger than {len_prefix+len_suffix} for prefix and suffix inputed."
             )
-        if length > 32:
+        if length >= 32:
             raise ValueError(f"length ({length}) should be smaller than 32.")
 
         length -= len_prefix + len_suffix
