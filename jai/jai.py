@@ -993,13 +993,6 @@ class Jai:
             data = data.dropna(subset=cols_to_drop)
         return data
 
-    def _process_fields(self, fields):
-        for k, v in fields.items():
-            if v == "embedding":
-                new_key = re.sub("\_latent$", "", k)
-                fields[new_key] = fields.pop(k)
-        return fields
-
     def fields(self, name: str):
         """
         Get the table fields for a Supervised/SelfSupervised database.
@@ -1031,7 +1024,7 @@ class Jai:
         response = requests.get(self.url + f"/table/fields/{name}",
                                 headers=self.header)
         if response.status_code == 200:
-            return self._process_fields(response.json())
+            return response.json()
         else:
             return self.assert_status_code(response)
 
@@ -1754,14 +1747,14 @@ class Jai:
                         s = data.dropna(subset=[c]).iloc[indexes].copy()
                     except:
                         pass
-                    
+
                     # due to dropping NaN values, the number of samples might
                     # fall short the desired amount we want;
                     # in this case, we give up the stratified strategy and simply
                     # sample our database randomly.
                     # This 'if' statement below will also hold true if
                     # stratified sampling could not work for whatever
-                    # reason (for instance, all samples in a given column are different) 
+                    # reason (for instance, all samples in a given column are different)
                     if len(indexes) < int(np.floor(data.shape[0] * frac)):
                         s = data.sample(frac=frac)
 
