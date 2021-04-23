@@ -258,8 +258,10 @@ class Jai:
 
         if length <= len_prefix + len_suffix:
             raise ValueError(
-                f"length {length} is should be larger than {len_prefix+len_suffix} for prefix and suffix inputed."
+                f"length ({length}) should be larger than {len_prefix+len_suffix} for prefix and suffix inputed."
             )
+        if length >= 32:
+            raise ValueError(f"length ({length}) should be smaller than 32.")
 
         length -= len_prefix + len_suffix
         code = secrets.token_hex(length)[:length].lower()
@@ -424,69 +426,6 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def _get_dtype(self, name):
-        """
-        Return the database type.
-
-        Parameters
-        ----------
-        name : str
-            String with the name of a database in your JAI environment.
-
-        Raises
-        ------
-        ValueError
-            If the name is not valid.
-
-        Returns
-        -------
-        db_type : str
-            The name of the type of the database.
-
-        """
-        if self.is_valid(name):
-            dtypes = self.info
-            return dtypes.loc[dtypes["name"] == name, "type"].values[0]
-        else:
-            raise ValueError(f"{name} is not a valid name.")
-
-    def _check_dtype_and_clean(self, data, db_type):
-        """
-        Check data type and remove NAs from the data.
-        This is a protected method.
-
-        Args
-        ----
-        data : pandas.DataFrame or pandas.Series
-            Data to be checked and cleaned.
-
-        db_type : str
-            Database type (Supervised, SelfSupervised, Text...)
-
-        Return
-        ------
-        data : pandas.DataFrame or pandas.Series
-            Data without NAs
-        """
-        if isinstance(data, (list, np.ndarray)):
-            data = pd.Series(data)
-        elif not isinstance(data, (pd.Series, pd.DataFrame)):
-            raise TypeError(f"Inserted data is of type {type(data)},\
- but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame")
-        if db_type in [
-                PossibleDtypes.text,
-                PossibleDtypes.fasttext,
-                PossibleDtypes.edit,
-        ]:
-            data = data.dropna()
-        else:
-            cols_to_drop = []
-            for col in data.select_dtypes(include=["category", "O"]).columns:
-                if data[col].nunique() > 1024:
-                    cols_to_drop.append(col)
-            data = data.dropna(subset=cols_to_drop)
-        return data
-
     def predict(self,
                 name: str,
                 data,
@@ -627,54 +566,6 @@ class Jai:
             return response.json()["value"]
         else:
             return self.assert_status_code(response)
-
-    def _temp_ids(self, name: str, mode: Mode = "simple"):
-        """
-        Get id information of a RAW database (i.e., before training). This is a protected method
-
-        Args
-        ----
-        name : str
-            String with the name of a database in your JAI environment.
-        mode : str, optional
-            Level of detail to return. Possible values are 'simple', 'summarized' or 'complete'.
-
-        Return
-        -------
-        response: list
-            List with the actual ids (mode: 'complete') or a summary of ids
-            ('simple'/'summarized') of the given database.
-        """
-        response = requests.get(self.url + f"/setup/ids/{name}?mode={mode}",
-                                headers=self.header)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return self.assert_status_code(response)
-
-    def _check_ids_consistency(self, name, data):
-        """
-        Check if inserted data is consistent with what we expect.
-        This is mainly to assert that all data was properly inserted.
-
-        Args
-        ----
-        name : str
-            Database name.
-        data : pandas.DataFrame or pandas.Series
-            Inserted data.
-
-        Return
-        ------
-        None or Exception
-            If an inconsistency is found, an error is raised.
-        """
-        inserted_ids = self._temp_ids(name)
-        if len(data) != int(inserted_ids[0].split()[0]):
-            print(f"Found invalid ids: {inserted_ids[0]}")
-            print(self.delete_raw_data(name))
-            raise Exception(
-                "Something went wrong on data insertion. Please try again.")
 
     def setup(self,
               name: str,
@@ -850,7 +741,7 @@ class Jai:
             Size of batch to send the data.
         predict : bool
             Allows table type data to have only one column for predictions,
-            if False, then tables must have at least 2 columns. `Default is False`.        
+            if False, then tables must have at least 2 columns. `Default is False`.
 
         Return
         ------
@@ -933,19 +824,19 @@ class Jai:
                     flag = False
 
                 if key == "hyperparams":
-                    if "patience" in val and val["patience"] < 1:
+                    if "patience" in val and int(val["patience"]) < 1:
                         val["patience"] = 10  # default patience value for our purposes
                         print(
                             f"'patience' value must be greater than or equal to 1, but got {val['patience']} instead. Setting it to 10 (default)"
                         )
 
-                    if "min_delta" in val and val["min_delta"] < 0:
+                    if "min_delta" in val and float(val["min_delta"]) < 0:
                         val["min_delta"] = 1e-5  # default min_delta value for our purposes
                         print(
                             f"'min_delta' value must be greater than or equal to 0, but got {val['min_delta']} instead. Setting it to 1e-5 (default)"
                         )
 
-                    if "max_epochs" in val and val["max_epochs"] < 1:
+                    if "max_epochs" in val and int(val["max_epochs"]) < 1:
                         val["max_epochs"] = 500  # default max_epochs value for our purposes
                         print(
                             f"'max_epochs' value must be greater than or equal to 1, but got {val['max_epochs']} instead. Setting it to 500 (default)"
@@ -990,6 +881,117 @@ class Jai:
             return response.json()
         else:
             return self.assert_status_code(response)
+
+    def _get_dtype(self, name):
+        """
+        Return the database type.
+
+        Parameters
+        ----------
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Raises
+        ------
+        ValueError
+            If the name is not valid.
+
+        Returns
+        -------
+        db_type : str
+            The name of the type of the database.
+
+        """
+        if self.is_valid(name):
+            dtypes = self.info
+            return dtypes.loc[dtypes["name"] == name, "type"].values[0]
+        else:
+            raise ValueError(f"{name} is not a valid name.")
+
+    def _temp_ids(self, name: str, mode: Mode = "simple"):
+        """
+        Get id information of a RAW database (i.e., before training). This is a protected method
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+        mode : str, optional
+            Level of detail to return. Possible values are 'simple', 'summarized' or 'complete'.
+
+        Return
+        -------
+        response: list
+            List with the actual ids (mode: 'complete') or a summary of ids
+            ('simple'/'summarized') of the given database.
+        """
+        response = requests.get(self.url + f"/setup/ids/{name}?mode={mode}",
+                                headers=self.header)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
+
+    def _check_ids_consistency(self, name, data):
+        """
+        Check if inserted data is consistent with what we expect.
+        This is mainly to assert that all data was properly inserted.
+
+        Args
+        ----
+        name : str
+            Database name.
+        data : pandas.DataFrame or pandas.Series
+            Inserted data.
+
+        Return
+        ------
+        None or Exception
+            If an inconsistency is found, an error is raised.
+        """
+        inserted_ids = self._temp_ids(name)
+        if len(data) != int(inserted_ids[0].split()[0]):
+            print(f"Found invalid ids: {inserted_ids[0]}")
+            print(self.delete_raw_data(name))
+            raise Exception(
+                "Something went wrong on data insertion. Please try again.")
+
+    def _check_dtype_and_clean(self, data, db_type):
+        """
+        Check data type and remove NAs from the data.
+        This is a protected method.
+
+        Args
+        ----
+        data : pandas.DataFrame or pandas.Series
+            Data to be checked and cleaned.
+
+        db_type : str
+            Database type (Supervised, SelfSupervised, Text...)
+
+        Return
+        ------
+        data : pandas.DataFrame or pandas.Series
+            Data without NAs
+        """
+        if isinstance(data, (list, np.ndarray)):
+            data = pd.Series(data)
+        elif not isinstance(data, (pd.Series, pd.DataFrame)):
+            raise TypeError(f"Inserted data is of type {type(data)},\
+ but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame")
+        if db_type in [
+                PossibleDtypes.text,
+                PossibleDtypes.fasttext,
+                PossibleDtypes.edit,
+        ]:
+            data = data.dropna()
+        else:
+            cols_to_drop = []
+            for col in data.select_dtypes(include=["category", "O"]).columns:
+                if data[col].nunique() > 1024:
+                    cols_to_drop.append(col)
+            data = data.dropna(subset=cols_to_drop)
+        return data
 
     def _process_fields(self, fields):
         for k, v in fields.items():
@@ -1173,58 +1175,6 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def embedding(self,
-                  name: str,
-                  data,
-                  db_type="TextEdit",
-                  hyperparams=None,
-                  overwrite=False):
-        """
-        Quick embedding for high numbers of categories in columns.
-
-        Parameters
-        ----------
-        name: str
-            String with the name of a database in your JAI environment.
-        data : pd.Series
-            Data for your text based model.
-        db_type : str, optional
-            type of model to be trained. The default is 'TextEdit'.
-        hyperparams: optional
-            See setup documentation for the db_type used.
-
-        Returns
-        -------
-        name : str
-            name of the base where the data was embedded.
-
-        """
-        if isinstance(data, pd.Series):
-            data = data.copy()
-        else:
-            raise ValueError(f"data must be a Series. data is {type(data)}")
-
-        ids = data.index
-
-        if db_type == "TextEdit":
-            hyperparams = {
-                "nt": np.clip(np.round(len(data) / 10, -3), 1000, 10000)
-            }
-
-        if name not in self.names or overwrite:
-            self.setup(
-                name,
-                data,
-                db_type=db_type,
-                overwrite=overwrite,
-                hyperparams=hyperparams,
-            )
-        else:
-            missing = ids[~np.isin(ids, self.ids(name, "complete"))]
-            if len(missing) > 0:
-                self.add_data(name, data.loc[missing])
-        return ids
-
     # Helper function to decide which kind of text model to use
     def _resolve_db_type(self, db_type, col):
         if isinstance(db_type, str):
@@ -1268,11 +1218,71 @@ class Jai:
             print(msg)
             return msg
 
+    def embedding(self,
+                  name: str,
+                  data,
+                  db_type="TextEdit",
+                  batch_size: int = 16384,
+                  frequency_seconds: int = 10,
+                  hyperparams=None,
+                  overwrite=False):
+        """
+        Quick embedding for high numbers of categories in columns.
+
+        Parameters
+        ----------
+        name: str
+            String with the name of a database in your JAI environment.
+        data : pd.Series
+            Data for your text based model.
+        db_type : str, optional
+            type of model to be trained. The default is 'TextEdit'.
+        hyperparams: optional
+            See setup documentation for the db_type used.
+
+        Returns
+        -------
+        name : str
+            name of the base where the data was embedded.
+
+        """
+        if isinstance(data, pd.Series):
+            data = data.copy()
+        else:
+            raise ValueError(f"data must be a Series. data is {type(data)}")
+
+        ids = data.index
+
+        if db_type == "TextEdit":
+            hyperparams = {
+                "nt": np.clip(np.round(len(data) / 10, -3), 1000, 10000)
+            }
+
+        if name not in self.names or overwrite:
+            self.setup(
+                name,
+                data,
+                db_type=db_type,
+                batch_size=batch_size,
+                overwrite=overwrite,
+                frequency_seconds=frequency_seconds,
+                hyperparams=hyperparams,
+            )
+        else:
+            missing = ids[~np.isin(ids, self.ids(name, "complete"))]
+            if len(missing) > 0:
+                self.add_data(name,
+                              data.loc[missing],
+                              batch_size=batch_size,
+                              frequency_seconds=frequency_seconds)
+        return ids
+
     def match(self,
               name: str,
               data_left,
               data_right,
               top_k: int = 100,
+              batch_size: int = 16384,
               threshold: float = None,
               original_data: bool = False,
               db_type="TextEdit",
@@ -1329,9 +1339,13 @@ class Jai:
         self.embedding(name,
                        data_left,
                        db_type=db_type,
+                       batch_size=batch_size,
                        hyperparams=hyperparams,
                        overwrite=overwrite)
-        similar = self.similar(name, data_right, top_k=top_k)
+        similar = self.similar(name,
+                               data_right,
+                               top_k=top_k,
+                               batch_size=batch_size)
         processed = process_similar(similar,
                                     threshold=threshold,
                                     return_self=True)
@@ -1349,6 +1363,7 @@ class Jai:
                    name: str,
                    data,
                    top_k: int = 20,
+                   batch_size: int = 16384,
                    threshold: float = None,
                    return_self: bool = True,
                    original_data: bool = False,
@@ -1411,9 +1426,10 @@ class Jai:
         ids = self.embedding(name,
                              data,
                              db_type=db_type,
+                             batch_size=batch_size,
                              hyperparams=hyperparams,
                              overwrite=overwrite)
-        simliar = self.similar(name, ids, top_k=top_k)
+        simliar = self.similar(name, ids, top_k=top_k, batch_size=batch_size)
         connect = process_resolution(simliar,
                                      threshold=threshold,
                                      return_self=return_self)
@@ -1425,7 +1441,13 @@ class Jai:
                 copy=True)
         return r
 
-    def fill(self, name: str, data, column: str, db_type="TextEdit", **kwargs):
+    def fill(self,
+             name: str,
+             data,
+             column: str,
+             batch_size: int = 16384,
+             db_type="TextEdit",
+             **kwargs):
         """
         Experimental
 
@@ -1551,6 +1573,7 @@ class Jai:
                 name,
                 train,
                 db_type="Supervised",
+                batch_size=batch_size,
                 label=label,
                 split=split,
                 **kwargs,
@@ -1571,13 +1594,20 @@ class Jai:
         ids_test = test.index
         missing_test = ids_test[~np.isin(ids_test, self.ids(name, "complete"))]
         if len(missing_test) > 0:
-            self.add_data(name, test.loc[missing_test], predict=True)
+            self.add_data(name,
+                          test.loc[missing_test],
+                          predict=True,
+                          batch_size=batch_size)
 
-        return self.predict(name, test, predict_proba=True)
+        return self.predict(name,
+                            test,
+                            predict_proba=True,
+                            batch_size=batch_size)
 
     def sanity(self,
                name: str,
                data,
+               batch_size: int = 16384,
                columns_ref: list = None,
                db_type="TextEdit",
                **kwargs):
@@ -1757,6 +1787,7 @@ class Jai:
                 name,
                 train,
                 db_type="Supervised",
+                batch_size=batch_size,
                 label=label,
                 split=split,
                 **kwargs,
@@ -1778,6 +1809,9 @@ class Jai:
             missing = ids[~np.isin(ids, self.ids(name, "complete"))]
 
             if len(missing) > 0:
-                self.add_data(name, data.loc[missing])
+                self.add_data(name, data.loc[missing], batch_size=batch_size)
 
-        return self.predict(name, data, predict_proba=True)
+        return self.predict(name,
+                            data,
+                            predict_proba=True,
+                            batch_size=batch_size)
