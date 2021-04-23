@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 INVALID_URL = 'http://google.com'
-VALID_URL = 'http://23.96.99.211:8001'
+VALID_URL = 'http://localhost:8001'
 AUTH_KEY = "sdk_test"
 
 
