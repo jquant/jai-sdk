@@ -95,8 +95,8 @@ it were in the body of a POST method.
       *Default is 0.1*.
     * **hidden_latent_dim** (*int*) -- Hidden layer size. *Default is 64*.
     * **encoder_steps** (*int*) -- Number of sucessive steps in the newtork (usually 
-      between 3 and 10), only when encoder is tabnet. *Default is 3*. 
-    * **max_epochs** (*int*) -- Number of epochs for training. *Default is 500*.    
+      between 3 and 10), only when encoder is tabnet. *Default is 3*.
+    * **max_epochs** (*int*) -- Number of epochs for training. *Default is 500*.
     * **patience** (*int*) -- Number of validation checks with no improvement after which training will be stopped.
       *Default is 10*.    
     * **min_delta** (*float*) -- Minimum change in the monitored quantity (loss) to qualify as an improvement,
