@@ -993,13 +993,6 @@ class Jai:
             data = data.dropna(subset=cols_to_drop)
         return data
 
-    def _process_fields(self, fields):
-        for k, v in fields.items():
-            if v == "embedding":
-                new_key = re.sub("\_latent$", "", k)
-                fields[new_key] = fields.pop(k)
-        return fields
-
     def fields(self, name: str):
         """
         Get the table fields for a Supervised/SelfSupervised database.
@@ -1031,7 +1024,7 @@ class Jai:
         response = requests.get(self.url + f"/table/fields/{name}",
                                 headers=self.header)
         if response.status_code == 200:
-            return self._process_fields(response.json())
+            return response.json()
         else:
             return self.assert_status_code(response)
 
