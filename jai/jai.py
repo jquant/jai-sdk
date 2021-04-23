@@ -1073,7 +1073,9 @@ class Jai:
                         numbers = status["Description"].split(
                             "Iteration: ")[1].strip().split(" / ")
                         max_iterations = int(numbers[1])
-                        print(f"Training might not take {max_iterations} steps due to early stopping criteria.")
+                        print(
+                            f"Training might not take {max_iterations} steps due to early stopping criteria."
+                        )
                         with tqdm(total=max_iterations,
                                   desc=f"[{name}] Training",
                                   leave=False) as iteration_bar:
@@ -1092,7 +1094,6 @@ class Jai:
                             iteration_bar.update(max_iterations -
                                                  iteration_bar.n)
                             print("\nDone training.")
-                                
 
                     if (step == starts_at) and (aux == 0):
                         pbar.update(starts_at)
