@@ -1761,7 +1761,7 @@ class Jai:
                     # sample our database randomly.
                     # This 'if' statement below will also hold true if
                     # stratified sampling could not work for whatever
-                    # reason (for instance, all samples in a given column are different)
+                    # reason (for instance, all samples in a given column are different) 
                     if len(indexes) < int(np.floor(data.shape[0] * frac)):
                         s = data.sample(frac=frac)
 
