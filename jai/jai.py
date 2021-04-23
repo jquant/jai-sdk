@@ -1744,6 +1744,9 @@ class Jai:
                                                      random_state=0)
                 for c in columns_ref:
                     indexes = []
+                    # We try to get a stratified sample on each column.
+                    # However, stratified does not work with NaN values, so
+                    # we need to drop them before getting the samples
                     try:
                         _, indexes = next(
                             strat_split.split(data.dropna(subset=[c]),
@@ -1751,7 +1754,14 @@ class Jai:
                         s = data.dropna(subset=[c]).iloc[indexes].copy()
                     except:
                         pass
-
+                    
+                    # due to dropping NaN values, the number of samples might
+                    # fall short the desired amount we want;
+                    # in this case, we give up the stratified strategy and simply
+                    # sample our database randomly.
+                    # This 'if' statement below will also hold true if
+                    # stratified sampling could not work for whatever
+                    # reason (for instance, all samples in a given column are different)
                     if len(indexes) < int(np.floor(data.shape[0] * frac)):
                         s = data.sample(frac=frac)
 
