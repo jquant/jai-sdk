@@ -179,10 +179,10 @@ def test_check_ids_consistency_exception(name, batch_size, db_type):
 
 @pytest.mark.parametrize("name", ["invalid_test"])
 def test_delete_tree(name):
-    # we need to use a valid URL for this one
-    j = Jai(url=VALID_URL, auth_key=AUTH_KEY)
-    msg = f"Database '{name}' does not exist in your environment. Nothing to overwrite yet."
-    assert j._delete_tree(name) == msg
+    with pytest.raises(IndexError):
+        # we need to use a valid URL for this one
+        j = Jai(url=VALID_URL, auth_key=AUTH_KEY)
+        j._delete_tree(name)
 
 
 def test_download_vectors_exception():
