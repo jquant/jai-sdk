@@ -1,0 +1,19 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: "/"
+  schedule:
+    interval: weekly
+    time: "06:00"
+    timezone: America/Sao_Paulo
+  open-pull-requests-limit: 10
+  target-branch: dev
+  reviewers:
+  - ricardokazu
+  ignore:
+  - dependency-name: numpy
+    versions:
+    - 1.20.2
+  - dependency-name: azure-storage-blob
+    versions:
+    - 12.8.0
