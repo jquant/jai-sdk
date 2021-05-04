@@ -2,7 +2,6 @@ import secrets
 import json
 import pandas as pd
 import numpy as np
-import re
 import requests
 import time
 
@@ -50,9 +49,7 @@ class Jai:
             self.__url = "https://mycelia.azure-api.net"
             self.header = {"Auth": auth_key}
         else:
-            if url.endswith("/"):
-                url = url[:-1]
-            self.__url = url
+            self.__url = url[:-1] if url.endswith("/") else url
             self.header = {"company-key": auth_key}
 
     @property

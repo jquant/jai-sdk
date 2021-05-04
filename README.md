@@ -30,6 +30,9 @@ To get a Trial version API using the sdk, fill the values with your information:
 from jai import Jai
 
 r = Jai.get_auth_key(email="EMAIL", firstName="FIRSTNAME", lastName="LASTNAME")
+
+# or
+r = Jai.get_auth_key(email="EMAIL", firstName="FIRSTNAME", lastName="LASTNAME", company="COMPANY")
 ```
 
 If the response code is 201, then you should be receiving an email with your Auth Key.
