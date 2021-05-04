@@ -6,6 +6,7 @@
 [![codecov](https://codecov.io/gh/jquant/jai-sdk/branch/main/graph/badge.svg)](https://codecov.io/gh/jquant/jai-sdk)
 [![License](https://img.shields.io/pypi/l/jai-sdk.svg)](https://github.com/jquant/jai-sdk/blob/main/LICENSE)
 [![Code style: yapf](https://img.shields.io/badge/code%20style-yapf-blue)](https://github.com/google/yapf)
+[![Downloads](https://pepy.tech/badge/jai-sdk)](https://pepy.tech/project/jai-sdk)
 
 # Installation
 
@@ -17,6 +18,8 @@ Installing jai-sdk using `pip`:
 pip install jai-sdk
 ```
 
+For more information, here is our [documentation](https://jai-sdk.readthedocs.io/en/latest/).
+
 # [Get your Auth Key](https://jai-sdk.readthedocs.io/en/latest/source/quick_start.html#getting-your-authentication-key)
 
 First, you'll need an Authorization key to use the backend API.
@@ -26,7 +29,7 @@ To get a Trial version API using the sdk, fill the values with your information:
 ```python
 from jai import Jai
 
-r = Jai.get_auth_key(email=EMAIL, firstName=FIRSTNAME, lastName=LASTNAME)
+r = Jai.get_auth_key(email="EMAIL", firstName="FIRSTNAME", lastName="LASTNAME")
 ```
 
 If the response code is 201, then you should be receiving an email with your Auth Key.
