@@ -4,12 +4,14 @@ import pandas as pd
 import numpy as np
 import requests
 import time
+import re
 
 from io import BytesIO
 from .processing import process_similar, process_resolution
 from .functions.utils_funcs import data2json, pbar_steps
 from .functions.classes import PossibleDtypes, Mode
 from fnmatch import fnmatch
+import matplotlib.pyplot as plt
 from pandas.api.types import is_integer_dtype
 from sklearn.model_selection import StratifiedShuffleSplit
 from tqdm import trange, tqdm
@@ -640,7 +642,26 @@ class Jai:
         if frequency_seconds >= 1:
             self.wait_setup(name=name, frequency_seconds=frequency_seconds)
 
+        self.report(name)
+
         return insert_responses, setup_response
+
+    def fit(self,
+            name: str,
+            data,
+            db_type: str,
+            batch_size: int = 16384,
+            frequency_seconds: int = 10,
+            **kwargs):
+        """
+        Another name for setup.
+        """
+        return self.setup(name=name,
+                          data=data,
+                          db_type=db_type,
+                          batch_size=batch_size,
+                          frequency_seconds=frequency_seconds,
+                          **kwargs)
 
     def add_data(self,
                  name: str,
@@ -701,6 +722,21 @@ class Jai:
             self.wait_setup(name=name, frequency_seconds=frequency_seconds)
 
         return insert_responses, add_data_response
+
+    def append(self,
+               name: str,
+               data,
+               batch_size: int = 16384,
+               frequency_seconds: int = 10,
+               predict: bool = False):
+        """
+        Another name for add_data
+        """
+        return self.add_data(name=name,
+                             data=data,
+                             batch_size=batch_size,
+                             frequency_seconds=frequency_seconds,
+                             predict=predict)
 
     def _append(self, name: str):
         """
@@ -878,6 +914,68 @@ class Jai:
             return response.json()
         else:
             return self.assert_status_code(response)
+
+    def report(self, name, verbose=2):
+        """
+        Get a report about the training model.
+
+        Parameters
+        ----------
+        name : str
+            String with the name of a database in your JAI environment.
+        verbose : int, optional
+            Level of description. The default is 2.
+
+        Returns
+        -------
+        dict
+            Dictionary with the information.
+
+        """
+        response = requests.get(self.url + f"/report/{name}?verbose={verbose}",
+                                headers=self.header)
+
+        if response.status_code == 200:
+            string = response.json()
+            p = re.compile(r'(?m)^={3,}$')
+            p.split(string.strip("=\n"))
+            splits = [x.strip() for x in p.split(string.strip("=\n\r"))]
+            result = dict(zip(splits[0::2], splits[1::2]))
+            result.pop("Auto lr finder", None)
+
+            train_pattern = "(epoch=(\d+) train_loss=(\d+\.\d+)?\n)"
+            val_pattern = "(epoch=(\d+) val_loss=(\d+\.\d+)?\n)"
+
+            if 'Model Training' in result.keys():
+                plots = {}
+
+                epoch = []
+                loss = []
+                for _, x, y in re.findall(train_pattern, result['Model Training']):
+                    epoch.append(int(x))
+                    loss.append(float(y))
+                plots['train'] = (epoch, loss)
+
+                epoch = []
+                loss = []
+                for _, x, y in re.findall(val_pattern, result['Model Training']):
+                    epoch.append(int(x))
+                    loss.append(float(y))
+                plots['val'] = (epoch, loss)
+
+                plt.plot(*plots['train'])
+                plt.plot(*plots['val'])
+                plt.title("Training Losses")
+                plt.legend(["train loss", "val loss"])
+                plt.xlabel("epoch")
+                plt.show()
+
+            print(result['Model Evaluation'])
+            print(result["Loading from checkpoint"].split("\n")[1])
+            return result
+        else:
+            return self.assert_status_code(response)
+
 
     def _get_dtype(self, name):
         """
