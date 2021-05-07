@@ -2,15 +2,16 @@ import secrets
 import json
 import pandas as pd
 import numpy as np
-import re
 import requests
 import time
+import re
 
 from io import BytesIO
 from .processing import process_similar, process_resolution
 from .functions.utils_funcs import data2json, pbar_steps
 from .functions.classes import PossibleDtypes, Mode
 from fnmatch import fnmatch
+import matplotlib.pyplot as plt
 from pandas.api.types import is_integer_dtype
 from sklearn.model_selection import StratifiedShuffleSplit
 from tqdm import trange, tqdm
@@ -50,9 +51,7 @@ class Jai:
             self.__url = "https://mycelia.azure-api.net"
             self.header = {"Auth": auth_key}
         else:
-            if url.endswith("/"):
-                url = url[:-1]
-            self.__url = url
+            self.__url = url[:-1] if url.endswith("/") else url
             self.header = {"company-key": auth_key}
 
     @property
@@ -572,7 +571,8 @@ class Jai:
               data,
               db_type: str,
               batch_size: int = 16384,
-              frequency_seconds: int = 10,
+              frequency_seconds: int = 1,
+              verbose: int = 1,
               **kwargs):
         """
         Insert data and train model. This is JAI's crème de la crème.
@@ -643,13 +643,35 @@ class Jai:
         if frequency_seconds >= 1:
             self.wait_setup(name=name, frequency_seconds=frequency_seconds)
 
+        if db_type in [
+                PossibleDtypes.selfsupervised, PossibleDtypes.supervised
+        ]:
+            self.report(name, verbose)
+
         return insert_responses, setup_response
+
+    def fit(self,
+            name: str,
+            data,
+            db_type: str,
+            batch_size: int = 16384,
+            frequency_seconds: int = 1,
+            **kwargs):
+        """
+        Another name for setup.
+        """
+        return self.setup(name=name,
+                          data=data,
+                          db_type=db_type,
+                          batch_size=batch_size,
+                          frequency_seconds=frequency_seconds,
+                          **kwargs)
 
     def add_data(self,
                  name: str,
                  data,
                  batch_size: int = 16384,
-                 frequency_seconds: int = 10,
+                 frequency_seconds: int = 1,
                  predict: bool = False):
         """
         Insert raw data and extract their latent representation.
@@ -704,6 +726,21 @@ class Jai:
             self.wait_setup(name=name, frequency_seconds=frequency_seconds)
 
         return insert_responses, add_data_response
+
+    def append(self,
+               name: str,
+               data,
+               batch_size: int = 16384,
+               frequency_seconds: int = 1,
+               predict: bool = False):
+        """
+        Another name for add_data
+        """
+        return self.add_data(name=name,
+                             data=data,
+                             batch_size=batch_size,
+                             frequency_seconds=frequency_seconds,
+                             predict=predict)
 
     def _append(self, name: str):
         """
@@ -882,6 +919,54 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
+    def report(self, name, verbose: int = 2, return_report: bool = False):
+        """
+        Get a report about the training model.
+
+        Parameters
+        ----------
+        name : str
+            String with the name of a database in your JAI environment.
+        verbose : int, optional
+            Level of description. The default is 2.
+
+        Returns
+        -------
+        dict
+            Dictionary with the information.
+
+        """
+        dtype = self._get_dtype(name)
+        if dtype not in [
+                PossibleDtypes.selfsupervised, PossibleDtypes.supervised
+        ]:
+            return None
+        response = requests.get(self.url + f"/report/{name}?verbose={verbose}",
+                                headers=self.header)
+
+        if response.status_code == 200:
+            result = response.json()
+            result.pop("Auto lr finder", None)
+
+            if 'Model Training' in result.keys():
+                plots = result['Model Training']
+
+                plt.plot(*plots['train'])
+                plt.plot(*plots['val'])
+                plt.title("Training Losses")
+                plt.legend(["train loss", "val loss"])
+                plt.xlabel("epoch")
+                plt.show()
+
+            print(result['Model Evaluation']
+                  ) if 'Model Evaluation' in result.keys() else None
+            print()
+            print(result["Loading from checkpoint"].split("\n")
+                  [1]) if 'Loading from checkpoint' in result.keys() else None
+            return result if return_report else None
+        else:
+            return self.assert_status_code(response)
+
     def _get_dtype(self, name):
         """
         Return the database type.
@@ -1028,7 +1113,7 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def wait_setup(self, name: str, frequency_seconds: int = 5):
+    def wait_setup(self, name: str, frequency_seconds: int = 1):
         """
         Wait for the setup (model training) to finish
 
@@ -1045,6 +1130,11 @@ class Jai:
         ------
         None.
         """
+        def get_numbers(sts):
+            curr_step, max_iterations = sts["Description"].split(
+                "Iteration: ")[1].strip().split(" / ")
+            return int(curr_step), int(max_iterations)
+
         max_steps = None
         while max_steps is None:
             status = self.status[name]
@@ -1053,6 +1143,7 @@ class Jai:
 
         step = starts_at
         aux = 0
+        sleep_time = frequency_seconds
         try:
             with tqdm(total=max_steps,
                       desc="JAI is working",
@@ -1063,9 +1154,7 @@ class Jai:
                     elif fnmatch(status["Description"], "*Iteration:*"):
                         # create a second progress bar to track
                         # training progress
-                        numbers = status["Description"].split(
-                            "Iteration: ")[1].strip().split(" / ")
-                        max_iterations = int(numbers[1])
+                        _, max_iterations = get_numbers(status)
                         print(
                             f"Training might not take {max_iterations} steps due to early stopping criteria."
                         )
@@ -1074,13 +1163,14 @@ class Jai:
                                   leave=False) as iteration_bar:
                             while fnmatch(status["Description"],
                                           "*Iteration:*"):
-                                numbers = status["Description"].split(
-                                    "Iteration: ")[1].strip().split(" / ")
-                                curr_step = int(numbers[0])
+                                curr_step, _ = get_numbers(status)
                                 step_update = curr_step - iteration_bar.n
                                 if step_update > 0:
                                     iteration_bar.update(step_update)
-                                time.sleep(frequency_seconds)
+                                    sleep_time = frequency_seconds
+                                else:
+                                    sleep_time += frequency_seconds
+                                time.sleep(sleep_time)
                                 status = self.status[name]
                             # training might stop early, so we make the progress bar appear
                             # full when early stopping is reached -- peace of mind
@@ -1094,15 +1184,18 @@ class Jai:
                         diff = step - starts_at
                         pbar.update(diff)
                         starts_at = step
+
                     step, _ = pbar_steps(status=status, step=step)
                     time.sleep(frequency_seconds)
                     status = self.status[name]
                     aux += 1
+
                 if (starts_at != max_steps) and aux != 0:
                     diff = max_steps - starts_at
                     pbar.update(diff)
                 elif (starts_at != max_steps) and aux == 0:
                     pbar.update(max_steps)
+
         except KeyboardInterrupt:
             print("\n\nInterruption caught!\n\n")
             response = requests.post(self.url + f'/cancel/{name}',
@@ -1217,7 +1310,7 @@ class Jai:
                   data,
                   db_type="TextEdit",
                   batch_size: int = 16384,
-                  frequency_seconds: int = 10,
+                  frequency_seconds: int = 1,
                   hyperparams=None,
                   overwrite=False):
         """
