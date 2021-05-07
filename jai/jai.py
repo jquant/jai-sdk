@@ -572,7 +572,7 @@ class Jai:
               db_type: str,
               batch_size: int = 16384,
               frequency_seconds: int = 10,
-              verbose: int = 2,
+              verbose: int = 1,
               **kwargs):
         """
         Insert data and train model. This is JAI's crème de la crème.
@@ -916,7 +916,7 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def report(self, name, verbose:int=2, return_report:bool=False):
+    def report(self, name, verbose: int = 2, return_report: bool = False):
         """
         Get a report about the training model.
 
