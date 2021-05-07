@@ -643,7 +643,10 @@ class Jai:
         if frequency_seconds >= 1:
             self.wait_setup(name=name, frequency_seconds=frequency_seconds)
 
-        self.report(name, verbose)
+        if db_type in [
+                PossibleDtypes.selfsupervised, PossibleDtypes.supervised
+        ]:
+            self.report(name, verbose)
 
         return insert_responses, setup_response
 
@@ -934,7 +937,9 @@ class Jai:
 
         """
         dtype = self._get_dtype(name)
-        if dtype != PossibleDtypes.selfsupervised and dtype != PossibleDtypes.supervised:
+        if dtype not in [
+                PossibleDtypes.selfsupervised, PossibleDtypes.supervised
+        ]:
             return None
         response = requests.get(self.url + f"/report/{name}?verbose={verbose}",
                                 headers=self.header)
