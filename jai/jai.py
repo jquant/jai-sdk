@@ -572,6 +572,7 @@ class Jai:
               db_type: str,
               batch_size: int = 16384,
               frequency_seconds: int = 10,
+              verbose: int = 2,
               **kwargs):
         """
         Insert data and train model. This is JAI's crème de la crème.
@@ -642,7 +643,7 @@ class Jai:
         if frequency_seconds >= 1:
             self.wait_setup(name=name, frequency_seconds=frequency_seconds)
 
-        self.report(name)
+        self.report(name, verbose)
 
         return insert_responses, setup_response
 
@@ -951,14 +952,16 @@ class Jai:
 
                 epoch = []
                 loss = []
-                for _, x, y in re.findall(train_pattern, result['Model Training']):
+                for _, x, y in re.findall(train_pattern,
+                                          result['Model Training']):
                     epoch.append(int(x))
                     loss.append(float(y))
                 plots['train'] = (epoch, loss)
 
                 epoch = []
                 loss = []
-                for _, x, y in re.findall(val_pattern, result['Model Training']):
+                for _, x, y in re.findall(val_pattern,
+                                          result['Model Training']):
                     epoch.append(int(x))
                     loss.append(float(y))
                 plots['val'] = (epoch, loss)
@@ -970,12 +973,14 @@ class Jai:
                 plt.xlabel("epoch")
                 plt.show()
 
-            print(result['Model Evaluation'])
-            print(result["Loading from checkpoint"].split("\n")[1])
+            print(result['Model Evaluation']
+                  ) if 'Model Evaluation' in result.keys() else None
+            print()
+            print(result["Loading from checkpoint"].split("\n")
+                  [1]) if 'Loading from checkpoint' in result.keys() else None
             return result
         else:
             return self.assert_status_code(response)
-
 
     def _get_dtype(self, name):
         """
