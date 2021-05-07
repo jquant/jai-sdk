@@ -937,34 +937,11 @@ class Jai:
                                 headers=self.header)
 
         if response.status_code == 200:
-            string = response.json()
-            p = re.compile(r'(?m)^={3,}$')
-            p.split(string.strip("=\n"))
-            splits = [x.strip() for x in p.split(string.strip("=\n\r"))]
-            result = dict(zip(splits[0::2], splits[1::2]))
+            result = response.json()
             result.pop("Auto lr finder", None)
 
-            train_pattern = "(epoch=(\d+) train_loss=(\d+\.\d+)?\n)"
-            val_pattern = "(epoch=(\d+) val_loss=(\d+\.\d+)?\n)"
-
             if 'Model Training' in result.keys():
-                plots = {}
-
-                epoch = []
-                loss = []
-                for _, x, y in re.findall(train_pattern,
-                                          result['Model Training']):
-                    epoch.append(int(x))
-                    loss.append(float(y))
-                plots['train'] = (epoch, loss)
-
-                epoch = []
-                loss = []
-                for _, x, y in re.findall(val_pattern,
-                                          result['Model Training']):
-                    epoch.append(int(x))
-                    loss.append(float(y))
-                plots['val'] = (epoch, loss)
+                plots = result['Model Training']
 
                 plt.plot(*plots['train'])
                 plt.plot(*plots['val'])
