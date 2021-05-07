@@ -933,6 +933,9 @@ class Jai:
             Dictionary with the information.
 
         """
+        dtype = self._get_dtype(name)
+        if dtype != PossibleDtypes.selfsupervised and dtype != PossibleDtypes.supervised:
+            return None
         response = requests.get(self.url + f"/report/{name}?verbose={verbose}",
                                 headers=self.header)
 
