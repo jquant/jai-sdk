@@ -916,7 +916,7 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def report(self, name, verbose=2):
+    def report(self, name, verbose:int=2, return_report:bool=False):
         """
         Get a report about the training model.
 
@@ -955,7 +955,7 @@ class Jai:
             print()
             print(result["Loading from checkpoint"].split("\n")
                   [1]) if 'Loading from checkpoint' in result.keys() else None
-            return result
+            return result if return_report else None
         else:
             return self.assert_status_code(response)
 
