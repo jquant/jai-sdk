@@ -571,7 +571,7 @@ class Jai:
               data,
               db_type: str,
               batch_size: int = 16384,
-              frequency_seconds: int = 10,
+              frequency_seconds: int = 1,
               verbose: int = 1,
               **kwargs):
         """
@@ -652,7 +652,7 @@ class Jai:
             data,
             db_type: str,
             batch_size: int = 16384,
-            frequency_seconds: int = 10,
+            frequency_seconds: int = 1,
             **kwargs):
         """
         Another name for setup.
@@ -668,7 +668,7 @@ class Jai:
                  name: str,
                  data,
                  batch_size: int = 16384,
-                 frequency_seconds: int = 10,
+                 frequency_seconds: int = 1,
                  predict: bool = False):
         """
         Insert raw data and extract their latent representation.
@@ -728,7 +728,7 @@ class Jai:
                name: str,
                data,
                batch_size: int = 16384,
-               frequency_seconds: int = 10,
+               frequency_seconds: int = 1,
                predict: bool = False):
         """
         Another name for add_data
@@ -1105,7 +1105,7 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def wait_setup(self, name: str, frequency_seconds: int = 5):
+    def wait_setup(self, name: str, frequency_seconds: int = 1):
         """
         Wait for the setup (model training) to finish
 
@@ -1122,6 +1122,11 @@ class Jai:
         ------
         None.
         """
+        def get_numbers(sts):
+            curr_step, max_iterations = sts["Description"].split(
+                "Iteration: ")[1].strip().split(" / ")
+            return int(curr_step), int(max_iterations)
+
         max_steps = None
         while max_steps is None:
             status = self.status[name]
@@ -1130,6 +1135,7 @@ class Jai:
 
         step = starts_at
         aux = 0
+        sleep_time = frequency_seconds
         try:
             with tqdm(total=max_steps,
                       desc="JAI is working",
@@ -1140,9 +1146,7 @@ class Jai:
                     elif fnmatch(status["Description"], "*Iteration:*"):
                         # create a second progress bar to track
                         # training progress
-                        numbers = status["Description"].split(
-                            "Iteration: ")[1].strip().split(" / ")
-                        max_iterations = int(numbers[1])
+                        _, max_iterations = get_numbers(status)
                         print(
                             f"Training might not take {max_iterations} steps due to early stopping criteria."
                         )
@@ -1151,13 +1155,14 @@ class Jai:
                                   leave=False) as iteration_bar:
                             while fnmatch(status["Description"],
                                           "*Iteration:*"):
-                                numbers = status["Description"].split(
-                                    "Iteration: ")[1].strip().split(" / ")
-                                curr_step = int(numbers[0])
+                                curr_step, _ = get_numbers(status)
                                 step_update = curr_step - iteration_bar.n
                                 if step_update > 0:
                                     iteration_bar.update(step_update)
-                                time.sleep(frequency_seconds)
+                                    sleep_time = frequency_seconds
+                                else:
+                                    sleep_time += frequency_seconds
+                                time.sleep(sleep_time)
                                 status = self.status[name]
                             # training might stop early, so we make the progress bar appear
                             # full when early stopping is reached -- peace of mind
@@ -1171,15 +1176,18 @@ class Jai:
                         diff = step - starts_at
                         pbar.update(diff)
                         starts_at = step
+
                     step, _ = pbar_steps(status=status, step=step)
                     time.sleep(frequency_seconds)
                     status = self.status[name]
                     aux += 1
+
                 if (starts_at != max_steps) and aux != 0:
                     diff = max_steps - starts_at
                     pbar.update(diff)
                 elif (starts_at != max_steps) and aux == 0:
                     pbar.update(max_steps)
+
         except KeyboardInterrupt:
             print("\n\nInterruption caught!\n\n")
             response = requests.post(self.url + f'/cancel/{name}',
@@ -1294,7 +1302,7 @@ class Jai:
                   data,
                   db_type="TextEdit",
                   batch_size: int = 16384,
-                  frequency_seconds: int = 10,
+                  frequency_seconds: int = 1,
                   hyperparams=None,
                   overwrite=False):
         """
