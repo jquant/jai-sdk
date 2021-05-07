@@ -929,6 +929,8 @@ class Jai:
             String with the name of a database in your JAI environment.
         verbose : int, optional
             Level of description. The default is 2.
+            Use verbose 2 to get the loss graph, verbose 1 to get only the
+            metrics result.
 
         Returns
         -------
