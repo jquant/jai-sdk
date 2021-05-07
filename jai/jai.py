@@ -916,7 +916,7 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def report(self, name, verbose:int=2, return_report:bool=False):
+    def report(self, name, verbose: int = 2, return_report: bool = False):
         """
         Get a report about the training model.
 
