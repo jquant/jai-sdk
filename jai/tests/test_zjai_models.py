@@ -141,20 +141,20 @@ def test_supervised(setup_dataframe):
     if j.is_valid(name):
         j.delete_database(name)
 
-    j.setup(name,
-            train,
-            db_type="Supervised",
-            overwrite=True,
-            hyperparams={"max_epochs": 3},
-            label={
-                "task": "metric_classification",
-                "label_name": "Survived"
-            },
-            split={
-                "type": 'stratified',
-                "split_column": "Survived",
-                "test_size": .2
-            })
+    j.fit(name,
+          train,
+          db_type="Supervised",
+          overwrite=True,
+          hyperparams={"max_epochs": 3},
+          label={
+              "task": "metric_classification",
+              "label_name": "Survived"
+          },
+          split={
+              "type": 'stratified',
+              "split_column": "Survived",
+              "test_size": .2
+          })
 
     assert j.is_valid(name), f"valid name {name} after setup failed"
 
@@ -183,7 +183,7 @@ def test_supervised(setup_dataframe):
 
     assert isinstance(result, list), "predict result failed"
 
-    j.add_data(name, test)
+    j.append(name, test)
 
     ids = train['id'].tolist() + test['id'].tolist()
     assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"
