@@ -168,23 +168,37 @@ Please note that yout Auth Key will be sent to your e-mail, so please make sure 
   
    ::
 
-      ans = j.setup(
+      # j.fit === j.setup
+      ans = j.fit(
+      
+      # JAI collection name
       name='boston_regression',
+      
+      # verbose 2 -> shows the loss graph at the end of training
       verbose=2,
+      
+      # data to be processed - a Pandas DataFrame is expected
       data=data,
+      
+      # collection type
       db_type='Supervised',
+      
+      # JAI Collection Foreign Key
+      # reference an id column ('id_name') to an already processed JAI collection ('db_parent')
       mycelia_bases=[
          {
             'db_parent':'boston',
             'id_name':'id_house'
          }
       ],
+
+      # Set the column label name and the task type for the Supervised Model
+      # Task can be: Regression, Quantile Regression, Classification or Metric Classification
       label=
       {
          'task':'regression',
          'label_name':'PRICE'
-      },
-      overwrite=True
+      }
    )
 
    Output:
@@ -295,12 +309,12 @@ Please note that yout Auth Key will be sent to your e-mail, so please make sure 
 
    ::
 
-      #every JAI Supervised collection can be used for inference using j.predict()
+      # every JAI Supervised collection can be used for inference using j.predict()
       ans = j.predict(
-         #collection to be queried
+         # collection to be queried
          name='boston_regression',
-         #let's get prices for the first five houses in the dataset, using their ids
-         #also we are dropping the label, as it is not a feature
+         # let's get prices for the first five houses in the dataset, using their ids
+         # also we are dropping the label, as it is not a feature
          data=data.head().drop('PRICE',axis=1)
       )
 
@@ -324,8 +338,8 @@ Please note that yout Auth Key will be sent to your e-mail, so please make sure 
 
    ::
 
-      #id 1
-      #List of top 5 similar houses (house 1 itself + 4)
+      # id 1
+      # List of top 5 similar houses (house 1 itself + 4)
       predict_df = pd.DataFrame(ans)
       predict_df = predict_df.set_index('id')
       predict_df.loc[:,'predict'] = predict_df['predict'].apply(lambda x: x[0])
@@ -346,17 +360,23 @@ Please note that yout Auth Key will be sent to your e-mail, so please make sure 
 
    ::
 
-      #Similarity Search via REST API
+      # Similarity Search via REST API
 
+      # import json and requests libraries
       import requests
       import json
 
-      header={'Auth': '9c290424179e4f7485c182622ae82490'}
+      # set Authentication header
+      header={'Auth': 'AUTH KEY'}
+
+      # set collection name
       db_name = 'boston'
 
+      # similarity search endpoint
       url_similar = f"https://mycelia.azure-api.net/similar/id/{db_name}"
       body = json.dumps([1,10])
 
+      #make the request (PUT)
       ans = requests.put(url_similar, data=body, headers=header)
 
    Output - ans.json():
@@ -385,16 +405,27 @@ Please note that yout Auth Key will be sent to your e-mail, so please make sure 
 
    ::
 
-      #Model Inference via REST API
+      # Model Inference via REST API
 
+      # import json and requests libraries
       import requests
       import json
       
-      header={'Auth': '9c290424179e4f7485c182622ae82490'}
+      # set Authentication header
+      header={'Auth': 'AUTH KEY'}
+
+      # set collection name
       db_name = 'boston_regression'
+
+      # model inference endpoint
       url_predict = f"https://mycelia.azure-api.net/predict/{db_name}"
+
+      # json body
+      # note that we need to provide a column named 'id'
+      # also note that we drop the 'PRICE' column because it is not a feature
       body = data.reset_index().rename(columns={'index':'id'}).head().drop('PRICE',axis=1).to_json(orient='records')
       
+      #make the request
       ans = requests.put(url_predict, data=body, headers=header)
 
    Output - ans.json():
