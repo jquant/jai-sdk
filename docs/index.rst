@@ -9,9 +9,11 @@ JAI-SDK - Trust your data!
 
 Great to see you here!
 
-JAI is a productivity-oriented, vector-based ML Platform, served via REST API or Python SDK (other languages soon!).
+JAI is a productivity-oriented, vector-based, ML Platform, served via REST API or Python SDK (other languages coming soon).
 
+*****************
 JAI in 5 minutes:
+*****************
 
 * Install JAI via pip
   
