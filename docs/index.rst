@@ -26,7 +26,7 @@ JAI in 5 minutes:
    ::
 
       from jai import Jai
-      Jai.generate_auth_key('my-email@email.com')
+      Jai.get_auth_key(email='email@mail.com', firstName='Jai', lastName='Z')
       201
 
 Please note that yout Auth Key will be sent to your e-mail, so please make sure to use a valid address and check your spam folder.
