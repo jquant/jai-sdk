@@ -44,10 +44,11 @@ JAI is a productivity-oriented, vector-based, ML Platform, served via REST API o
 
 .. toctree::
    :maxdepth: 1
-   :caption: Examples
+   :caption: Examples (Google Colab)
 
-   advanced/multimodal
-   advanced/multimodal
+   Smartphone Similarity Search <https://colab.research.google.com/drive/1NOVqCdnaizptTf42kZmeeWZ3dfvdIr1U?usp=sharing>
+   Boston Quantile Regression <https://colab.research.google.com/drive/1gIDjWSt8M0JXFHpypx6l-s2_Ypoy0-IE?usp=sharing>
+   Movielens(100k) Recommendation <https://drive.google.com/file/d/1LuMp_niA8iG2Hdbditk-94enqlMN6yC-/view?usp=sharing>
 
 .. toctree::
    :maxdepth: 2
