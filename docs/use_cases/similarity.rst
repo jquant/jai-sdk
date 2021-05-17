@@ -1,11 +1,11 @@
-##################
-Running similarity
-##################
+################
+Similarity Seach
+################
 
 After you're done setting up your database, you perform similarity searches:
 
-Using the indexes of the input data
-===================================
+Using existing index
+====================
 
 You can query itens that already have been inputed by their ids. Find the 5 most similar values for ids 0 and 1.
 
@@ -26,8 +26,8 @@ Find the 100 most similar values for every input value.
 
     >>> results = j.similar(name, data.index, top_k=100, batch_size=1024)
 
-Using new data to be processed
-==============================
+Using new data
+==============
 
 *(All data should be in pandas.DataFrame or pandas.Series format)*
 

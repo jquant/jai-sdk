@@ -15,18 +15,39 @@ JAI is a productivity-oriented, vector-based, ML Platform, served via REST API o
    :maxdepth: 2
    :caption: Getting Started
 
-   source/quick_start
-   source/applications
+   source/5min_jai
+   source/data_cleaning
    
 .. toctree::
    :maxdepth: 1
-   :caption: Basic Operations
+   :caption: Managing Collections
 
    use_cases/setup_data
+   use_cases/supervised
    use_cases/check_database
+   use_cases/remove_data
+
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Using Collections
+   
    use_cases/similarity
    use_cases/predict
-   use_cases/remove_data
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Advanced
+
+   advanced/hierarchical
+   advanced/multimodal
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Examples
+
+   advanced/multimodal
+   advanced/multimodal
 
 .. toctree::
    :maxdepth: 2

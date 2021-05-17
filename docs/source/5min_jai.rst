@@ -8,7 +8,7 @@ Install JAI
 
 Install JAI with pip
 
-.. code:: python
+.. code:: bash
 
 		pip install jai-sdk --user
       
@@ -75,7 +75,7 @@ Self-Supervised Learning
 
 Output:
 
-.. code:: python
+.. code:: bash
 
       Insert Data: 100%|██████████| 1/1 [00:01<00:00,  1.39s/it]
       Recognized setup args:
