@@ -28,6 +28,10 @@ html.writer-html5
   background: #3c1437;
 }
 
+.wy-nav-top {
+  background: #fa5f1e;
+}
+
 .wy-menu-vertical li.current > a,
 .wy-menu-vertical li.on a {
   color: #5a3755;
