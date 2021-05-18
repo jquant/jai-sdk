@@ -288,6 +288,27 @@ class Jai:
         print(f"\n\nSTATUS: {response.status_code}\n\n")
         raise ValueError(f"Something went wrong.\n{response.content}")
 
+    def filters(self, name):
+        """
+        Gets the valid values of filters.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Return
+        ------
+        response : list of strings
+            List of valid filter values.
+        """
+        response = requests.get(self.url + f"/filters/{name}")
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
+
     def similar(self,
                 name: str,
                 data,
