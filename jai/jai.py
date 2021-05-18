@@ -292,6 +292,7 @@ class Jai:
                 name: str,
                 data,
                 top_k: int = 5,
+                filters=None,
                 batch_size: int = 16384):
         """
         Query a database in search for the `top_k` most similar entries for each
@@ -346,7 +347,10 @@ class Jai:
                     _batch = data[i:i + batch_size].tolist()
                 else:
                     _batch = data[i:i + batch_size].tolist()
-                res = self._similar_id(name, _batch, top_k=top_k)
+                res = self._similar_id(name,
+                                       _batch,
+                                       top_k=top_k,
+                                       filters=filters)
             else:
                 if isinstance(data, (pd.Series, pd.DataFrame)):
                     _batch = data.iloc[i:i + batch_size]
@@ -354,11 +358,16 @@ class Jai:
                     _batch = data[i:i + batch_size]
                 res = self._similar_json(name,
                                          data2json(_batch, dtype=dtype),
-                                         top_k=top_k)
+                                         top_k=top_k,
+                                         filters=filters)
             results.extend(res["similarity"])
         return results
 
-    def _similar_id(self, name: str, id_item: list, top_k: int = 5):
+    def _similar_id(self,
+                    name: str,
+                    id_item: list,
+                    top_k: int = 5,
+                    filters=None):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given an id.
         This is a protected method.
@@ -384,8 +393,10 @@ class Jai:
             raise TypeError(
                 f"id_item param must be int or list, {type(id_item)} found.")
 
+        filtering = "" if filters is None else f"&filters={json.dumps(filters)}"
+        url = self.url + f"/similar/id/{name}?top_k={top_k}" + filtering
         response = requests.put(
-            self.url + f"/similar/id/{name}?top_k={top_k}",
+            url,
             headers=self.header,
             data=json.dumps(id_item),
         )
@@ -395,7 +406,11 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def _similar_json(self, name: str, data_json, top_k: int = 5):
+    def _similar_json(self,
+                      name: str,
+                      data_json,
+                      top_k: int = 5,
+                      filters=None):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given a JSON data entry.
         This is a protected method
@@ -417,7 +432,9 @@ class Jai:
         response : dict
             Dictionary with the index and distance of `the k most similar items`.
         """
-        url = self.url + f"/similar/data/{name}?top_k={top_k}"
+        filtering = "" if filters is None else "".join(
+            ["&filters=" + s for s in filters])
+        url = self.url + f"/similar/data/{name}?top_k={top_k}" + filtering
 
         response = requests.put(url, headers=self.header, data=data_json)
         if response.status_code == 200:
@@ -572,6 +589,7 @@ class Jai:
               db_type: str,
               batch_size: int = 16384,
               frequency_seconds: int = 1,
+              filter_name: str = None,
               verbose: int = 1,
               **kwargs):
         """
@@ -632,6 +650,7 @@ class Jai:
         insert_responses = self._insert_data(data=data,
                                              name=name,
                                              batch_size=batch_size,
+                                             filter_name=filter_name,
                                              db_type=db_type)
 
         # check if we inserted everything we were supposed to
@@ -672,6 +691,7 @@ class Jai:
                  data,
                  batch_size: int = 16384,
                  frequency_seconds: int = 1,
+                 filter_name: str = None,
                  predict: bool = False):
         """
         Insert raw data and extract their latent representation.
@@ -714,6 +734,7 @@ class Jai:
                                              name=name,
                                              batch_size=batch_size,
                                              db_type=db_type,
+                                             filter_name=filter_name,
                                              predict=predict)
 
         # check if we inserted everything we were supposed to
@@ -764,7 +785,13 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def _insert_data(self, data, name, db_type, batch_size, predict=False):
+    def _insert_data(self,
+                     data,
+                     name,
+                     db_type,
+                     batch_size,
+                     filter_name: str = None,
+                     predict=False):
         """
         Insert raw data for training. This is a protected method.
 
@@ -790,11 +817,15 @@ class Jai:
         for i, b in enumerate(
                 trange(0, len(data), batch_size, desc="Insert Data")):
             _batch = data.iloc[b:b + batch_size]
-            insert_responses[i] = self._insert_json(
-                name, data2json(_batch, dtype=db_type, predict=predict))
+            data_json = data2json(_batch,
+                                  dtype=db_type,
+                                  filter_name=filter_name,
+                                  predict=predict)
+            insert_responses[i] = self._insert_json(name, data_json,
+                                                    filter_name)
         return insert_responses
 
-    def _insert_json(self, name: str, df_json):
+    def _insert_json(self, name: str, df_json, filter_name: str = None):
         """
         Insert data in JSON format. This is a protected method.
 
@@ -810,7 +841,8 @@ class Jai:
         response : dict
             Dictionary with the API response.
         """
-        response = requests.post(self.url + f"/data/{name}",
+        response = requests.post(self.url +
+                                 f"/data/{name}?filter_name={filter_name}",
                                  headers=self.header,
                                  data=df_json)
         if response.status_code == 200:
@@ -1149,7 +1181,8 @@ class Jai:
         try:
             with tqdm(total=max_steps,
                       desc="JAI is working",
-                      bar_format='{l_bar}{bar}|{n_fmt}/{total_fmt}') as pbar:
+                      bar_format='{l_bar}{bar}|{n_fmt}/{total_fmt} [{elapsed}]'
+                      ) as pbar:
                 while status['Status'] != 'Task ended successfully.':
                     if status['Status'] == 'Something went wrong.':
                         raise BaseException(status['Description'])
