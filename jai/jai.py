@@ -866,7 +866,7 @@ class Jai:
         response : dict
             Dictionary with the API response.
         """
-        filtering = "" if filter_name is None else f"?filter_name={json.dumps(filter_name)}"
+        filtering = "" if filter_name is None else f"?filter_name={filter_name}"
         url = self.url + f"/data/{name}" + filtering
         response = requests.post(url, headers=self.header, data=df_json)
         if response.status_code == 200:
