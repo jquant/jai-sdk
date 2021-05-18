@@ -1140,7 +1140,7 @@ class Jai:
                 "'fields' method is only available to dtype SelSupervised and Supervised."
             )
 
-        response = requests.get(self.url + f"/table/fields/{name}",
+        response = requests.get(self.url + f"/fields/{name}",
                                 headers=self.header)
         if response.status_code == 200:
             return response.json()
