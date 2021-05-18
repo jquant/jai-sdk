@@ -681,7 +681,9 @@ class Jai:
         setup_response = self._setup_database(name, db_type, **kwargs)
 
         if frequency_seconds >= 1:
-            self.wait_setup(name=name, frequency_seconds=frequency_seconds)
+            self.wait_setup(name=name,
+                            dtype=db_type,
+                            frequency_seconds=frequency_seconds)
 
         if db_type in [
                 PossibleDtypes.selfsupervised, PossibleDtypes.supervised
@@ -765,7 +767,9 @@ class Jai:
         add_data_response = self._append(name=name)
 
         if frequency_seconds >= 1:
-            self.wait_setup(name=name, frequency_seconds=frequency_seconds)
+            self.wait_setup(name=name,
+                            dtype=db_type,
+                            frequency_seconds=frequency_seconds)
 
         return insert_responses, add_data_response
 
@@ -1167,7 +1171,7 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def wait_setup(self, name: str, frequency_seconds: int = 1):
+    def wait_setup(self, name: str, dtype: str, frequency_seconds: int = 1):
         """
         Wait for the setup (model training) to finish
 
@@ -1198,7 +1202,6 @@ class Jai:
         step = starts_at
         aux = 0
         sleep_time = frequency_seconds
-        dtype = self._get_dtype(name)
         try:
             with tqdm(total=max_steps,
                       desc="JAI is working",
