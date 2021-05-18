@@ -66,7 +66,7 @@ def df2json(dataframe):
     return dataframe.to_json(orient='records')
 
 
-def data2json(data, dtype, predict=False):
+def data2json(data, dtype, filter_name=None, predict=False):
     if (dtype == PossibleDtypes.edit or dtype == PossibleDtypes.text
             or dtype == PossibleDtypes.fasttext
             or dtype == PossibleDtypes.image):
@@ -87,6 +87,19 @@ def data2json(data, dtype, predict=False):
                     data = data.set_index('id')
                     c = data.columns[0]
                     return series2json(data[c], name=name)
+                elif filter_name in data.columns:
+                    cols = data.columns.tolist()
+                    cols.remove(filter_name)
+                    return df2json(data.rename(columns={cols[0]: name}))
+                else:
+                    raise ValueError(
+                        "If data has 2 columns, one must be named 'id'.")
+            elif data.shape[1] == 3:
+                if 'id' in data.columns and filter_name in data.columns:
+                    data = data.set_index('id')
+                    cols = data.columns.tolist()
+                    cols.remove(filter_name)
+                    return df2json(data.rename(columns={cols[0]: name}))
                 else:
                     raise ValueError(
                         "If data has 2 columns, one must be named 'id'.")
