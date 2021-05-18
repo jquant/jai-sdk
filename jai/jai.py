@@ -1198,6 +1198,7 @@ class Jai:
         step = starts_at
         aux = 0
         sleep_time = frequency_seconds
+        dtype = self._get_dtype(name)
         try:
             with tqdm(total=max_steps,
                       desc="JAI is working",
@@ -1210,9 +1211,10 @@ class Jai:
                         # create a second progress bar to track
                         # training progress
                         _, max_iterations = get_numbers(status)
-                        print(
-                            f"Training might not take {max_iterations} steps due to early stopping criteria."
-                        )
+                        if dtype in ["Supervised", "SelfSupervised"]:
+                            print(
+                                f"Training might not take {max_iterations} steps due to early stopping criteria."
+                            )
                         with tqdm(total=max_iterations,
                                   desc=f"[{name}] Training",
                                   leave=False) as iteration_bar:
