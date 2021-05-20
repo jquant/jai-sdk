@@ -415,7 +415,8 @@ class Jai:
             raise TypeError(
                 f"id_item param must be int or list, {type(id_item)} found.")
 
-        filtering = "" if filters is None else f"&filters={json.dumps(filters)}"
+        filtering = "" if filters is None else "".join(
+            ["&filters=" + s for s in filters])
         url = self.url + f"/similar/id/{name}?top_k={top_k}" + filtering
         response = requests.put(
             url,
