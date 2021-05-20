@@ -302,7 +302,8 @@ class Jai:
         response : list of strings
             List of valid filter values.
         """
-        response = requests.get(self.url + f"/filters/{name}")
+        response = requests.get(self.url + f"/filters/{name}",
+                                headers=self.header)
 
         if response.status_code == 200:
             return response.json()
