@@ -1,5 +1,5 @@
-Running predicts
-================
+Model Inference
+===============
 
 After you're done setting up your database and it is a Supervised database, you can make predictions with your model:
 

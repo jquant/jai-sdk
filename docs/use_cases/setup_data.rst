@@ -1,29 +1,71 @@
-#########################
-Setting up your databases
-#########################
+###########################
+Setup: Creating Collections
+###########################
 
-For every database you setup, you'll need a name identifier so you can reuse it. 
-
-Every item in a database should have an id, so we can easily identify each item without the need of manipulating the raw data except on the setup phase.
-Make sure the id values are always unique.
+JAI works by creating feature-rich representations based on latent vectors, and storing them efficiently in what is called **collections**.
 
 .. note::
-	Although some data types could be inserted structured in a :code:`list` or an :code:`numpy.ndarray`, we strongly recommend the use of :code:`pandas.Series` and :code:`pandas.DataFrame`, because of the structure with :code:`.index` attributes (or optionally the use of a column named :code:`'id'`, which has priority over the :code:`.index` attribute).
+    A **Collection** is always created by the **Setup** method.
 
-The model is used with the similarity queries and predicts (methods :code:`.similar()` and :code:`.predict()`). The similiarity query will return for each input, identified with the :code:`'query_id'`, the :code:`'id'` values of similiar items, the :code:`'distance'` in between them. The number of results is controlled by the :code:`top_k` parameter. The predict method will return for each input, identified with :code:`'id'`, the expected value for each item :code:`'predict'`.
+******
+Basics
+******
 
+The Setup Method
+================
+
+* The setup method is JAI's most important and central piece - it is responsible for sending and transforming raw data into vectors and then creating and indexing them into collections.
+
+* By changing the "db_type" argument, JAI can process Text Documents, Images, Structured (Tabular) data into vectors.
+
+* Using the "mycelia_bases" argument, users can combine any kind of data to create rich, multi-modal and hierarchical representations.
+
+.. code:: python
+
+	j.setup(
+		name='Collection_Name',
+		data=data,
+		db_type='SelfSupervised'
+	)
+
+**Main Parameters**
+
+* name (str) – Collection name - Used to reference the collection for similarity, inference and also in the REST API path. Max len: 32 characters.
+
+* data (pandas.DataFrame or pandas.Series) – Data to be inserted and used for training.
+    
 .. note::
-	The use of a column named :code:`'id'` will overwrite the pandas index attribute with :code:`.set_index('id')`. We consider a good pratice the strict usage of '.index' to identify items: 
+    JAI collections are always pairs of (id, vector), where the 'id' is always an integer, either inferred from the pandas.Dataframe or pandas.Series index or from an explicitly declared "id" columns.
 
-	* the existence of both :code:`'id'` column and :code:`.index` could cause ambiguity leading to misinterpretation results, 
+    * Inserting data with a columns named 'id' will overwrite the default data index and will be used instead.
+ 
+.. note::
+        It is recommended as a good JAI practice to always use the pandas native index:
+        
+        * It avoids the possibility of having more than one data 'index' 
+        * It enables the native usage of '.loc' commands, making the use of JAI responses easier.
 
-	* it allows the usage of native pandas structures, e. g., indexing data with :code:`.loc`, 
+* db_type (str) – Database type [Supervised, SelfSupervised, Text, FastText, TextEdit, Image]
 
-	* better understanding of your data as the column :code:`'id'` will **NOT** be used for any model inferrence unlike any other columns of your data.
 
-************************
-Setup for Text type data
-************************
+.. warning::
+    After extracting the latent vectors, all the raw data sent to jai is deleted. There is no way to query raw data on JAI.
+
+********************
+Setup for Table data
+********************
+
+Setup applying Self-Supervised Model
+====================================
+
+.. code-block:: python
+
+    >>> j.setup(name, data, db_type='Unsupervised')
+
+
+*************************
+Setup for Text data (NLP)
+*************************
 
 For any uses of text-type data, data can be a list of texts, pandas Series or DataFrame.
 
@@ -67,9 +109,9 @@ It's also possible to use an model trained to reproduce the neighboring relation
     >>> j.setup(name, data, db_type='TextEdit')
 
 
-*************************
-Setup for Image type data
-*************************
+********************
+Setup for Image data
+********************
 
 For any uses of image-type data, data should be encoded before inserting it into the Jai class.
 
@@ -90,47 +132,6 @@ Images are processed using torchvision pretrained models.
 .. code-block:: python
 
     >>> j.setup(name, data, db_type='Image')
-
-***************************
-Setup for Tabular type data
-***************************
-
-Setup applying Self-Supervised Model
-====================================
-
-.. code-block:: python
-
-    >>> j.setup(name, data, db_type='Unsupervised')
-
-
-Setup applying Supervised Model
-===============================
-
-.. code-block:: python
-
-    >>> j.setup(name, data, db_type='Supervised', label={"task": "classification", "label_name": "my_label"})
-
-
-Tasks
------
-
-Here are the possible tasks when using a Supervised model:
-
-- classification
-- metric_classification
-- regression
-- quantile_regression
-
-
-.. note::
-    In case of usage of datetime data types, make sure to use a good format. We suggest the format :code:`"%Y-%m-%d %H:%M:%S "`.
-    The code used to identify the datetime columns is as follows:
-    
-    .. code-block:: python
-    
-        cat_columns = dataframe.select_dtypes("O").columns
-        dataframe[cat_columns] = dataframe[cat_columns].apply(pd.to_datetime,
-                                                            errors="ignore")
 
 .. note::
     The method :code:`setup` has a default :code:`batch_size=16384`, which will result in a total of :code:`ceil(n_samples/batch_size) + n + 5` requests, where :code:`n = ceil(training_time/frequency_seconds)` is a variable number depending on the time it takes to finish the setup.
