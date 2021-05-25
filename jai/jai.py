@@ -10,6 +10,7 @@ from io import BytesIO
 from .processing import process_similar, process_resolution
 from .functions.utils_funcs import data2json, pbar_steps
 from .functions.classes import PossibleDtypes, Mode
+from .functions.exceptions import *
 from fnmatch import fnmatch
 import matplotlib.pyplot as plt
 from pandas.api.types import is_integer_dtype
@@ -285,8 +286,19 @@ class Jai:
         """
         # find a way to process this
         # what errors to raise, etc.
-        print(f"\n\nSTATUS: {response.status_code}\n\n")
-        raise ValueError(f"Something went wrong.\n{response.content}")
+        message = f"Something went wrong.\n\nSTATUS: {response.status_code}\n"
+        try:
+            detail = response.json()['detail']
+            if "Error: " in detail:
+                error, msg = detail.split(": ", 1)
+                message += msg
+                raise eval(error)(message)
+            else:
+                message += detail
+                raise ValueError(message)
+        except TypeError:
+            message += str(response.text)
+            raise ValueError(message)
 
     def filters(self, name):
         """
@@ -302,7 +314,8 @@ class Jai:
         response : list of strings
             List of valid filter values.
         """
-        response = requests.get(self.url + f"/filters/{name}")
+        response = requests.get(self.url + f"/filters/{name}",
+                                headers=self.header)
 
         if response.status_code == 200:
             return response.json()
@@ -414,7 +427,8 @@ class Jai:
             raise TypeError(
                 f"id_item param must be int or list, {type(id_item)} found.")
 
-        filtering = "" if filters is None else f"&filters={json.dumps(filters)}"
+        filtering = "" if filters is None else "".join(
+            ["&filters=" + s for s in filters])
         url = self.url + f"/similar/id/{name}?top_k={top_k}" + filtering
         response = requests.put(
             url,
@@ -1265,6 +1279,38 @@ class Jai:
 
         self._delete_status(name)
         return status
+
+    def delete_ids(self, name, ids):
+        """
+        Delete the specified ids from database.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+
+        ids : list
+            List of ids to be removed from database.
+
+        Return
+        -------
+        response : dict
+            Dictionary with the API response.
+
+        Example
+        ----------
+        >>> name = 'chosen_name'
+        >>> j = Jai(AUTH_KEY)
+        >>> j.delete_raw_data(name=name)
+        'All raw data from database 'chosen_name' was deleted!'
+        """
+        response = requests.delete(self.url + f"/entity/{name}",
+                                   headers=self.header,
+                                   data=json.dumps(ids))
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return self.assert_status_code(response)
 
     def delete_raw_data(self, name: str):
         """
