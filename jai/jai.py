@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 import requests
 import time
-import re
 
 from io import BytesIO
 from .processing import process_similar, process_resolution
@@ -693,11 +692,22 @@ class Jai:
 
         # train model
         setup_response = self._setup_database(name, db_type, **kwargs)
+        if "kwargs" in setup_response:
+            print("\nRecognized setup args:")
+            for key, value in setup_response["kwargs"].items():
+                kwarg_input = kwargs.get(key, None)
+                if isinstance(kwarg_input, dict):
+                    value = json.loads(value)
+                    intersection = kwarg_input.keys() & value.keys()
+                    value = {k: value[k] for k in intersection}
+                print(f"- {key}: {value}")
 
         if frequency_seconds >= 1:
-            self.wait_setup(name=name,
-                            dtype=db_type,
-                            frequency_seconds=frequency_seconds)
+            if db_type in ["Supervised", "SelfSupervised"]:
+                print(
+                    f"\nTraining might finish early due to early stopping criteria."
+                )
+            self.wait_setup(name=name, frequency_seconds=frequency_seconds)
 
         if db_type in [
                 PossibleDtypes.selfsupervised, PossibleDtypes.supervised
@@ -781,9 +791,7 @@ class Jai:
         add_data_response = self._append(name=name)
 
         if frequency_seconds >= 1:
-            self.wait_setup(name=name,
-                            dtype=db_type,
-                            frequency_seconds=frequency_seconds)
+            self.wait_setup(name=name, frequency_seconds=frequency_seconds)
 
         return insert_responses, add_data_response
 
@@ -922,34 +930,9 @@ class Jai:
             raise ValueError(f"missing arguments {missing}")
 
         body = {}
-        flag = True
         for key in possible:
             val = kwargs.get(key, None)
             if val is not None:
-                if flag:
-                    print("Recognized setup args:")
-                    flag = False
-
-                if key == "hyperparams":
-                    if "patience" in val and int(val["patience"]) < 1:
-                        val["patience"] = 10  # default patience value for our purposes
-                        print(
-                            f"'patience' value must be greater than or equal to 1, but got {val['patience']} instead. Setting it to 10 (default)"
-                        )
-
-                    if "min_delta" in val and float(val["min_delta"]) < 0:
-                        val["min_delta"] = 1e-5  # default min_delta value for our purposes
-                        print(
-                            f"'min_delta' value must be greater than or equal to 0, but got {val['min_delta']} instead. Setting it to 1e-5 (default)"
-                        )
-
-                    if "max_epochs" in val and int(val["max_epochs"]) < 1:
-                        val["max_epochs"] = 500  # default max_epochs value for our purposes
-                        print(
-                            f"'max_epochs' value must be greater than or equal to 1, but got {val['max_epochs']} instead. Setting it to 500 (default)"
-                        )
-
-                print(f"{key}: {val}")
                 body[key] = val
 
         body["db_type"] = db_type
@@ -1018,7 +1001,6 @@ class Jai:
 
         if response.status_code == 200:
             result = response.json()
-            result.pop("Auto lr finder", None)
 
             if 'Model Training' in result.keys():
                 plots = result['Model Training']
@@ -1030,6 +1012,7 @@ class Jai:
                 plt.xlabel("epoch")
                 plt.show()
 
+            print("\nSetup Report:")
             print(result['Model Evaluation']
                   ) if 'Model Evaluation' in result.keys() else None
             print()
@@ -1185,7 +1168,7 @@ class Jai:
         else:
             return self.assert_status_code(response)
 
-    def wait_setup(self, name: str, dtype: str, frequency_seconds: int = 1):
+    def wait_setup(self, name: str, frequency_seconds: int = 1):
         """
         Wait for the setup (model training) to finish
 
@@ -1228,10 +1211,6 @@ class Jai:
                         # create a second progress bar to track
                         # training progress
                         _, max_iterations = get_numbers(status)
-                        if dtype in ["Supervised", "SelfSupervised"]:
-                            print(
-                                f"Training might not take {max_iterations} steps due to early stopping criteria."
-                            )
                         with tqdm(total=max_iterations,
                                   desc=f"[{name}] Training",
                                   leave=False) as iteration_bar:
@@ -1250,7 +1229,6 @@ class Jai:
                             # full when early stopping is reached -- peace of mind
                             iteration_bar.update(max_iterations -
                                                  iteration_bar.n)
-                            print("\nDone training.")
 
                     if (step == starts_at) and (aux == 0):
                         pbar.update(starts_at)
