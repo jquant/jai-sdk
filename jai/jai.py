@@ -9,7 +9,7 @@ from io import BytesIO
 from .processing import process_similar, process_resolution
 from .functions.utils_funcs import data2json, pbar_steps
 from .functions.classes import PossibleDtypes, Mode
-from .functions.exceptions import *
+from .functions import exceptions
 from fnmatch import fnmatch
 import matplotlib.pyplot as plt
 from pandas.api.types import is_integer_dtype
@@ -291,7 +291,13 @@ class Jai:
             if "Error: " in detail:
                 error, msg = detail.split(": ", 1)
                 message += msg
-                raise eval(error)(message)
+                try:
+                    raise eval(error)(message)
+                except NameError:
+                    try:
+                        raise eval("exceptions." + error)(message)
+                    except NameError:
+                        raise ValueError(message)
             else:
                 message += detail
                 raise ValueError(message)

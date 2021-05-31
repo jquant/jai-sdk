@@ -1,13 +1,13 @@
-__all__ = ["MaxRetriesExceeded", "DeprecatedError"]
-
-
-class MaxRetriesExceeded(RuntimeError):
-    """
-    Number of tries exceeded
-    """
+__all__ = ["DeprecatedError", "ValidationError"]
 
 
 class DeprecatedError(AttributeError):
     """
     Deprecated
+    """
+
+
+class ValidationError(ValueError):
+    """
+    Error validating the given inputs
     """
