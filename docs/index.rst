@@ -39,6 +39,7 @@ JAI is a productivity-oriented, vector-based, ML Platform, served via REST API o
    :maxdepth: 1
    :caption: Advanced
 
+   advanced/report
    advanced/hierarchical
    advanced/multimodal
 

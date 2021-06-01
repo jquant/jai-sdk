@@ -10,7 +10,7 @@ Install JAI with pip
 
 .. code:: bash
 
-		pip install jai-sdk --user
+    pip install jai-sdk --user
       
 *****************
 Generate Auth Key
@@ -20,9 +20,9 @@ Import JAI and Generate your Community Auth Key (free forever)
 
 .. code:: python
 
-      from jai import Jai
-      Jai.get_auth_key(email='email@mail.com', firstName='Jai', lastName='Z')
-      201
+    >>> from jai import Jai
+    >>> Jai.get_auth_key(email='email@mail.com', firstName='Jai', lastName='Z')
+    201
 
 Please note that yout Auth Key will be sent to your e-mail, so please make sure to use a valid address and check your spam folder.
 
@@ -34,7 +34,7 @@ Start Jai
 
 .. code:: python
 
-      j = Jai('AUTH KEY')
+    >>> j = Jai('AUTH KEY')
 
 ************************
 Self-Supervised Learning
@@ -44,34 +44,34 @@ Self-Supervised Learning
 
 .. code:: python
 
-	from sklearn.datasets import load_boston
+    from sklearn.datasets import load_boston
       
-	#load dataset
-	boston = load_boston()
+    # load dataset
+    boston = load_boston()
 
-	#note that we are not loading the target column "PRICE"
-	data = pd.DataFrame(boston.data, columns=boston.feature_names)
-	
-	#send data to JAI for feature extraction
-	j.setup(
-		#JAI collection name
-		name='boston',
+    # note that we are not loading the target column "PRICE"
+    data = pd.DataFrame(boston.data, columns=boston.feature_names)
+    
+    # send data to JAI for feature extraction
+    j.setup(
+        # JAI collection name
+        name='boston',
 
-		#data to be processed - a Pandas DataFrame is expected
-		data=data,
+        # data to be processed - a Pandas DataFrame is expected
+        data=data,
 
-		#collection type
-		db_type='SelfSupervised',
+        # collection type
+        db_type='SelfSupervised',
 
-		#verbose 2 -> shows the loss graph at the end of training
-		verbose=2,
+        # verbose 2 -> shows the loss graph at the end of training
+        verbose=2,
 
-		#let's set some hyperparams!
-		hyperparams={
-		'learning_rate': 3e-4,
-		'pretraining_ratio':0.8
-		}
-	)
+        # let's set some hyperparams!
+        hyperparams={
+        'learning_rate': 3e-4,
+        'pretraining_ratio':0.8
+        }
+    )
 
 Output:
 
@@ -104,73 +104,70 @@ Similarity Search
 
 .. code:: python
 
-	#every JAI collection can be queried using j.similar()
-	ans = j.similar(
-		#collection to be queried
-		name='boston',
-		#let's find houses that are similar to ids 1 and 10
-		data=[1, 10]
-	)
+    # every JAI collection can be queried using j.similar()
+    ans = j.similar(
+        # collection to be queried
+        name='boston',
+        # let's find houses that are similar to ids 1 and 10
+        data=[1, 10]
+    )
 
 Output:
 
-.. code:: python
+.. code:: bash
 
-	Similar: 100%|██████████| 1/1 [00:01<00:00,  1.36s/it]
+    Similar: 100%|██████████| 1/1 [00:01<00:00,  1.36s/it]
 
 And now the 'ans' variable holds a JSON:
 
-.. code:: python
+.. code:: bash
 
-	[{'query_id': 1,
-	'results': [{'id': 1, 'distance': 0.0},
-	{'id': 96, 'distance': 0.012930447235703468},
-	{'id': 235, 'distance': 0.02305753342807293},
-	{'id': 176, 'distance': 0.02424568682909012},
-	{'id': 90, 'distance': 0.025710342451930046}]},
-	
-	{'query_id': 10,
-	'results': [{'id': 10, 'distance': 0.0},
-	{'id': 7, 'distance': 0.0065054153092205524},
-	{'id': 9, 'distance': 0.020906779915094376},
-	{'id': 11, 'distance': 0.04773647338151932},
-	{'id': 6, 'distance': 0.09080290794372559}]}]
+    [{'query_id': 1,
+    'results': [{'id': 1, 'distance': 0.0},
+    {'id': 96, 'distance': 0.012930447235703468},
+    {'id': 235, 'distance': 0.02305753342807293},
+    {'id': 176, 'distance': 0.02424568682909012},
+    {'id': 90, 'distance': 0.025710342451930046}]},
+    
+    {'query_id': 10,
+    'results': [{'id': 10, 'distance': 0.0},
+    {'id': 7, 'distance': 0.0065054153092205524},
+    {'id': 9, 'distance': 0.020906779915094376},
+    {'id': 11, 'distance': 0.04773647338151932},
+    {'id': 6, 'distance': 0.09080290794372559}]}]
 
 And by indexing it back to the original dataframe id's, we have:
 
 .. code:: python
 
-	#id 1
-	#List of top 5 similar houses (house 1 itself + 4)
-	data.loc[pd.DataFrame(ans[0]['results']).id]
+    >>> # id 1
+    >>> # List of top 5 similar houses (house 1 itself + 4)
+    >>> data.loc[pd.DataFrame(ans[0]['results']).id]
+    ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======
+      ..     CRIM    ZN    INDUS    CHAS    NOX     RM    AGE     DIS    RAD    TAX    PTRATIO       B    LSTAT
+    ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======
+       1  0.02731     0     7.07       0  0.469  6.421   78.9  4.9671      2    242       17.8  396.9      9.14
+      96  0.11504     0     2.89       0  0.445  6.163   69.6  3.4952      2    276       18    391.83    11.34
+     235  0.33045     0     6.2        0  0.507  6.086   61.5  3.6519      8    307       17.4  376.75    10.88
+     176  0.07022     0     4.05       0  0.51   6.02    47.2  3.5549      5    296       16.6  393.23    10.11
+      90  0.04684     0     3.41       0  0.489  6.417   66.1  3.0923      2    270       17.8  392.18     8.81
+    ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======
 
 
-   ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======
-     ..     CRIM    ZN    INDUS    CHAS    NOX     RM    AGE     DIS    RAD    TAX    PTRATIO       B    LSTAT
-   ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======
-      1  0.02731     0     7.07       0  0.469  6.421   78.9  4.9671      2    242       17.8  396.9      9.14
-     96  0.11504     0     2.89       0  0.445  6.163   69.6  3.4952      2    276       18    391.83    11.34
-    235  0.33045     0     6.2        0  0.507  6.086   61.5  3.6519      8    307       17.4  376.75    10.88
-    176  0.07022     0     4.05       0  0.51   6.02    47.2  3.5549      5    296       16.6  393.23    10.11
-     90  0.04684     0     3.41       0  0.489  6.417   66.1  3.0923      2    270       17.8  392.18     8.81
-   ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======
+.. code:: python
 
-   .. code:: python
-
-	#id 10
-	#List of top 5 similar houses (house 10 itself + 4)
-	data.loc[pd.DataFrame(ans[1]['results']).id]
-
-
-   ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======
-     ..     CRIM    ZN    INDUS    CHAS    NOX     RM    AGE     DIS    RAD    TAX    PTRATIO       B    LSTAT
-   ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======
-     10  0.22489  12.5     7.87       0  0.524  6.377   94.3  6.3467      5    311       15.2  392.52    20.45
-      7  0.14455  12.5     7.87       0  0.524  6.172   96.1  5.9505      5    311       15.2  396.9     19.15
-      9  0.17004  12.5     7.87       0  0.524  6.004   85.9  6.5921      5    311       15.2  386.71    17.1
-     11  0.11747  12.5     7.87       0  0.524  6.009   82.9  6.2267      5    311       15.2  396.9     13.27
-      6  0.08829  12.5     7.87       0  0.524  6.012   66.6  5.5605      5    311       15.2  395.6     12.43
-   ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======
+    >>> # id 10
+    >>> # List of top 5 similar houses (house 10 itself + 4)
+    >>> data.loc[pd.DataFrame(ans[1]['results']).id]
+    ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======
+      ..     CRIM    ZN    INDUS    CHAS    NOX     RM    AGE     DIS    RAD    TAX    PTRATIO       B    LSTAT
+    ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======
+      10  0.22489  12.5     7.87       0  0.524  6.377   94.3  6.3467      5    311       15.2  392.52    20.45
+       7  0.14455  12.5     7.87       0  0.524  6.172   96.1  5.9505      5    311       15.2  396.9     19.15
+       9  0.17004  12.5     7.87       0  0.524  6.004   85.9  6.5921      5    311       15.2  386.71    17.1
+      11  0.11747  12.5     7.87       0  0.524  6.009   82.9  6.2267      5    311       15.2  396.9     13.27
+       6  0.08829  12.5     7.87       0  0.524  6.012   66.6  5.5605      5    311       15.2  395.6     12.43
+    ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======
 
 *******************
 Supervised Learning
@@ -180,42 +177,42 @@ Supervised Learning
   
 .. code:: python
 
-	# j.fit === j.setup
-	ans = j.fit(
+    # j.fit === j.setup
+    ans = j.fit(
 
-		# JAI collection name
-		name='boston_regression',
-		
-		# verbose 2 -> shows the loss graph at the end of training
-		verbose=2,
-		
-		# data to be processed - a Pandas DataFrame is expected
-		data=data,
-		
-		# collection type
-		db_type='Supervised',
-		
-		# JAI Collection Foreign Key
-		# reference an id column ('id_name') to an already processed JAI collection ('db_parent')
-		mycelia_bases=[
-			{
-			'db_parent':'boston',
-			'id_name':'id_house'
-			}
-		],
+        # JAI collection name
+        name='boston_regression',
+        
+        # verbose 2 -> shows the loss graph at the end of training
+        verbose=2,
+        
+        # data to be processed - a Pandas DataFrame is expected
+        data=data,
+        
+        # collection type
+        db_type='Supervised',
+        
+        # JAI Collection Foreign Key
+        # reference an id column ('id_name') to an already processed JAI collection ('db_parent')
+        mycelia_bases=[
+            {
+            'db_parent':'boston',
+            'id_name':'id_house'
+            }
+        ],
 
-		# Set the column label name and the task type for the Supervised Model
-		# Task can be: Regression, Quantile Regression, Classification or Metric Classification
-		label=
-		{
-			'task':'regression',
-			'label_name':'PRICE'
-		}
-	)
+        # Set the column label name and the task type for the Supervised Model
+        # Task can be: Regression, Quantile Regression, Classification or Metric Classification
+        label=
+        {
+            'task':'regression',
+            'label_name':'PRICE'
+        }
+    )
 
 Output:
 
-.. code:: python
+.. code:: bash
 
       Insert Data: 100%|██████████| 1/1 [00:01<00:00,  1.15s/it]
       Recognized setup args:
@@ -253,73 +250,69 @@ Model Inference
 
 .. code:: python
 
-	#every JAI collection can be queried using j.similar()
-	ans = j.similar(
-		#collection to be queried
-		name='boston_regression',
-		#let's find houses that are similar to ids 1 and 10
-		data=[1, 10]
-	)
+    # every JAI collection can be queried using j.similar()
+    ans = j.similar(
+        # collection to be queried
+        name='boston_regression',
+        # let's find houses that are similar to ids 1 and 10
+        data=[1, 10]
+    )
 
 Output:
 
-.. code:: python
+.. code:: bash
 
-	Similar: 100%|██████████| 1/1 [00:01<00:00,  1.36s/it]
+    Similar: 100%|██████████| 1/1 [00:01<00:00,  1.36s/it]
 
 And now the 'ans' variable holds a JSON:
 
-.. code:: python
+.. code:: bash
 
-	[{'query_id': 1,
-	'results': [{'id': 1, 'distance': 0.0},
-	{'id': 91, 'distance': 0.017999378964304924},
-	{'id': 94, 'distance': 0.02219889685511589},
-	{'id': 96, 'distance': 0.03483652323484421},
-	{'id': 90, 'distance': 0.050415001809597015}]},
+    [{'query_id': 1,
+    'results': [{'id': 1, 'distance': 0.0},
+    {'id': 91, 'distance': 0.017999378964304924},
+    {'id': 94, 'distance': 0.02219889685511589},
+    {'id': 96, 'distance': 0.03483652323484421},
+    {'id': 90, 'distance': 0.050415001809597015}]},
 
-	{'query_id': 10,
-	'results': [{'id': 10, 'distance': 0.0},
-	{'id': 7, 'distance': 0.024717235937714577},
-	{'id': 209, 'distance': 0.05477815866470337},
-	{'id': 211, 'distance': 0.056917279958724976},
-	{'id': 9, 'distance': 0.05909169092774391}]}]
+    {'query_id': 10,
+    'results': [{'id': 10, 'distance': 0.0},
+    {'id': 7, 'distance': 0.024717235937714577},
+    {'id': 209, 'distance': 0.05477815866470337},
+    {'id': 211, 'distance': 0.056917279958724976},
+    {'id': 9, 'distance': 0.05909169092774391}]}]
 
-   And by indexing it back to the original dataframe id's, we have:
-
-.. code:: python
-
-	#id 1
-	#List of top 5 similar houses (house 1 itself + 4)
-	data.loc[pd.DataFrame(ans[0]['results']).id]
-
-
-   ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======  ==========  =======
-     ..     CRIM    ZN    INDUS    CHAS    NOX     RM    AGE     DIS    RAD    TAX    PTRATIO       B    LSTAT    id_house    PRICE
-   ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======  ==========  =======
-      1  0.02731     0     7.07       0  0.469  6.421   78.9  4.9671      2    242       17.8  396.9      9.14           1     21.6
-     91  0.03932     0     3.41       0  0.489  6.405   73.9  3.0921      2    270       17.8  393.55     8.2           91     22
-     94  0.04294    28    15.04       0  0.464  6.249   77.3  3.615       4    270       18.2  396.9     10.59          94     20.6
-     96  0.11504     0     2.89       0  0.445  6.163   69.6  3.4952      2    276       18    391.83    11.34          96     21.4
-     90  0.04684     0     3.41       0  0.489  6.417   66.1  3.0923      2    270       17.8  392.18     8.81          90     22.6
-   ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======  ==========  =======
+And by indexing it back to the original dataframe id's, we have:
 
 .. code:: python
 
-	#id 10
-	#List of top 5 similar houses (house 10 itself + 4)
-	data.loc[pd.DataFrame(ans[1]['results']).id]
+    >>> # id 1
+    >>> # List of top 5 similar houses (house 1 itself + 4)
+    >>> data.loc[pd.DataFrame(ans[0]['results']).id]
+    ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======  ==========  =======
+      ..     CRIM    ZN    INDUS    CHAS    NOX     RM    AGE     DIS    RAD    TAX    PTRATIO       B    LSTAT    id_house    PRICE
+    ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======  ==========  =======
+       1  0.02731     0     7.07       0  0.469  6.421   78.9  4.9671      2    242       17.8  396.9      9.14           1     21.6
+      91  0.03932     0     3.41       0  0.489  6.405   73.9  3.0921      2    270       17.8  393.55     8.2           91     22
+      94  0.04294    28    15.04       0  0.464  6.249   77.3  3.615       4    270       18.2  396.9     10.59          94     20.6
+      96  0.11504     0     2.89       0  0.445  6.163   69.6  3.4952      2    276       18    391.83    11.34          96     21.4
+      90  0.04684     0     3.41       0  0.489  6.417   66.1  3.0923      2    270       17.8  392.18     8.81          90     22.6
+    ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======  ==========  =======
 
+.. code:: python
 
-   ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======  ==========  =======
-     ..     CRIM    ZN    INDUS    CHAS    NOX     RM    AGE     DIS    RAD    TAX    PTRATIO       B    LSTAT    id_house    PRICE
-   ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======  ==========  =======
-     10  0.22489  12.5     7.87       0  0.524  6.377   94.3  6.3467      5    311       15.2  392.52    20.45          10     15
-      7  0.14455  12.5     7.87       0  0.524  6.172   96.1  5.9505      5    311       15.2  396.9     19.15           7     27.1
-    209  0.43571   0      10.59       1  0.489  5.344  100    3.875       4    277       18.6  396.9     23.09         209     20
-    211  0.37578   0      10.59       1  0.489  5.404   88.6  3.665       4    277       18.6  395.24    23.98         211     19.3
-      9  0.17004  12.5     7.87       0  0.524  6.004   85.9  6.5921      5    311       15.2  386.71    17.1            9     18.9
-   ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======  ==========  =======
+    >>> # id 10
+    >>> # List of top 5 similar houses (house 10 itself + 4)
+    >>> data.loc[pd.DataFrame(ans[1]['results']).id]
+    ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======  ==========  =======
+      ..     CRIM    ZN    INDUS    CHAS    NOX     RM    AGE     DIS    RAD    TAX    PTRATIO       B    LSTAT    id_house    PRICE
+    ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======  ==========  =======
+      10  0.22489  12.5     7.87       0  0.524  6.377   94.3  6.3467      5    311       15.2  392.52    20.45          10     15
+       7  0.14455  12.5     7.87       0  0.524  6.172   96.1  5.9505      5    311       15.2  396.9     19.15           7     27.1
+     209  0.43571   0      10.59       1  0.489  5.344  100    3.875       4    277       18.6  396.9     23.09         209     20
+     211  0.37578   0      10.59       1  0.489  5.404   88.6  3.665       4    277       18.6  395.24    23.98         211     19.3
+       9  0.17004  12.5     7.87       0  0.524  6.004   85.9  6.5921      5    311       15.2  386.71    17.1            9     18.9
+    ====  =======  ====  =======  ======  =====  =====  =====  ======  =====  =====  =========  ======  =======  ==========  =======
 
 * We can also, of course, perform inference on our model:
 
@@ -338,39 +331,37 @@ Output:
 
 .. code:: python
 
-	Predict: 100%|██████████| 1/1 [00:01<00:00,  1.59s/it]
+    Predict: 100%|██████████| 1/1 [00:01<00:00,  1.59s/it]
 
    And now the 'ans' variable holds a JSON:
 
 .. code:: python
 
-	[{'id': 0, 'predict': [24.70072364807129]},
-	{'id': 1, 'predict': [21.706649780273438]},
-	{'id': 2, 'predict': [31.775901794433594]},
-	{'id': 3, 'predict': [34.41084289550781]},
-	{'id': 4, 'predict': [34.54452896118164]}]
+    [{'id': 0, 'predict': [24.70072364807129]},
+    {'id': 1, 'predict': [21.706649780273438]},
+    {'id': 2, 'predict': [31.775901794433594]},
+    {'id': 3, 'predict': [34.41084289550781]},
+    {'id': 4, 'predict': [34.54452896118164]}]
 
 And by indexing it back to the original dataframe id's, we have:
 
 .. code:: python
 
-	# id 1
-	# List of top 5 similar houses (house 1 itself + 4)
-	predict_df = pd.DataFrame(ans)
-	predict_df = predict_df.set_index('id')
-	predict_df.loc[:,'predict'] = predict_df['predict'].apply(lambda x: x[0])
-	predict_df['true'] = data['PRICE']
-
-
-   ====  =========  ======
-   ..    predict    true
-   ====  =========  ======
-      0    24.7007    24
-      1    21.7066    21.6
-      2    31.7759    34.7
-      3    34.4108    33.4
-      4    34.5445    36.2
-   ====  =========  ======
+    >>> # id 1
+    >>> # List of top 5 similar houses (house 1 itself + 4)
+    >>> predict_df = pd.DataFrame(ans)
+    >>> predict_df = predict_df.set_index('id')
+    >>> predict_df.loc[:,'predict'] = predict_df['predict'].apply(lambda x: x[0])
+    >>> predict_df['true'] = data['PRICE']
+    ====  =========  ======
+      ..    predict    true
+    ====  =========  ======
+       0    24.7007    24
+       1    21.7066    21.6
+       2    31.7759    34.7
+       3    34.4108    33.4
+       4    34.5445    36.2
+    ====  =========  ======
 
 **********************
 Always deployed (REST)
@@ -380,80 +371,80 @@ Always deployed (REST)
 
 .. code:: python
 
-	# Similarity Search via REST API
+    # Similarity Search via REST API
 
-	# import json and requests libraries
-	import requests
-	import json
+    # import json and requests libraries
+    import requests
+    import json
 
-	# set Authentication header
-	header={'Auth': 'AUTH KEY'}
+    # set Authentication header
+    header={'Auth': 'AUTH KEY'}
 
-	# set collection name
-	db_name = 'boston'
+    # set collection name
+    db_name = 'boston'
 
-	# similarity search endpoint
-	url_similar = f"https://mycelia.azure-api.net/similar/id/{db_name}"
-	body = json.dumps([1,10])
+    # similarity search endpoint
+    url_similar = f"https://mycelia.azure-api.net/similar/id/{db_name}"
+    body = json.dumps([1,10])
 
-	#make the request (PUT)
-	ans = requests.put(url_similar, data=body, headers=header)
-
-Output - ans.json():
-
-.. code:: python
-
-	{
-		'similarity': [
-
-		{'query_id': 1,
-		'results': [{'id': 1, 'distance': 0.0},
-		{'id': 96, 'distance': 0.012930447235703468},
-		{'id': 235, 'distance': 0.02305753342807293},
-		{'id': 176, 'distance': 0.02424568682909012},
-		{'id': 90, 'distance': 0.025710342451930046}]},
-		
-		{'query_id': 10,
-		'results': [{'id': 10, 'distance': 0.0},
-		{'id': 7, 'distance': 0.0065054153092205524},
-		{'id': 9, 'distance': 0.020906779915094376},
-		{'id': 11, 'distance': 0.04773647338151932},
-		{'id': 6, 'distance': 0.09080290794372559}]}
-
-		]
-	}
-
-.. code:: python
-
-	# Model Inference via REST API
-
-	# import json and requests libraries
-	import requests
-	import json
-	
-	# set Authentication header
-	header={'Auth': 'AUTH KEY'}
-
-	# set collection name
-	db_name = 'boston_regression'
-
-	# model inference endpoint
-	url_predict = f"https://mycelia.azure-api.net/predict/{db_name}"
-
-	# json body
-	# note that we need to provide a column named 'id'
-	# also note that we drop the 'PRICE' column because it is not a feature
-	body = data.reset_index().rename(columns={'index':'id'}).head().drop('PRICE',axis=1).to_json(orient='records')
-	
-	#make the request
-	ans = requests.put(url_predict, data=body, headers=header)
+    #make the request (PUT)
+    ans = requests.put(url_similar, data=body, headers=header)
 
 Output - ans.json():
 
+.. code:: bash
+
+    {
+        'similarity': [
+
+        {'query_id': 1,
+        'results': [{'id': 1, 'distance': 0.0},
+        {'id': 96, 'distance': 0.012930447235703468},
+        {'id': 235, 'distance': 0.02305753342807293},
+        {'id': 176, 'distance': 0.02424568682909012},
+        {'id': 90, 'distance': 0.025710342451930046}]},
+        
+        {'query_id': 10,
+        'results': [{'id': 10, 'distance': 0.0},
+        {'id': 7, 'distance': 0.0065054153092205524},
+        {'id': 9, 'distance': 0.020906779915094376},
+        {'id': 11, 'distance': 0.04773647338151932},
+        {'id': 6, 'distance': 0.09080290794372559}]}
+
+        ]
+    }
+
 .. code:: python
 
-	[{'id': 0, 'predict': [24.70072364807129]},
-	{'id': 1, 'predict': [21.706649780273438]},
-	{'id': 2, 'predict': [31.775901794433594]},
-	{'id': 3, 'predict': [34.41084289550781]},
-	{'id': 4, 'predict': [34.54452896118164]}]
+    # Model Inference via REST API
+
+    # import json and requests libraries
+    import requests
+    import json
+    
+    # set Authentication header
+    header={'Auth': 'AUTH KEY'}
+
+    # set collection name
+    db_name = 'boston_regression'
+
+    # model inference endpoint
+    url_predict = f"https://mycelia.azure-api.net/predict/{db_name}"
+
+    # json body
+    # note that we need to provide a column named 'id'
+    # also note that we drop the 'PRICE' column because it is not a feature
+    body = data.reset_index().rename(columns={'index':'id'}).head().drop('PRICE',axis=1).to_json(orient='records')
+    
+    #make the request
+    ans = requests.put(url_predict, data=body, headers=header)
+
+Output - ans.json():
+
+.. code:: bash
+
+    [{'id': 0, 'predict': [24.70072364807129]},
+    {'id': 1, 'predict': [21.706649780273438]},
+    {'id': 2, 'predict': [31.775901794433594]},
+    {'id': 3, 'predict': [34.41084289550781]},
+    {'id': 4, 'predict': [34.54452896118164]}]
