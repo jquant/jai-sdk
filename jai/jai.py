@@ -705,7 +705,9 @@ class Jai:
                 if isinstance(kwarg_input, dict):
                     value = json.loads(value)
                     intersection = kwarg_input.keys() & value.keys()
-                    value = {k: value[k] for k in intersection}
+                    m = max([len(s) for s in intersection])
+                    value = "".join(
+                        [f"\n  * {k:{m}s}: {value[k]}" for k in intersection])
                 print(f"- {key}: {value}")
 
         if frequency_seconds >= 1:
@@ -1007,6 +1009,8 @@ class Jai:
 
         if response.status_code == 200:
             result = response.json()
+            if return_report:
+                return result
 
             if 'Model Training' in result.keys():
                 plots = result['Model Training']
@@ -1024,7 +1028,6 @@ class Jai:
             print()
             print(result["Loading from checkpoint"].split("\n")
                   [1]) if 'Loading from checkpoint' in result.keys() else None
-            return result if return_report else None
         else:
             return self.assert_status_code(response)
 
