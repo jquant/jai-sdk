@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import warnings
 
 from copy import deepcopy
@@ -119,7 +120,7 @@ def process_similar(results,
     return similar
 
 
-def process_predict(predicts):
+def process_predict(predicts, digits=2, percentage=True):
     """
     Process the output from the predict methods from supervised models.
 
@@ -148,19 +149,21 @@ def process_predict(predicts):
     else:
         raise ValueError(f"Unexpected predict type. {type(example)}")
 
-    sanity_check = []
-    for query in tqdm(predicts, desc='Predict all ids'):
+    factor = 100 if percentage else 1
+    prob_name = 'probability(%)' if percentage else 'probability'
+
+    index, values = [], []
+    for query in tqdm(predicts, desc='Predict Processing'):
+        index.append(query['id'])
         if predict_proba == False:
-            sanity_check.append(query)
+            values.append(query)
         else:
+            temp = deepcopy(query['predict'])
             predict = max(query['predict'], key=query['predict'].get)
-            confidence_level = round(query['predict'][predict] * 100, 2)
-            sanity_check.append({
-                'id': query['id'],
-                'predict': predict,
-                'probability(%)': confidence_level
-            })
-    return sanity_check
+            temp['predict'] = predict
+            temp[prob_name] = round(query['predict'][predict] * factor, digits)
+            values.append(temp)
+    return pd.DataFrame(values, index=index)
 
 
 def process_resolution(results,

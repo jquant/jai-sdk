@@ -6,7 +6,7 @@ import requests
 import time
 
 from io import BytesIO
-from .processing import process_similar, process_resolution
+from .processing import (process_similar, process_resolution, process_predict)
 from .functions.utils_funcs import data2json, pbar_steps
 from .functions.classes import PossibleDtypes, Mode
 from .functions import exceptions
@@ -486,6 +486,7 @@ class Jai:
                 name: str,
                 data,
                 predict_proba: bool = False,
+                as_frame: bool = False,
                 batch_size: int = 16384):
         """
         Predict the output of new data for a given database.
@@ -536,7 +537,8 @@ class Jai:
                                 data2json(_batch, dtype=dtype, predict=True),
                                 predict_proba=predict_proba)
             results.extend(res)
-        return results
+
+        return process_predict(results) if as_frame else results
 
     def _predict(self, name: str, data_json, predict_proba: bool = False):
         """
@@ -1677,6 +1679,7 @@ class Jai:
         data = data.copy()
         cat_threshold = kwargs.get("cat_threshold", 512)
         overwrite = kwargs.get("overwrite", False)
+        as_frame = kwargs.get("as_frame", False)
 
         # delete tree of databases derived from 'name',
         # including 'name' itself
@@ -1782,7 +1785,8 @@ class Jai:
         return self.predict(name,
                             test,
                             predict_proba=True,
-                            batch_size=batch_size)
+                            batch_size=batch_size,
+                            as_frame=as_frame)
 
     def sanity(self,
                name: str,
@@ -1855,6 +1859,7 @@ class Jai:
         cat_threshold = kwargs.get("cat_threshold", 512)
         target = kwargs.get("target", "is_valid")
         overwrite = kwargs.get("overwrite", False)
+        as_frame = kwargs.get("as_frame", False)
 
         # delete tree of databases derived from 'name',
         # including 'name' itself
@@ -2004,4 +2009,5 @@ class Jai:
         return self.predict(name,
                             data,
                             predict_proba=True,
-                            batch_size=batch_size)
+                            batch_size=batch_size,
+                            as_frame=as_frame)
