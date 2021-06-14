@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+import pandas as pd
 from jai.processing import (find_threshold, process_similar, process_predict,
                             process_resolution)
 
@@ -96,10 +97,9 @@ def test_process_similar_null():
 # =============================================================================
 @pytest.mark.parametrize('predict', [[{"id": 0, "predict": 'class1'}]])
 def test_process_predict(predict):
-    assert process_predict(predict) == [{
-        'id': 0,
-        'predict': 'class1'
-    }], "process predict results failed."
+    res = pd.DataFrame({'predict': 'class1'}, index=pd.Index([0], name="id"))
+    assert (process_predict(predict) == res
+            ).all(None), "process predict results failed."
 
 
 @pytest.mark.parametrize('predict', [[{
@@ -111,11 +111,17 @@ def test_process_predict(predict):
     }
 }]])
 def test_process_predict_proba(predict):
-    assert process_predict(predict) == [{
-        'id': 0,
-        'predict': 'class1',
-        'probability(%)': 50.0
-    }], "process predict results failed. (proba)"
+    res = pd.DataFrame(
+        {
+            'class0': 0.1,
+            'class1': .5,
+            'class2': .4,
+            'predict': 'class1',
+            'probability(%)': 50.0
+        },
+        index=pd.Index([0], name="id"))
+    assert (process_predict(predict) == res
+            ).all(None), "process predict results failed. (proba)"
 
 
 @pytest.mark.parametrize('predict', [[{"id": 0, "predict": ['class1']}]])
