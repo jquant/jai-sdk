@@ -97,9 +97,7 @@ def test_process_similar_null():
 # =============================================================================
 @pytest.mark.parametrize('predict', [[{"id": 0, "predict": 'class1'}]])
 def test_process_predict(predict):
-    res = pd.DataFrame({
-        'predict': 'class1'
-    }, index=pd.Index([0], name="id"))
+    res = pd.DataFrame({'predict': 'class1'}, index=pd.Index([0], name="id"))
     assert process_predict(predict) == res, "process predict results failed."
 
 
@@ -112,14 +110,17 @@ def test_process_predict(predict):
     }
 }]])
 def test_process_predict_proba(predict):
-    res = pd.DataFrame({
-        'class0': 0.1,
-        'class1': .5,
-        'class2': .4,
-        'predict': 'class1',
-        'probability(%)': 50.0
-    }, index=pd.Index([0], name="id"))
-    assert process_predict(predict) == res, "process predict results failed. (proba)"
+    res = pd.DataFrame(
+        {
+            'class0': 0.1,
+            'class1': .5,
+            'class2': .4,
+            'predict': 'class1',
+            'probability(%)': 50.0
+        },
+        index=pd.Index([0], name="id"))
+    assert process_predict(
+        predict) == res, "process predict results failed. (proba)"
 
 
 @pytest.mark.parametrize('predict', [[{"id": 0, "predict": ['class1']}]])
