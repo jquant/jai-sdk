@@ -476,7 +476,9 @@ class Jai:
             ["&filters=" + s for s in filters])
         url = self.url + f"/similar/data/{name}?top_k={top_k}" + filtering
 
-        response = requests.put(url, headers=self.header, json=json.loads(data_json))
+        response = requests.put(url,
+                                headers=self.header,
+                                json=json.loads(data_json))
         if response.status_code == 200:
             return response.json()
         else:
@@ -562,7 +564,9 @@ class Jai:
         url = self.url + \
             f"/predict/{name}?predict_proba={predict_proba}"
 
-        response = requests.put(url, headers=self.header,  json=json.loads(data_json))
+        response = requests.put(url,
+                                headers=self.header,
+                                json=json.loads(data_json))
         if response.status_code == 200:
             return response.json()
         else:
@@ -900,7 +904,9 @@ class Jai:
         """
         filtering = "" if filter_name is None else f"?filter_name={filter_name}"
         url = self.url + f"/data/{name}" + filtering
-        response = requests.post(url, headers=self.header, json=json.loads(df_json))
+        response = requests.post(url,
+                                 headers=self.header,
+                                 json=json.loads(df_json))
         if response.status_code == 200:
             return response.json()
         else:
