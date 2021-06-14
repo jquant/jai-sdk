@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+import pandas as pd
 from jai.processing import (find_threshold, process_similar, process_predict,
                             process_resolution)
 
