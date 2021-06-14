@@ -156,13 +156,14 @@ def process_predict(predicts, digits=2, percentage=True):
     for query in tqdm(predicts, desc='Predict Processing'):
         index.append(query['id'])
         if predict_proba == False:
-            values.append(query)
+            values.append({"predict": query["predict"]})
         else:
             temp = deepcopy(query['predict'])
             predict = max(query['predict'], key=query['predict'].get)
             temp['predict'] = predict
             temp[prob_name] = round(query['predict'][predict] * factor, digits)
             values.append(temp)
+    index = pd.Index(index, name="id")
     return pd.DataFrame(values, index=index)
 
 

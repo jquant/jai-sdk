@@ -186,7 +186,7 @@ class Jai:
             "lastName": lastName,
             "company": company
         }
-        response = requests.put(url + "/auth", data=json.dumps(body))
+        response = requests.put(url + "/auth", json=body)
         return response
 
     def download_vectors(self, name: str):
@@ -438,7 +438,7 @@ class Jai:
         response = requests.put(
             url,
             headers=self.header,
-            data=json.dumps(id_item),
+            json=id_item,
         )
 
         if response.status_code == 200:
@@ -476,7 +476,7 @@ class Jai:
             ["&filters=" + s for s in filters])
         url = self.url + f"/similar/data/{name}?top_k={top_k}" + filtering
 
-        response = requests.put(url, headers=self.header, data=data_json)
+        response = requests.put(url, headers=self.header, json=json.loads(data_json))
         if response.status_code == 200:
             return response.json()
         else:
@@ -562,7 +562,7 @@ class Jai:
         url = self.url + \
             f"/predict/{name}?predict_proba={predict_proba}"
 
-        response = requests.put(url, headers=self.header, data=data_json)
+        response = requests.put(url, headers=self.header,  json=json.loads(data_json))
         if response.status_code == 200:
             return response.json()
         else:
@@ -900,7 +900,7 @@ class Jai:
         """
         filtering = "" if filter_name is None else f"?filter_name={filter_name}"
         url = self.url + f"/data/{name}" + filtering
-        response = requests.post(url, headers=self.header, data=df_json)
+        response = requests.post(url, headers=self.header, json=json.loads(df_json))
         if response.status_code == 200:
             return response.json()
         else:
@@ -974,7 +974,7 @@ class Jai:
         response = requests.post(
             self.url + f"/setup/{name}?overwrite={overwrite}",
             headers=self.header,
-            data=json.dumps(body),
+            json=body,
         )
 
         if response.status_code == 201:
@@ -1295,7 +1295,7 @@ class Jai:
         """
         response = requests.delete(self.url + f"/entity/{name}",
                                    headers=self.header,
-                                   data=json.dumps(ids))
+                                   json=ids)
         if response.status_code == 200:
             return response.json()
         else:
