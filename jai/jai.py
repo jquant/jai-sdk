@@ -6,7 +6,7 @@ import requests
 import time
 
 from io import BytesIO
-from .processing import process_similar, process_resolution
+from .processing import (process_similar, process_resolution, process_predict)
 from .functions.utils_funcs import data2json, pbar_steps
 from .functions.classes import PossibleDtypes, Mode
 from .functions import exceptions
@@ -186,7 +186,7 @@ class Jai:
             "lastName": lastName,
             "company": company
         }
-        response = requests.put(url + "/auth", data=json.dumps(body))
+        response = requests.put(url + "/auth", json=body)
         return response
 
     def download_vectors(self, name: str):
@@ -438,7 +438,7 @@ class Jai:
         response = requests.put(
             url,
             headers=self.header,
-            data=json.dumps(id_item),
+            json=id_item,
         )
 
         if response.status_code == 200:
@@ -476,7 +476,9 @@ class Jai:
             ["&filters=" + s for s in filters])
         url = self.url + f"/similar/data/{name}?top_k={top_k}" + filtering
 
-        response = requests.put(url, headers=self.header, data=data_json)
+        response = requests.put(url,
+                                headers=self.header,
+                                json=json.loads(data_json))
         if response.status_code == 200:
             return response.json()
         else:
@@ -486,6 +488,7 @@ class Jai:
                 name: str,
                 data,
                 predict_proba: bool = False,
+                as_frame: bool = False,
                 batch_size: int = 16384):
         """
         Predict the output of new data for a given database.
@@ -536,7 +539,8 @@ class Jai:
                                 data2json(_batch, dtype=dtype, predict=True),
                                 predict_proba=predict_proba)
             results.extend(res)
-        return results
+
+        return process_predict(results) if as_frame else results
 
     def _predict(self, name: str, data_json, predict_proba: bool = False):
         """
@@ -560,7 +564,9 @@ class Jai:
         url = self.url + \
             f"/predict/{name}?predict_proba={predict_proba}"
 
-        response = requests.put(url, headers=self.header, data=data_json)
+        response = requests.put(url,
+                                headers=self.header,
+                                json=json.loads(data_json))
         if response.status_code == 200:
             return response.json()
         else:
@@ -705,7 +711,9 @@ class Jai:
                 if isinstance(kwarg_input, dict):
                     value = json.loads(value)
                     intersection = kwarg_input.keys() & value.keys()
-                    value = {k: value[k] for k in intersection}
+                    m = max([len(s) for s in intersection])
+                    value = "".join(
+                        [f"\n  * {k:{m}s}: {value[k]}" for k in intersection])
                 print(f"- {key}: {value}")
 
         if frequency_seconds >= 1:
@@ -896,7 +904,9 @@ class Jai:
         """
         filtering = "" if filter_name is None else f"?filter_name={filter_name}"
         url = self.url + f"/data/{name}" + filtering
-        response = requests.post(url, headers=self.header, data=df_json)
+        response = requests.post(url,
+                                 headers=self.header,
+                                 json=json.loads(df_json))
         if response.status_code == 200:
             return response.json()
         else:
@@ -970,7 +980,7 @@ class Jai:
         response = requests.post(
             self.url + f"/setup/{name}?overwrite={overwrite}",
             headers=self.header,
-            data=json.dumps(body),
+            json=body,
         )
 
         if response.status_code == 201:
@@ -1007,6 +1017,8 @@ class Jai:
 
         if response.status_code == 200:
             result = response.json()
+            if return_report:
+                return result
 
             if 'Model Training' in result.keys():
                 plots = result['Model Training']
@@ -1024,7 +1036,6 @@ class Jai:
             print()
             print(result["Loading from checkpoint"].split("\n")
                   [1]) if 'Loading from checkpoint' in result.keys() else None
-            return result if return_report else None
         else:
             return self.assert_status_code(response)
 
@@ -1290,7 +1301,7 @@ class Jai:
         """
         response = requests.delete(self.url + f"/entity/{name}",
                                    headers=self.header,
-                                   data=json.dumps(ids))
+                                   json=ids)
         if response.status_code == 200:
             return response.json()
         else:
@@ -1674,6 +1685,7 @@ class Jai:
         data = data.copy()
         cat_threshold = kwargs.get("cat_threshold", 512)
         overwrite = kwargs.get("overwrite", False)
+        as_frame = kwargs.get("as_frame", False)
 
         # delete tree of databases derived from 'name',
         # including 'name' itself
@@ -1779,7 +1791,8 @@ class Jai:
         return self.predict(name,
                             test,
                             predict_proba=True,
-                            batch_size=batch_size)
+                            batch_size=batch_size,
+                            as_frame=as_frame)
 
     def sanity(self,
                name: str,
@@ -1852,6 +1865,7 @@ class Jai:
         cat_threshold = kwargs.get("cat_threshold", 512)
         target = kwargs.get("target", "is_valid")
         overwrite = kwargs.get("overwrite", False)
+        as_frame = kwargs.get("as_frame", False)
 
         # delete tree of databases derived from 'name',
         # including 'name' itself
@@ -2001,4 +2015,5 @@ class Jai:
         return self.predict(name,
                             data,
                             predict_proba=True,
-                            batch_size=batch_size)
+                            batch_size=batch_size,
+                            as_frame=as_frame)
