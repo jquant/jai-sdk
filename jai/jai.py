@@ -1291,13 +1291,6 @@ class Jai:
         -------
         response : dict
             Dictionary with the API response.
-
-        Example
-        ----------
-        >>> name = 'chosen_name'
-        >>> j = Jai(AUTH_KEY)
-        >>> j.delete_raw_data(name=name)
-        'All raw data from database 'chosen_name' was deleted!'
         """
         response = requests.delete(self.url + f"/entity/{name}",
                                    headers=self.header,

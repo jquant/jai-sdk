@@ -124,12 +124,6 @@ def test_process_predict_proba(predict):
             ).all(None), "process predict results failed. (proba)"
 
 
-@pytest.mark.parametrize('predict', [[{"id": 0, "predict": ['class1']}]])
-def test_process_predict_error(predict):
-    with pytest.raises(ValueError):
-        process_predict(predict)
-
-
 # =============================================================================
 # Tests for process resolution
 # =============================================================================
