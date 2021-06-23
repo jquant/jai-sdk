@@ -290,12 +290,12 @@ class Jai:
             res_json = response.json()
             if isinstance(res_json, dict):
                 detail = res_json.get('message',
-                                    res_json.get('detail', response.text))
+                                      res_json.get('detail', response.text))
             else:
                 detail = response.text
         except:
             detail = response.text
-            
+
         if "Error: " in detail:
             error, msg = detail.split(": ", 1)
             try:
@@ -306,7 +306,6 @@ class Jai:
                 raise ValueError(message + response.text)
         else:
             raise ValueError(message + detail)
-
 
     def filters(self, name):
         """
