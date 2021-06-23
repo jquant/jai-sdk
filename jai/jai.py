@@ -287,23 +287,24 @@ class Jai:
         # what errors to raise, etc.
         message = f"Something went wrong.\n\nSTATUS: {response.status_code}\n"
         try:
-            detail = response.json()['detail']
+            res_json = response.json()
+            if isinstance(res_json, dict):
+                detail = res_json.get(
+                    'detail', res_json.get('message', response.text))
+            else:
+                detail = response.text
+
             if "Error: " in detail:
                 error, msg = detail.split(": ", 1)
-                message += msg
                 try:
-                    raise eval(error)(message)
+                    raise eval(error)(message + msg)
                 except NameError:
-                    try:
-                        raise eval("exceptions." + error)(message)
-                    except NameError:
-                        raise ValueError(message)
+                    raise eval("exceptions." + error)(message + msg)
             else:
-                message += detail
-                raise ValueError(message)
-        except TypeError:
+                raise ValueError(message + detail)
+        except:
             message += str(response.text)
-            raise ValueError(message)
+            raise Exception(message)
 
     def filters(self, name):
         """
