@@ -373,9 +373,8 @@ Always deployed (REST)
 
     # Similarity Search via REST API
 
-    # import json and requests libraries
+    # import requests libraries
     import requests
-    import json
 
     # set Authentication header
     header={'Auth': 'AUTH KEY'}
@@ -385,10 +384,10 @@ Always deployed (REST)
 
     # similarity search endpoint
     url_similar = f"https://mycelia.azure-api.net/similar/id/{db_name}"
-    body = json.dumps([1,10])
+    body = [1, 10]
 
     #make the request (PUT)
-    ans = requests.put(url_similar, data=body, headers=header)
+    ans = requests.put(url_similar, json=body, headers=header)
 
 Output - ans.json():
 
@@ -418,9 +417,8 @@ Output - ans.json():
 
     # Model Inference via REST API
 
-    # import json and requests libraries
+    # import requests libraries
     import requests
-    import json
     
     # set Authentication header
     header={'Auth': 'AUTH KEY'}
@@ -434,10 +432,10 @@ Output - ans.json():
     # json body
     # note that we need to provide a column named 'id'
     # also note that we drop the 'PRICE' column because it is not a feature
-    body = data.reset_index().rename(columns={'index':'id'}).head().drop('PRICE',axis=1).to_json(orient='records')
+    body = data.reset_index().rename(columns={'index':'id'}).head().drop('PRICE',axis=1).to_dict(orient='records')
     
     #make the request
-    ans = requests.put(url_predict, data=body, headers=header)
+    ans = requests.put(url_predict, json=body, headers=header)
 
 Output - ans.json():
 
