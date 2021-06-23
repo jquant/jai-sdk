@@ -289,22 +289,24 @@ class Jai:
         try:
             res_json = response.json()
             if isinstance(res_json, dict):
-                detail = res_json.get('detail',
-                                      res_json.get('message', response.text))
+                detail = res_json.get('message',
+                                    res_json.get('detail', response.text))
             else:
                 detail = response.text
-
-            if "Error: " in detail:
-                error, msg = detail.split(": ", 1)
-                try:
-                    raise eval(error)(message + msg)
-                except NameError:
-                    raise eval("exceptions." + error)(message + msg)
-            else:
-                raise ValueError(message + detail)
         except:
-            message += str(response.text)
-            raise Exception(message)
+            detail = response.text
+            
+        if "Error: " in detail:
+            error, msg = detail.split(": ", 1)
+            try:
+                raise eval(error)(message + msg)
+            except NameError:
+                raise eval("exceptions." + error)(message + msg)
+            except:
+                raise ValueError(message + response.text)
+        else:
+            raise ValueError(message + detail)
+
 
     def filters(self, name):
         """
