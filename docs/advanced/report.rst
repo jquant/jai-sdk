@@ -35,7 +35,7 @@ All content below is available only when :code:`return_report=True`
 
 All content below is available only on Supervised models.
 
-* **Validation Ids/Evalutaion Ids**: List the ids chosen for the validation set and evaluation/test set
+* **Validation Ids/Evaluation Ids**: List the ids chosen for the validation set and evaluation/test set
 * **Metrics Train/Metrics Validation**: The same metrics calculated on "Model Evaluation" but on the training set and validation set respectively.
 * **Baseline Model**: The same metrics of "Model Evaluation" on the test set, but using a Baseline Model (please check `sklearn.dummy`_ models). For regression cases, we evaluate the mean and the median as a baseline. For classification cases, we use stratified, uniform and most_frequent models as baseline.
 * **Optimal Thresholds**: List the probability thresholds that maximize :code:`true positive rate - false negative rate` for each class. Since it's calculated in a OneVsAll manner, the probabilities don't sum up to one.

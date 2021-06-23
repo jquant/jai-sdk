@@ -142,27 +142,32 @@ def process_predict(predicts, digits=2, percentage=True):
     """
     predicts = deepcopy(predicts)
     example = predicts[0]['predict']
+    predict_proba = False
+    quantiles = False
     if isinstance(example, dict):
-        predict_proba = True
-    elif isinstance(example, str):
-        predict_proba = False
-    else:
-        raise ValueError(f"Unexpected predict type. {type(example)}")
-
-    factor = 100 if percentage else 1
-    prob_name = 'probability(%)' if percentage else 'probability'
+        if sum(example.values()) == 1:
+            predict_proba = True
+        else:
+            quantiles = True
 
     index, values = [], []
     for query in tqdm(predicts, desc='Predict Processing'):
         index.append(query['id'])
-        if predict_proba == False:
-            values.append({"predict": query["predict"]})
-        else:
+        if predict_proba:
+            factor = 100 if percentage else 1
+            prob_name = 'probability(%)' if percentage else 'probability'
             temp = deepcopy(query['predict'])
             predict = max(query['predict'], key=query['predict'].get)
             temp['predict'] = predict
             temp[prob_name] = round(query['predict'][predict] * factor, digits)
             values.append(temp)
+        elif quantiles:
+            values.append({
+                f"predict_{quant}": pred
+                for quant, pred in query["predict"].items()
+            })
+        else:
+            values.append({"predict": query["predict"]})
     index = pd.Index(index, name="id")
     return pd.DataFrame(values, index=index)
 

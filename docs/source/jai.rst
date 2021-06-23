@@ -35,7 +35,7 @@ it were in the body of a POST method.
       {"classifier", "dense", "conv", "avgpool" or "int"}. *Default is -3*.
     * **resize_H** (*int*) -- Height of image resizing, must be greater or
       equal to 224. *Default is 224*.
-    * resize_W: (int) width of image resizing, must be greater or
+    * **resize_W**: (*int*) width of image resizing, must be greater or
       equal to 224. *Default is 224*.
 
   * **FastText**:
@@ -89,14 +89,14 @@ it were in the body of a POST method.
       *Default is "2L"*.
     * **decoder_layer** (*str*) -- Structure for the decoder layer {"2L", "2L_LN", "2L_BN", "1L"}. 
       *Default is "2L"*.
+    * **hidden_latent_dim** (*int*) -- Hidden layer size. *Default is 64*.
     * **dropout_rate** (*int*) -- Dropout rate for the encoder layer. *Default is 0.1*.
     * **momentum** (*int*) -- momentum param for batch norm for the encoder layer. *Default is 0.001*.
     * **pretraining_ratio** (*int*) -- rate of feature masking on self-supervised training. 
       *Default is 0.1*.
-    * **hidden_latent_dim** (*int*) -- Hidden layer size. *Default is 64*.
-    * **encoder_steps** (*int*) -- Number of sucessive steps in the newtork (usually 
-      between 3 and 10), only when encoder is tabnet. *Default is 3*.
+    * **noise_level** (*float*) -- noise level on masking process, if 0 then data is masked else noise is added. *Default is 0*.
     * **max_epochs** (*int*) -- Number of epochs for training. *Default is 500*.
+    * **random_seed** (*int*) -- Random seed. *Default is 42*.
     * **patience** (*int*) -- Number of validation checks with no improvement after which training will be stopped.
       *Default is 10*.    
     * **min_delta** (*float*) -- Minimum change in the monitored quantity (loss) to qualify as an improvement,
@@ -125,6 +125,16 @@ it were in the body of a POST method.
   Parameters defining how datetime values will be processed.
     
   * **embedding_dim** (*int*) -- Initial embedding dimension. *Default is 32*.
+
+* **features** (*dict*) -- (*Only for db_type Supervised and Unsupervised*) Alternative to specify 
+  the preprocessing for each feature rather than for each type of feature. Unspecified columns will 
+  follow the num_process, cat_process or datetime_process:
+  
+  * **dtype** (*str*) -- (*required*) possible values are "int32", "int64", "float32", "float64", "category" or "datetime"
+  * **embedding_dim** (*int*) -- Initial embedding dimension. *Default is 128*.
+  * **fill_value** (*str, float or int*) -- (*required*) value to fill nans for dtype numerical/category.
+  * **scaler** (*str*) -- (*required*) scaling for dtype numerical features.
+  * **min_freq** (*int*) -- categories with less than that will be discarted, for dtype category. *Default is 0*.
 
 * **mycelia_bases** (*list of dicts*) -- (*Only for db_type Supervised and Unsupervised*) Related already 
   processed data that will be used in the setup of this new one. If a column has id values that 
