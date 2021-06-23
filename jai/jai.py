@@ -560,7 +560,8 @@ class Jai(BaseJai):
                  data,
                  batch_size: int = 16384,
                  frequency_seconds: int = 1,
-                 filter_name: str = None):
+                 filter_name: str = None,
+                 predict: bool = False):
         """
         Insert raw data and extract their latent representation.
 
@@ -603,7 +604,7 @@ class Jai(BaseJai):
                                              batch_size=batch_size,
                                              db_type=db_type,
                                              filter_name=filter_name,
-                                             predict=False)
+                                             predict=predict)
 
         # check if we inserted everything we were supposed to
         self._check_ids_consistency(name=name, data=data)
@@ -620,14 +621,16 @@ class Jai(BaseJai):
                name: str,
                data,
                batch_size: int = 16384,
-               frequency_seconds: int = 1):
+               frequency_seconds: int = 1,
+               predict: bool = False):
         """
         Another name for add_data
         """
         return self.add_data(name=name,
                              data=data,
                              batch_size=batch_size,
-                             frequency_seconds=frequency_seconds)
+                             frequency_seconds=frequency_seconds,
+                             predict=predict)
 
     def _insert_data(self,
                      data,
