@@ -289,8 +289,8 @@ class Jai:
         try:
             res_json = response.json()
             if isinstance(res_json, dict):
-                detail = res_json.get(
-                    'detail', res_json.get('message', response.text))
+                detail = res_json.get('detail',
+                                      res_json.get('message', response.text))
             else:
                 detail = response.text
 
