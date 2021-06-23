@@ -92,7 +92,7 @@ def test_similar_id_exceptions():
 
 
 def test_similar_json_exception():
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
         j._similar_json("test", data_json=dict())
 
@@ -101,7 +101,7 @@ def test_invalid_name_exception():
     with pytest.raises(ValueError):
         # we need to use a valid URL for this one
         j = Jai(url=VALID_URL, auth_key=AUTH_KEY)
-        j._get_dtype("test")
+        j.get_dtype("test")
 
 
 def test_check_dtype_and_clean_exception():
@@ -111,7 +111,7 @@ def test_check_dtype_and_clean_exception():
 
 
 def test_predict_exception():
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
         j._predict(name="test", data_json=dict())
 
@@ -123,7 +123,7 @@ def test_append_exception():
 
 
 def test_insert_json_exception():
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
         j._insert_json(name="test", df_json=dict())
 
@@ -137,7 +137,7 @@ def test_check_kwargs_exception():
 def test_setup_database_exception():
     with pytest.raises(ValueError):
         j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
-        j._setup_database(name="test", db_type="SelfSupervised")
+        j._setup(name="test", body={"db_type": "SelfSupervised"})
 
 
 def test_embedding_exception():

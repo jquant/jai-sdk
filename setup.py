@@ -10,7 +10,7 @@ with open("requirements.txt", "r") as f:
 
 setup(
     name="jai-sdk",
-    version="0.11.3",
+    version="0.12.0",
     author="JQuant",
     author_email="jedis@jquant.com.br",
     description="JAI - Trust your data",
@@ -24,6 +24,8 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
     python_requires=">=3.7",
     install_requires=dependencies,

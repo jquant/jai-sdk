@@ -2,6 +2,12 @@ name: YAPF Formatter
 
 on:
   push:
+    branches-ignore:
+      - "master"
+    tags-ignore:
+      - v*
+      - v*.*
+      - v*.*.*
     paths:
       - "**.py"
 
