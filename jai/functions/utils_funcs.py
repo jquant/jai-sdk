@@ -108,7 +108,8 @@ def data2json(data, dtype, filter_name=None, predict=False):
                     "Data must be a DataFrame with 1 column or 2 columns with one named 'id'."
                 )
         else:
-            raise NotImplementedError(f"type {type(data)} is not implemented.")
+            raise NotImplementedError(
+                f"type `{data.__class__.__name__}` is not implemented.")
     elif dtype == PossibleDtypes.selfsupervised:
         if isinstance(data, pd.DataFrame):
             if (data.columns != 'id').sum() >= 2:
@@ -118,7 +119,8 @@ def data2json(data, dtype, filter_name=None, predict=False):
                     f"Data must be a DataFrame with at least 2 columns other than 'id'. Current column(s):\n{data.columns.tolist()}"
                 )
         else:
-            raise NotImplementedError(f"type {type(data)} is not implemented.")
+            raise NotImplementedError(
+                f"type `{data.__class__.__name__}` is not implemented.")
     elif dtype == PossibleDtypes.supervised:
         if isinstance(data, pd.DataFrame):
             if ((data.columns != 'id').sum() >= 2 and not predict) or (
@@ -129,7 +131,8 @@ def data2json(data, dtype, filter_name=None, predict=False):
                     f"Data must be a DataFrame with at least {2 - predict} column(s) other than 'id'. Current column(s):\n{data.columns.tolist()}"
                 )
         else:
-            raise NotImplementedError(f"type {type(data)} is not implemented.")
+            raise NotImplementedError(
+                f"type `{data.__class__.__name__}` is not implemented.")
     elif dtype == "Unsupervised":
         raise ValueError(
             f"'Unsupervised' type has been replaced with {PossibleDtypes.selfsupervised} since version 0.6.0"

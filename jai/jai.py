@@ -375,7 +375,7 @@ class Jai(BaseJai):
             raise ValueError("predict is only available to dtype Supervised.")
         if not isinstance(data, (pd.Series, pd.DataFrame)):
             raise ValueError(
-                f"data must be a pandas Series or DataFrame. (data type {type(data)})"
+                f"data must be a pandas Series or DataFrame. (data type `{data.__class__.__name__}`)"
             )
 
         results = []
@@ -538,22 +538,11 @@ class Jai(BaseJai):
 
         return insert_responses, setup_response
 
-    def fit(self,
-            name: str,
-            data,
-            db_type: str,
-            batch_size: int = 16384,
-            frequency_seconds: int = 1,
-            **kwargs):
+    def fit(self, *args, **kwargs):
         """
         Another name for setup.
         """
-        return self.setup(name=name,
-                          data=data,
-                          db_type=db_type,
-                          batch_size=batch_size,
-                          frequency_seconds=frequency_seconds,
-                          **kwargs)
+        return self.setup(*args, **kwargs)
 
     def add_data(self,
                  name: str,
@@ -831,7 +820,8 @@ class Jai(BaseJai):
         if isinstance(data, (list, np.ndarray)):
             data = pd.Series(data)
         elif not isinstance(data, (pd.Series, pd.DataFrame)):
-            raise TypeError(f"Inserted data is of type {type(data)},\
+            raise TypeError(
+                f"Inserted data is of type `{data.__class__.__name__}`,\
  but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame")
         if db_type in [
                 PossibleDtypes.text,
@@ -1102,7 +1092,8 @@ class Jai(BaseJai):
         if isinstance(data, pd.Series):
             data = data.copy()
         else:
-            raise ValueError(f"data must be a Series. data is {type(data)}")
+            raise ValueError(
+                f"data must be a Series. data is `{data.__class__.__name__}`")
 
         ids = data.index
 

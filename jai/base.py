@@ -170,7 +170,8 @@ class BaseJai(object):
 
         if not isinstance(id_item, list):
             raise TypeError(
-                f"id_item param must be int or list, {type(id_item)} found.")
+                f"id_item param must be int or list, `{id_item.__class__.__name__}` found."
+            )
 
         filtering = "" if filters is None else "".join(
             ["&filters=" + s for s in filters])
