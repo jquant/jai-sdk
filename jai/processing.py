@@ -128,12 +128,7 @@ def process_predict(predicts, digits=2, percentage=True):
     ----------
     predicts : List of Dicts.
         output from predict methods.
-
-    Raises
-    ------
-    NotImplementedError
-        If unexpected predict type. {type(example)}
-
+        
     Returns
     -------
     list

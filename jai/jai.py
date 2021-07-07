@@ -6,6 +6,7 @@ import requests
 import time
 
 from io import BytesIO
+from .base import BaseJai
 from .processing import (process_similar, process_resolution, process_predict)
 from .functions.utils_funcs import data2json, pbar_steps
 from .functions.classes import PossibleDtypes, Mode
@@ -19,7 +20,7 @@ from tqdm import trange, tqdm
 __all__ = ["Jai"]
 
 
-class Jai:
+class Jai(BaseJai):
     """
     Base class for communication with the Mycelia API.
 
@@ -28,12 +29,14 @@ class Jai:
     and more.
 
     """
-    def __init__(self, auth_key: str, url: str = None):
+    def __init__(self,
+                 auth_key: str = None,
+                 url: str = None,
+                 var_env: str = "JAI_SECRET"):
         """
         Inicialize the Jai class.
 
         An authorization key is needed to use the Mycelia API.
-
 
         Parameters
         ----------
@@ -47,20 +50,7 @@ class Jai:
             None
 
         """
-        if url is None:
-            self.__url = "https://mycelia.azure-api.net"
-            self.header = {"Auth": auth_key}
-        else:
-            self.__url = url[:-1] if url.endswith("/") else url
-            self.header = {"company-key": auth_key}
-
-    @property
-    def url(self):
-        """
-        API Url that the class uses for requests made.
-
-        """
-        return self.__url
+        super(Jai, self).__init__(auth_key, url, var_env)
 
     @property
     def names(self):
@@ -77,13 +67,7 @@ class Jai:
         ['jai_database', 'jai_selfsupervised', 'jai_supervised']
 
         """
-        response = requests.get(url=self.url + "/info?mode=names",
-                                headers=self.header)
-
-        if response.status_code == 200:
-            return sorted(response.json())
-        else:
-            return self.assert_status_code(response)
+        return sorted(self._info(mode="names"))
 
     @property
     def info(self):
@@ -104,21 +88,14 @@ class Jai:
         1            jai_selfsupervised    SelfSupervised
         2                jai_supervised        Supervised
         """
-        response = requests.get(url=self.url +
-                                "/info?mode=complete&get_size=true",
-                                headers=self.header)
-
-        if response.status_code == 200:
-            df = pd.DataFrame(response.json()).rename(
-                columns={
-                    "db_name": "name",
-                    "db_type": "type",
-                    "db_version": "last modified",
-                    "db_parents": "dependencies",
-                })
-            return df.sort_values(by="name")
-        else:
-            return self.assert_status_code(response)
+        df = pd.DataFrame(self._info()).rename(
+            columns={
+                "db_name": "name",
+                "db_type": "type",
+                "db_version": "last modified",
+                "db_parents": "dependencies",
+            })
+        return df.sort_values(by="name")
 
     @property
     def status(self, max_tries=5, patience=25):
@@ -139,21 +116,66 @@ class Jai:
             "Description": "Training of database YOUR_DATABASE has ended."
         }
         """
-        response = requests.get(self.url + "/status", headers=self.header)
         tries = 0
-
         while tries < max_tries:
-            if response.status_code == 200:
-                return response.json()
-            time.sleep(patience // max_tries)
-            tries += 1
-            response = requests.get(self.url + "/status", headers=self.header)
-        return self.assert_status_code(response)
+            try:
+                return self._status()
+            except:
+                time.sleep(patience // max_tries)
+                tries += 1
+        return self._status()
 
-    def _delete_status(self, name):
-        response = requests.delete(self.url + f"/status?db_name={name}",
-                                   headers=self.header)
-        return response.text
+    def generate_name(self,
+                      length: int = 8,
+                      prefix: str = "",
+                      suffix: str = ""):
+        """
+
+        Generate a random string. You can pass a prefix and/or suffix. In this case,
+        the generated string will be a concatenation of `prefix + random + suffix`.
+
+        Args
+        ----
+        length : int
+            Length for the desired string. `Default is 8`.
+        prefix : str
+            Prefix of your string. `Default is empty`.
+        suffix  : str
+            Suffix of your string. `Default is empty`.
+
+        Returns
+        -------
+        str
+            A random string.
+
+        Example
+        ----------
+        >>> j.generate_name()
+        13636a8b
+        >>> j.generate_name(length=16, prefix="company")
+        companyb8bbd445d
+
+        """
+        len_prefix = len(prefix)
+        len_suffix = len(suffix)
+
+        if length <= len_prefix + len_suffix:
+            raise ValueError(
+                f"length ({length}) should be larger than {len_prefix+len_suffix} for prefix and suffix inputed."
+            )
+        if length >= 32:
+            raise ValueError(f"length ({length}) should be smaller than 32.")
+
+        length -= len_prefix + len_suffix
+        code = secrets.token_hex(length)[:length].lower()
+        name = str(prefix) + str(code) + str(suffix)
+        names = self.names
+
+        while name in names:
+            code = secrets.token_hex(length)[:length].lower()
+            name = str(prefix) + str(code) + str(suffix)
+
+        return name
 
     @staticmethod
     def get_auth_key(email: str,
@@ -214,98 +236,8 @@ class Jai:
         ...
         [-0.03121682 -0.2101511   0.4893339  ...  0.00758727  0.15916921  0.1226602 ]]
         """
-        response = requests.get(self.url + f"/key/{name}", headers=self.header)
-        if response.status_code == 200:
-            r = requests.get(response.json())
-            return np.load(BytesIO(r.content))
-        else:
-            return self.assert_status_code(response)
-
-    def generate_name(self,
-                      length: int = 8,
-                      prefix: str = "",
-                      suffix: str = ""):
-        """
-
-        Generate a random string. You can pass a prefix and/or suffix. In this case,
-        the generated string will be a concatenation of `prefix + random + suffix`.
-
-        Args
-        ----
-        length : int
-            Length for the desired string. `Default is 8`.
-        prefix : str
-            Prefix of your string. `Default is empty`.
-        suffix  : str
-            Suffix of your string. `Default is empty`.
-
-        Returns
-        -------
-        str
-            A random string.
-
-        Example
-        ----------
-        >>> j.generate_name()
-        13636a8b
-        >>> j.generate_name(length=16, prefix="company")
-        companyb8bbd445d
-
-        """
-        len_prefix = len(prefix)
-        len_suffix = len(suffix)
-
-        if length <= len_prefix + len_suffix:
-            raise ValueError(
-                f"length ({length}) should be larger than {len_prefix+len_suffix} for prefix and suffix inputed."
-            )
-        if length >= 32:
-            raise ValueError(f"length ({length}) should be smaller than 32.")
-
-        length -= len_prefix + len_suffix
-        code = secrets.token_hex(length)[:length].lower()
-        name = str(prefix) + str(code) + str(suffix)
-        names = self.names
-
-        while name in names:
-            code = secrets.token_hex(length)[:length].lower()
-            name = str(prefix) + str(code) + str(suffix)
-
-        return name
-
-    def assert_status_code(self, response):
-        """
-        Method to process responses with unexpected response codes.
-
-        Args
-        ----
-        response: response
-            Response with an unexpeted code.
-
-        """
-        # find a way to process this
-        # what errors to raise, etc.
-        message = f"Something went wrong.\n\nSTATUS: {response.status_code}\n"
-        try:
-            res_json = response.json()
-            if isinstance(res_json, dict):
-                detail = res_json.get('message',
-                                      res_json.get('detail', response.text))
-            else:
-                detail = response.text
-        except:
-            detail = response.text
-
-        if "Error: " in detail:
-            error, msg = detail.split(": ", 1)
-            try:
-                raise eval(error)(message + msg)
-            except NameError:
-                raise eval("exceptions." + error)(message + msg)
-            except:
-                raise ValueError(message + response.text)
-        else:
-            raise ValueError(message + detail)
+        r = requests.get(self._download_vectors(name))
+        return np.load(BytesIO(r.content))
 
     def filters(self, name):
         """
@@ -321,13 +253,7 @@ class Jai:
         response : list of strings
             List of valid filter values.
         """
-        response = requests.get(self.url + f"/filters/{name}",
-                                headers=self.header)
-
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return self.assert_status_code(response)
+        return self._filters(name)
 
     def similar(self,
                 name: str,
@@ -372,7 +298,7 @@ class Jai:
         45568    6995.6
          8382    7293.2
         """
-        dtype = self._get_dtype(name)
+        dtype = self.get_dtype(name)
 
         if isinstance(data, list):
             data = np.array(data)
@@ -403,88 +329,6 @@ class Jai:
                                          filters=filters)
             results.extend(res["similarity"])
         return results
-
-    def _similar_id(self,
-                    name: str,
-                    id_item: list,
-                    top_k: int = 5,
-                    filters=None):
-        """
-        Creates a list of dicts, with the index and distance of the k items most similars given an id.
-        This is a protected method.
-
-        Args
-        ----
-        name : str
-            String with the name of a database in your JAI environment.
-
-        id_item : list
-            List of ids of the item the user is looking for.
-
-        top_k : int
-            Number of k similar items we want to return. `Default is 5`.
-
-        Return
-        ------
-        response : dict
-            Dictionary with the index and distance of `the k most similar items`.
-        """
-
-        if not isinstance(id_item, list):
-            raise TypeError(
-                f"id_item param must be int or list, {type(id_item)} found.")
-
-        filtering = "" if filters is None else "".join(
-            ["&filters=" + s for s in filters])
-        url = self.url + f"/similar/id/{name}?top_k={top_k}" + filtering
-        response = requests.put(
-            url,
-            headers=self.header,
-            json=id_item,
-        )
-
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return self.assert_status_code(response)
-
-    def _similar_json(self,
-                      name: str,
-                      data_json,
-                      top_k: int = 5,
-                      filters=None):
-        """
-        Creates a list of dicts, with the index and distance of the k items most similars given a JSON data entry.
-        This is a protected method
-
-        Args
-        ----
-        name : str
-            String with the name of a database in your JAI environment.
-
-        data_json : dict (JSON)
-            Data in JSON format. Each input in the dictionary will be used to search for the `top_k` most
-            similar entries in the database.
-
-        top_k : int
-            Number of k similar items we want to return. `Default is 5`.
-
-        Return
-        ------
-        response : dict
-            Dictionary with the index and distance of `the k most similar items`.
-        """
-        filtering = "" if filters is None else "".join(
-            ["&filters=" + s for s in filters])
-        url = self.url + f"/similar/data/{name}?top_k={top_k}" + filtering
-
-        response = requests.put(url,
-                                headers=self.header,
-                                json=json.loads(data_json))
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return self.assert_status_code(response)
 
     def predict(self,
                 name: str,
@@ -526,12 +370,12 @@ class Jai:
         >>> print(preds)
         [{"id": 0 , "predict"; {"class0": 0.1, "class1": 0.6, "class2": 0.3}}]
         """
-        dtype = self._get_dtype(name)
+        dtype = self.get_dtype(name)
         if dtype != "Supervised":
             raise ValueError("predict is only available to dtype Supervised.")
         if not isinstance(data, (pd.Series, pd.DataFrame)):
             raise ValueError(
-                f"data must be a pandas Series or DataFrame. (data type {type(data)})"
+                f"data must be a pandas Series or DataFrame. (data type `{data.__class__.__name__}`)"
             )
 
         results = []
@@ -543,36 +387,6 @@ class Jai:
             results.extend(res)
 
         return process_predict(results) if as_frame else results
-
-    def _predict(self, name: str, data_json, predict_proba: bool = False):
-        """
-        Predict the output of new data for a given database by calling its
-        respecive API method. This is a protected method.
-
-        Args
-        ----
-        name : str
-            String with the name of a database in your JAI environment.
-        data_json : JSON file (dict)
-            Data to be inferred by the previosly trained model.
-        predict_proba : bool
-            Whether or not to return the probabilities of each prediction. `Default is False`.
-
-        Return
-        -------
-        results : dict
-            Dictionary of predctions for the data passed as parameter.
-        """
-        url = self.url + \
-            f"/predict/{name}?predict_proba={predict_proba}"
-
-        response = requests.put(url,
-                                headers=self.header,
-                                json=json.loads(data_json))
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return self.assert_status_code(response)
 
     def ids(self, name: str, mode: Mode = "simple"):
         """
@@ -595,12 +409,7 @@ class Jai:
         >>> print(ids)
         ['891 items from 0 to 890']
         """
-        response = requests.get(self.url + f"/id/{name}?mode={mode}",
-                                headers=self.header)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return self.assert_status_code(response)
+        return self._ids(name, mode)
 
     def is_valid(self, name: str):
         """
@@ -624,12 +433,7 @@ class Jai:
         >>> print(check_valid)
         True
         """
-        response = requests.get(self.url + f"/validation/{name}",
-                                headers=self.header)
-        if response.status_code == 200:
-            return response.json()["value"]
-        else:
-            return self.assert_status_code(response)
+        return self._is_valid(name)["value"]
 
     def setup(self,
               name: str,
@@ -681,7 +485,8 @@ class Jai:
             "Description": "Training of database chosen_name has started."
         }
         """
-        if kwargs.get("overwrite", False) and name in self.names:
+        overwrite = kwargs.get("overwrite", False)
+        if overwrite and name in self.names:
             self.delete_database(name)
         elif name in self.names:
             raise KeyError(
@@ -705,7 +510,8 @@ class Jai:
         self._check_ids_consistency(name=name, data=data)
 
         # train model
-        setup_response = self._setup_database(name, db_type, **kwargs)
+        body = self._check_kwargs(db_type=db_type, **kwargs)
+        setup_response = self._setup(name, body, overwrite)
         if "kwargs" in setup_response:
             print("\nRecognized setup args:")
             for key, value in setup_response["kwargs"].items():
@@ -713,7 +519,7 @@ class Jai:
                 if isinstance(kwarg_input, dict):
                     value = json.loads(value)
                     intersection = kwarg_input.keys() & value.keys()
-                    m = max([len(s) for s in intersection])
+                    m = max([len(s) for s in intersection] + [0])
                     value = "".join(
                         [f"\n  * {k:{m}s}: {value[k]}" for k in intersection])
                 print(f"- {key}: {value}")
@@ -732,22 +538,11 @@ class Jai:
 
         return insert_responses, setup_response
 
-    def fit(self,
-            name: str,
-            data,
-            db_type: str,
-            batch_size: int = 16384,
-            frequency_seconds: int = 1,
-            **kwargs):
+    def fit(self, *args, **kwargs):
         """
         Another name for setup.
         """
-        return self.setup(name=name,
-                          data=data,
-                          db_type=db_type,
-                          batch_size=batch_size,
-                          frequency_seconds=frequency_seconds,
-                          **kwargs)
+        return self.setup(*args, **kwargs)
 
     def add_data(self,
                  name: str,
@@ -787,7 +582,7 @@ class Jai:
         self.delete_raw_data(name)
 
         # get the db_type
-        db_type = self._get_dtype(name)
+        db_type = self.get_dtype(name)
 
         # make sure our data has the correct type and is free of NAs
         data = self._check_dtype_and_clean(data=data, db_type=db_type)
@@ -826,35 +621,13 @@ class Jai:
                              frequency_seconds=frequency_seconds,
                              predict=predict)
 
-    def _append(self, name: str):
-        """
-        Add data to a database that has been previously trained.
-        This is a protected method.
-
-        Args
-        ----
-        name : str
-            String with the name of a database in your JAI environment.
-
-        Return
-        ------
-        response : dict
-            Dictionary with the API response.
-        """
-        response = requests.patch(self.url + f"/data/{name}",
-                                  headers=self.header)
-        if response.status_code == 202:
-            return response.json()
-        else:
-            return self.assert_status_code(response)
-
     def _insert_data(self,
                      data,
                      name,
                      db_type,
                      batch_size,
                      filter_name: str = None,
-                     predict=False):
+                     predict: bool = False):
         """
         Insert raw data for training. This is a protected method.
 
@@ -887,32 +660,6 @@ class Jai:
             insert_responses[i] = self._insert_json(name, data_json,
                                                     filter_name)
         return insert_responses
-
-    def _insert_json(self, name: str, df_json, filter_name: str = None):
-        """
-        Insert data in JSON format. This is a protected method.
-
-        Args
-        ----
-        name : str
-            String with the name of a database in your JAI environment.
-        df_json : dict
-            Data in JSON format.
-
-        Return
-        ------
-        response : dict
-            Dictionary with the API response.
-        """
-        filtering = "" if filter_name is None else f"?filter_name={filter_name}"
-        url = self.url + f"/data/{name}" + filtering
-        response = requests.post(url,
-                                 headers=self.header,
-                                 json=json.loads(df_json))
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return self.assert_status_code(response)
 
     def _check_kwargs(self, db_type, **kwargs):
         """
@@ -956,40 +703,6 @@ class Jai:
         body["db_type"] = db_type
         return body
 
-    def _setup_database(self, name: str, db_type, overwrite=False, **kwargs):
-        """
-        Call the API method for database setup.
-        This is a protected method.
-
-        Args
-        ----
-        name : str
-            String with the name of a database in your JAI environment.
-        db_type : str
-            Database type (Supervised, SelfSupervised, Text...)
-        overwrite : bool
-            [Optional] Whether of not to overwrite the given database. `Default is False`.
-        **kwargs:
-            Any parameters the user wants to (or needs to) set for the given datase. Please
-            refer to the API methods to see the possible arguments.
-
-        Return
-        -------
-        response : dict
-            Dictionary with the API response.
-        """
-        body = self._check_kwargs(db_type=db_type, **kwargs)
-        response = requests.post(
-            self.url + f"/setup/{name}?overwrite={overwrite}",
-            headers=self.header,
-            json=body,
-        )
-
-        if response.status_code == 201:
-            return response.json()
-        else:
-            return self.assert_status_code(response)
-
     def report(self, name, verbose: int = 2, return_report: bool = False):
         """
         Get a report about the training model.
@@ -1009,39 +722,34 @@ class Jai:
             Dictionary with the information.
 
         """
-        dtype = self._get_dtype(name)
+        dtype = self.get_dtype(name)
         if dtype not in [
                 PossibleDtypes.selfsupervised, PossibleDtypes.supervised
         ]:
             return None
-        response = requests.get(self.url + f"/report/{name}?verbose={verbose}",
-                                headers=self.header)
 
-        if response.status_code == 200:
-            result = response.json()
-            if return_report:
-                return result
+        result = self._report(name, verbose)
+        if return_report:
+            return result
 
-            if 'Model Training' in result.keys():
-                plots = result['Model Training']
+        if 'Model Training' in result.keys():
+            plots = result['Model Training']
 
-                plt.plot(*plots['train'])
-                plt.plot(*plots['val'])
-                plt.title("Training Losses")
-                plt.legend(["train loss", "val loss"])
-                plt.xlabel("epoch")
-                plt.show()
+            plt.plot(*plots['train'])
+            plt.plot(*plots['val'])
+            plt.title("Training Losses")
+            plt.legend(["train loss", "val loss"])
+            plt.xlabel("epoch")
+            plt.show()
 
-            print("\nSetup Report:")
-            print(result['Model Evaluation']
-                  ) if 'Model Evaluation' in result.keys() else None
-            print()
-            print(result["Loading from checkpoint"].split("\n")
-                  [1]) if 'Loading from checkpoint' in result.keys() else None
-        else:
-            return self.assert_status_code(response)
+        print("\nSetup Report:")
+        print(result['Model Evaluation']) if 'Model Evaluation' in result.keys(
+        ) else None
+        print()
+        print(result["Loading from checkpoint"].split("\n")
+              [1]) if 'Loading from checkpoint' in result.keys() else None
 
-    def _get_dtype(self, name):
+    def get_dtype(self, name):
         """
         Return the database type.
 
@@ -1066,30 +774,6 @@ class Jai:
             return dtypes.loc[dtypes["name"] == name, "type"].values[0]
         else:
             raise ValueError(f"{name} is not a valid name.")
-
-    def _temp_ids(self, name: str, mode: Mode = "simple"):
-        """
-        Get id information of a RAW database (i.e., before training). This is a protected method
-
-        Args
-        ----
-        name : str
-            String with the name of a database in your JAI environment.
-        mode : str, optional
-            Level of detail to return. Possible values are 'simple', 'summarized' or 'complete'.
-
-        Return
-        -------
-        response: list
-            List with the actual ids (mode: 'complete') or a summary of ids
-            ('simple'/'summarized') of the given database.
-        """
-        response = requests.get(self.url + f"/setup/ids/{name}?mode={mode}",
-                                headers=self.header)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return self.assert_status_code(response)
 
     def _check_ids_consistency(self, name, data):
         """
@@ -1136,7 +820,8 @@ class Jai:
         if isinstance(data, (list, np.ndarray)):
             data = pd.Series(data)
         elif not isinstance(data, (pd.Series, pd.DataFrame)):
-            raise TypeError(f"Inserted data is of type {type(data)},\
+            raise TypeError(
+                f"Inserted data is of type `{data.__class__.__name__}`,\
  but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame")
         if db_type in [
                 PossibleDtypes.text,
@@ -1174,18 +859,12 @@ class Jai:
         >>> print(fields)
         {'id': 0, 'feature1': 0.01, 'feature2': 'string', 'feature3': 0}
         """
-        dtype = self._get_dtype(name)
+        dtype = self.get_dtype(name)
         if dtype != PossibleDtypes.selfsupervised and dtype != PossibleDtypes.supervised:
             raise ValueError(
                 "'fields' method is only available to dtype SelSupervised and Supervised."
             )
-
-        response = requests.get(self.url + f"/fields/{name}",
-                                headers=self.header)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return self.assert_status_code(response)
+        return self._fields(name)
 
     def wait_setup(self, name: str, frequency_seconds: int = 1):
         """
@@ -1269,10 +948,7 @@ class Jai:
 
         except KeyboardInterrupt:
             print("\n\nInterruption caught!\n\n")
-            response = requests.post(self.url + f'/cancel/{name}',
-                                     headers=self.header)
-            print(f"Cancel request status: {response.status_code}")
-            raise KeyboardInterrupt(response.text)
+            raise KeyboardInterrupt(self._cancel_setup(name))
 
         self._delete_status(name)
         return status
@@ -1294,13 +970,7 @@ class Jai:
         response : dict
             Dictionary with the API response.
         """
-        response = requests.delete(self.url + f"/entity/{name}",
-                                   headers=self.header,
-                                   json=ids)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return self.assert_status_code(response)
+        return self._delete_ids(name, ids)
 
     def delete_raw_data(self, name: str):
         """
@@ -1323,12 +993,7 @@ class Jai:
         >>> j.delete_raw_data(name=name)
         'All raw data from database 'chosen_name' was deleted!'
         """
-        response = requests.delete(self.url + f"/data/{name}",
-                                   headers=self.header)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return self.assert_status_code(response)
+        return self._delete_raw_data(name)
 
     def delete_database(self, name: str):
         """
@@ -1351,12 +1016,7 @@ class Jai:
         >>> j.delete_database(name=name)
         'Bombs away! We nuked database chosen_name!'
         """
-        response = requests.delete(self.url + f"/database/{name}",
-                                   headers=self.header)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return self.assert_status_code(response)
+        return self._delete_database(name)
 
     # Helper function to decide which kind of text model to use
     def _resolve_db_type(self, db_type, col):
@@ -1432,7 +1092,8 @@ class Jai:
         if isinstance(data, pd.Series):
             data = data.copy()
         else:
-            raise ValueError(f"data must be a Series. data is {type(data)}")
+            raise ValueError(
+                f"data must be a Series. data is `{data.__class__.__name__}`")
 
         ids = data.index
 
