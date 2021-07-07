@@ -30,6 +30,7 @@ def raise_status_error(code):
             message = f"Something went wrong.\n\nSTATUS: {response.status_code}\n"
             try:
                 res_json = response.json()
+                print(res_json)
                 if isinstance(res_json, dict):
                     detail = res_json.get(
                         'message', res_json.get('detail', response.text))
@@ -37,6 +38,8 @@ def raise_status_error(code):
                     detail = response.text
             except:
                 detail = response.text
+
+            detail = str(detail)
 
             if "Error: " in detail:
                 error, msg = detail.split(": ", 1)
