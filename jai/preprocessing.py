@@ -26,12 +26,12 @@ def split(dataframe, columns):
     """
     dataframe = dataframe.copy()
     if isinstance(columns, str):
-        loop = {columns: None}
+        columns = {columns: None}
     elif isinstance(columns, list):
-        loop = {col: None for col in columns}
+        columns = {col: None for col in columns}
 
     bases = []
-    for col, sep in loop.items():
+    for col, sep in columns.items():
         if sep is not None:
             values = dataframe[col].str.split(sep).explode().str.strip()
         else:
