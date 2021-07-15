@@ -3,6 +3,8 @@ import json
 import requests
 import functools
 
+from copy import copy
+
 from .functions.classes import Mode
 from .functions import exceptions
 
@@ -215,7 +217,7 @@ class BaseJai(object):
         filtering = "" if filters is None else "".join(
             ["&filters=" + s for s in filters])
         url = self.url + f"/similar/data/{name}?top_k={top_k}" + filtering
-        header = self.header
+        header = copy(self.header)
         header['Content-Type'] = "application/json"
         return requests.put(url, headers=header, data=data_json)
 
@@ -242,7 +244,7 @@ class BaseJai(object):
         url = self.url + \
             f"/predict/{name}?predict_proba={predict_proba}"
 
-        header = self.header
+        header = copy(self.header)
         header['Content-Type'] = "application/json"
         return requests.put(url, headers=header, data=data_json)
 
@@ -326,7 +328,8 @@ class BaseJai(object):
         """
         filtering = "" if filter_name is None else f"?filter_name={filter_name}"
         url = self.url + f"/data/{name}" + filtering
-        header = self.header
+
+        header = copy(self.header)
         header['Content-Type'] = "application/json"
         return requests.post(url, headers=header, data=data_json)
 
