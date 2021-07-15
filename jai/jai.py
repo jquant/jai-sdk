@@ -735,10 +735,10 @@ class Jai(BaseJai):
         if 'Model Training' in result.keys():
             plots = result['Model Training']
 
-            plt.plot(*plots['train'])
-            plt.plot(*plots['val'])
+            plt.plot(*plots['train'], label="train loss")
+            plt.plot(*plots['val'], label="val loss")
             plt.title("Training Losses")
-            plt.legend(["train loss", "val loss"])
+            plt.legend()
             plt.xlabel("epoch")
             plt.show()
 

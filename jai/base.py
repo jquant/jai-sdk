@@ -215,10 +215,9 @@ class BaseJai(object):
         filtering = "" if filters is None else "".join(
             ["&filters=" + s for s in filters])
         url = self.url + f"/similar/data/{name}?top_k={top_k}" + filtering
-
-        return requests.put(url,
-                            headers=self.header,
-                            json=json.loads(data_json))
+        header = self.header
+        header['Content-Type'] = "application/json"
+        return requests.put(url, headers=header, data=data_json)
 
     @raise_status_error(200)
     def _predict(self, name: str, data_json, predict_proba: bool = False):
@@ -243,9 +242,9 @@ class BaseJai(object):
         url = self.url + \
             f"/predict/{name}?predict_proba={predict_proba}"
 
-        return requests.put(url,
-                            headers=self.header,
-                            json=json.loads(data_json))
+        header = self.header
+        header['Content-Type'] = "application/json"
+        return requests.put(url, headers=header, data=data_json)
 
     @raise_status_error(200)
     def _ids(self, name: str, mode: Mode = "simple"):
@@ -327,9 +326,9 @@ class BaseJai(object):
         """
         filtering = "" if filter_name is None else f"?filter_name={filter_name}"
         url = self.url + f"/data/{name}" + filtering
-        return requests.post(url,
-                             headers=self.header,
-                             json=json.loads(data_json))
+        header = self.header
+        header['Content-Type'] = "application/json"
+        return requests.post(url, headers=header, data=data_json)
 
     @raise_status_error(201)
     def _setup(self, name: str, body, overwrite=False):
