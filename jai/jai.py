@@ -866,6 +866,22 @@ class Jai(BaseJai):
             )
         return self._fields(name)
 
+    def describe(self, name: str):
+        """
+        Get the database hyperparameters and parameters of a specific database.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Return
+        ------
+        response : dict
+            Dictionary with database description.
+        """
+        return self._describe(name)
+
     def wait_setup(self, name: str, frequency_seconds: int = 1):
         """
         Wait for the setup (model training) to finish

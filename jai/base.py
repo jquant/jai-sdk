@@ -425,6 +425,24 @@ class BaseJai(object):
         return requests.get(self.url + f"/fields/{name}", headers=self.header)
 
     @raise_status_error(200)
+    def _describe(self, name: str):
+        """
+        Get the database hyperparameters and parameters of a specific database.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Return
+        ------
+        response : dict
+            Dictionary with database description.
+        """
+        return requests.get(self.url + f"/describe/{name}",
+                            headers=self.header)
+
+    @raise_status_error(200)
     def _cancel_setup(self, name: str):
         """
         Wait for the setup (model training) to finish
