@@ -44,7 +44,7 @@ def pbar_steps(status: List = None, step: int = 0):
 def list2json(data_list, name):
     index = pd.Index(range(len(data_list)), name='id')
     series = pd.Series(data_list, index=index, name=name)
-    return series.reset_index().to_json(orient='records')
+    return series.reset_index().to_json(orient='records', date_format="iso")
 
 
 def series2json(data_series, name):
@@ -53,7 +53,8 @@ def series2json(data_series, name):
     data_series.name = name
     if data_series.index.duplicated().any():
         raise ValueError("Index must not contain duplicated values.")
-    return data_series.reset_index().to_json(orient='records')
+    return data_series.reset_index().to_json(orient='records',
+                                             date_format="iso")
 
 
 def df2json(dataframe):
@@ -63,7 +64,7 @@ def df2json(dataframe):
         dataframe = dataframe.reset_index()
     if dataframe['id'].duplicated().any():
         raise ValueError("Index must not contain duplicated values.")
-    return dataframe.to_json(orient='records')
+    return dataframe.to_json(orient='records', date_format="iso")
 
 
 def data2json(data, dtype, filter_name=None, predict=False):
@@ -108,7 +109,8 @@ def data2json(data, dtype, filter_name=None, predict=False):
                     "Data must be a DataFrame with 1 column or 2 columns with one named 'id'."
                 )
         else:
-            raise NotImplementedError(f"type {type(data)} is not implemented.")
+            raise NotImplementedError(
+                f"type `{data.__class__.__name__}` is not implemented.")
     elif dtype == PossibleDtypes.selfsupervised:
         if isinstance(data, pd.DataFrame):
             if (data.columns != 'id').sum() >= 2:
@@ -118,7 +120,8 @@ def data2json(data, dtype, filter_name=None, predict=False):
                     f"Data must be a DataFrame with at least 2 columns other than 'id'. Current column(s):\n{data.columns.tolist()}"
                 )
         else:
-            raise NotImplementedError(f"type {type(data)} is not implemented.")
+            raise NotImplementedError(
+                f"type `{data.__class__.__name__}` is not implemented.")
     elif dtype == PossibleDtypes.supervised:
         if isinstance(data, pd.DataFrame):
             if ((data.columns != 'id').sum() >= 2 and not predict) or (
@@ -129,7 +132,8 @@ def data2json(data, dtype, filter_name=None, predict=False):
                     f"Data must be a DataFrame with at least {2 - predict} column(s) other than 'id'. Current column(s):\n{data.columns.tolist()}"
                 )
         else:
-            raise NotImplementedError(f"type {type(data)} is not implemented.")
+            raise NotImplementedError(
+                f"type `{data.__class__.__name__}` is not implemented.")
     elif dtype == "Unsupervised":
         raise ValueError(
             f"'Unsupervised' type has been replaced with {PossibleDtypes.selfsupervised} since version 0.6.0"

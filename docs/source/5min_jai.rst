@@ -429,6 +429,7 @@ Output - ans.json():
     # model inference endpoint
     url_predict = f"https://mycelia.azure-api.net/predict/{db_name}"
 
+    # json body
     # note that we need to provide a column named 'id'
     # also note that we drop the 'PRICE' column because it is not a feature
     body = data.reset_index().rename(columns={'index':'id'}).head().drop('PRICE',axis=1).to_dict(orient='records')
