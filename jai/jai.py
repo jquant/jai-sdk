@@ -735,10 +735,10 @@ class Jai(BaseJai):
         if 'Model Training' in result.keys():
             plots = result['Model Training']
 
-            plt.plot(*plots['train'])
-            plt.plot(*plots['val'])
+            plt.plot(*plots['train'], label="train loss")
+            plt.plot(*plots['val'], label="val loss")
             plt.title("Training Losses")
-            plt.legend(["train loss", "val loss"])
+            plt.legend()
             plt.xlabel("epoch")
             plt.show()
 
@@ -865,6 +865,22 @@ class Jai(BaseJai):
                 "'fields' method is only available to dtype SelSupervised and Supervised."
             )
         return self._fields(name)
+
+    def describe(self, name: str):
+        """
+        Get the database hyperparameters and parameters of a specific database.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Return
+        ------
+        response : dict
+            Dictionary with database description.
+        """
+        return self._describe(name)
 
     def wait_setup(self, name: str, frequency_seconds: int = 1):
         """

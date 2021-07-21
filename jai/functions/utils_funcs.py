@@ -44,7 +44,7 @@ def pbar_steps(status: List = None, step: int = 0):
 def list2json(data_list, name):
     index = pd.Index(range(len(data_list)), name='id')
     series = pd.Series(data_list, index=index, name=name)
-    return series.reset_index().to_json(orient='records')
+    return series.reset_index().to_json(orient='records', date_format="iso")
 
 
 def series2json(data_series, name):
@@ -53,7 +53,8 @@ def series2json(data_series, name):
     data_series.name = name
     if data_series.index.duplicated().any():
         raise ValueError("Index must not contain duplicated values.")
-    return data_series.reset_index().to_json(orient='records')
+    return data_series.reset_index().to_json(orient='records',
+                                             date_format="iso")
 
 
 def df2json(dataframe):
@@ -63,7 +64,7 @@ def df2json(dataframe):
         dataframe = dataframe.reset_index()
     if dataframe['id'].duplicated().any():
         raise ValueError("Index must not contain duplicated values.")
-    return dataframe.to_json(orient='records')
+    return dataframe.to_json(orient='records', date_format="iso")
 
 
 def data2json(data, dtype, filter_name=None, predict=False):
