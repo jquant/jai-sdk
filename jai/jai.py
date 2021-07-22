@@ -324,7 +324,9 @@ class Jai(BaseJai):
                 else:
                     _batch = data[i:i + batch_size]
                 res = self._similar_json(name,
-                                         data2json(_batch, dtype=dtype),
+                                         data2json(_batch,
+                                                   dtype=dtype,
+                                                   predict=True),
                                          top_k=top_k,
                                          filters=filters)
             results.extend(res["similarity"])
@@ -549,8 +551,7 @@ class Jai(BaseJai):
                  data,
                  batch_size: int = 16384,
                  frequency_seconds: int = 1,
-                 filter_name: str = None,
-                 predict: bool = False):
+                 filter_name: str = None):
         """
         Insert raw data and extract their latent representation.
 
@@ -568,9 +569,6 @@ class Jai(BaseJai):
             Size of batch to send the data. `Default is 16384`.
         frequency_seconds : int
             Time in between each check of status. `Default is 10`.
-        predict : bool
-            Allows table type data to have only one column for predictions,
-            if False, then tables must have at least 2 columns. `Default is False`.
 
         Return
         -------
@@ -593,7 +591,7 @@ class Jai(BaseJai):
                                              batch_size=batch_size,
                                              db_type=db_type,
                                              filter_name=filter_name,
-                                             predict=predict)
+                                             predict=True)
 
         # check if we inserted everything we were supposed to
         self._check_ids_consistency(name=name, data=data)
