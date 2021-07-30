@@ -674,16 +674,16 @@ class Jai(BaseJai):
         body: dict
             Body to be sent in the POST request to the API.
         """
-        possible = ["hyperparams", "callback_url"]
+        possible = ["hyperparams", "callback_url", "features"]
         must = []
         if db_type == PossibleDtypes.selfsupervised:
             possible.extend([
-                'num_process', 'cat_process', 'datetime_process', 'features',
+                'num_process', 'cat_process', 'datetime_process',
                 'mycelia_bases'
             ])
         elif db_type == PossibleDtypes.supervised:
             possible.extend([
-                'num_process', 'cat_process', 'datetime_process', 'features',
+                'num_process', 'cat_process', 'datetime_process',
                 'mycelia_bases', 'label', 'split'
             ])
             must.extend(['label'])
