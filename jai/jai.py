@@ -324,7 +324,9 @@ class Jai(BaseJai):
                 else:
                     _batch = data[i:i + batch_size]
                 res = self._similar_json(name,
-                                         data2json(_batch, dtype=dtype),
+                                         data2json(_batch,
+                                                   dtype=dtype,
+                                                   predict=True),
                                          top_k=top_k,
                                          filters=filters)
             results.extend(res["similarity"])
@@ -549,8 +551,7 @@ class Jai(BaseJai):
                  data,
                  batch_size: int = 16384,
                  frequency_seconds: int = 1,
-                 filter_name: str = None,
-                 predict: bool = False):
+                 filter_name: str = None):
         """
         Insert raw data and extract their latent representation.
 
@@ -568,9 +569,6 @@ class Jai(BaseJai):
             Size of batch to send the data. `Default is 16384`.
         frequency_seconds : int
             Time in between each check of status. `Default is 10`.
-        predict : bool
-            Allows table type data to have only one column for predictions,
-            if False, then tables must have at least 2 columns. `Default is False`.
 
         Return
         -------
@@ -593,7 +591,7 @@ class Jai(BaseJai):
                                              batch_size=batch_size,
                                              db_type=db_type,
                                              filter_name=filter_name,
-                                             predict=predict)
+                                             predict=True)
 
         # check if we inserted everything we were supposed to
         self._check_ids_consistency(name=name, data=data)
@@ -611,7 +609,7 @@ class Jai(BaseJai):
                data,
                batch_size: int = 16384,
                frequency_seconds: int = 1,
-               predict: bool = False):
+               filter_name: str = None):
         """
         Another name for add_data
         """
@@ -619,7 +617,7 @@ class Jai(BaseJai):
                              data=data,
                              batch_size=batch_size,
                              frequency_seconds=frequency_seconds,
-                             predict=predict)
+                             filter_name=filter_name)
 
     def _insert_data(self,
                      data,
@@ -680,13 +678,13 @@ class Jai(BaseJai):
         must = []
         if db_type == PossibleDtypes.selfsupervised:
             possible.extend([
-                'num_process', 'cat_process', 'datetime_process', 'features',
-                'mycelia_bases'
+                'num_process', 'cat_process', 'datetime_process',
+                'mycelia_bases', "features"
             ])
         elif db_type == PossibleDtypes.supervised:
             possible.extend([
-                'num_process', 'cat_process', 'datetime_process', 'features',
-                'mycelia_bases', 'label', 'split'
+                'num_process', 'cat_process', 'datetime_process',
+                'mycelia_bases', "features", 'label', 'split'
             ])
             must.extend(['label'])
 
@@ -1455,10 +1453,7 @@ class Jai(BaseJai):
         ids_test = test.index
         missing_test = ids_test[~np.isin(ids_test, self.ids(name, "complete"))]
         if len(missing_test) > 0:
-            self.add_data(name,
-                          test.loc[missing_test],
-                          predict=True,
-                          batch_size=batch_size)
+            self.add_data(name, test.loc[missing_test], batch_size=batch_size)
 
         return self.predict(name,
                             test,

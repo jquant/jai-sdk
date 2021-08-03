@@ -41,16 +41,9 @@ def pbar_steps(status: List = None, step: int = 0):
         return step, None
 
 
-def list2json(data_list, name):
-    index = pd.Index(range(len(data_list)), name='id')
-    series = pd.Series(data_list, index=index, name=name)
-    return series.reset_index().to_json(orient='records', date_format="iso")
-
-
-def series2json(data_series, name):
+def series2json(data_series):
     data_series = data_series.copy()
     data_series.index.name = 'id'
-    data_series.name = name
     if data_series.index.duplicated().any():
         raise ValueError("Index must not contain duplicated values.")
     return data_series.reset_index().to_json(orient='records',
@@ -68,30 +61,29 @@ def df2json(dataframe):
 
 
 def data2json(data, dtype, filter_name=None, predict=False):
-    if (dtype == PossibleDtypes.edit or dtype == PossibleDtypes.text
-            or dtype == PossibleDtypes.fasttext
-            or dtype == PossibleDtypes.image):
-        if dtype == PossibleDtypes.image:
-            name = FieldName.image
-        else:
-            name = FieldName.text
+    if dtype in [
+            PossibleDtypes.edit, PossibleDtypes.text, PossibleDtypes.fasttext,
+            PossibleDtypes.image
+    ]:
         if isinstance(data, (set, list, tuple, np.ndarray)):
-            return list2json(data, name=name)
+            raise TypeError(
+                "dtypes `set`, `list`, `tuple`, `np.ndarray` have been deprecated. Use pd.Series instead."
+            )
         elif isinstance(data, pd.Series):
-            return series2json(data, name=name)
+            return series2json(data)
         elif isinstance(data, pd.DataFrame):
             if data.shape[1] == 1:
                 c = data.columns[0]
-                return series2json(data[c], name=name)
+                return series2json(data[c])
             elif data.shape[1] == 2:
                 if 'id' in data.columns:
                     data = data.set_index('id')
                     c = data.columns[0]
-                    return series2json(data[c], name=name)
+                    return series2json(data[c])
                 elif filter_name in data.columns:
                     cols = data.columns.tolist()
                     cols.remove(filter_name)
-                    return df2json(data.rename(columns={cols[0]: name}))
+                    return df2json(data)
                 else:
                     raise ValueError(
                         "If data has 2 columns, one must be named 'id'.")
@@ -100,7 +92,7 @@ def data2json(data, dtype, filter_name=None, predict=False):
                     data = data.set_index('id')
                     cols = data.columns.tolist()
                     cols.remove(filter_name)
-                    return df2json(data.rename(columns={cols[0]: name}))
+                    return df2json(data)
                 else:
                     raise ValueError(
                         "If data has 2 columns, one must be named 'id'.")
@@ -110,7 +102,7 @@ def data2json(data, dtype, filter_name=None, predict=False):
                 )
         else:
             raise NotImplementedError(
-                f"type `{data.__class__.__name__}` is not implemented.")
+                f"type `{data.__class__.__name__}` is not accepted.")
     elif dtype == PossibleDtypes.selfsupervised:
         if isinstance(data, pd.DataFrame):
             if (data.columns != 'id').sum() >= 2:

@@ -2,8 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from jai import Jai
-from jai.functions.utils_funcs import (list2json, series2json, df2json,
-                                       data2json)
+from jai.functions.utils_funcs import (series2json, df2json, data2json)
 from jai.image import read_image_folder, resize_image_folder
 
 from pandas._testing import assert_series_equal
@@ -41,21 +40,12 @@ def setup_npy_file():
 # =============================================================================
 @pytest.mark.parametrize('data', [list('ab'), np.array(['abc', 'def'])])
 @pytest.mark.parametrize('name', ['text', 'image_base64'])
-def test_list2json(data, name):
-    index = pd.Index(range(len(data)), name='id')
-    gab = pd.Series(data, index=index,
-                    name=name).reset_index().to_json(orient='records')
-    assert list2json(data, name) == gab, 'list2json failed.'
-
-
-@pytest.mark.parametrize('data', [list('ab'), np.array(['abc', 'def'])])
-@pytest.mark.parametrize('name', ['text', 'image_base64'])
 @pytest.mark.parametrize('ids', [None, [10, 12]])
 def test_series2json(data, name, ids):
     ids = ids if ids is not None else range(len(data))
     s = pd.Series(data, index=pd.Index(ids, name='id'), name=name)
     gab = s.reset_index().to_json(orient='records')
-    assert series2json(s, name) == gab, 'series2json failed.'
+    assert series2json(s) == gab, 'series2json failed.'
 
 
 @pytest.mark.parametrize('col1, col2, ids',
@@ -72,7 +62,7 @@ def test_df2json(col1, col2, ids):
     assert df2json(df) == '[' + out + ']', 'df2json failed.'
 
 
-@pytest.mark.parametrize("dtype", ["list", "array", "series", "df", "df_id"])
+@pytest.mark.parametrize("dtype", ["series", "df", "df_id"])
 def test_data2json(setup_dataframe, setup_img_data, dtype):
     dict_dbtype = {"Text": "text", "Image": "image_base64"}
     db_types = ["Text", "Image"]
@@ -90,17 +80,7 @@ def test_data2json(setup_dataframe, setup_img_data, dtype):
         else:
             data = img_data
 
-        if dtype == 'list':
-            data = data.tolist()
-            ids = range(len(data))
-            s = pd.Series(data, index=pd.Index(ids, name='id'), name=col_name)
-            gab = s.reset_index().to_json(orient='records')
-        elif dtype == 'array':
-            data = data.values
-            ids = range(len(data))
-            s = pd.Series(data, index=pd.Index(ids, name='id'), name=col_name)
-            gab = s.reset_index().to_json(orient='records')
-        elif dtype == 'df':
+        if dtype == 'df':
             data = data.to_frame()
             ids = data.index
             s = pd.Series(data[col_name],
@@ -158,7 +138,7 @@ def test_series_error(data, name, ids):
     with pytest.raises(ValueError):
         ids = ids if ids is not None else range(len(data))
         s = pd.Series(data, index=pd.Index(ids, name='id'), name=name)
-        series2json(s, name)
+        series2json(s)
 
 
 @pytest.mark.parametrize('col1, col2, ids',
