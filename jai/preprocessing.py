@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def split(dataframe, columns):
+def split(dataframe, columns, sort: bool = False, prefix: str = "id_"):
     """
     Split columns from dataframe returning a dataframe with the unique values
     for each specified column and replacing the original column with the
@@ -15,6 +15,10 @@ def split(dataframe, columns):
         Column to be separated from dataset.
         If column has multiple data, use a dict with the format column name as
         key and separator as value. Use `None` if no separator is needed.
+    sort : bool
+        sort values of the split data.
+    prefix : str
+        prefix added to the splitted column names.
 
     Returns
     -------
@@ -30,19 +34,20 @@ def split(dataframe, columns):
     elif isinstance(columns, list):
         columns = {col: None for col in columns}
 
-    bases = []
+    bases = {}
     for col, sep in columns.items():
         if sep is not None:
             values = dataframe[col].str.split(sep).explode().str.strip()
         else:
             values = dataframe[col]
-        ids, uniques = pd.factorize(values)
-        dataframe[col] = pd.DataFrame({
+        ids, uniques = pd.factorize(values, sort=sort)
+        dataframe = dataframe.drop(columns=col)
+        dataframe[prefix + col] = pd.DataFrame({
             "id": values.index,
             col: ids
         }).groupby("id")[col].agg(lambda x: x if len(x) < 2 else list(x))
         base = pd.DataFrame({col: uniques},
                             index=pd.Index(range(len(uniques)), name="id"))
-        bases.append(base)
+        bases[col] = base
 
     return bases, dataframe
