@@ -14,26 +14,16 @@ np.random.seed(42)
 # =============================================================================
 # Test Text
 # =============================================================================
-@pytest.mark.parametrize("name,data,dtype",
-                         [("test_nlp", "list", "Text"),
-                          ("test_fasttext", "array", "FastText"),
-                          ("test_edittext", "series", "TextEdit")])
-def test_text(name, data, dtype, setup_dataframe):
+@pytest.mark.parametrize("name,dtype", [("test_nlp", "Text"),
+                                        ("test_fasttext", "FastText"),
+                                        ("test_edittext", "TextEdit")])
+def test_text(name, dtype, setup_dataframe):
     train, _ = setup_dataframe
     train = train.rename(columns={
         "PassengerId": "id"
     }).set_index("id")['Name'].iloc[:MAX_SIZE]
     ids = train.index.tolist()
     query = train.loc[np.random.choice(ids, 10, replace=False)]
-
-    if data == 'list':
-        train = train.tolist()
-        ids = list(range(len(train)))
-    elif data == 'array':
-        train = train.values
-        ids = list(range(len(train)))
-    else:
-        pass
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
     if j.is_valid(name):
@@ -48,9 +38,6 @@ def test_text(name, data, dtype, setup_dataframe):
 
     result = j.similar(name, query)
     assert isinstance(result, list), "similar data result failed"
-
-    result = j.similar(name, query.to_numpy())
-    assert isinstance(result, list), "similar data (np.array) result failed"
 
     result = j.similar(name, pd.Series(query.index))
     assert isinstance(result, list), "similar id series result failed"
