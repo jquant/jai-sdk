@@ -55,7 +55,7 @@ def test_series2json(data, name, ids):
     ids = ids if ids is not None else range(len(data))
     s = pd.Series(data, index=pd.Index(ids, name='id'), name=name)
     gab = s.reset_index().to_json(orient='records')
-    assert series2json(s, name) == gab, 'series2json failed.'
+    assert series2json(s) == gab, 'series2json failed.'
 
 
 @pytest.mark.parametrize('col1, col2, ids',

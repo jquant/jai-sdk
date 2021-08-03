@@ -609,7 +609,7 @@ class Jai(BaseJai):
                data,
                batch_size: int = 16384,
                frequency_seconds: int = 1,
-               predict: bool = False):
+               filter_name: str = None):
         """
         Another name for add_data
         """
@@ -617,7 +617,7 @@ class Jai(BaseJai):
                              data=data,
                              batch_size=batch_size,
                              frequency_seconds=frequency_seconds,
-                             predict=predict)
+                             filter_name=filter_name)
 
     def _insert_data(self,
                      data,
@@ -674,17 +674,17 @@ class Jai(BaseJai):
         body: dict
             Body to be sent in the POST request to the API.
         """
-        possible = ["hyperparams", "callback_url", "features"]
+        possible = ["hyperparams", "callback_url"]
         must = []
         if db_type == PossibleDtypes.selfsupervised:
             possible.extend([
                 'num_process', 'cat_process', 'datetime_process',
-                'mycelia_bases'
+                'mycelia_bases', "features"
             ])
         elif db_type == PossibleDtypes.supervised:
             possible.extend([
                 'num_process', 'cat_process', 'datetime_process',
-                'mycelia_bases', 'label', 'split'
+                'mycelia_bases', "features", 'label', 'split'
             ])
             must.extend(['label'])
 
@@ -1453,10 +1453,7 @@ class Jai(BaseJai):
         ids_test = test.index
         missing_test = ids_test[~np.isin(ids_test, self.ids(name, "complete"))]
         if len(missing_test) > 0:
-            self.add_data(name,
-                          test.loc[missing_test],
-                          predict=True,
-                          batch_size=batch_size)
+            self.add_data(name, test.loc[missing_test], batch_size=batch_size)
 
         return self.predict(name,
                             test,
