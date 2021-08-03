@@ -17,7 +17,7 @@ np.random.seed(42)
 @pytest.mark.parametrize("name,dtype", [("test_nlp", "Text"),
                                         ("test_fasttext", "FastText"),
                                         ("test_edittext", "TextEdit")])
-def test_text(name, data, dtype, setup_dataframe):
+def test_text(name, dtype, setup_dataframe):
     train, _ = setup_dataframe
     train = train.rename(columns={
         "PassengerId": "id"
