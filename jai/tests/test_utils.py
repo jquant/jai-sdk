@@ -158,7 +158,7 @@ def test_series_error(data, name, ids):
     with pytest.raises(ValueError):
         ids = ids if ids is not None else range(len(data))
         s = pd.Series(data, index=pd.Index(ids, name='id'), name=name)
-        series2json(s, name)
+        series2json(s)
 
 
 @pytest.mark.parametrize('col1, col2, ids',
