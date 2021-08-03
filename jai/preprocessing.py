@@ -1,5 +1,7 @@
 import pandas as pd
 
+__all__ = ["split"]
+
 
 def split(dataframe, columns, sort: bool = False, prefix: str = "id_"):
     """
