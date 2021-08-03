@@ -62,7 +62,7 @@ def test_df2json(col1, col2, ids):
     assert df2json(df) == '[' + out + ']', 'df2json failed.'
 
 
-@pytest.mark.parametrize("dtype", ["list", "array", "series", "df", "df_id"])
+@pytest.mark.parametrize("dtype", ["series", "df", "df_id"])
 def test_data2json(setup_dataframe, setup_img_data, dtype):
     dict_dbtype = {"Text": "text", "Image": "image_base64"}
     db_types = ["Text", "Image"]
@@ -80,17 +80,7 @@ def test_data2json(setup_dataframe, setup_img_data, dtype):
         else:
             data = img_data
 
-        if dtype == 'list':
-            data = data.tolist()
-            ids = range(len(data))
-            s = pd.Series(data, index=pd.Index(ids, name='id'), name=col_name)
-            gab = s.reset_index().to_json(orient='records')
-        elif dtype == 'array':
-            data = data.values
-            ids = range(len(data))
-            s = pd.Series(data, index=pd.Index(ids, name='id'), name=col_name)
-            gab = s.reset_index().to_json(orient='records')
-        elif dtype == 'df':
+        if dtype == 'df':
             data = data.to_frame()
             ids = data.index
             s = pd.Series(data[col_name],
