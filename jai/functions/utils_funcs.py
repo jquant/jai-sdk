@@ -62,8 +62,8 @@ def df2json(dataframe):
 
 def data2json(data, dtype, filter_name=None, predict=False):
     if dtype in [
-            PossibleDtypes.edit, dtype == PossibleDtypes.text,
-            PossibleDtypes.fasttext, PossibleDtypes.image
+            PossibleDtypes.edit, PossibleDtypes.text, PossibleDtypes.fasttext,
+            PossibleDtypes.image
     ]:
         if isinstance(data, (set, list, tuple, np.ndarray)):
             raise TypeError(
