@@ -2,8 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from jai import Jai
-from jai.functions.utils_funcs import (list2json, series2json, df2json,
-                                       data2json)
+from jai.functions.utils_funcs import (series2json, df2json, data2json)
 from jai.image import read_image_folder, resize_image_folder
 
 from pandas._testing import assert_series_equal
@@ -39,15 +38,6 @@ def setup_npy_file():
 # =============================================================================
 # Tests for data2json
 # =============================================================================
-@pytest.mark.parametrize('data', [list('ab'), np.array(['abc', 'def'])])
-@pytest.mark.parametrize('name', ['text', 'image_base64'])
-def test_list2json(data, name):
-    index = pd.Index(range(len(data)), name='id')
-    gab = pd.Series(data, index=index,
-                    name=name).reset_index().to_json(orient='records')
-    assert list2json(data, name) == gab, 'list2json failed.'
-
-
 @pytest.mark.parametrize('data', [list('ab'), np.array(['abc', 'def'])])
 @pytest.mark.parametrize('name', ['text', 'image_base64'])
 @pytest.mark.parametrize('ids', [None, [10, 12]])

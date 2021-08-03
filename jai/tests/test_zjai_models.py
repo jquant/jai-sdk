@@ -49,9 +49,6 @@ def test_text(name, data, dtype, setup_dataframe):
     result = j.similar(name, query)
     assert isinstance(result, list), "similar data result failed"
 
-    result = j.similar(name, query.to_numpy())
-    assert isinstance(result, list), "similar data (np.array) result failed"
-
     result = j.similar(name, pd.Series(query.index))
     assert isinstance(result, list), "similar id series result failed"
 

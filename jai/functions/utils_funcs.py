@@ -41,12 +41,6 @@ def pbar_steps(status: List = None, step: int = 0):
         return step, None
 
 
-def list2json(data_list, name):
-    index = pd.Index(range(len(data_list)), name='id')
-    series = pd.Series(data_list, index=index, name=name)
-    return series.reset_index().to_json(orient='records', date_format="iso")
-
-
 def series2json(data_series):
     data_series = data_series.copy()
     data_series.index.name = 'id'
@@ -67,13 +61,14 @@ def df2json(dataframe):
 
 
 def data2json(data, dtype, filter_name=None, predict=False):
-    if (dtype == PossibleDtypes.edit or dtype == PossibleDtypes.text
-            or dtype == PossibleDtypes.fasttext
-            or dtype == PossibleDtypes.image):
-        name = FieldName.image if dtype == PossibleDtypes.image else FieldName.text
-
+    if dtype in [
+            PossibleDtypes.edit, dtype == PossibleDtypes.text,
+            PossibleDtypes.fasttext, PossibleDtypes.image
+    ]:
         if isinstance(data, (set, list, tuple, np.ndarray)):
-            return list2json(data, name=name)
+            raise TypeError(
+                "dtypes `set`, `list`, `tuple`, `np.ndarray` have been deprecated. Use pd.Series instead."
+            )
         elif isinstance(data, pd.Series):
             return series2json(data)
         elif isinstance(data, pd.DataFrame):
@@ -107,7 +102,7 @@ def data2json(data, dtype, filter_name=None, predict=False):
                 )
         else:
             raise NotImplementedError(
-                f"type `{data.__class__.__name__}` is not implemented.")
+                f"type `{data.__class__.__name__}` is not accepted.")
     elif dtype == PossibleDtypes.selfsupervised:
         if isinstance(data, pd.DataFrame):
             if (data.columns != 'id').sum() >= 2:
