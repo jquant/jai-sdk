@@ -44,10 +44,13 @@ def split(dataframe, columns, sort: bool = False, prefix: str = "id_"):
             values = dataframe[col]
         ids, uniques = pd.factorize(values, sort=sort)
         dataframe = dataframe.drop(columns=col)
-        dataframe[prefix + col] = pd.DataFrame({
-            "id": values.index,
-            col: ids
-        }).groupby("id")[col].agg(lambda x: x if len(x) < 2 else list(x))
+        if sep is not None:
+            dataframe[prefix + col] = pd.DataFrame({
+                "id": values.index,
+                col: ids
+            }).groupby("id")[col].agg(lambda x: list(x))
+        else:
+            dataframe[prefix + col] = ids
         base = pd.DataFrame({col: uniques},
                             index=pd.Index(range(len(uniques)), name="id"))
         bases[col] = base
