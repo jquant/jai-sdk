@@ -533,10 +533,10 @@ class Jai(BaseJai):
                 )
             self.wait_setup(name=name, frequency_seconds=frequency_seconds)
 
-        if db_type in [
-                PossibleDtypes.selfsupervised, PossibleDtypes.supervised
-        ]:
-            self.report(name, verbose)
+            if db_type in [
+                    PossibleDtypes.selfsupervised, PossibleDtypes.supervised
+            ]:
+                self.report(name, verbose)
 
         return insert_responses, setup_response
 
