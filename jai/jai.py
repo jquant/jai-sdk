@@ -857,11 +857,6 @@ class Jai(BaseJai):
         >>> print(fields)
         {'id': 0, 'feature1': 0.01, 'feature2': 'string', 'feature3': 0}
         """
-        dtype = self.get_dtype(name)
-        if dtype != PossibleDtypes.selfsupervised and dtype != PossibleDtypes.supervised:
-            raise ValueError(
-                "'fields' method is only available to dtype SelSupervised and Supervised."
-            )
         return self._fields(name)
 
     def describe(self, name: str):
