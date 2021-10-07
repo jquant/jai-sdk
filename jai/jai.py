@@ -97,6 +97,7 @@ class Jai(BaseJai):
             })
         return df.sort_values(by="name")
 
+    # TODO: this property should be removed in the future
     @property
     def status(self, max_tries=5, patience=25):
         """
@@ -124,6 +125,71 @@ class Jai(BaseJai):
                 time.sleep(patience // max_tries)
                 tries += 1
         return self._status()
+
+    def fields(self, name: str):
+        """
+        Get the table fields for a Supervised/SelfSupervised database.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Return
+        ------
+        response : dict
+            Dictionary with table fields.
+
+        Example
+        -------
+        >>> name = 'chosen_name'
+        >>> j = Jai(AUTH_KEY)
+        >>> fields = j.fields(name=name)
+        >>> print(fields)
+        {'id': 0, 'feature1': 0.01, 'feature2': 'string', 'feature3': 0}
+        """
+        return self._fields(name)
+
+    def describe(self, name: str):
+        """
+        Get the database hyperparameters and parameters of a specific database.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Return
+        ------
+        response : dict
+            Dictionary with database description.
+        """
+        return self._describe(name)
+
+    def get_dtype(self, name):
+        """
+        Return the database type.
+
+        Parameters
+        ----------
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Raises
+        ------
+        ValueError
+            If the name is not valid.
+
+        Returns
+        -------
+        db_type : str
+            The name of the type of the database.
+
+        """
+        info = self.info
+        if name in info["name"].to_numpy():
+            return info.loc[info["name"] == name, "type"].values[0]
+        raise ValueError(f"{name} is not a valid name.")
 
     def generate_name(self,
                       length: int = 8,
@@ -488,12 +554,13 @@ class Jai(BaseJai):
         }
         """
         overwrite = kwargs.get("overwrite", False)
-        if overwrite and name in self.names:
-            self.delete_database(name)
-        elif name in self.names:
-            raise KeyError(
-                f"Database '{name}' already exists in your environment. Set overwrite=True to overwrite it."
-            )
+        if name in self.names:
+            if overwrite:
+                self.delete_database(name)
+            else:
+                raise KeyError(
+                    f"Database '{name}' already exists in your environment. Set overwrite=True to overwrite it."
+                )
         else:
             # delete data reamains
             self.delete_raw_data(name)
@@ -747,32 +814,6 @@ class Jai(BaseJai):
         print(result["Loading from checkpoint"].split("\n")
               [1]) if 'Loading from checkpoint' in result.keys() else None
 
-    def get_dtype(self, name):
-        """
-        Return the database type.
-
-        Parameters
-        ----------
-        name : str
-            String with the name of a database in your JAI environment.
-
-        Raises
-        ------
-        ValueError
-            If the name is not valid.
-
-        Returns
-        -------
-        db_type : str
-            The name of the type of the database.
-
-        """
-        if self.is_valid(name):
-            dtypes = self.info
-            return dtypes.loc[dtypes["name"] == name, "type"].values[0]
-        else:
-            raise ValueError(f"{name} is not a valid name.")
-
     def _check_ids_consistency(self, name, data):
         """
         Check if inserted data is consistent with what we expect.
@@ -825,55 +866,10 @@ class Jai(BaseJai):
                 PossibleDtypes.text,
                 PossibleDtypes.fasttext,
                 PossibleDtypes.edit,
-        ]:
+        ] and data.isna().any():
+            print("Droping NA values")
             data = data.dropna()
-        else:
-            cols_to_drop = []
-            for col in data.select_dtypes(include=["category", "O"]).columns:
-                if data[col].nunique() > 1024:
-                    cols_to_drop.append(col)
-            data = data.dropna(subset=cols_to_drop)
         return data
-
-    def fields(self, name: str):
-        """
-        Get the table fields for a Supervised/SelfSupervised database.
-
-        Args
-        ----
-        name : str
-            String with the name of a database in your JAI environment.
-
-        Return
-        ------
-        response : dict
-            Dictionary with table fields.
-
-        Example
-        -------
-        >>> name = 'chosen_name'
-        >>> j = Jai(AUTH_KEY)
-        >>> fields = j.fields(name=name)
-        >>> print(fields)
-        {'id': 0, 'feature1': 0.01, 'feature2': 'string', 'feature3': 0}
-        """
-        return self._fields(name)
-
-    def describe(self, name: str):
-        """
-        Get the database hyperparameters and parameters of a specific database.
-
-        Args
-        ----
-        name : str
-            String with the name of a database in your JAI environment.
-
-        Return
-        ------
-        response : dict
-            Dictionary with database description.
-        """
-        return self._describe(name)
 
     def wait_setup(self, name: str, frequency_seconds: int = 1):
         """
