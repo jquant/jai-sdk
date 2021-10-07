@@ -55,7 +55,7 @@ from jai.preprocessing import split
          "col1": [0, 1, 2, 3, 4],
          "col2": ["a", "b", "c", "d", "e"],
          "col3": ["a", "a", "b", "b", "a"],
-         "id_col4": [[0, 1], 0, 2, [0, 2], 1]
+         "id_col4": [[0, 1], [0], [2], [0, 2], [1]]
      })),
     ({
         'col3': None,
@@ -68,7 +68,7 @@ from jai.preprocessing import split
          "col1": [0, 1, 2, 3, 4],
          "col2": ["a", "b", "c", "d", "e"],
          "id_col3": [0, 0, 1, 1, 0],
-         "id_col4": [[0, 1], 0, 2, [0, 2], 1]
+         "id_col4": [[0, 1], [0], [2], [0, 2], [1]]
      })),
 ])
 def test_split(param, gab_bases, gab):

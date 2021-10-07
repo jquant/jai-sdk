@@ -140,7 +140,7 @@ def process_predict(predicts, digits=2, percentage=True):
     predict_proba = False
     quantiles = False
     if isinstance(example, dict):
-        if sum(example.values()) == 1:
+        if np.allclose(sum(example.values()), 1):
             predict_proba = True
         else:
             quantiles = True
