@@ -1,6 +1,17 @@
-#################################
-JAI in 5 minutes - Boston Housing
-#################################
+#####################################
+JAI in 5 minutes - California Housing
+#####################################
+
+************************
+What are we going to do?
+************************
+
+In this quick demo, we will use JAI to:
+
+* Train and deploy models into a secure and scalable production-ready environment
+* Similarity Search - Given a house Id or attributes, retrieve similar houses 
+* Model Inference - Predict house prices using a supervised machine learning model
+
 
 ***************
 Install JAI
@@ -13,21 +24,28 @@ Install JAI with pip
     pip install jai-sdk --user
       
 *****************
-Generate Auth Key
+Import JAI
 *****************
-
-Import JAI and Generate your Community Auth Key (free forever)
 
 .. code:: python
 
     >>> from jai import Jai
+
+*****************
+Generate Auth Key
+*****************
+
+JAI requires an Auth Key to organize and secure collections. You can easily generate your free-forever auth-key by running the command below:
+
+.. code:: python
+
     >>> Jai.get_auth_key(email='email@mail.com', firstName='Jai', lastName='Z')
     201
 
 Please note that yout Auth Key will be sent to your e-mail, so please make sure to use a valid address and check your spam folder.
 
 ***************
-Start Jai
+Start JAI
 ***************
 
 * Use your Auth Key to instantiate JAI:
@@ -40,14 +58,14 @@ Start Jai
 Self-Supervised Learning
 ************************
 
-* Now let's use JAI to transform the Boston Housing dataset into vectors using SelfSupervised Learning
+* JAI 
 
 .. code:: python
 
-    from sklearn.datasets import load_boston
+    from sklearn.datasets import fetch_california_housing
       
     # load dataset
-    boston = load_boston()
+    data, labels = fetch_california_housing(as_frame=True,return_X_y=True)
 
     # note that we are not loading the target column "PRICE"
     data = pd.DataFrame(boston.data, columns=boston.feature_names)
