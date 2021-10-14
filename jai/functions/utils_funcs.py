@@ -9,18 +9,7 @@ from operator import itemgetter
 from functools import cmp_to_key
 from .classes import FieldName, PossibleDtypes
 
-__all__ = ["data2json", "pbar_steps"]
-
-
-def get_status_json(file_path="pbar_status.json"):
-    pbar_status_path = Path(file_path)
-    with open(pbar_status_path, 'r') as f:
-        status_dict = json.load(f)
-    return status_dict
-
-
-def compare_regex(setup_task: str):
-    return re.findall('\[(.*?)\]', setup_task)[0]
+__all__ = ["data2json"]
 
 
 def series2json(data_series):
