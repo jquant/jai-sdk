@@ -10,7 +10,7 @@ with open("requirements.txt", "r") as f:
 
 setup(
     name="jai-sdk",
-    version="0.15.1",
+    version="0.15.2",
     author="JQuant",
     author_email="jedis@jquant.com.br",
     description="JAI - Trust your data",

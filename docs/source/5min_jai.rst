@@ -24,7 +24,7 @@ Import JAI and Generate your Community Auth Key (free forever)
     >>> Jai.get_auth_key(email='email@mail.com', firstName='Jai', lastName='Z')
     201
 
-Please note that yout Auth Key will be sent to your e-mail, so please make sure to use a valid address and check your spam folder.
+Please note that your Auth Key will be sent to your e-mail, so please make sure to use a valid address and check your spam folder.
 
 ***************
 Start Jai
