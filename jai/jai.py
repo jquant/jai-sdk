@@ -866,7 +866,7 @@ class Jai(BaseJai):
                 PossibleDtypes.text,
                 PossibleDtypes.fasttext,
                 PossibleDtypes.edit,
-        ] and data.isna().any():
+        ] and data.isna().any().to_numpy():
             print("Droping NA values")
             data = data.dropna()
         return data
