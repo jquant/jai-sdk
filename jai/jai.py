@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import requests
 import time
-
+ 
 from io import BytesIO
 from .base import BaseJai
 from .processing import (process_similar, process_resolution, process_predict)
