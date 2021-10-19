@@ -8,7 +8,7 @@ import time
 from io import BytesIO
 from .base import BaseJai
 from .processing import (process_similar, process_resolution, process_predict)
-from .functions.utils_funcs import data2json, pbar_steps
+from .functions.utils_funcs import data2json
 from .functions.classes import PossibleDtypes, Mode
 from .functions import exceptions
 from fnmatch import fnmatch
@@ -900,11 +900,8 @@ class Jai(BaseJai):
                 "Iteration: ")[1].strip().split(" / ")
             return int(curr_step), int(max_iterations)
 
-        max_steps = None
-        while max_steps is None:
-            status = self.status[name]
-            starts_at, max_steps = pbar_steps(status=status)
-            time.sleep(1)
+        status = self.status[name]
+        starts_at, max_steps = status["CurrentStep"], status["TotalSteps"]
 
         step = starts_at
         aux = 0
@@ -943,18 +940,16 @@ class Jai(BaseJai):
                     if (step == starts_at) and (aux == 0):
                         pbar.update(starts_at)
                     else:
-                        diff = step - starts_at
-                        pbar.update(diff)
+                        pbar.update(step - starts_at)
                         starts_at = step
 
-                    step, _ = pbar_steps(status=status, step=step)
+                    step = status["CurrentStep"]
                     time.sleep(frequency_seconds)
                     status = self.status[name]
                     aux += 1
 
                 if (starts_at != max_steps) and aux != 0:
-                    diff = max_steps - starts_at
-                    pbar.update(diff)
+                    pbar.update(max_steps - starts_at)
                 elif (starts_at != max_steps) and aux == 0:
                     pbar.update(max_steps)
 
