@@ -136,7 +136,7 @@ it were in the body of a POST method.
   * **scaler** (*str*) -- (*required*) scaling for dtype numerical features.
   * **min_freq** (*int*) -- categories with less than that will be discarted, for dtype category. *Default is 0*.
 
-* **mycelia_bases** (*list of dicts*) -- (*Only for db_type Supervised and Unsupervised*) Related already 
+* **pretrained_bases** (*list of dicts*) -- (*Only for db_type Supervised and Unsupervised*) Related already 
   processed data that will be used in the setup of this new one. If a column has id values that 
   represent a database already preprocessed, then:
 

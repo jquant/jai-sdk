@@ -194,7 +194,7 @@ Supervised Learning
         
         # JAI Collection Foreign Key
         # reference an id column ('id_name') to an already processed JAI collection ('db_parent')
-        mycelia_bases=[
+        pretrained_bases=[
             {
             'db_parent':'boston',
             'id_name':'id_house'
@@ -216,7 +216,7 @@ Output:
 
       Insert Data: 100%|██████████| 1/1 [00:01<00:00,  1.15s/it]
       Recognized setup args:
-      mycelia_bases: [{'db_parent': 'boston', 'id_name': 'id_house'}]
+      pretrained_bases: [{'db_parent': 'boston', 'id_name': 'id_house'}]
       label: {'task': 'regression', 'label_name': 'PRICE'}
       JAI is working:  50%|█████     |9/18
       [boston_regression] Training:   0%|          | 0/500 [00:00<?, ?it/s]ATraining might not take 500 steps due to early stopping criteria.

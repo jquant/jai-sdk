@@ -17,6 +17,8 @@ from pandas.api.types import is_integer_dtype
 from sklearn.model_selection import StratifiedShuffleSplit
 from tqdm import trange, tqdm
 
+import warnings
+
 __all__ = ["Jai"]
 
 
@@ -746,12 +748,13 @@ class Jai(BaseJai):
         if db_type == PossibleDtypes.selfsupervised:
             possible.extend([
                 'num_process', 'cat_process', 'datetime_process',
-                'mycelia_bases', "features"
+                'mycelia_bases', "pretrained_bases", "features"
             ])
         elif db_type == PossibleDtypes.supervised:
             possible.extend([
                 'num_process', 'cat_process', 'datetime_process',
-                'mycelia_bases', "features", 'label', 'split'
+                'mycelia_bases', "pretrained_bases", "features", 'label',
+                'split'
             ])
             must.extend(['label'])
 
@@ -764,6 +767,10 @@ class Jai(BaseJai):
             val = kwargs.get(key, None)
             if val is not None:
                 body[key] = val
+                if val == "mycelia_bases":
+                    warnings.warn(
+                        f"`mycelia_bases` will be deprecated in a later version (0.18.0), please use `pretrained_bases` instead. ",
+                        DeprecationWarning)
 
         body["db_type"] = db_type
         return body
@@ -1415,9 +1422,11 @@ class Jai(BaseJai):
                 "split_column": column,
                 "test_size": 0.2
             }
-            mycelia_bases = kwargs.get("mycelia_bases", [])
-            mycelia_bases.extend(prep_bases)
-            kwargs['mycelia_bases'] = mycelia_bases
+
+            pretrained_bases = kwargs.get("pretrained_bases",
+                                          kwargs.get("mycelia_bases", []))
+            pretrained_bases.extend(prep_bases)
+            kwargs['pretrained_bases'] = pretrained_bases
 
             self.setup(
                 name,
@@ -1638,9 +1647,10 @@ class Jai(BaseJai):
                 "test_size": 0.2
             }
 
-            mycelia_bases = kwargs.get("mycelia_bases", [])
-            mycelia_bases.extend(prep_bases)
-            kwargs['mycelia_bases'] = mycelia_bases
+            pretrained_bases = kwargs.get("pretrained_bases",
+                                          kwargs.get("mycelia_bases", []))
+            pretrained_bases.extend(prep_bases)
+            kwargs['pretrained_bases'] = pretrained_bases
 
             self.setup(
                 name,
