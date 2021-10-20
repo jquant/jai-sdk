@@ -17,7 +17,7 @@ In this quick demo, we will use JAI to:
 Install JAI
 ***************
 
-Install JAI with pip
+Start by installing JAI with pip:
 
 .. code:: bash
 
@@ -26,6 +26,8 @@ Install JAI with pip
 *****************
 Import JAI
 *****************
+
+In your python IDE of preference, you import JAI with:
 
 .. code:: python
 
@@ -42,56 +44,53 @@ JAI requires an Auth Key to organize and secure collections. You can easily gene
     >>> Jai.get_auth_key(email='email@mail.com', firstName='Jai', lastName='Z')
     201
 
-Please note that your Auth Key will be sent to your e-mail, so please make sure to use a valid address and check your spam folder.
+.. note::
+    Please note that your Auth Key will be sent to your e-mail, so please make sure to use a valid address and check your spam folder.
 
 ***************
 Start JAI
 ***************
 
-* Use your Auth Key to instantiate JAI:
+After receiving the authentication key, you are ready to instantiate JAI with your Auth Key:
 
 .. code:: python
 
-    >>> j = Jai('AUTH KEY')
+    >>> j = Jai(AUTH_KEY)
 
-************************
-Self-Supervised Learning
-************************
+*****************************
+Train a Self-Supervised model
+*****************************
 
-* JAI 
+* Now let's use JAI to transform the California Housing dataset into vectors using SelfSupervised Learning 
 
 .. code:: python
 
-    import pandas as pd
-    from sklearn.datasets import fetch_california_housing
-      
-    # load dataset
-    data, labels = fetch_california_housing(as_frame=True, return_X_y=True)
-    
-    # send data to JAI for feature extraction
-    j.fit(
-        # JAI collection name
-        name='california',
-
-        # data to be processed - a Pandas DataFrame is expected
-        data=data,
-
-        # collection type
-        db_type='SelfSupervised',
-
-        # verbose 2 -> shows the loss graph at the end of training
-        verbose=2,
-
-        # let's set some hyperparams!
-        hyperparams={
-        'learning_rate': 3e-4,
-        'pretraining_ratio':0.8
-        }
-    )
-
-Output:
-
-.. code:: bash
+    >>> import pandas as pd
+    >>> from sklearn.datasets import fetch_california_housing
+    >>>   
+    >>> # load dataset
+    >>> data, labels = fetch_california_housing(as_frame=True, return_X_y=True)
+    >>> 
+    >>> # send data to JAI for feature extraction
+    >>> j.fit(
+    >>>     # JAI collection name
+    >>>     name='california',
+    >>> 
+    >>>     # data to be processed - a Pandas DataFrame is expected
+    >>>     data=data,
+    >>> 
+    >>>     # collection type
+    >>>     db_type='SelfSupervised',
+    >>> 
+    >>>     # verbose 2 -> shows the loss graph at the end of training
+    >>>     verbose=2,
+    >>> 
+    >>>     # let's set some hyperparams!
+    >>>     hyperparams={
+    >>>     'learning_rate': 3e-4,
+    >>>     'pretraining_ratio':0.8
+    >>>     }
+    >>> )
 
     Insert Data: 100%|██████████| 2/2 [00:03<00:00,  1.87s/it]
 
@@ -124,24 +123,21 @@ Similarity Search
 
 .. code:: python
 
-    # every JAI collection can be queried using j.similar()
-    ans = j.similar(
-        # collection to be queried
-        name='california',
-        # let's find houses that are similar to ids 1 and 10
-        data=[1, 10]
-    )
-
-Output:
-
-.. code:: bash
+    >>> # every JAI collection can be queried using j.similar()
+    >>> ans = j.similar(
+    >>>     # collection to be queried
+    >>>     name='california',
+    >>>     # let's find houses that are similar to ids 1 and 10
+    >>>     data=[1, 10]
+    >>> )
 
     Similar: 100%|██████████| 1/1 [00:01<00:00,  1.36s/it]
 
-And now the 'ans' variable holds a JSON:
+And now the :code:`ans` variable holds a list of the similarity results:
 
-.. code:: bash
+.. code:: python
 
+    >>> ans
     [{'query_id': 1,
     'results': [{'id': 1, 'distance': 0.0},
     {'id': 17178, 'distance': 0.01419779472053051},
@@ -197,46 +193,42 @@ And by indexing it back to the original dataframe id's, we have:
 Supervised Learning
 *******************
 
-* And of course we can also train a Supervised Model to predict house prices!
+* And of course we can also train a Supervised Model to predict house prices using the results of the Self-Supervised model!
   
 .. code:: python
 
-    # j.fit === j.setup
-    data_sup = labels.reset_index().rename(columns={"index": "id_house"})
-    ans = j.fit(
-        # JAI collection name
-        name='california_regression',
-        
-        # verbose 2 -> shows the loss graph at the end of training
-        verbose=2,
-        
-        # data to be processed - a Pandas DataFrame is expected
-        data=data_sup,
-        
-        # collection type
-        db_type='Supervised',
-        
-        # JAI Collection Foreign Key
-        # reference an id column ('id_name') to an already processed JAI collection ('db_parent')
-        mycelia_bases=[
-            {
-            'db_parent':'california',
-            'id_name':'id_house'
-            }
-        ],
-
-        # Set the column label name and the task type for the Supervised Model
-        # Task can be: Regression, Quantile Regression, Classification or Metric Classification
-        label=
-        {
-            'task':'regression',
-            'label_name':'MedHouseVal'
-        }
-    )
-
-Output:
-
-.. code:: bash
+    >>> # j.fit === j.setup
+    >>> data_sup = labels.reset_index().rename(columns={"index": "id_house"})
+    >>> ans = j.fit(
+    >>>     # JAI collection name
+    >>>     name='california_regression',
+    >>>     
+    >>>     # verbose 2 -> shows the loss graph at the end of training
+    >>>     verbose=2,
+    >>>     
+    >>>     # data to be processed - a Pandas DataFrame is expected
+    >>>     data=data_sup,
+    >>>     
+    >>>     # collection type
+    >>>     db_type='Supervised',
+    >>>     
+    >>>     # JAI Collection Foreign Key
+    >>>     # reference an id column ('id_name') to an already processed JAI collection ('db_parent')
+    >>>     mycelia_bases=[
+    >>>         {
+    >>>         'db_parent':'california',
+    >>>         'id_name':'id_house'
+    >>>         }
+    >>>     ],
+    >>> 
+    >>>     # Set the column label name and the task type for the Supervised Model
+    >>>     # Task can be: Regression, Quantile Regression, Classification or Metric Classification
+    >>>     label=
+    >>>     {
+    >>>         'task':'regression',
+    >>>         'label_name':'MedHouseVal'
+    >>>     }
+    >>> )
 
     Insert Data: 100%|██████████| 2/2 [00:02<00:00,  1.34s/it]
 
@@ -278,24 +270,21 @@ Model Inference
 
 .. code:: python
 
-    # every JAI collection can be queried using j.similar()
-    ans = j.similar(
-        # collection to be queried
-        name='california_regression',
-        # let's find houses that are similar to ids 1 and 10
-        data=[1, 10]
-    )
-
-Output:
-
-.. code:: bash
+    >>> # every JAI collection can be queried using j.similar()
+    >>> ans = j.similar(
+    >>>     # collection to be queried
+    >>>     name='california_regression',
+    >>>     # let's find houses that are similar to ids 1 and 10
+    >>>     data=[1, 10]
+    >>> )
 
     Similar: 100%|██████████| 1/1 [00:00<00:00,  1.16it/s]
 
-And now the 'ans' variable holds a JSON:
+And now the :code:`ans` variable holds a list of the similarity results:
 
-.. code:: bash
+.. code:: python
 
+    >>> ans
     [{'query_id': 1,
     'results': [{'id': 1, 'distance': 0.0},
     {'id': 1639, 'distance': 0.8954934477806091},
@@ -347,24 +336,21 @@ And by indexing it back to the original dataframe id's, we have:
 
 .. code:: python
 
-      # every JAI Supervised collection can be used for inference using j.predict()
-      ans = j.predict(
-         # collection to be queried
-         name='california_regression',
-         # let's get prices for the first five houses in the dataset, using their ids
-         data=data.head()
-      )
-
-Output:
-
-.. code:: bash
+    >>> # every JAI Supervised collection can be used for inference using j.predict()
+    >>> ans = j.predict(
+    >>>     # collection to be queried
+    >>>     name='california_regression',
+    >>>     # let's get prices for the first five houses in the dataset, using their ids
+    >>>     data=data.head()
+    >>> )
 
     Predict: 100%|██████████| 1/1 [00:04<00:00,  4.68s/it]
 
-And now the 'ans' variable holds a JSON:
+And now the :code:`ans` variable holds a JSON:
 
-.. code:: bash
+.. code:: python
 
+    >>> ans
     [{'id': 0, 'predict': 4.297857761383057},
     {'id': 1, 'predict': 4.351778507232666},
     {'id': 2, 'predict': 4.426850318908691},
@@ -399,27 +385,24 @@ Always deployed (REST)
 
 .. code:: python
 
-    # Similarity Search via REST API
-
-    # import requests libraries
-    import requests
-
-    # set Authentication header
-    header={'Auth': 'AUTH KEY'}
-
-    # set collection name
-    db_name = 'california'
-
-    # similarity search endpoint
-    url_similar = f"https://mycelia.azure-api.net/similar/id/{db_name}"
-    body = [1, 10]
-
-    #make the request (PUT)
-    ans = requests.put(url_similar, json=body, headers=header)
-
-Output - ans.json():
-
-.. code:: bash
+    >>> # Similarity Search via REST API
+    >>> 
+    >>> # import requests libraries
+    >>> import requests
+    >>> 
+    >>> # set Authentication header
+    >>> header={'Auth': 'AUTH KEY'}
+    >>> 
+    >>> # set collection name
+    >>> db_name = 'california'
+    >>> 
+    >>> # similarity search endpoint
+    >>> url_similar = f"https://mycelia.azure-api.net/similar/id/{db_name}"
+    >>> body = [1, 10]
+    >>> 
+    >>> # make the request (PUT)
+    >>> ans = requests.put(url_similar, json=body, headers=header)
+    >>> ans.json()
 
     {'similarity': [{'query_id': 1,
                      'results': [{'distance': 0.0, 'id': 1},
@@ -436,31 +419,28 @@ Output - ans.json():
 
 .. code:: python
 
-    # Model Inference via REST API
-
-    # import requests libraries
-    import requests
-    
-    # set Authentication header
-    header={'Auth': 'AUTH KEY'}
-
-    # set collection name
-    db_name = 'california_regression'
-
-    # model inference endpoint
-    url_predict = f"https://mycelia.azure-api.net/predict/{db_name}"
-
-    # json body
-    # note that we need to provide a column named 'id'
-    # also note that we drop the 'PRICE' column because it is not a feature
-    body = data.reset_index().rename(columns={'index':'id'}).head().to_dict(orient='records')
-    
-    #make the request
-    ans = requests.put(url_predict, json=body, headers=header)
-
-Output - ans.json():
-
-.. code:: bash
+    >>> # Model Inference via REST API
+    >>> 
+    >>> # import requests libraries
+    >>> import requests
+    >>> 
+    >>> # set Authentication header
+    >>> header={'Auth': 'AUTH KEY'}
+    >>> 
+    >>> # set collection name
+    >>> db_name = 'california_regression'
+    >>> 
+    >>> # model inference endpoint
+    >>> url_predict = f"https://mycelia.azure-api.net/predict/{db_name}"
+    >>> 
+    >>> # json body
+    >>> # note that we need to provide a column named 'id'
+    >>> # also note that we drop the 'PRICE' column because it is not a feature
+    >>> body = data.reset_index().rename(columns={'index':'id'}).head().to_dict(orient='records')
+    >>> 
+    >>> # make the request
+    >>> ans = requests.put(url_predict, json=body, headers=header)
+    >>> ans.json()
 
     [{'id': 0, 'predict': 4.297857761383057},
      {'id': 1, 'predict': 4.351778507232666},
