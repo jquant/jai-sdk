@@ -61,6 +61,7 @@ Self-Supervised Learning
 * JAI 
 
 .. code:: python
+
     import pandas as pd
     from sklearn.datasets import fetch_california_housing
       
@@ -157,6 +158,7 @@ And now the 'ans' variable holds a JSON:
 And by indexing it back to the original dataframe id's, we have:
 
 .. code:: python
+
     >>> # import tabulate only to print the results 
     >>> from tabulate import tabulate  # (not required)
     >>>
