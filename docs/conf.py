@@ -75,3 +75,6 @@ html_css_files = [
 ]
 
 add_module_names = False
+
+copybutton_prompt_text = ">>> "
+copybutton_copy_empty_lines = False
