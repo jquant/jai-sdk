@@ -8,7 +8,7 @@ import time
 from io import BytesIO
 from .base import BaseJai
 from .processing import (process_similar, process_resolution, process_predict)
-from .functions.utils_funcs import data2json, pbar_steps
+from .functions.utils_funcs import data2json
 from .functions.classes import PossibleDtypes, Mode
 from .functions import exceptions
 from fnmatch import fnmatch
@@ -16,6 +16,8 @@ import matplotlib.pyplot as plt
 from pandas.api.types import is_integer_dtype
 from sklearn.model_selection import StratifiedShuffleSplit
 from tqdm import trange, tqdm
+
+import warnings
 
 __all__ = ["Jai"]
 
@@ -746,12 +748,13 @@ class Jai(BaseJai):
         if db_type == PossibleDtypes.selfsupervised:
             possible.extend([
                 'num_process', 'cat_process', 'datetime_process',
-                'mycelia_bases', "features"
+                'mycelia_bases', "pretrained_bases", "features"
             ])
         elif db_type == PossibleDtypes.supervised:
             possible.extend([
                 'num_process', 'cat_process', 'datetime_process',
-                'mycelia_bases', "features", 'label', 'split'
+                'mycelia_bases', "pretrained_bases", "features", 'label',
+                'split'
             ])
             must.extend(['label'])
 
@@ -764,6 +767,10 @@ class Jai(BaseJai):
             val = kwargs.get(key, None)
             if val is not None:
                 body[key] = val
+                if val == "mycelia_bases":
+                    warnings.warn(
+                        f"`mycelia_bases` will be deprecated in a later version (0.18.0), please use `pretrained_bases` instead. ",
+                        DeprecationWarning)
 
         body["db_type"] = db_type
         return body
@@ -893,11 +900,8 @@ class Jai(BaseJai):
                 "Iteration: ")[1].strip().split(" / ")
             return int(curr_step), int(max_iterations)
 
-        max_steps = None
-        while max_steps is None:
-            status = self.status[name]
-            starts_at, max_steps = pbar_steps(status=status)
-            time.sleep(1)
+        status = self.status[name]
+        starts_at, max_steps = status["CurrentStep"], status["TotalSteps"]
 
         step = starts_at
         aux = 0
@@ -936,18 +940,16 @@ class Jai(BaseJai):
                     if (step == starts_at) and (aux == 0):
                         pbar.update(starts_at)
                     else:
-                        diff = step - starts_at
-                        pbar.update(diff)
+                        pbar.update(step - starts_at)
                         starts_at = step
 
-                    step, _ = pbar_steps(status=status, step=step)
+                    step = status["CurrentStep"]
                     time.sleep(frequency_seconds)
                     status = self.status[name]
                     aux += 1
 
                 if (starts_at != max_steps) and aux != 0:
-                    diff = max_steps - starts_at
-                    pbar.update(diff)
+                    pbar.update(max_steps - starts_at)
                 elif (starts_at != max_steps) and aux == 0:
                     pbar.update(max_steps)
 
@@ -1415,9 +1417,11 @@ class Jai(BaseJai):
                 "split_column": column,
                 "test_size": 0.2
             }
-            mycelia_bases = kwargs.get("mycelia_bases", [])
-            mycelia_bases.extend(prep_bases)
-            kwargs['mycelia_bases'] = mycelia_bases
+
+            pretrained_bases = kwargs.get("pretrained_bases",
+                                          kwargs.get("mycelia_bases", []))
+            pretrained_bases.extend(prep_bases)
+            kwargs['pretrained_bases'] = pretrained_bases
 
             self.setup(
                 name,
@@ -1638,9 +1642,10 @@ class Jai(BaseJai):
                 "test_size": 0.2
             }
 
-            mycelia_bases = kwargs.get("mycelia_bases", [])
-            mycelia_bases.extend(prep_bases)
-            kwargs['mycelia_bases'] = mycelia_bases
+            pretrained_bases = kwargs.get("pretrained_bases",
+                                          kwargs.get("mycelia_bases", []))
+            pretrained_bases.extend(prep_bases)
+            kwargs['pretrained_bases'] = pretrained_bases
 
             self.setup(
                 name,
