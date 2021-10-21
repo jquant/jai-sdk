@@ -21,7 +21,7 @@ The Fit Method
 
 * By changing the "db_type" argument, JAI can process Text Documents, Images, Structured (Tabular) data into vectors.
 
-* Using the "mycelia_bases" argument, users can combine any kind of data to create rich, multi-modal and hierarchical representations.
+* Using the "pretrained_bases" argument, users can combine any kind of data to create rich, multi-modal and hierarchical representations.
 
 .. code:: python
 

@@ -214,7 +214,7 @@ Supervised Learning
     >>>     
     >>>     # JAI Collection Foreign Key
     >>>     # reference an id column ('id_name') to an already processed JAI collection ('db_parent')
-    >>>     mycelia_bases=[
+    >>>     pretrained_bases=[
     >>>         {
     >>>         'db_parent':'california',
     >>>         'id_name':'id_house'

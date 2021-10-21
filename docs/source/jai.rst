@@ -168,7 +168,7 @@ Here are the parameters that can be used for SelfSupervised models:
   * **scaler** (*str*) -- (*required*) scaling for dtype numerical features.
   * **min_freq** (*int*) -- categories with less than that will be discarted, for dtype category. *Default is 0*.
 
-* **mycelia_bases** (*list of dicts*) -- Related already processed data that will be used in the setup of this new one. If a column has id values that 
+* **pretrained_bases** (*list of dicts*) -- Related already processed data that will be used in the setup of this new one. If a column has id values that 
   represent a database already preprocessed, then:
 
   * **db_parent** (*str*) -- (*required*) Name of the preprocessed database.
@@ -247,7 +247,7 @@ Here are the parameters that can be used for Supervised models:
   * **scaler** (*str*) -- (*required*) scaling for dtype numerical features.
   * **min_freq** (*int*) -- categories with less than that will be discarted, for dtype category. *Default is 0*.
 
-* **mycelia_bases** (*list of dicts*) -- Related already processed data that will be used in the setup of this new one. If a column has id values that 
+* **pretrained_bases** (*list of dicts*) -- Related already processed data that will be used in the setup of this new one. If a column has id values that 
   represent a database already preprocessed, then:
 
   * **db_parent** (*str*) -- (*required*) Name of the preprocessed database.
