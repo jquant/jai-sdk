@@ -2,12 +2,12 @@
 Creating Supervised Models
 ##########################
 
-Setup applying Supervised Model
+Fit applying Supervised Model
 ===============================
 
 .. code-block:: python
 
-    >>> j.setup(name, data, db_type='Supervised', label={"task": "classification", "label_name": "my_label"})
+    >>> j.fit(name, data, db_type='Supervised', label={"task": "classification", "label_name": "my_label"})
 
 
 Tasks
