@@ -1,5 +1,5 @@
 ###########################
-Setup: Creating Collections
+Fit: Creating Collections
 ###########################
 
 JAI works by creating feature-rich representations based on latent vectors, and storing them efficiently in what is called **collections**.
@@ -7,22 +7,25 @@ JAI works by creating feature-rich representations based on latent vectors, and 
 .. note::
     A **Collection** is always created by the **Setup** method.
 
+.. note::
+    Since version 0.10.0, the methods :code:`fit` was added with the same purpose as :code:`setup` and the method :code:`append` as :code:`add_data`.
+
 ******
 Basics
 ******
 
-The Setup Method
+The Fit Method
 ================
 
-* The setup method is JAI's most important and central piece - it is responsible for sending and transforming raw data into vectors and then creating and indexing them into collections.
+* The fit method is JAI's most important and central piece - it is responsible for sending and transforming raw data into vectors and then creating and indexing them into collections.
 
 * By changing the "db_type" argument, JAI can process Text Documents, Images, Structured (Tabular) data into vectors.
 
-* Using the "mycelia_bases" argument, users can combine any kind of data to create rich, multi-modal and hierarchical representations.
+* Using the "pretrained_bases" argument, users can combine any kind of data to create rich, multi-modal and hierarchical representations.
 
 .. code:: python
 
-	j.setup(
+	j.fit(
 		name='Collection_Name',
 		data=data,
 		db_type='SelfSupervised'
@@ -51,20 +54,20 @@ The Setup Method
 .. warning::
     After extracting the latent vectors, all the raw data sent to jai is deleted. There is no way to query raw data on JAI.
 
-********************
-Setup for Table data
-********************
+***********************
+Fit for Table data
+***********************
 
-Setup applying Self-Supervised Model
+Fit applying Self-Supervised Model
 ====================================
 
 .. code-block:: python
 
-    >>> j.setup(name, data, db_type='Unsupervised')
+    >>> j.fit(name, data, db_type='SelfSupervised')
 
 
 *************************
-Setup for Text data (NLP)
+Fit for Text data (NLP)
 *************************
 
 For any uses of text-type data, data can be a list of texts, pandas Series or DataFrame.
@@ -72,7 +75,7 @@ For any uses of text-type data, data can be a list of texts, pandas Series or Da
 * If data is a list, then the ids will be set with :code:`range(len(data_list))`.
 * If data is a pandas type, then the ids will be set as described above.
 
-Setup applying NLP FastText model
+Fit applying NLP FastText model
 =================================
 
 This is an example of database with a fasttext model implementation. 
@@ -80,9 +83,9 @@ This is an example of database with a fasttext model implementation.
 .. code-block:: python
 
     >>> name = 'text_data'
-    >>> j.setup(name, data, db_type='FastText')
+    >>> j.fit(name, data, db_type='FastText')
 
-Setup applying NLP BERT model
+Fit applying NLP BERT model
 =============================
 
 The transformers model used by defaul is the BERT.
@@ -96,21 +99,21 @@ This time we choose :code:`db_type="Text"`, applying the pre-trained BERT model
 
 .. code-block:: python
 
-    >>> j.setup(name, data, db_type='Text')
+    >>> j.fit(name, data, db_type='Text')
 
 
-Setup applying Edit Distance Model
+Fit applying Edit Distance Model
 ==================================
 
 It's also possible to use an model trained to reproduce the neighboring relation of the edit distance.
 
 .. code-block:: python
 
-    >>> j.setup(name, data, db_type='TextEdit')
+    >>> j.fit(name, data, db_type='TextEdit')
 
 
 ********************
-Setup for Image data
+Fit for Image data
 ********************
 
 For any uses of image-type data, data should be encoded before inserting it into the Jai class.
@@ -124,16 +127,16 @@ The encoded string can then be inserted into a list, pandas Series or DataFrame.
 We provide :code:`read_image_folder` and :code:`resize_image_folder` functions for reading and resizing images from a local folder.
 Resizing images before inserting is recommended because it reduces writing, reading and processing time during model inference.
 
-Setup applying Image Model
+Fit applying Image Model
 ==========================
 
 Images are processed using torchvision pretrained models.
 
 .. code-block:: python
 
-    >>> j.setup(name, data, db_type='Image')
+    >>> j.fit(name, data, db_type='Image')
 
 .. note::
-    The method :code:`setup` has a default :code:`batch_size=16384`, which will result in a total of :code:`ceil(n_samples/batch_size) + n + 5` requests, where :code:`n = ceil(training_time/frequency_seconds)` is a variable number depending on the time it takes to finish the setup.
+    The method :code:`fit` has a default :code:`batch_size=16384`, which will result in a total of :code:`ceil(n_samples/batch_size) + n + 5` requests, where :code:`n = ceil(training_time/frequency_seconds)` is a variable number depending on the time it takes to finish the setup.
     We do NOT recommend changing the :code:`batch_size` default value as it could reduce the performance of the API. 
-    As for the :code:`frequency_seconds`, it could be changed affecting only the frequecy of the progress bar's updates. If :code:`frequency_seconds = 0`, then there will be no progress bar printed, requiring the user to interpret the response from :code:`j.status`.
+    As for the :code:`frequency_seconds`, it could be changed affecting only the frequecy of the progress bar's updates. If :code:`frequency_seconds < 1`, then there will be no progress bar printed, requiring the user to interpret the response from :code:`j.status`.

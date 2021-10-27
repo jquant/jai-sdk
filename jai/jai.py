@@ -8,7 +8,7 @@ import time
 from io import BytesIO
 from .base import BaseJai
 from .processing import (process_similar, process_resolution, process_predict)
-from .functions.utils_funcs import data2json, pbar_steps
+from .functions.utils_funcs import data2json
 from .functions.classes import PossibleDtypes, Mode
 from .functions import exceptions
 from fnmatch import fnmatch
@@ -16,6 +16,8 @@ import matplotlib.pyplot as plt
 from pandas.api.types import is_integer_dtype
 from sklearn.model_selection import StratifiedShuffleSplit
 from tqdm import trange, tqdm
+
+import warnings
 
 __all__ = ["Jai"]
 
@@ -97,6 +99,7 @@ class Jai(BaseJai):
             })
         return df.sort_values(by="name")
 
+    # TODO: this property should be removed in the future
     @property
     def status(self, max_tries=5, patience=25):
         """
@@ -124,6 +127,71 @@ class Jai(BaseJai):
                 time.sleep(patience // max_tries)
                 tries += 1
         return self._status()
+
+    def fields(self, name: str):
+        """
+        Get the table fields for a Supervised/SelfSupervised database.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Return
+        ------
+        response : dict
+            Dictionary with table fields.
+
+        Example
+        -------
+        >>> name = 'chosen_name'
+        >>> j = Jai(AUTH_KEY)
+        >>> fields = j.fields(name=name)
+        >>> print(fields)
+        {'id': 0, 'feature1': 0.01, 'feature2': 'string', 'feature3': 0}
+        """
+        return self._fields(name)
+
+    def describe(self, name: str):
+        """
+        Get the database hyperparameters and parameters of a specific database.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Return
+        ------
+        response : dict
+            Dictionary with database description.
+        """
+        return self._describe(name)
+
+    def get_dtype(self, name):
+        """
+        Return the database type.
+
+        Parameters
+        ----------
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Raises
+        ------
+        ValueError
+            If the name is not valid.
+
+        Returns
+        -------
+        db_type : str
+            The name of the type of the database.
+
+        """
+        info = self.info
+        if name in info["name"].to_numpy():
+            return info.loc[info["name"] == name, "type"].values[0]
+        raise ValueError(f"{name} is not a valid name.")
 
     def generate_name(self,
                       length: int = 8,
@@ -488,12 +556,13 @@ class Jai(BaseJai):
         }
         """
         overwrite = kwargs.get("overwrite", False)
-        if overwrite and name in self.names:
-            self.delete_database(name)
-        elif name in self.names:
-            raise KeyError(
-                f"Database '{name}' already exists in your environment. Set overwrite=True to overwrite it."
-            )
+        if name in self.names:
+            if overwrite:
+                self.delete_database(name)
+            else:
+                raise KeyError(
+                    f"Database '{name}' already exists in your environment. Set overwrite=True to overwrite it."
+                )
         else:
             # delete data reamains
             self.delete_raw_data(name)
@@ -679,12 +748,13 @@ class Jai(BaseJai):
         if db_type == PossibleDtypes.selfsupervised:
             possible.extend([
                 'num_process', 'cat_process', 'datetime_process',
-                'mycelia_bases', "features"
+                'mycelia_bases', "pretrained_bases", "features"
             ])
         elif db_type == PossibleDtypes.supervised:
             possible.extend([
                 'num_process', 'cat_process', 'datetime_process',
-                'mycelia_bases', "features", 'label', 'split'
+                'mycelia_bases', "pretrained_bases", "features", 'label',
+                'split'
             ])
             must.extend(['label'])
 
@@ -697,6 +767,10 @@ class Jai(BaseJai):
             val = kwargs.get(key, None)
             if val is not None:
                 body[key] = val
+                if val == "mycelia_bases":
+                    warnings.warn(
+                        f"`mycelia_bases` will be deprecated in a later version (0.18.0), please use `pretrained_bases` instead. ",
+                        DeprecationWarning)
 
         body["db_type"] = db_type
         return body
@@ -746,32 +820,6 @@ class Jai(BaseJai):
         print()
         print(result["Loading from checkpoint"].split("\n")
               [1]) if 'Loading from checkpoint' in result.keys() else None
-
-    def get_dtype(self, name):
-        """
-        Return the database type.
-
-        Parameters
-        ----------
-        name : str
-            String with the name of a database in your JAI environment.
-
-        Raises
-        ------
-        ValueError
-            If the name is not valid.
-
-        Returns
-        -------
-        db_type : str
-            The name of the type of the database.
-
-        """
-        if self.is_valid(name):
-            dtypes = self.info
-            return dtypes.loc[dtypes["name"] == name, "type"].values[0]
-        else:
-            raise ValueError(f"{name} is not a valid name.")
 
     def _check_ids_consistency(self, name, data):
         """
@@ -825,60 +873,10 @@ class Jai(BaseJai):
                 PossibleDtypes.text,
                 PossibleDtypes.fasttext,
                 PossibleDtypes.edit,
-        ]:
+        ] and data.isna().to_numpy().any():
+            print("Droping NA values")
             data = data.dropna()
-        else:
-            cols_to_drop = []
-            for col in data.select_dtypes(include=["category", "O"]).columns:
-                if data[col].nunique() > 1024:
-                    cols_to_drop.append(col)
-            data = data.dropna(subset=cols_to_drop)
         return data
-
-    def fields(self, name: str):
-        """
-        Get the table fields for a Supervised/SelfSupervised database.
-
-        Args
-        ----
-        name : str
-            String with the name of a database in your JAI environment.
-
-        Return
-        ------
-        response : dict
-            Dictionary with table fields.
-
-        Example
-        -------
-        >>> name = 'chosen_name'
-        >>> j = Jai(AUTH_KEY)
-        >>> fields = j.fields(name=name)
-        >>> print(fields)
-        {'id': 0, 'feature1': 0.01, 'feature2': 'string', 'feature3': 0}
-        """
-        dtype = self.get_dtype(name)
-        if dtype != PossibleDtypes.selfsupervised and dtype != PossibleDtypes.supervised:
-            raise ValueError(
-                "'fields' method is only available to dtype SelSupervised and Supervised."
-            )
-        return self._fields(name)
-
-    def describe(self, name: str):
-        """
-        Get the database hyperparameters and parameters of a specific database.
-
-        Args
-        ----
-        name : str
-            String with the name of a database in your JAI environment.
-
-        Return
-        ------
-        response : dict
-            Dictionary with database description.
-        """
-        return self._describe(name)
 
     def wait_setup(self, name: str, frequency_seconds: int = 1):
         """
@@ -902,11 +900,8 @@ class Jai(BaseJai):
                 "Iteration: ")[1].strip().split(" / ")
             return int(curr_step), int(max_iterations)
 
-        max_steps = None
-        while max_steps is None:
-            status = self.status[name]
-            starts_at, max_steps = pbar_steps(status=status)
-            time.sleep(1)
+        status = self.status[name]
+        starts_at, max_steps = status["CurrentStep"], status["TotalSteps"]
 
         step = starts_at
         aux = 0
@@ -945,18 +940,16 @@ class Jai(BaseJai):
                     if (step == starts_at) and (aux == 0):
                         pbar.update(starts_at)
                     else:
-                        diff = step - starts_at
-                        pbar.update(diff)
+                        pbar.update(step - starts_at)
                         starts_at = step
 
-                    step, _ = pbar_steps(status=status, step=step)
+                    step = status["CurrentStep"]
                     time.sleep(frequency_seconds)
                     status = self.status[name]
                     aux += 1
 
                 if (starts_at != max_steps) and aux != 0:
-                    diff = max_steps - starts_at
-                    pbar.update(diff)
+                    pbar.update(max_steps - starts_at)
                 elif (starts_at != max_steps) and aux == 0:
                     pbar.update(max_steps)
 
@@ -1424,9 +1417,11 @@ class Jai(BaseJai):
                 "split_column": column,
                 "test_size": 0.2
             }
-            mycelia_bases = kwargs.get("mycelia_bases", [])
-            mycelia_bases.extend(prep_bases)
-            kwargs['mycelia_bases'] = mycelia_bases
+
+            pretrained_bases = kwargs.get("pretrained_bases",
+                                          kwargs.get("mycelia_bases", []))
+            pretrained_bases.extend(prep_bases)
+            kwargs['pretrained_bases'] = pretrained_bases
 
             self.setup(
                 name,
@@ -1647,9 +1642,10 @@ class Jai(BaseJai):
                 "test_size": 0.2
             }
 
-            mycelia_bases = kwargs.get("mycelia_bases", [])
-            mycelia_bases.extend(prep_bases)
-            kwargs['mycelia_bases'] = mycelia_bases
+            pretrained_bases = kwargs.get("pretrained_bases",
+                                          kwargs.get("mycelia_bases", []))
+            pretrained_bases.extend(prep_bases)
+            kwargs['pretrained_bases'] = pretrained_bases
 
             self.setup(
                 name,

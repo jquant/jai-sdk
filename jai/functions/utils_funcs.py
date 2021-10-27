@@ -9,36 +9,7 @@ from operator import itemgetter
 from functools import cmp_to_key
 from .classes import FieldName, PossibleDtypes
 
-__all__ = ["data2json", "pbar_steps"]
-
-
-def get_status_json(file_path="pbar_status.json"):
-    pbar_status_path = Path(file_path)
-    with open(pbar_status_path, 'r') as f:
-        status_dict = json.load(f)
-    return status_dict
-
-
-def compare_regex(setup_task: str):
-    return re.findall('\[(.*?)\]', setup_task)[0]
-
-
-def pbar_steps(status: List = None, step: int = 0):
-    PBAR_STATUS_PATH = Path(
-        __file__).parent.parent / "auxiliar/pbar_status.json"
-    setup_task = status['Description']
-
-    try:
-        db_type = compare_regex(setup_task)
-        possible_tasks = get_status_json(PBAR_STATUS_PATH)[db_type]
-        for index, task in enumerate(possible_tasks):
-            pattern = re.compile(task)
-            is_my_task = pattern.search(setup_task)
-            if is_my_task:
-                return index + 1, len(possible_tasks)
-        return step, None
-    except:
-        return step, None
+__all__ = ["data2json"]
 
 
 def series2json(data_series):
