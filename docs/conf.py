@@ -49,7 +49,7 @@ exclude_patterns = [
 # a list of builtin themes.
 #
 html_logo = './static/logo.png'
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'sphinx_book_theme'
 html_theme_options = {
     'analytics_anonymize_ip': False,
     'logo_only': False,
