@@ -22,8 +22,10 @@ project = 'jai-sdk'
 copyright = '2021, JQuant'
 author = 'JQuant'
 
+from jai import __version__ as version
+release = version
 # The full version, including alpha/beta/rc tags
-release = 'v0.1.2'
+# release = 'v0.1.2'
 
 # -- General configuration ---------------------------------------------------
 
@@ -48,9 +50,18 @@ exclude_patterns = [
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_logo = './static/logo.png'
+html_logo = './static/jai_logo.png'
 html_theme = 'sphinx_book_theme'
+html_title = f"Jai v{release}"
 html_theme_options = {
+    # New theme
+    "repository_url": "https://github.com/jquant/jai-sdk",
+    "use_repository_button": True,
+    "use_issues_button": True,
+    "use_edit_page_button": True,
+    "path_to_docs": "docs",
+
+    # Old theme
     'analytics_anonymize_ip': False,
     'logo_only': False,
     'display_version': True,
