@@ -65,17 +65,17 @@ html_theme_options = {
     # Old theme
     'analytics_anonymize_ip': False,
     'logo_only': False,
-    'display_version': True,
-    'prev_next_buttons_location': 'bottom',
-    'style_external_links': False,
-    'vcs_pageview_mode': '',
-    'style_nav_header_background': '#fa5f1e',
+    # 'display_version': True,
+    # 'prev_next_buttons_location': 'bottom',
+    # 'style_external_links': False,
+    # 'vcs_pageview_mode': '',
+    # 'style_nav_header_background': '#fa5f1e',
     # Toc options
     'collapse_navigation': True,
     'sticky_navigation': True,
     'navigation_depth': 4,
-    'includehidden': True,
-    'titles_only': False
+    # 'includehidden': True,
+    # 'titles_only': False
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
