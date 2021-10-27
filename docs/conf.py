@@ -23,6 +23,7 @@ copyright = '2021, JQuant'
 author = 'JQuant'
 
 from jai import __version__ as version
+
 release = version
 # The full version, including alpha/beta/rc tags
 # release = 'v0.1.2'
