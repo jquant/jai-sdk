@@ -12,7 +12,7 @@
 #
 import os
 import sys
-import sphinx_rtd_theme
+import sphinx_book_theme
 
 sys.path.insert(0, os.path.abspath('..'))
 
@@ -33,7 +33,7 @@ release = version
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.napoleon', 'sphinx_book_theme', 'sphinx_copybutton']
+extensions = ['sphinx.ext.napoleon', 'sphinx_copybutton']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -53,7 +53,7 @@ exclude_patterns = [
 #
 html_logo = './static/jai_logo.png'
 html_theme = 'sphinx_book_theme'
-html_title = f"Jai v{release}"
+html_title = f"Jai {release}"
 html_theme_options = {
     # New theme
     "repository_url": "https://github.com/jquant/jai-sdk",
@@ -70,21 +70,21 @@ html_theme_options = {
     # 'style_external_links': False,
     # 'vcs_pageview_mode': '',
     # 'style_nav_header_background': '#fa5f1e',
-    # Toc options
+    # # Toc options
     # 'collapse_navigation': True,
     # 'sticky_navigation': True,
     # 'navigation_depth': 4,
     # 'includehidden': True,
     # 'titles_only': False
 }
-
+# html_sidebars = {"**": ["sidebar-logo.html"]}
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
-html_css_files = [
-    'css/custom.css',
-]
+# html_static_path = ['_static']
+# html_css_files = [
+#     'css/custom.css',
+# ]
 
 add_module_names = False
 
