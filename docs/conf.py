@@ -51,13 +51,14 @@ exclude_patterns = [
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_logo = './static/jai_logo.png'
+html_logo = 'source/images/jai_logo.png'
 html_theme = 'sphinx_book_theme'
-html_title = f"Jai {release}"
+html_title = f"JAI-SDK {release}"
 html_theme_options = {
     # New theme
     "repository_url": "https://github.com/jquant/jai-sdk",
     "use_repository_button": True,
+    "repository_branch": "main",
     "use_issues_button": True,
     "use_edit_page_button": True,
     "path_to_docs": "docs",
@@ -81,10 +82,10 @@ html_theme_options = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ['_static']
-# html_css_files = [
-#     'css/custom.css',
-# ]
+html_static_path = ['_static']
+html_css_files = [
+    'css/custom.css',
+]
 
 add_module_names = False
 

@@ -3,45 +3,42 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-##########################
-JAI-SDK - Trust your data!
-##########################
+What is JAI-SDK?
+================
 
-Great to see you here!
-
-JAI is a productivity-oriented, vector-based, ML Platform, served via REST API or Python SDK (other languages coming soon).
+.. include:: source/overview.rst
 
 .. toctree::
    :maxdepth: 2
-   :caption: Getting Started
+   :caption: An overview of JAI-SDK
 
-   source/5min_jai
-   source/data_cleaning
+   source/getting_started.rst
+   source/data_cleaning.rst
    
 .. toctree::
    :maxdepth: 1
    :caption: Managing Collections
 
-   use_cases/setup_data
-   use_cases/supervised
-   use_cases/check_database
-   use_cases/remove_data
+   source/use_cases/setup_data.rst
+   source/use_cases/supervised.rst
+   source/use_cases/check_database.rst
+   source/use_cases/remove_data.rst
 
 
 .. toctree::
    :maxdepth: 1
    :caption: Using Collections
    
-   use_cases/similarity
-   use_cases/predict
+   source/use_cases/similarity.rst
+   source/use_cases/predict.rst
 
 .. toctree::
    :maxdepth: 1
    :caption: Advanced
 
-   advanced/report
-   advanced/hierarchical
-   advanced/multimodal
+   source/advanced/report
+   source/advanced/hierarchical
+   source/advanced/multimodal
 
 .. toctree::
    :maxdepth: 1
@@ -56,8 +53,8 @@ JAI is a productivity-oriented, vector-based, ML Platform, served via REST API o
    :maxdepth: 2
    :caption: API Reference
    
-   source/jai
-   source/auxiliar
+   source/reference/jai
+   source/reference/auxiliar
 
 ##################
 Indices and tables

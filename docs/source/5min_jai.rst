@@ -1,6 +1,6 @@
-#####################################
+=====================================
 JAI in 5 minutes - California Housing
-#####################################
+=====================================
 
 ************************
 What are we going to do?
@@ -13,9 +13,9 @@ In this quick demo, we will use JAI to:
 * Model Inference - Predict house prices using a supervised machine learning model
 
 
-***************
+***********
 Install JAI
-***************
+***********
 
 Start by installing JAI with pip:
 
