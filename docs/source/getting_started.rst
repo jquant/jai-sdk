@@ -1,23 +1,26 @@
-.. _getting-started:
+.. _jai-in-5-minutes:
 
 ===============
 Getting Started
 ===============
 
-Installing JAI-SDK
-------------------
+Installation
+------------
+
 The latest version of JAI-SDK can be installed from pip as follows:
 
 .. code:: bash
 
     pip install jai-sdk --user
 
-Getting an auth key
--------------------
+Nowadays, JAI supports python 3.7+.
+
+Getting your auth key
+---------------------
 
 JAI requires an Auth Key to organize and secure collections. You can easily generate your free-forever auth-key by running the command below:
 
-.. code::
+.. code:: python
 
     from jai import Jai
 

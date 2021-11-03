@@ -23,9 +23,9 @@ Start by installing JAI with pip:
 
     pip install jai-sdk --user
       
-*****************
+**********
 Import JAI
-*****************
+**********
 
 In your python IDE of preference, you import JAI with:
 

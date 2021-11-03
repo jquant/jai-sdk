@@ -9,14 +9,16 @@ What is JAI-SDK?
 .. include:: source/overview.rst
 
 .. toctree::
-   :maxdepth: 2
+   :hidden:
+   :maxdepth: -1
    :caption: An overview of JAI-SDK
 
    source/getting_started.rst
    source/data_cleaning.rst
    
 .. toctree::
-   :maxdepth: 1
+   :hidden:
+   :maxdepth: -1
    :caption: Managing Collections
 
    source/use_cases/setup_data.rst
@@ -24,16 +26,17 @@ What is JAI-SDK?
    source/use_cases/check_database.rst
    source/use_cases/remove_data.rst
 
-
 .. toctree::
-   :maxdepth: 1
+   :hidden:
+   :maxdepth: -1
    :caption: Using Collections
    
    source/use_cases/similarity.rst
    source/use_cases/predict.rst
 
 .. toctree::
-   :maxdepth: 1
+   :hidden:
+   :maxdepth: -1
    :caption: Advanced
 
    source/advanced/report
@@ -41,7 +44,8 @@ What is JAI-SDK?
    source/advanced/multimodal
 
 .. toctree::
-   :maxdepth: 1
+   :hidden:
+   :maxdepth: -1
    :caption: Examples (Google Colab)
 
    Smartphone - Similarity Search <https://colab.research.google.com/drive/1NOVqCdnaizptTf42kZmeeWZ3dfvdIr1U?usp=sharing>
@@ -50,16 +54,17 @@ What is JAI-SDK?
    Movielens(100k) - Recommendation <https://drive.google.com/file/d/1LuMp_niA8iG2Hdbditk-94enqlMN6yC-/view?usp=sharing>
 
 .. toctree::
-   :maxdepth: 2
+   :hidden:
+   :maxdepth: -1
    :caption: API Reference
    
    source/reference/jai
    source/reference/auxiliar
 
-##################
-Indices and tables
-##################
+.. ##################
+.. Indices and tables
+.. ##################
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. * :ref:`genindex`
+.. * :ref:`modindex`
+.. * :ref:`search`

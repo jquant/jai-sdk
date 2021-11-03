@@ -2,6 +2,7 @@
 .. image:: /source/images/jai_logo.png
    :scale: 30
    :align: center
+   :class: no-scaled-link
 
 .. admonition:: Section contents
   
@@ -10,7 +11,22 @@
   3. JAI main features and models
   4. How can we run JAI?
 
-Getting started
+Getting Started
 ===============
 
-Check :ref:`getting-started` to obtain more information about how to work with JAI-SDK and its all features.
+Check :ref:`jai-in-5-minutes` to obtain more information about how to work with JAI and all its features.
+
+More Information
+================
+
+Community
+---------
+
+- Join our `Slack community <link to slack>`_ to discuss about JAI!
+- Follow and star us on our `Github repository <link to github>`_.
+- `Twitter <link to Twitter>`_
+
+Videos
+------
+
+Some of our videos
