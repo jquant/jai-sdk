@@ -14,6 +14,7 @@ What is JAI-SDK?
    :caption: An overview of JAI-SDK
 
    source/getting_started.rst
+   source/jai_in_5_minutes.rst
    source/data_cleaning.rst
    
 .. toctree::
