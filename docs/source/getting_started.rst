@@ -85,6 +85,6 @@ JAI supports many other training models, like self-supervised model training. Be
 What to do next?
 ----------------
 
-Visit the :ref:`Jai in 5 Minutes <jai in 5 min>` subsection to get a more complex and detailed example of how to use JAI correctly. 
+Visit :ref:`Jai in 5 Minutes <jai in 5 min>` to get a more complex and detailed example of how to use JAI correctly. 
 
 Read about :ref:`The Fit Method <the fit method>` if you want to get a complete overview of what models JAI can train and what you can do to get your better model.
