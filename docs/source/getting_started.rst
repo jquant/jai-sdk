@@ -75,7 +75,7 @@ In the below example, we'll show how to train a simple supervised model (regress
         overwrite=True)
 
     # Run prediction
-    j.predict(name='stress_california_sup', data=data)
+    j.predict(name='california_supervised', data=data)
 
 In this example, you could train a supervised model with the California housing dataset and run a prediction with some data.
 
