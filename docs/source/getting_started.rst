@@ -18,7 +18,7 @@ Nowadays, JAI supports python 3.7+.
 Getting your auth key
 ---------------------
 
-JAI requires an Auth Key to organize and secure collections. You can quickly generate your free-forever auth-key by running the command below:
+JAI requires an auth key to organize and secure collections. You can quickly generate your free-forever auth-key by running the command below:
 
 .. code:: python
 
@@ -28,7 +28,7 @@ JAI requires an Auth Key to organize and secure collections. You can quickly gen
 
 .. attention::
 
-    Your *auth key* will be sent to your e-mail, so please make sure to use a valid address and check your spam folder.
+    Your auth key will be sent to your e-mail, so please make sure to use a valid address and check your spam folder.
 
 
 How does it work?
