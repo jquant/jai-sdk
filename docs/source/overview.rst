@@ -14,7 +14,8 @@
 Getting Started
 ===============
 
-Check :ref:`jai-in-5-minutes` to obtain more information about how to work with JAI and all its features.
+Check :ref:`Getting Started <gettting started>` to get an overview of how to work with JAI and, also, see :ref:`JAI in 5 Minutes <JAI in 5 Minutes>` to obtain more information about using some of JAI's features.
+
 
 More Information
 ================

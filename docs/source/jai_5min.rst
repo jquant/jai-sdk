@@ -1,3 +1,5 @@
+.. _jai in 5 min:
+
 =====================================
 JAI in 5 minutes - California Housing
 =====================================
@@ -17,7 +19,7 @@ In this quick demo, we will use JAI to:
 Install JAI
 ***********
 
-Start by installing JAI with pip:
+Start by installing JAI with :code:`pip`:
 
 .. code:: bash
 
