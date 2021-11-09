@@ -56,13 +56,9 @@ In the below example, we'll show how to train a simple supervised model (regress
 
     # Send data to JAI for feature extraction
     j.fit(
-        # JAI collection name
-        name='california_supervised',
-        # data to be processed - a Pandas DataFrame is expected
-        data=model_data,
-        # The type of your training ('Supervised', 'SelfSupervised' etc)
-        db_type='Supervised',
-        # verbose 2: shows the loss graph at the end of training
+        name='california_supervised',   # JAI collection name 
+        data=model_data,    # Data to be processed
+        db_type='Supervised',   # Your training type ('Supervised', 'SelfSupervised' etc)
         verbose=2,
         hyperparams={
             'learning_rate': 3e-4,

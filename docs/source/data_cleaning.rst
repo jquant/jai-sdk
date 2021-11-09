@@ -22,6 +22,7 @@ You can find a complete `match example here <https://github.com/jquant/jai-sdk/b
     >>> j = Jai(AUTH_KEY)
     >>> match = j.match(name, data1, data2)
     >>> match
+    
               id_left     id_right     distance
        0            1            2         0.11
        1            2            1         0.11

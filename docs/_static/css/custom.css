@@ -14,3 +14,8 @@ div.navbar-brand-box a.navbar-brand img {
 main.bd-content #main-content img.align-center {
   margin: 40px auto 40px auto;
 }
+
+.highlight .c1 {
+  color: #888888;
+  font-style: italic;
+}

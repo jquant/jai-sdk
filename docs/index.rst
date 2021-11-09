@@ -20,8 +20,9 @@ What is JAI-SDK?
 .. toctree::
    :hidden:
    :maxdepth: -1
-   :caption: Managing Collections
+   :caption: Using JAI
 
+   source/jai_walkthrough.rst
    source/use_cases/setup_data.rst
    source/use_cases/supervised.rst
    source/use_cases/check_database.rst

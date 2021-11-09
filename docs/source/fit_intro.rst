@@ -1,6 +1,6 @@
-#########################
-Fit: Creating Collections
-#########################
+###################
+JAI commom pipeline
+###################
 
 JAI works by creating feature-rich representations based on latent vectors, and storing them efficiently in what is called **collections**.
 
