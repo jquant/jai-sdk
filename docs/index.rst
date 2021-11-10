@@ -22,7 +22,7 @@ What is JAI-SDK?
    :maxdepth: -1
    :caption: Using JAI
 
-   source/jai_walkthrough.rst
+   source/pipeline.rst
    source/use_cases/setup_data.rst
    source/use_cases/supervised.rst
    source/use_cases/check_database.rst
