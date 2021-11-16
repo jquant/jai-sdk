@@ -28,9 +28,29 @@ Here is the list of models that JAI supports:
 
 The sections below show more information about using these models in JAI. For the complete reference of the fit method, look at "API reference".
 
-
-
 .. important:: 
     
     JAI deletes all raw data you sent after running :code:`j.fit`, keeping internally only with the latent vector representation of your training data. 
+
+
+Basics
+------
+The :code:`j.fit` method has three main parameters: :code:`name`, :code:`data` and :code:`db_type`:
+
+.. code:: python
+
+    j.fit(
+        name='Collection_name',
+        data=data,
+        db_type='SelfSupervised'
+    )
+
+- The :code:`name` parameter is the name you will give for the data you are fitting. It must be a string with a **maximum of 32 characters**.
+
+- :code:`data` is the data that you want to fit. It must be a :code:`pandas.DataFrame` or a :code:`pandas.Series`. For using image data, the images first have to be encoded to, after, being inserted to fit, as shown in "Fitting Images".
+
+- :code:`db_type` is the parameter that defines what type of training will be realized by the fit method. The possible values are :code:`'Supervised'`, :code:`'SelfSupervised'`, :code:`'Text'`, :code:`'FastText'`, :code:`'TextEdit'` and :code:`'Image'`. Each of these has its own set of parameters and hyperparameters. For more information about them, check "Fitting Tabular data", "Fitting Text data", and "Fitting Image data".
+
+JAI uses your data index to perform a lot of methods internally. You can define the index of your data in two ways: using the pandas' index or creating a column named :code:`'id'`. When you don't make an :code:`'id'` column, JAI automatically considers your data pandas' index; on the other hand, JAI uses your :code:`'id'` column as your data index. So, take care with duplicated values.
+
 
