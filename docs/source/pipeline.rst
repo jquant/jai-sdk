@@ -75,7 +75,55 @@ There are some important parameters in :code:`j.fit` that can improve your model
 - :code:`'split'`: It defines how JAI will split the data for train and test.
 - :code:`'pretrained_bases'`: This parameter is used when you want to enrich your current train with another already JAI fitted collection in your environment.
 - :code:`'hyperparameters'`: It describes the hyperparameters of the chosen model training.
+- :code:`'label'` (*Supervised*): Parameter used to define the label column of your supervised data.
 
 You can check a complete reference of these parameters in "API reference".
 
 A complete exampĺe of fitting tabular data is shown below:
+
+.. code::
+
+    import pandas as pd
+    from sklearn.datasets import fetch_california_housing
+
+    # Load test dataset.
+    data, labels = fetch_california_housing(as_frame=True, return_X_y=True)
+
+    # Fitting a SelfSupervised collection.
+    # The embeddings created by this fit will be used for training 
+    # a Supervised collection afterwards.
+    j.fit(
+        name='california_selfsupervised',
+        data=data,
+        db_type='SelfSupervised'
+        split={
+            'type': random,
+            'test_size': 0.2
+        }
+        hyperparams={
+            'learning_rate': 3e-4,
+            'pretraining_ratio':0.8
+        }
+    )
+
+    # Getting only the label column and renaming it.
+    data_sup = labels.reset_index().rename(columns={"index": "id_house"})
+
+    # Fitting a supervised collection using the previous fitted self-supervised collection.
+    # The 'pretrained_bases' merges the data_sup with the 'california_selfsupervised' by 
+    # the 'id_name' and uses the merged dataframe to create the supervised fit.
+    j.fit(
+        name='california_regression',
+        data=data_sup,
+        db_type='Supervised',
+        pretrained_bases=[
+            {
+            'db_parent':'california_selfsupervised',
+            'id_name':'id_house'
+            }
+        ],
+        label={
+            'task':'regression',
+            'label_name':'MedHouseVal'
+        }
+    )
