@@ -121,8 +121,10 @@ Now we will train a Supervised Model to classify if a client will be considered 
     >>>     # Verbose 2 -> shows the loss graph at the end of training
     >>>     verbose=2,
     >>>
+    >>>     # The split type as stratified guarantee that the same proportion of both classes are maintained for train, validation and test
     >>>     split = {'type':'stratified'},
     >>>
+    >>>     # When we set task as *metric_classification* we use Supervised Contrastive Loss, which tries to make examples of the same class closer and make those of different classes apart 
     >>>     label={"task": "metric_classification",
     >>>           "label_name": "Class"}
     >>> )
