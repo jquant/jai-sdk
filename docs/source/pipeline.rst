@@ -37,7 +37,7 @@ Basics
 ------
 The :code:`j.fit` method has three main parameters: :code:`name`, :code:`data` and :code:`db_type`:
 
-.. code:: python
+.. code-block:: python
 
     j.fit(
         name='Collection_name',
@@ -50,12 +50,16 @@ The :code:`j.fit` method has three main parameters: :code:`name`, :code:`data` a
 - :code:`data` is the data that you want to fit. It must be a :code:`pandas.DataFrame` or a :code:`pandas.Series`. For using image data, the images first have to be encoded to, after, being inserted to fit, as shown in "Fitting Images".
 
 - :code:`db_type` is the parameter that defines what type of training will be realized by the fit method. The possible values are :code:`'Supervised'`, :code:`'SelfSupervised'`, :code:`'Text'`, :code:`'FastText'`, :code:`'TextEdit'` and :code:`'Image'`. Each of these has its own set of parameters and hyperparameters. For more information about them, check "Fitting Tabular data", "Fitting Text data", and "Fitting Image data".
+.. - :code:`overwrite`: If you want to overwrite an already existent collection in your JAI environment.
 
 JAI uses your data index to perform a lot of methods internally. You can define the index of your data in two ways: **using the pandas' index** or **creating a column named** :code:`'id'`. When you don't make an :code:`'id'` column, JAI automatically considers your data pandas' index; on the other hand, JAI uses your :code:`'id'` column as your data index. So, take care with duplicated values.
 
 
 Fitting Tabular Data
 --------------------
+
+Overview
+........
 
 JAI provides two different ways to fit your tabular data: :code:`Supervised` and :code:`SelfSupervised`. 
 SelfSupervised training doesn't need labels in your data. 
@@ -72,7 +76,7 @@ JAI supports both tasks types of supervised learning.
 
 There are some important parameters in :code:`j.fit` that can improve your model:
 
-- :code:`'split'`: It defines how JAI will split the data for train and test.
+- :code:`'split'`: It defines how JAI will split the data for train and test. 
 - :code:`'pretrained_bases'`: This parameter is used when you want to enrich your current train with another already JAI fitted collection in your environment.
 - :code:`'hyperparameters'`: It describes the hyperparameters of the chosen model training.
 - :code:`'label'` (*Supervised*): Parameter used to define the label column of your supervised data.
@@ -81,10 +85,15 @@ You can check a complete reference of these parameters in "API reference".
 
 A complete exampĺe of fitting tabular data is shown below:
 
-.. code::
+.. code-block:: python
 
     import pandas as pd
     from sklearn.datasets import fetch_california_housing
+
+    AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
+
+    # Authorization
+    j = Jai(AUTH_KEY)
 
     # Load test dataset.
     data, labels = fetch_california_housing(as_frame=True, return_X_y=True)
@@ -127,3 +136,175 @@ A complete exampĺe of fitting tabular data is shown below:
             'label_name':'MedHouseVal'
         }
     )
+
+Hyperparameters
+...............
+
+There are a lot of possible combinations of hyperparameters for tabular fit. 
+Because of it, this subsection shows some of the primary hyperparameters for your train in JAI, but feel free to test all hyperparameters when using "j.fit" 
+and have fun fitting your models with JAI.
+
+Some of the most notable hyperparameters for tabular training are the following:
+
+**For a self-supervised model:**
+
+- :code:`'min_epochs'`: Defines how much will be the minimum epoch value for your model training. The recommended value is :code:`'min_epochs' >= 500`.
+- :code:`'max_epochs'`: Defines how much will be the maximum epoch value for your model training. The recommended value is :code:`'max_epochs' == 'min_epochs'`.
+- :code:`'pretraining_ratio'`: Specifies the value of the rate of feature masking on the self-supervised train. Feature masking is a NN way to minimize overfitting and improve model training. 
+- :code:`'batch_size':` Batch size for training. Depending on the value chosen, it can decrease the training time. 
+
+**For a supervised model:**
+
+- All hyperparameters listed for self-supervised training
+- :code:`'decoder_layer'`: Chooses the decoder layer type of the NN. It's recommended to use :code:`'2L_BN'` (Two linear batch normalization layers) for supervised regression training.
+
+To obtain all information about hyperparameters, check "Fit Kwargs".
+
+
+Fitting Text Data (NLP)
+-----------------------
+
+For any uses of text-type data, data can be a :code:`list of strings`, :code:`pandas.Series`` or :code:`pandas.DataFrame`.
+
+- If data is a list, then the ids of your collection will be set with :code:`range(len(data_list))`.
+- If data is a :code:`pandas.Series` or :code:`pandas.DataFrame`, the ids will be defined as explained in "Basics".
+
+Using FastText
+..............
+
+:ref:`https://fasttext.cc/<fastText>` is an extension of the word2vec model for word embedding. 
+It doesn't learn vector for words directly, but it represents each word as an n-gram of characters. 
+Therefore, this method captures the meaning of shorter words, besides understanding prefixes and suffixes. 
+
+.. code-block:: python
+
+    from jai import Jai
+
+    AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
+
+    # Authorization
+    j = Jai(AUTH_KEY)
+
+    # Generating a list of words
+    data = [
+        'flock', 'gene', 'background', 'reporter', 'notion', 
+        'rocket', 'formation', 'athlete', 'suitcase', 'sword'
+        ]
+
+    # Fitting with fastText
+    name = 'fastText_example'
+    j.fit(name, data, db_type='FastText')
+
+Using Transformers
+..................
+
+For using :ref:`https://huggingface.co/transformers/<Transformers>`, just set :code:`db_type="Text"`. 
+The model used by default is the pre-trained BERT. For more information about Transformers, 
+consider visiting the :ref:`https://huggingface.co/transformers/<huggingface>` page.
+
+.. code-block:: python
+
+    from jai import Jai
+
+    AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
+
+    # Authorization
+    j = Jai(AUTH_KEY)
+
+    # Generating a list of words
+    data = [
+        'flock', 'gene', 'background', 'reporter', 'notion', 
+        'rocket', 'formation', 'athlete', 'suitcase', 'sword'
+        ]
+
+    # Fitting with fastText
+    name = 'BERT_example'
+    j.fit(name, data, db_type='Text')
+
+For using another Transformer model, specify the :code:`'hyperparams'` parameter as shown below:
+
+.. code-block:: python
+
+    j.fit(name, data, db_type='Text', hyperparams={'nlp_model': CHOSEN_MODEL})
+
+
+Using Edit Distance Model
+.........................
+
+The Edit distance model quantifies the difference between two strings by counting the minimum number of operations to 
+transform one string into the other using Levenshtein distance.
+
+You can use this by defining :code:`db_type=TextEdit` in your :code:`j.fit` as below:
+
+.. code-block:: python
+
+    from jai import Jai
+
+    AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
+
+    # Authorization
+    j = Jai(AUTH_KEY)
+
+    # Generating a list of words
+    data = [
+        'flock', 'gene', 'background', 'reporter', 'notion', 
+        'rocket', 'formation', 'athlete', 'suitcase', 'sword'
+        ]
+
+    # Fitting with fastText
+    name = 'TextEdit_example'
+    j.fit(name, data, db_type='TextEdit')
+
+Fitting Image Data
+------------------
+
+JAI can also fit image data, but you must encode all image data before being added to your JAI environment. 
+To make this, one can use the :code:`base64` python package, as shown below:
+
+.. code-block:: python
+
+    with open(filename, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
+
+JAI provides an auxiliary method to help you to add your images into your environment. 
+The :code:`read_image_folder` read a specified images local folder and returns them as an encoded :code:`pandas.Series` format. 
+
+.. code-block:: python
+
+    from jai.image import read_image_folder
+    image_data = read_image_folder('your_local_image_folder_path')
+
+Another proper JAI auxiliary method for image data fitting is the :code:`resize_image_folder`. 
+Resizing images before inserting is recommended because it reduces writing, reading and processing time during model inference, 
+besides minimising the probability of crashing your fitting.
+
+.. code-block:: python
+
+    from jai.image import resize_image_folder
+    resize_image_folder('your_local_image_folder_path')
+
+For fitting Image data, just define :code:`db_type='Image'` when using :code:`j.fit`.
+
+.. code-block:: python
+
+    import pandas as pd
+
+    from jai import Jai
+    from jai.image import read_image_folder
+    from jai.image import resize_image_folder
+
+    AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
+    IMAGE_FOLDER = 'your_local_image_folder_path'
+
+    # Authorization
+    j = Jai(AUTH_KEY)
+
+    # Resizing images
+    resize_image_folder(IMAGE_FOLDER)
+
+    # Reading images
+    data = read_image_folder(IMAGE_FOLDER)
+
+    # Fitting data
+    name = 'Image_example'
+    j.fit(name, data, db_type='Image')

@@ -39,7 +39,7 @@ With JAI, you can train models in the cloud and run inference on your trained mo
 In the below example, we'll show how to train a simple supervised model (regression) using the California housing dataset, run a prediction from this model, and call this prediction directly from the REST API.
 
 
-.. code:: python
+.. code-block:: python
 
     from jai import Jai
     from sklearn.datasets import fetch_california_housing
