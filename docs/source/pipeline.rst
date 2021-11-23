@@ -50,7 +50,8 @@ The :code:`j.fit` method has three main parameters: :code:`name`, :code:`data` a
 - :code:`data` is the data that you want to fit. It must be a :code:`pandas.DataFrame` or a :code:`pandas.Series`. For using image data, the images first have to be encoded to, after, being inserted to fit, as shown in "Fitting Images".
 
 - :code:`db_type` is the parameter that defines what type of training will be realized by the fit method. The possible values are :code:`'Supervised'`, :code:`'SelfSupervised'`, :code:`'Text'`, :code:`'FastText'`, :code:`'TextEdit'` and :code:`'Image'`. Each of these has its own set of parameters and hyperparameters. For more information about them, check "Fitting Tabular data", "Fitting Text data", and "Fitting Image data".
-.. - :code:`overwrite`: If you want to overwrite an already existent collection in your JAI environment.
+
+- :code:`overwrite` is used when you want to overwrite an already existent collection in your JAI environment. Default value is :code:`False`.
 
 JAI uses your data index to perform a lot of methods internally. You can define the index of your data in two ways: **using the pandas' index** or **creating a column named** :code:`'id'`. When you don't make an :code:`'id'` column, JAI automatically considers your data pandas' index; on the other hand, JAI uses your :code:`'id'` column as your data index. So, take care with duplicated values.
 
@@ -283,7 +284,8 @@ besides minimising the probability of crashing your fitting.
     from jai.image import resize_image_folder
     resize_image_folder('your_local_image_folder_path')
 
-For fitting Image data, just define :code:`db_type='Image'` when using :code:`j.fit`.
+For fitting Image data, just define db_type='Image' when using 'j.fit'. JAI permits using some of Torchvision pre-trained models to fit your data. 
+The default image model in JAI is "vgg16". To get the list of acceptable models, check "API reference".
 
 .. code-block:: python
 
@@ -308,3 +310,9 @@ For fitting Image data, just define :code:`db_type='Image'` when using :code:`j.
     # Fitting data
     name = 'Image_example'
     j.fit(name, data, db_type='Image')
+
+To change the image model, add the :code:`hyperparams` parameters, as shown below:
+
+.. code-block:: python
+
+    j.fit(name, data, db_type='Image', hyperparams={'model_name': 'Desired_model'})
