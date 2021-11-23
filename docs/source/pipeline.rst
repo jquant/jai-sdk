@@ -26,12 +26,13 @@ Here is the list of models that JAI supports:
 - **Text data:** NLP Transformers models, FastText and Edit Distance Language model
 - **Image data:** JAI works with all torchvision image models.
 
-The sections below show more information about using these models in JAI. For the complete reference of the fit method, look at "API reference".
+The sections below show more information about using these models in JAI. For the complete reference of the fit method, look at :ref:`API reference <source/reference/jai>`.
 
 .. important:: 
     
     JAI deletes all raw data you sent after running :code:`j.fit`, keeping internally only with the latent vector representation of your training data. 
 
+.. _basics:
 
 Basics
 ------
@@ -47,14 +48,18 @@ The :code:`j.fit` method has three main parameters: :code:`name`, :code:`data` a
 
 - The :code:`name` parameter is the name you will give for the data you are fitting. It must be a string with a **maximum of 32 characters**.
 
-- :code:`data` is the data that you want to fit. It must be a :code:`pandas.DataFrame` or a :code:`pandas.Series`. For using image data, the images first have to be encoded to, after, being inserted to fit, as shown in "Fitting Images".
+- :code:`data` is the data that you want to fit. It must be a :code:`pandas.DataFrame` or a :code:`pandas.Series`. For using image data, the images first have to be encoded to, after, being inserted to fit, as shown in :ref:`Fitting Image data <fitting image data>`.
 
-- :code:`db_type` is the parameter that defines what type of training will be realized by the fit method. The possible values are :code:`'Supervised'`, :code:`'SelfSupervised'`, :code:`'Text'`, :code:`'FastText'`, :code:`'TextEdit'` and :code:`'Image'`. Each of these has its own set of parameters and hyperparameters. For more information about them, check "Fitting Tabular data", "Fitting Text data", and "Fitting Image data".
+- :code:`db_type` is the parameter that defines what type of training will be realized by the fit method. 
+  The possible values are :code:`'Supervised'`, :code:`'SelfSupervised'`, :code:`'Text'`, :code:`'FastText'`, :code:`'TextEdit'` and :code:`'Image'`. 
+  Each of these has its own set of parameters and hyperparameters. For more information about them, check :ref:`Fitting Tabular data <fitting tabular data>`, 
+  :ref:`Fitting Text data <fitting text data>`, and :ref:`Fitting Image data <fitting image data>`.
 
 - :code:`overwrite` is used when you want to overwrite an already existent collection in your JAI environment. Default value is :code:`False`.
 
 JAI uses your data index to perform a lot of methods internally. You can define the index of your data in two ways: **using the pandas' index** or **creating a column named** :code:`'id'`. When you don't make an :code:`'id'` column, JAI automatically considers your data pandas' index; on the other hand, JAI uses your :code:`'id'` column as your data index. So, take care with duplicated values.
 
+.. _fitting tabular data:
 
 Fitting Tabular Data
 --------------------
@@ -82,7 +87,7 @@ There are some important parameters in :code:`j.fit` that can improve your model
 - :code:`'hyperparameters'`: It describes the hyperparameters of the chosen model training.
 - :code:`'label'` (*Supervised*): Parameter used to define the label column of your supervised data.
 
-You can check a complete reference of these parameters in "API reference".
+You can check a complete reference of these parameters in :ref:`API reference <source/reference/jai>`.
 
 A complete exampĺe of fitting tabular data is shown below:
 
@@ -142,7 +147,7 @@ Hyperparameters
 ...............
 
 There are a lot of possible combinations of hyperparameters for tabular fit. 
-Because of it, this subsection shows some of the primary hyperparameters for your train in JAI, but feel free to test all hyperparameters when using "j.fit" 
+Because of it, this subsection shows some of the primary hyperparameters for your train in JAI, but feel free to test all hyperparameters when using :code:`j.fit` 
 and have fun fitting your models with JAI.
 
 Some of the most notable hyperparameters for tabular training are the following:
@@ -159,8 +164,9 @@ Some of the most notable hyperparameters for tabular training are the following:
 - All hyperparameters listed for self-supervised training
 - :code:`'decoder_layer'`: Chooses the decoder layer type of the NN. It's recommended to use :code:`'2L_BN'` (Two linear batch normalization layers) for supervised regression training.
 
-To obtain all information about hyperparameters, check "Fit Kwargs".
+To obtain all information about hyperparameters, check :ref:`Fit Kwargs <source/reference/jai:fit kwargs>`.
 
+.. _fitting text data:
 
 Fitting Text Data (NLP)
 -----------------------
@@ -168,12 +174,12 @@ Fitting Text Data (NLP)
 For any uses of text-type data, data can be a :code:`list of strings`, :code:`pandas.Series`` or :code:`pandas.DataFrame`.
 
 - If data is a list, then the ids of your collection will be set with :code:`range(len(data_list))`.
-- If data is a :code:`pandas.Series` or :code:`pandas.DataFrame`, the ids will be defined as explained in "Basics".
+- If data is a :code:`pandas.Series` or :code:`pandas.DataFrame`, the ids will be defined as explained in :ref:`Basics <basics>`.
 
 Using FastText
 ..............
 
-:ref:`https://fasttext.cc/<fastText>` is an extension of the word2vec model for word embedding. 
+:ref:`fastText<https://fasttext.cc/>` is an extension of the word2vec model for word embedding. 
 It doesn't learn vector for words directly, but it represents each word as an n-gram of characters. 
 Therefore, this method captures the meaning of shorter words, besides understanding prefixes and suffixes. 
 
@@ -199,9 +205,9 @@ Therefore, this method captures the meaning of shorter words, besides understand
 Using Transformers
 ..................
 
-For using :ref:`https://huggingface.co/transformers/<Transformers>`, just set :code:`db_type="Text"`. 
+For using :ref:`Transformers<https://huggingface.co/transformers/>`, just set :code:`db_type="Text"`. 
 The model used by default is the pre-trained BERT. For more information about Transformers, 
-consider visiting the :ref:`https://huggingface.co/transformers/<huggingface>` page.
+consider visiting the :ref:`huggingface<https://huggingface.co/transformers/>` page.
 
 .. code-block:: python
 
@@ -256,6 +262,8 @@ You can use this by defining :code:`db_type=TextEdit` in your :code:`j.fit` as b
     name = 'TextEdit_example'
     j.fit(name, data, db_type='TextEdit')
 
+.. _fitting image data:
+
 Fitting Image Data
 ------------------
 
@@ -285,7 +293,7 @@ besides minimising the probability of crashing your fitting.
     resize_image_folder('your_local_image_folder_path')
 
 For fitting Image data, just define db_type='Image' when using 'j.fit'. JAI permits using some of Torchvision pre-trained models to fit your data. 
-The default image model in JAI is "vgg16". To get the list of acceptable models, check "API reference".
+The default image model in JAI is :code:`'vgg16'`. To get the list of acceptable models, check :ref:`API reference <source/reference/jai>`.
 
 .. code-block:: python
 

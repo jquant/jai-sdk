@@ -11,6 +11,8 @@ Jai class
    :undoc-members:
    :show-inheritance:
 
+.. _fit kwargs:
+
 ************
 Setup kwargs
 ************
