@@ -70,6 +70,13 @@ JAI uses your data index to perform a lot of methods internally. You can define 
 When you don't make an :code:`'id'` column, JAI automatically considers your data pandas' index; 
 on the other hand, JAI uses your :code:`'id'` column as your data index. So, take care with duplicated values.
 
+.. tip::
+
+    As a JAI good practice, try always to use Pandas native index:
+
+    - It avoids the possibility of having more than one data index.
+    - It enables the native usage of :code:`.loc` commands, making using JAI responses easier.
+
 
 Fitting Tabular Data
 --------------------
@@ -96,7 +103,7 @@ There are some important parameters in :code:`j.fit` that can improve your model
 - :code:`'pretrained_bases'`: This parameter is used when you want to enrich your current train with another already 
   JAI fitted collection in your environment.
 - :code:`'hyperparameters'`: It describes the hyperparameters of the chosen model training.
-- :code:`'label'` (*Supervised*): Parameter used to define the label column of your supervised data.
+- :code:`'label'` (*Supervised*): Parameter used to define the label column of your supervised data and what type of task it will perform.
 
 You can check a complete reference of these parameters in :ref:`API reference <source/reference/jai:Jai Module>`.
 
@@ -181,6 +188,12 @@ Some of the most notable hyperparameters for tabular training are the following:
 
 To obtain all information about hyperparameters, check :ref:`Fit Kwargs <source/reference/jai:SelfSupervised>`.
 
+Supervised Tasks
+................
+
+JAI supports two different types of tasks for each :code:`Classification` and :code:`Regression`. 
+For :code:`Classification`, JAI provides :code:`'classification'` and :code:`'metric_classification'`, 
+while for :code:`Regression` it provides :code:`'regression'` and :code:`'quantile_regression'`.
 
 Fitting Text Data (NLP)
 -----------------------

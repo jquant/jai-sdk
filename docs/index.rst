@@ -23,7 +23,6 @@ What is JAI-SDK?
    :caption: Using JAI
 
    source/fit.rst
-   source/use_cases/setup_data.rst
    source/use_cases/supervised.rst
    source/use_cases/check_database.rst
    source/use_cases/remove_data.rst
@@ -58,7 +57,7 @@ What is JAI-SDK?
 .. toctree::
    :hidden:
    :maxdepth: -1
-   :caption: API Reference
+   :caption: API and Package Reference
    
    source/reference/jai
    source/reference/auxiliar
