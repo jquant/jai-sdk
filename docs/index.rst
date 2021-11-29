@@ -24,7 +24,7 @@ What is JAI-SDK?
 
    source/fit.rst
    source/use_cases/supervised.rst
-   source/use_cases/check_database.rst
+   source/use_cases/using_environment.rst
    source/use_cases/remove_data.rst
 
 .. toctree::
