@@ -191,9 +191,17 @@ To obtain all information about hyperparameters, check :ref:`Fit Kwargs <source/
 Supervised Tasks
 ................
 
-JAI supports two different types of tasks for each :code:`Classification` and :code:`Regression`. 
-For :code:`Classification`, JAI provides :code:`'classification'` and :code:`'metric_classification'`, 
-while for :code:`Regression` it provides :code:`'regression'` and :code:`'quantile_regression'`.
+JAI supports two different types of tasks for each **Classification** and **Regression**. 
+For **Classification**, JAI provides :code:`'classification'` and :code:`'metric_classification'`, 
+while for **Regression** it provides :code:`'regression'` and :code:`'quantile_regression'`.
+
+- :code:`classification`: JAI trains the model to learn how to classify the classes by using :code:`CrossEntropyLoss` as the loss function 
+  and making predictions by getting the :code:`argmax` of probabilities of each category in the model.
+- :code:`metric_classification`: It trains the model using `contrastive learning <https://arxiv.org/pdf/2004.11362.pdf>`_. 
+  It trains the model using contrastive learning. Training this way makes the decision margin more robust, even with imbalanced datasets.
+- :code:`regression`: It performs regression, predicting only a result for each input row.
+- :code:`quantile_regression`: It trains a quantile regression, predicting the most probable value and the chosen confidence 
+  interval values.
 
 Fitting Text Data (NLP)
 -----------------------
