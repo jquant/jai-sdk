@@ -13,19 +13,18 @@ What is JAI-SDK?
    :maxdepth: -1
    :caption: An overview of JAI-SDK
 
-   source/getting_started.rst
-   source/jai_in_5_minutes.rst
-   source/data_cleaning.rst
+   source/overview/getting_started.rst
+   source/overview/jai_in_5_minutes.rst
+   source/overview/data_cleaning.rst
    
 .. toctree::
    :hidden:
    :maxdepth: -1
    :caption: Using JAI
 
-   source/fit.rst
-   source/use_cases/supervised.rst
-   source/use_cases/using_environment.rst
-   source/use_cases/remove_data.rst
+   source/using_jai/fit.rst
+   source/using_jai/using_environment.rst
+   source/using_jai/remove_data.rst
 
 .. toctree::
    :hidden:

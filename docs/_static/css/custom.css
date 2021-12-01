@@ -19,3 +19,7 @@ main.bd-content #main-content img.align-center {
   color: #888888;
   font-style: italic;
 }
+
+code {
+  color: #007991;
+}

@@ -34,7 +34,7 @@ look at :ref:`API reference <source/reference/jai:Jai Module>`.
 
 .. important:: 
     
-    JAI deletes all raw data you sent after running :code:`j.fit`, keeping internally only with the latent vector 
+    JAI deletes all raw data you sent some time after running :code:`j.fit`, keeping internally only with the latent vector 
     representation of your training data. 
 
 Basics

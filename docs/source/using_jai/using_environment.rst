@@ -4,6 +4,9 @@ Working with your environment
 Sometimes, you may need to have more information about your environment data in JAI. 
 For this, JAI owns some managing methods that are shown in this section:
 
+:code:`j.names`
+---------------
+
 If you need to know which databases are in your environment, use :code:`j.names`. 
 It'll show you the names of all your databases in JAI.
 
@@ -13,6 +16,9 @@ It'll show you the names of all your databases in JAI.
 
     # Example response supposing these collections are in the environment:
     # ['jai_database', 'jai_selfsupervised', 'jai_supervised']
+
+:code:`j.info`
+--------------
 
 To get more information about your collections, use :code:`j.info`. 
 This method will present all your collection names, types,  last modifications, 
@@ -32,6 +38,9 @@ dependencies and sizes.
 
 The drawback of :code:`j.info` is that it can run slowly depending on the number of collections in your environment.
 
+:code:`j.fields`
+----------------
+
 If you forgot what columns your database has, this information could be accessed by :code:`j.fields` method.
 
 .. code-block:: python
@@ -46,6 +55,9 @@ If you forgot what columns your database has, this information could be accessed
     #  'Column3': 'float64',
     #  'Column4': 'float64'}
 
+:code:`j.get_dtype`
+-------------------
+
 To get what collection type your collection is, use :code:`j.get_dtype`.
 
 .. code-block:: python
@@ -55,6 +67,9 @@ To get what collection type your collection is, use :code:`j.get_dtype`.
 
     # Example response:
     # 'SelfSupervised'
+
+:code:`j.describe`
+------------------
 
 However, if you need details of what parameters you choose to fit your collection, :code:`j.describe` can bring it for you.
 
@@ -81,6 +96,9 @@ However, if you need details of what parameters you choose to fit your collectio
     #  'training_type': 'contrastive'}
     #  ...
 
+:code:`j.report`
+----------------
+
 To recover the fit report for your collection, use :code:`j.report`.
 
 .. code-block:: python
@@ -88,6 +106,9 @@ To recover the fit report for your collection, use :code:`j.report`.
     # Use your collection name
     j.report(name='jai_database')
 
+
+:code:`j.ids`
+-------------
 
 If you need to remember how many ids your collection have, use :code:`j.ids`.
 
