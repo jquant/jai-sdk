@@ -11,7 +11,7 @@ What are we going to do?
 In this quick demo, we will use JAI to:
 
 * Train and deploy models into a secure and scalable production-ready environment.
-* Metric Classification - Given a list of credit card users and attributes, classify which clients would default.
+* Classification - Given a list of credit card users and attributes, classify which clients would default.
 * Model Inference - Predict which new users would dfault or not and check the results.
 
 ***********
@@ -57,21 +57,32 @@ After receiving the authentication key, you are ready to instantiate JAI with yo
 .. code:: python
 
     >>> AUTH_KEY= "xXxxxXxxxxXxxxxxXxxxXxXxxx"
-    >>> j = Jai(AUTH_KEY) #Insert your AUTH_KEre
+    >>> j = Jai(AUTH_KEY) 
 
 *******************
 Dataset quick look
 *******************
+
+The credit card default dataset was brought from a `Kaggle competition <hhttps://www.kaggle.com/mlg-ulb/creditcardfraud>`_, where you can download the whole dataset from. The dataset contains 284807 rows and 31 columns including the label in the Class column. 
+
+The main peculiarity of this dataset is that the label is **highly umbalanced**. In this case, there are 284315 non-defaultant users versus 492 defaults (only 0.172% of all transactions) on the whole database.
+
 Let's first load the dataset of interest:
 
 .. code:: python
-    
+
+    >>> # Importing other necessary libraries
+    >>> import pandas as pd
+    >>> from sklearn import metrics
+    >>> from tabulate import tabulate
+    >>> from sklearn.metrics import roc_auc_score
+    >>> from sklearn.model_selection import train_test_split
+    >>>
+    >>> # Loading dataframes
     >>> DATASET_PATH = "creditcard.csv"
     >>> df = pd.read_csv(DATASET_PATH)
 
-This dataset was brought from a [Kaggle competition](https://www.kaggle.com/mlg-ulb/creditcardfraud), where you can download the whole dataset from. The dataset contains 284807 rows and 31 columns including the label in the Class column. The main peculiarity of this dataset is that the label is **highly umbalanced**. In this case, there are 284315 non-defaultant users versus 492 defaults (only 0.172% of all transactions) on the whole database.    
-
-In this case, since we only have data of two days, we don't have to worry about data leakage. Let's have a quick glance on come columns of this dataset below:  
+ Let's have a quick glance on come columns of this dataset below:  
 
 .. code:: python
     
@@ -86,11 +97,12 @@ In this case, since we only have data of two days, we don't have to worry about 
     4       2  -1.15823    0.877737    0.215153      69.99        0
     ====  ======  =========  ==========  ==========  ========  =======
 
+
 *******************
 Supervised Learning
 *******************
 
-Now we will train a Supervised Model to classify if a client will be considered defaultant or not using JAI! Here we will separate part of the 
+Now we will train a Supervised Model to classify if a client will be considered default or not using JAI! Here we will separate part of the dataset to show how the prediction is made using JAI. Since we only have data of two days, we don't have to worry about data leakage when splitting our dataset randomly.
   
 .. code:: python
 
@@ -185,11 +197,11 @@ Now we will train a Supervised Model to classify if a client will be considered 
 
     accuracy                            1.00     39872
     macro avg       0.89      0.90      0.89     39872
-    weighted avg       1.00      1.00      1.00     39872
+    weighted avg    1.00      1.00      1.00     39872
 
     Best model at epoch: 76 val_loss: 6.93
 
-
+For more information about the j.fit args you can access `this part <https://jai-sdk.readthedocs.io/en/stable/source/jai.html#setup-kwargs>`_ of our documentation.
 
 ********************
 Model Inference
@@ -289,4 +301,4 @@ Everything in JAI is always instantly deployed and available through REST API, w
     {'id': 276481, 'predict': 0},
     {'id': 278846, 'predict': 0}]
 
-
+For more discussions about this example, join our `slack community <https://join.slack.com/t/getjai/shared_invite/zt-sfkm3tpg-oJuvdziWgtaFEaIUUKWUV>`_!
