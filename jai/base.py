@@ -68,7 +68,7 @@ class BaseJai(object):
                  url: str = None,
                  var_env: str = "JAI_SECRET"):
         """
-        Inicialize the Jai class.
+        Initialize the Jai class.
 
         An authorization key is needed to use the Mycelia API.
 
@@ -91,7 +91,7 @@ class BaseJai(object):
             self.header = {"Auth": auth_key}
         else:
             self.__url = url[:-1] if url.endswith("/") else url
-            self.header = {"company-key": auth_key}
+            self.header = {"Auth": auth_key, "company-key": "api-test"}
 
     @property
     def url(self):

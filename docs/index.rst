@@ -6,42 +6,34 @@
 What is JAI-SDK?
 ================
 
-.. include:: source/overview.rst
+.. include:: source/what_is_jai.rst
 
 .. toctree::
    :hidden:
    :maxdepth: -1
    :caption: An overview of JAI-SDK
 
-   source/overview/getting_started.rst
-   source/overview/jai_in_5_minutes.rst
-   source/overview/data_cleaning.rst
+   source/1-overview/getting_started.rst
+   source/1-overview/jai_in_5_minutes.rst
+   source/1-overview/data_cleaning.rst
    
 .. toctree::
    :hidden:
    :maxdepth: -1
    :caption: Using JAI
 
-   source/using_jai/fit.rst
-   source/using_jai/using_environment.rst
-   source/using_jai/remove_data.rst
+   source/2-using_jai/fit.rst
+   source/2-using_jai/report.rst
+   source/2-using_jai/using_environment.rst
+   source/2-using_jai/remove_data.rst
 
 .. toctree::
    :hidden:
    :maxdepth: -1
    :caption: Using Collections
    
-   source/use_cases/similarity.rst
-   source/use_cases/predict.rst
-
-.. toctree::
-   :hidden:
-   :maxdepth: -1
-   :caption: Advanced
-
-   source/advanced/report
-   source/advanced/hierarchical
-   source/advanced/multimodal
+   source/3-inference/similarity.rst
+   source/3-inference/predict.rst
 
 .. toctree::
    :hidden:
@@ -58,8 +50,8 @@ What is JAI-SDK?
    :maxdepth: -1
    :caption: API and Package Reference
    
-   source/reference/jai
-   source/reference/auxiliar
+   source/reference/jai.rst
+   source/reference/auxiliar.rst
 
 .. ##################
 .. Indices and tables
