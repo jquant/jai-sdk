@@ -2,7 +2,7 @@
 Setting Fit Reports
 ###################
 
-After SelfSupervised and Supervised setups are done, we display details about the setup process through 
+After :code:`SelfSupervised` or :code:`Supervised` fits are done, we display details about the fit process through 
 the method :code:`j.report`. 
 In this page, we'll take a look on the information that is available.
 
@@ -24,9 +24,9 @@ Always printed when report method is used.
 
 * **Loading from checkpoint**: Specifies which epoch the model had the best performance and is used as the final 
   model for inference.
-* **Model Evaluation** [*Supervised only*]: Metrics on the test set. MSE and MAE for regression, quantile 0.5 is 
-  used when quantile_regression. Scikit-learn's `classification_report`_ (precision, recall and f1) when classification 
-  or metric_classification.
+* **Model Evaluation** [*Supervised only*]: Metrics on the test set. MSE and MAE for regression, :code:`'quantile'=0.5` is 
+  used when :code:`label={task: 'quantile_regression'}`. Scikit-learn's `classification_report`_ 
+  (*precision*, *recall* and *f1*) when :code:`label={task: 'classification'}` or :code:`label={task: 'metric_classification'}`.
 
 verbose = 2 
 ===========
@@ -42,11 +42,11 @@ All content below is available only when :code:`return_report=True`
 All content below is available only on Supervised models.
 
 * **Validation Ids/Evaluation Ids**: List the ids chosen for the validation set and evaluation/test set
-* **Metrics Train/Metrics Validation**: The same metrics calculated on "Model Evaluation" but on the training set and 
+* **Metrics Train/Metrics Validation**: The same metrics calculated on **Model Evaluation** but on the training set and 
   validation set respectively.
 * **Baseline Model**: The same metrics of "Model Evaluation" on the test set, but using a Baseline Model (please check 
   `sklearn.dummy`_ models). For regression cases, we evaluate the mean and the median as a baseline. For classification 
-  cases, we use stratified, uniform and most_frequent models as baseline.
+  cases, we use :code:`stratified`, :code:`uniform` and :code:`most_frequent` models as baseline.
 * **Optimal Thresholds**: List the probability thresholds that maximize :code:`true positive rate - false negative rate` 
   for each class. Since it's calculated in a OneVsAll manner, the probabilities don't sum up to one.
 
