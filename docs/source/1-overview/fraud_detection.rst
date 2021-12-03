@@ -84,9 +84,10 @@ Since we only have data of two days, we don't have to worry about data leakage w
 
     from sklearn.model_selection import train_test_split
     
-    # In this case, we will take part of our dataset to demonstrate the prediction further in this tutorial 
-    # The j.fit already takes care of the train and validation split on its backend, so in a normal situation 
-    # this is not necessary
+    # In this case, we will take part of our dataset to demonstrate the prediction 
+    # further in this tutorial.
+    # The j.fit already takes care of the train and validation split on its backend, 
+    # so in a normal situation this is not necessary.
     X_train, X_prediction, y_train, y_prediction = train_test_split( df.drop(["Class"],axis=1), 
                                                        df["Class"], test_size=0.3, random_state=42)
     
@@ -103,17 +104,19 @@ Since we only have data of two days, we don't have to worry about data leakage w
         db_type='Supervised', 
         # Verbose 2 -> shows the loss graph at the end of training
         verbose=2,
-        # The split type as stratified guarantee that the same proportion of both classes are 
-        # maintained for train, validation and test
+        # The split type as stratified guarantee that the same proportion of both 
+        # classes are maintained for train, validation and test
         split = {'type':'stratified'},
-        # When we set task as *metric_classification* we use Supervised Contrastive Loss, which tries 
-        # to make examples of the same class closer and make those of different classes apart 
+        # When we set task as *metric_classification* we use Supervised Contrastive 
+        # Loss, which tries to make examples of the same class closer and make those 
+        # of different classes apart.
         label={
             "task": "metric_classification",
             "label_name": "Class"
         }
-        # You can uncomment this line if you wish to test different parameters and maintain the same collection name
-        #overwrite = True
+        # You can uncomment this line if you wish to test different parameters and 
+        # maintain the same collection name
+        # overwrite = True
     )
 
     # Output:
@@ -174,7 +177,8 @@ Manipulating the information received in :code:`ans`, we can check the :code:`ro
     # Here we are taking the probabilities of the answer of being one
     ans = pd.DataFrame([(x["id"],x["predict"]["1"]) for x in ans],columns=["index","y_pred"]).set_index("index")
     
-    # **ATENTION**: Be careful when comparing the true and predicted values. The ids of the answers are ordered inside JAI
+    # **ATENTION**: Be careful when comparing the true and predicted values. 
+    # The ids of the answers are ordered inside JAI
     ans["y_true"] = y_test
     
     # Let's print the top 5 of our predictions. 

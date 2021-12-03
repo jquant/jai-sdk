@@ -94,14 +94,16 @@ previously shown.
         db_type='Supervised', 
         # Verbose 2 -> shows the loss graph at the end of training
         verbose=2,
-        # The split type as stratified guarantee that the same proportion of both classes are maintained for train, validation and test
+        # The split type as stratified guarantee that the same proportion of both 
+        # classes are maintained for train, validation and test
         split = {'type':'stratified'},
         # When we set task as *classification* we use CrossEntropy Loss
         label = {
             "task": "classification",
             "label_name": "target"
             }
-        # You can uncomment this line if you wish to test different parameters and maintain the same collection name
+        # You can uncomment this line if you wish to test different parameters and 
+        # maintain the same collection name
         # overwrite = True
     )
 
@@ -147,7 +149,8 @@ And now the :code:`ans` variable holds a dataframe with both predictions and tru
 .. code-block:: python
 
     # Here it's possible to see how the answer will come
-    # **ATENTION**: Be careful when comparing the true and predicted values. The ids of the answers are ordered inside JAI
+    # **ATENTION**: Be careful when comparing the true and predicted values. The ids of the 
+    # answers are ordered inside JAI
     ans["y_true"] = y_test
     print(tabulate(ans.head(), headers='keys', tablefmt='rst'))
     
