@@ -43,7 +43,7 @@ researchers, and folks that love machine learning. Here's a list of tips for get
 
 - Join our `Slack community`_ to discuss about JAI!
 - Follow and star us on `Github`_.
-- Follow us `Twitter`_, `Instagram`_, `Linked In`_,
+- Follow us `Twitter`_, `Instagram`_ and `Linked In`_
 - Join our `Meetup Group`_ to connect with others in the community!
 
 .. _`Slack community`: https://join.slack.com/t/jaicommunity/shared_invite/zt-sfkm3tpg-oJuvdziWgtaFEaIUUKWUVA
@@ -52,9 +52,8 @@ researchers, and folks that love machine learning. Here's a list of tips for get
 .. _`Instagram`: https://www.instagram.com/getjaiofficial/
 .. _`Twitter`: https://twitter.com/getjaiofficial
 .. _`Meetup Group`: https://www.meetup.com/group-get-jai-official/
-
+.. _`Youtube`: https://www.youtube.com/channel/UCrNTucu56jwzKJfUqsloSXQ
 
 Videos
 ------
-
-Some of our videos
+Check our `Youtube`_ videos
