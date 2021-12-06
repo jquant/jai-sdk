@@ -33,13 +33,8 @@ JAI accomplishes this mission by:
   - Model performance is robust to real-world data​
   - Deploying AI into production is literally just one line of code away
 
-.. include:: 1-overview/getting_started.rst
 
-Check :ref:`Getting Started <gettting_started>` to get an overview of how to work with JAI and, also, see :ref:`JAI in 5 Minutes <JAI in 5 Minutes>` to obtain more information about using some of JAI's features.
-
-
-More Information
-================
+Check :doc:`1-overview/getting_started` to get an overview of how to work with JAI and, also, see :ref:`JAI in 5 Minutes <JAI in 5 Minutes>` to obtain more information about using some of JAI's features.
 
 Community
 ---------
@@ -48,16 +43,16 @@ researchers, and folks that love machine learning. Here's a list of tips for get
 
 
 - Join our `Slack community`_ to discuss about JAI!
-- Follow and star us on our `Github repository <link to github>`_.
-- `Twitter <link to Twitter>`_
+- Follow and star us on our `Github repository`_.
+- `Twitter`_
 
 
 .. _`Slack community`: https://join.slack.com/t/jaicommunity/shared_invite/zt-sfkm3tpg-oJuvdziWgtaFEaIUUKWUVA
-.. _`GitHub Issues`: https://github.com/ray-project/ray/issues
+.. _`Github repository`: https://github.com/jquant/jai-sdk
 .. _`StackOverflow`: https://stackoverflow.com/questions/tagged/ray
 .. _`Pull Requests`: https://github.com/ray-project/ray/pulls
-.. _`Twitter`: https://twitter.com/raydistributed
-.. _`Meetup Group`: https://www.meetup.com/Bay-Area-Ray-Meetup/
+.. _`Twitter`: https://twitter.com/getjaiofficial
+.. _`Meetup Group`: https://www.meetup.com/group-get-jai-official/
 .. _`on GitHub`: https://github.com/ray-project/ray
 
 
