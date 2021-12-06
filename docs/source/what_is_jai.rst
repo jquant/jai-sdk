@@ -33,8 +33,9 @@ JAI accomplishes this mission by:
   - Model performance is robust to real-world data​
   - Deploying AI into production is literally just one line of code away
 
+.. include:: 1-overview/getting_started.rst
 
-Check :doc:`1-overview/getting_started` to get an overview of how to work with JAI and, also, see :ref:`JAI in 5 Minutes <JAI in 5 Minutes>` to obtain more information about using some of JAI's features.
+Check :ref:`Getting Started <gettting started>` to get an overview of how to work with JAI and, also, see :ref:`JAI in 5 Minutes <jai in 5 min>` to obtain more information about using some of JAI's features.
 
 Community
 ---------
