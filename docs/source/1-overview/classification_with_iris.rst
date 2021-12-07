@@ -45,7 +45,7 @@ Let's have a quick glance on come columns of this dataset below:
     >>> import pandas as pd
     >>> from tabulate import tabulate
     >>> from sklearn.datasets import load_iris
-    >>> 
+    ... 
     >>> # Loading dataframe
     >>> df = pd.DataFrame(load_iris(as_frame=True).data)
     >>> target = load_iris(as_frame=True).target
@@ -71,17 +71,17 @@ previously shown.
 .. code-block:: python
 
     >>> from sklearn.model_selection import train_test_split
-    >>> 
+    ... 
     >>> # Splitting the dataset to demonstrate j.predict
     >>> X_train, X_test, y_train, y_test = train_test_split(
     ...             df, target, test_size=0.3, random_state=42)
-    >>> 
+    ... 
     >>> # Creating a training table with the target
     >>> train = pd.concat([X_train,y_train],axis=1)
-    >>> 
+    ... 
     >>> # For the supervised model we have to pass the dataframe with the label to JAI
     >>> train = pd.concat([X_train,y_train],axis=1)
-    >>> 
+    ...
     >>> # Training the classification model
     >>> j.fit(
     ...     # JAI collection name    
@@ -192,23 +192,23 @@ of the job of putting your model in production much easier!
     
     >>> # import requests libraries
     >>> import requests
-    >>> 
+    ... 
     >>> AUTH_KEY = "xXxxxXxxxxXxxxxxXxxxXxXxxx"
-    >>> 
+    ... 
     >>> # set Authentication header
     >>> header = {'Auth': AUTH_KEY}
-    >>> 
+    ... 
     >>> # set collection name
     >>> db_name = 'iris_supervised' 
-    >>> 
+    ... 
     >>> # model inference endpoint
     >>> url_predict = f"https://mycelia.azure-api.net/predict/{db_name}"
-    >>> 
+    ... 
     >>> # json body
     >>> # note that we need to provide a column named 'id'
     >>> # also note that we drop the 'PRICE' column because it is not a feature
     >>> body = X_test.reset_index().rename(columns={'index':'id'}).head().to_dict(orient='records')
-    >>> 
+    ... 
     >>> # make the request
     >>> ans = requests.put(url_predict, json=body, headers=header)
     >>> ans.json()

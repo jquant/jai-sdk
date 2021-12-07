@@ -113,15 +113,15 @@ A complete exampĺe of fitting tabular data is shown below:
 
     >>> import pandas as pd
     >>> from sklearn.datasets import fetch_california_housing
-    >>> 
+    ... 
     >>> AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
-    >>> 
+    ... 
     >>> # Authorization
     >>> j = Jai(AUTH_KEY)
-    >>> 
+    ... 
     >>> # Load test dataset.
     >>> data, labels = fetch_california_housing(as_frame=True, return_X_y=True)
-    >>> 
+    ... 
     >>> # Fitting a SelfSupervised collection.
     >>> # The embeddings created by this fit will be used for training 
     >>> # a Supervised collection afterwards.
@@ -138,10 +138,10 @@ A complete exampĺe of fitting tabular data is shown below:
     ...         'pretraining_ratio':0.8
     ...     }
     ... )
-    >>> 
+    ...
     >>> # Getting only the label column and renaming it.
     >>> data_sup = labels.reset_index().rename(columns={"index": "id_house"})
-    >>> 
+    ... 
     >>> # Fitting a supervised collection using the previous fitted self-supervised collection.
     >>> # The 'pretrained_bases' merges the data_sup with the 'california_selfsupervised' by 
     >>> # the 'id_name' and uses the merged dataframe to create the supervised fit.
@@ -222,18 +222,18 @@ Therefore, this method captures the meaning of shorter words, besides understand
 .. code-block:: python
 
     >>> from jai import Jai
-    >>> 
+    ... 
     >>> AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
-    >>> 
+    ... 
     >>> # Authorization
     >>> j = Jai(AUTH_KEY)
-    >>> 
+    ... 
     >>> # Generating a list of words
     >>> data = [
     ...     'flock', 'gene', 'background', 'reporter', 'notion', 
     ...     'rocket', 'formation', 'athlete', 'suitcase', 'sword'
     ...     ]
-    >>> 
+    ... 
     >>> # Fitting with fastText
     >>> name = 'fastText_example'
     >>> j.fit(name, data, db_type='FastText')
@@ -249,18 +249,18 @@ consider visiting the `Hugging Face <https://huggingface.co/transformers/>`_ pag
 .. code-block:: python
 
     >>> from jai import Jai
-    >>> 
+    ... 
     >>> AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
-    >>> 
+    ... 
     >>> # Authorization
     >>> j = Jai(AUTH_KEY)
-    >>> 
+    ... 
     >>> # Generating a list of words
     >>> data = [
     ...     'flock', 'gene', 'background', 'reporter', 'notion', 
     ...     'rocket', 'formation', 'athlete', 'suitcase', 'sword'
     ...     ]
-    >>> 
+    ... 
     >>> # Fitting with fastText
     >>> name = 'BERT_example'
     >>> j.fit(name, data, db_type='Text')
@@ -283,18 +283,18 @@ You can use this by defining :code:`db_type=TextEdit` in your :code:`j.fit` as b
 .. code-block:: python
 
     >>> from jai import Jai
-    >>> 
+    ... 
     >>> AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
-    >>> 
+    ... 
     >>> # Authorization
     >>> j = Jai(AUTH_KEY)
-    >>> 
+    ... 
     >>> # Generating a list of words
     >>> data = [
     ...     'flock', 'gene', 'background', 'reporter', 'notion', 
     ...     'rocket', 'formation', 'athlete', 'suitcase', 'sword'
     ...     ]
-    >>> 
+    ... 
     >>> # Fitting with fastText
     >>> name = 'TextEdit_example'
     >>> j.fit(name, data, db_type='TextEdit')
@@ -335,23 +335,23 @@ to fit your data. The default image model in JAI is :code:`'vgg16'`. To get the 
 .. code-block:: python
 
     >>> import pandas as pd
-    >>> 
+    ... 
     >>> from jai import Jai
     >>> from jai.image import read_image_folder
     >>> from jai.image import resize_image_folder
-    >>> 
+    ... 
     >>> AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
     >>> IMAGE_FOLDER = 'your_local_image_folder_path'
-    >>> 
+    ... 
     >>> # Authorization
     >>> j = Jai(AUTH_KEY)
-    >>> 
+    ... 
     >>> # Resizing images
     >>> resize_image_folder(IMAGE_FOLDER)
-    >>> 
+    ... 
     >>> # Reading images
     >>> data = read_image_folder(IMAGE_FOLDER)
-    >>> 
+    ... 
     >>> # Fitting data
     >>> name = 'Image_example'
     >>> j.fit(name, data, db_type='Image')

@@ -42,17 +42,17 @@ In the below example, we'll show how to train a simple supervised model (regress
 
     >>> from jai import Jai
     >>> from sklearn.datasets import fetch_california_housing
-    >>> 
+    ... 
     >>> # Your auth key 
     >>> AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
-    >>> 
+    ...
     >>> # Authenticating in JAI
     >>> j = Jai(AUTH_KEY)
-    >>> 
+    ... 
     >>> # Load dataset
     >>> data, labels = fetch_california_housing(as_frame=True, return_X_y=True)
     >>> model_data = pd.concat([data, labels], axis=1)
-    >>> 
+    ... 
     >>> # Send data to JAI for feature extraction
     >>> j.fit(
     ...     name='california_supervised',   # JAI collection name 
@@ -68,7 +68,7 @@ In the below example, we'll show how to train a simple supervised model (regress
     ...         'label_name': 'MedHouseVal'
     ...     },
     ...     overwrite=True)
-    >>> 
+    ... 
     >>> # Run prediction
     >>> j.predict(name='california_supervised', data=data)
 
