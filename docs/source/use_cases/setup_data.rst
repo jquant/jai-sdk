@@ -23,13 +23,13 @@ The Fit Method
 
 * Using the "pretrained_bases" argument, users can combine any kind of data to create rich, multi-modal and hierarchical representations.
 
-.. code:: python
+.. code-block:: python
 
-	j.fit(
-		name='Collection_Name',
-		data=data,
-		db_type='SelfSupervised'
-	)
+	>>> j.fit(
+	... 	name='Collection_Name',
+	... 	data=data,
+	... 	db_type='SelfSupervised'
+	... )
 
 **Main Parameters**
 

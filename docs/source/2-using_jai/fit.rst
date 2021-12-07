@@ -43,11 +43,11 @@ The :code:`j.fit` method has three main parameters: :code:`name`, :code:`data` a
 
 .. code-block:: python
 
-    j.fit(
-        name='Collection_name',
-        data=data,
-        db_type='SelfSupervised'
-    )
+    >>> j.fit(
+    ...     name='Collection_name',
+    ...     data=data,
+    ...     db_type='SelfSupervised'
+    ... )
 
 - The :code:`name` parameter is the name you will give for the data you are fitting. It must be a string with a 
   **maximum of 32 characters**.
@@ -111,55 +111,55 @@ A complete exampĺe of fitting tabular data is shown below:
 
 .. code-block:: python
 
-    import pandas as pd
-    from sklearn.datasets import fetch_california_housing
-
-    AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
-
-    # Authorization
-    j = Jai(AUTH_KEY)
-
-    # Load test dataset.
-    data, labels = fetch_california_housing(as_frame=True, return_X_y=True)
-
-    # Fitting a SelfSupervised collection.
-    # The embeddings created by this fit will be used for training 
-    # a Supervised collection afterwards.
-    j.fit(
-        name='california_selfsupervised',
-        data=data,
-        db_type='SelfSupervised'
-        split={
-            'type': random,
-            'test_size': 0.2
-        }
-        hyperparams={
-            'learning_rate': 3e-4,
-            'pretraining_ratio':0.8
-        }
-    )
-
-    # Getting only the label column and renaming it.
-    data_sup = labels.reset_index().rename(columns={"index": "id_house"})
-
-    # Fitting a supervised collection using the previous fitted self-supervised collection.
-    # The 'pretrained_bases' merges the data_sup with the 'california_selfsupervised' by 
-    # the 'id_name' and uses the merged dataframe to create the supervised fit.
-    j.fit(
-        name='california_regression',
-        data=data_sup,
-        db_type='Supervised',
-        pretrained_bases=[
-            {
-            'db_parent':'california_selfsupervised',
-            'id_name':'id_house'
-            }
-        ],
-        label={
-            'task':'regression',
-            'label_name':'MedHouseVal'
-        }
-    )
+    >>> import pandas as pd
+    >>> from sklearn.datasets import fetch_california_housing
+    ... 
+    >>> AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
+    ... 
+    >>> # Authorization
+    >>> j = Jai(AUTH_KEY)
+    ... 
+    >>> # Load test dataset.
+    >>> data, labels = fetch_california_housing(as_frame=True, return_X_y=True)
+    ... 
+    >>> # Fitting a SelfSupervised collection.
+    >>> # The embeddings created by this fit will be used for training 
+    >>> # a Supervised collection afterwards.
+    >>> j.fit(
+    ...     name='california_selfsupervised',
+    ...     data=data,
+    ...     db_type='SelfSupervised'
+    ...    split={
+    ...         'type': random,
+    ...         'test_size': 0.2
+    ...     }
+    ...     hyperparams={
+    ...         'learning_rate': 3e-4,
+    ...         'pretraining_ratio':0.8
+    ...     }
+    ... )
+    ...
+    >>> # Getting only the label column and renaming it.
+    >>> data_sup = labels.reset_index().rename(columns={"index": "id_house"})
+    ... 
+    >>> # Fitting a supervised collection using the previous fitted self-supervised collection.
+    >>> # The 'pretrained_bases' merges the data_sup with the 'california_selfsupervised' by 
+    >>> # the 'id_name' and uses the merged dataframe to create the supervised fit.
+    >>> j.fit(
+    ...     name='california_regression',
+    ...     data=data_sup,
+    ...     db_type='Supervised',
+    ...     pretrained_bases=[
+    ...         {
+    ...         'db_parent':'california_selfsupervised',
+    ...         'id_name':'id_house'
+    ...         }
+    ...     ],
+    ...     label={
+    ...         'task':'regression',
+    ...         'label_name':'MedHouseVal'
+    ...     }
+    ... )
 
 Hyperparameters
 ...............
@@ -221,22 +221,22 @@ Therefore, this method captures the meaning of shorter words, besides understand
 
 .. code-block:: python
 
-    from jai import Jai
-
-    AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
-
-    # Authorization
-    j = Jai(AUTH_KEY)
-
-    # Generating a list of words
-    data = [
-        'flock', 'gene', 'background', 'reporter', 'notion', 
-        'rocket', 'formation', 'athlete', 'suitcase', 'sword'
-        ]
-
-    # Fitting with fastText
-    name = 'fastText_example'
-    j.fit(name, data, db_type='FastText')
+    >>> from jai import Jai
+    ... 
+    >>> AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
+    ... 
+    >>> # Authorization
+    >>> j = Jai(AUTH_KEY)
+    ... 
+    >>> # Generating a list of words
+    >>> data = [
+    ...     'flock', 'gene', 'background', 'reporter', 'notion', 
+    ...     'rocket', 'formation', 'athlete', 'suitcase', 'sword'
+    ...     ]
+    ... 
+    >>> # Fitting with fastText
+    >>> name = 'fastText_example'
+    >>> j.fit(name, data, db_type='FastText')
 
 
 Using Transformers
@@ -248,28 +248,28 @@ consider visiting the `Hugging Face <https://huggingface.co/transformers/>`_ pag
 
 .. code-block:: python
 
-    from jai import Jai
-
-    AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
-
-    # Authorization
-    j = Jai(AUTH_KEY)
-
-    # Generating a list of words
-    data = [
-        'flock', 'gene', 'background', 'reporter', 'notion', 
-        'rocket', 'formation', 'athlete', 'suitcase', 'sword'
-        ]
-
-    # Fitting with fastText
-    name = 'BERT_example'
-    j.fit(name, data, db_type='Text')
+    >>> from jai import Jai
+    ... 
+    >>> AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
+    ... 
+    >>> # Authorization
+    >>> j = Jai(AUTH_KEY)
+    ... 
+    >>> # Generating a list of words
+    >>> data = [
+    ...     'flock', 'gene', 'background', 'reporter', 'notion', 
+    ...     'rocket', 'formation', 'athlete', 'suitcase', 'sword'
+    ...     ]
+    ... 
+    >>> # Fitting with fastText
+    >>> name = 'BERT_example'
+    >>> j.fit(name, data, db_type='Text')
 
 For using another Transformer model, specify the :code:`'hyperparams'` parameter as shown below:
 
 .. code-block:: python
 
-    j.fit(name, data, db_type='Text', hyperparams={'nlp_model': CHOSEN_MODEL})
+    >>> j.fit(name, data, db_type='Text', hyperparams={'nlp_model': CHOSEN_MODEL})
 
 
 Using Edit Distance Model
@@ -282,22 +282,22 @@ You can use this by defining :code:`db_type=TextEdit` in your :code:`j.fit` as b
 
 .. code-block:: python
 
-    from jai import Jai
-
-    AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
-
-    # Authorization
-    j = Jai(AUTH_KEY)
-
-    # Generating a list of words
-    data = [
-        'flock', 'gene', 'background', 'reporter', 'notion', 
-        'rocket', 'formation', 'athlete', 'suitcase', 'sword'
-        ]
-
-    # Fitting with fastText
-    name = 'TextEdit_example'
-    j.fit(name, data, db_type='TextEdit')
+    >>> from jai import Jai
+    ... 
+    >>> AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
+    ... 
+    >>> # Authorization
+    >>> j = Jai(AUTH_KEY)
+    ... 
+    >>> # Generating a list of words
+    >>> data = [
+    ...     'flock', 'gene', 'background', 'reporter', 'notion', 
+    ...     'rocket', 'formation', 'athlete', 'suitcase', 'sword'
+    ...     ]
+    ... 
+    >>> # Fitting with fastText
+    >>> name = 'TextEdit_example'
+    >>> j.fit(name, data, db_type='TextEdit')
 
 
 Fitting Image Data
@@ -308,16 +308,16 @@ To make this, one can use the :code:`base64` python package, as shown below:
 
 .. code-block:: python
 
-    with open(filename, "rb") as image_file:
-        encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
+    >>> with open(filename, "rb") as image_file:
+    >>>     encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
 
 JAI provides an auxiliary method to help you to add your images into your environment. 
 The :code:`read_image_folder` read a specified images local folder and returns them as an encoded :code:`pandas.Series` format. 
 
 .. code-block:: python
 
-    from jai.image import read_image_folder
-    image_data = read_image_folder('your_local_image_folder_path')
+    >>> from jai.image import read_image_folder
+    >>> image_data = read_image_folder('your_local_image_folder_path')
 
 Another proper JAI auxiliary method for image data fitting is the :code:`resize_image_folder`. 
 Resizing images before inserting is recommended because it reduces writing, reading and processing time during model inference, 
@@ -325,8 +325,8 @@ besides minimising the probability of crashing your fitting.
 
 .. code-block:: python
 
-    from jai.image import resize_image_folder
-    resize_image_folder('your_local_image_folder_path')
+    >>> from jai.image import resize_image_folder
+    >>> resize_image_folder('your_local_image_folder_path')
 
 For fitting Image data, just define db_type='Image' when using 'j.fit'. JAI permits using some of Torchvision pre-trained models 
 to fit your data. The default image model in JAI is :code:`'vgg16'`. To get the list of acceptable models, check 
@@ -334,30 +334,30 @@ to fit your data. The default image model in JAI is :code:`'vgg16'`. To get the 
 
 .. code-block:: python
 
-    import pandas as pd
-
-    from jai import Jai
-    from jai.image import read_image_folder
-    from jai.image import resize_image_folder
-
-    AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
-    IMAGE_FOLDER = 'your_local_image_folder_path'
-
-    # Authorization
-    j = Jai(AUTH_KEY)
-
-    # Resizing images
-    resize_image_folder(IMAGE_FOLDER)
-
-    # Reading images
-    data = read_image_folder(IMAGE_FOLDER)
-
-    # Fitting data
-    name = 'Image_example'
-    j.fit(name, data, db_type='Image')
+    >>> import pandas as pd
+    ... 
+    >>> from jai import Jai
+    >>> from jai.image import read_image_folder
+    >>> from jai.image import resize_image_folder
+    ... 
+    >>> AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
+    >>> IMAGE_FOLDER = 'your_local_image_folder_path'
+    ... 
+    >>> # Authorization
+    >>> j = Jai(AUTH_KEY)
+    ... 
+    >>> # Resizing images
+    >>> resize_image_folder(IMAGE_FOLDER)
+    ... 
+    >>> # Reading images
+    >>> data = read_image_folder(IMAGE_FOLDER)
+    ... 
+    >>> # Fitting data
+    >>> name = 'Image_example'
+    >>> j.fit(name, data, db_type='Image')
 
 To change the image model, add the :code:`hyperparams` parameters, as shown below:
 
 .. code-block:: python
 
-    j.fit(name, data, db_type='Image', hyperparams={'model_name': 'Desired_model'})
+    >>> j.fit(name, data, db_type='Image', hyperparams={'model_name': 'Desired_model'})

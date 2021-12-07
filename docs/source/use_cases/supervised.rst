@@ -27,6 +27,6 @@ Here are the possible tasks when using a Supervised model:
     
     .. code-block:: python
     
-        cat_columns = dataframe.select_dtypes("O").columns
-        dataframe[cat_columns] = dataframe[cat_columns].apply(pd.to_datetime,
-                                                            errors="ignore")
+        >>> cat_columns = dataframe.select_dtypes("O").columns
+        >>> dataframe[cat_columns] = dataframe[cat_columns].apply(pd.to_datetime,
+        ...                                                       errors="ignore")

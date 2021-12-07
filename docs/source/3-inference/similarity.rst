@@ -13,20 +13,20 @@ how to find the five most similar values for :code:`ids` 0 and 1.
 
 .. code-block:: python
 
-    results = j.similar(name, [0, 1], top_k=5)
+    >>> results = j.similar(name, [0, 1], top_k=5)
 
 To find the 20 most similar values for every id from :code:`[0, 99]`.
 
 .. code-block:: python
 
-    ids = list(range(100))
-    results = j.similar(name, ids, top_k=20)
+    >>> ids = list(range(100))
+    >>> results = j.similar(name, ids, top_k=20)
 
 Now, finding the 100 most similar values for every input value can be done like the example below.
 
 .. code-block:: python
 
-    results = j.similar(name, data.index, top_k=100, batch_size=1024)
+    >>> results = j.similar(name, data.index, top_k=100, batch_size=1024)
 
 Using new data
 ==============
@@ -37,13 +37,13 @@ Find the 100 most similar values for every :code:`new_data`.
 
 .. code-block:: python
 
-   results = j.similar(name, new_data, top_k=100, batch_size=1024)
+   >>> results = j.similar(name, new_data, top_k=100, batch_size=1024)
 
 The output will be a list of dictionaries with :code:`'query_id'` being the id of the value you want 
 to find similars and :code:`'results'`) a list with :code:`top_k` dictionaries with the :code:`'id'` 
 and the :code:`'distance'` between :code:`'query_id'` and :code:`'id'`.
 
-.. code-block:: python
+.. code-block:: bash
 
     [
         {
