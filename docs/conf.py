@@ -78,7 +78,8 @@ html_css_files = [
 
 add_module_names = False
 
-copybutton_prompt_text = ">>> "
-copybutton_copy_empty_lines = False
+copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
+copybutton_prompt_is_regexp = True
+copybutton_copy_empty_lines = True
 
 autosectionlabel_prefix_document = True

@@ -22,9 +22,8 @@ JAI requires an auth key to organize and secure collections. You can quickly gen
 
 .. code:: python
 
-    from jai import Jai
-
-    j = Jai.get_auth_key(email='email@mail.com', firstName='Jai', lastName='Z')
+    >>> from jai import Jai
+    >>> j = Jai.get_auth_key(email='email@mail.com', firstName='Jai', lastName='Z')
 
 .. attention::
 
@@ -41,37 +40,37 @@ In the below example, we'll show how to train a simple supervised model (regress
 
 .. code-block:: python
 
-    from jai import Jai
-    from sklearn.datasets import fetch_california_housing
-    
-    # Your auth key 
-    AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
-    
-    # Authenticating in JAI
-    j = Jai(AUTH_KEY)
-
-    # Load dataset
-    data, labels = fetch_california_housing(as_frame=True, return_X_y=True)
-    model_data = pd.concat([data, labels], axis=1)
-
-    # Send data to JAI for feature extraction
-    j.fit(
-        name='california_supervised',   # JAI collection name 
-        data=model_data,    # Data to be processed
-        db_type='Supervised',   # Your training type ('Supervised', 'SelfSupervised' etc)
-        verbose=2,
-        hyperparams={
-            'learning_rate': 3e-4,
-            'pretraining_ratio': 0.8
-        },
-        label={
-            'task': 'regression',
-            'label_name': 'MedHouseVal'
-        },
-        overwrite=True)
-
-    # Run prediction
-    j.predict(name='california_supervised', data=data)
+    >>> from jai import Jai
+    >>> from sklearn.datasets import fetch_california_housing
+    >>> 
+    >>> # Your auth key 
+    >>> AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
+    >>> 
+    >>> # Authenticating in JAI
+    >>> j = Jai(AUTH_KEY)
+    >>> 
+    >>> # Load dataset
+    >>> data, labels = fetch_california_housing(as_frame=True, return_X_y=True)
+    >>> model_data = pd.concat([data, labels], axis=1)
+    >>> 
+    >>> # Send data to JAI for feature extraction
+    >>> j.fit(
+    ...     name='california_supervised',   # JAI collection name 
+    ...     data=model_data,    # Data to be processed
+    ...     db_type='Supervised',   # Your training type ('Supervised', 'SelfSupervised' etc)
+    ...     verbose=2,
+    ...     hyperparams={
+    ...         'learning_rate': 3e-4,
+    ...         'pretraining_ratio': 0.8
+    ...     },
+    ...     label={
+    ...         'task': 'regression',
+    ...         'label_name': 'MedHouseVal'
+    ...     },
+    ...     overwrite=True)
+    >>> 
+    >>> # Run prediction
+    >>> j.predict(name='california_supervised', data=data)
 
 In this example, you could train a supervised model with the California housing dataset and run a prediction with some data.
 
