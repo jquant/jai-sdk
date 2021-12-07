@@ -1,6 +1,6 @@
-###########################
+#########################
 Fit: Creating Collections
-###########################
+#########################
 
 JAI works by creating feature-rich representations based on latent vectors, and storing them efficiently in what is called **collections**.
 
@@ -112,9 +112,9 @@ It's also possible to use an model trained to reproduce the neighboring relation
     >>> j.fit(name, data, db_type='TextEdit')
 
 
-********************
+******************
 Fit for Image data
-********************
+******************
 
 For any uses of image-type data, data should be encoded before inserting it into the Jai class.
 

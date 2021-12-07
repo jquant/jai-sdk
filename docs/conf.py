@@ -12,7 +12,7 @@
 #
 import os
 import sys
-import sphinx_rtd_theme
+import sphinx_book_theme
 
 sys.path.insert(0, os.path.abspath('..'))
 
@@ -22,15 +22,20 @@ project = 'jai-sdk'
 copyright = '2021, JQuant'
 author = 'JQuant'
 
+from jai import __version__ as version
+
+release = version
 # The full version, including alpha/beta/rc tags
-release = 'v0.1.2'
+# release = 'v0.1.2'
 
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.napoleon', 'sphinx_rtd_theme', 'sphinx_copybutton']
+extensions = [
+    'sphinx.ext.napoleon', 'sphinx_copybutton', 'sphinx.ext.autosectionlabel'
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -48,24 +53,21 @@ exclude_patterns = [
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_logo = './static/logo.png'
-html_theme = 'sphinx_rtd_theme'
+html_logo = 'source/images/jai_logo.png'
+html_theme = 'sphinx_book_theme'
+html_title = f"JAI-SDK {release}"
 html_theme_options = {
-    'analytics_anonymize_ip': False,
-    'logo_only': False,
-    'display_version': True,
-    'prev_next_buttons_location': 'bottom',
-    'style_external_links': False,
-    'vcs_pageview_mode': '',
-    'style_nav_header_background': '#fa5f1e',
-    # Toc options
-    'collapse_navigation': True,
-    'sticky_navigation': True,
-    'navigation_depth': 4,
-    'includehidden': True,
-    'titles_only': False
+    # New theme
+    "repository_url": "https://github.com/jquant/jai-sdk",
+    "use_repository_button": True,
+    "repository_branch": "main",
+    "use_issues_button": True,
+    "use_edit_page_button": True,
+    "path_to_docs": "docs",
+    "home_page_in_toc": True,
+    "show_navbar_depth": 0
 }
-
+# html_sidebars = {"**": ["sidebar-logo.html"]}
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
@@ -78,3 +80,5 @@ add_module_names = False
 
 copybutton_prompt_text = ">>> "
 copybutton_copy_empty_lines = False
+
+autosectionlabel_prefix_document = True
