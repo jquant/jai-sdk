@@ -34,6 +34,7 @@ class Jai(BaseJai):
     def __init__(self,
                  auth_key: str = None,
                  url: str = None,
+                 environment: str = "default",
                  var_env: str = "JAI_SECRET"):
         """
         Inicialize the Jai class.
@@ -52,7 +53,7 @@ class Jai(BaseJai):
             None
 
         """
-        super(Jai, self).__init__(auth_key, url, var_env)
+        super(Jai, self).__init__(auth_key, url, environment, var_env)
 
     @property
     def names(self):

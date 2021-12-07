@@ -66,6 +66,7 @@ class BaseJai(object):
     def __init__(self,
                  auth_key: str = None,
                  url: str = None,
+                 environment: str = "default",
                  var_env: str = "JAI_SECRET"):
         """
         Inicialize the Jai class.
@@ -88,10 +89,10 @@ class BaseJai(object):
             auth_key = os.environ.get(var_env, "")
         if url is None:
             self.__url = "https://mycelia.azure-api.net"
-            self.header = {"Auth": auth_key}
+            self.header = {"Auth": auth_key, "environment": environment}
         else:
             self.__url = url[:-1] if url.endswith("/") else url
-            self.header = {"company-key": auth_key}
+            self.header = {"company-key": auth_key, "environment": environment}
 
     @property
     def url(self):
