@@ -2,25 +2,27 @@
 Similarity Seach
 ################
 
-After you're done setting up your database, you perform similarity searches:
+After fitting your database, you can perform similarity searches in two ways: Based on an existing 
+index of your already included model or using new data.
 
 Using existing index
 ====================
 
-You can query itens that already have been inputed by their ids. Find the 5 most similar values for ids 0 and 1.
+You can query itens that already have been inputed by their :code:`ids`. The below example shows 
+how to find the five most similar values for :code:`ids` 0 and 1.
 
 .. code-block:: python
 
     >>> results = j.similar(name, [0, 1], top_k=5)
 
-Find the 20 most similar values for every id from [0, 99].
+To find the 20 most similar values for every id from :code:`[0, 99]`.
 
 .. code-block:: python
 
     >>> ids = list(range(100))
     >>> results = j.similar(name, ids, top_k=20)
 
-Find the 100 most similar values for every input value.
+Now, finding the 100 most similar values for every input value can be done like the example below.
 
 .. code-block:: python
 
@@ -29,17 +31,19 @@ Find the 100 most similar values for every input value.
 Using new data
 ==============
 
-*(All data should be in pandas.DataFrame or pandas.Series format)*
+*(All data should be in* :code:`pandas.DataFrame` *or* :code:`pandas.Series` *format)*
 
-Find the 100 most similar values for every new_data.
+Find the 100 most similar values for every :code:`new_data`.
 
 .. code-block:: python
 
    >>> results = j.similar(name, new_data, top_k=100, batch_size=1024)
 
-The output will be a list of dictionaries with ("query_id") being the id of the value you want to find similars and ("results") a list with :code:`top_k` dictionaries with the "id" and the "distance" between "query_id" and "id".
+The output will be a list of dictionaries with :code:`'query_id'` being the id of the value you want 
+to find similars and :code:`'results'`) a list with :code:`top_k` dictionaries with the :code:`'id'` 
+and the :code:`'distance'` between :code:`'query_id'` and :code:`'id'`.
 
-.. code-block:: console
+.. code-block:: bash
 
     [
         {
@@ -70,4 +74,7 @@ The output will be a list of dictionaries with ("query_id") being the id of the 
 
 
 .. note::
-    The method :code:`similar` has a default :code:`batch_size=16384`, which will result in :code:`ceil(n_samples/batch_size) + 2` requests. We do NOT recommend changing the default value as it could reduce the performance of the API.
+    
+    The method :code:`similar` has a default :code:`batch_size=16384`, which will result in 
+    :code:`ceil(n_samples/batch_size) + 2` requests. We **DON'T** recommend changing the default value 
+    as it could reduce the performance of the API.

@@ -1,6 +1,10 @@
 """
 """
+import os
+import re
 from setuptools import find_packages, setup
+
+ROOT_DIR = os.path.dirname(__file__)
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -8,9 +12,20 @@ with open("README.md", "r", encoding="utf-8") as fh:
 with open("requirements.txt", "r") as f:
     dependencies = f.read().splitlines()
 
+
+def find_version(*filepath):
+    # Extract version information from filepath
+    with open(os.path.join(ROOT_DIR, *filepath)) as fp:
+        version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
+                                  fp.read(), re.M)
+        if version_match:
+            return version_match.group(1)
+        raise RuntimeError("Unable to find version string.")
+
+
 setup(
     name="jai-sdk",
-    version="0.16.0",
+    version=find_version("jai", "__init__.py"),
     author="JQuant",
     author_email="jedis@jquant.com.br",
     description="JAI - Trust your data",

@@ -22,6 +22,7 @@ You can find a complete `match example here <https://github.com/jquant/jai-sdk/b
     >>> j = Jai(AUTH_KEY)
     >>> match = j.match(name, data1, data2)
     >>> match
+    
               id_left     id_right     distance
        0            1            2         0.11
        1            2            1         0.11
@@ -63,7 +64,7 @@ You can find a complete `fill example here <https://github.com/jquant/jai-sdk/bl
 
     >>> import pandas as pd
     >>> from jai.processing import process_predict
-    >>>
+    ...
     >>> j = Jai(AUTH_KEY)
     >>> results = j.fill(name, data, COL_TO_FILL)
     >>> processed = process_predict(results)
@@ -85,7 +86,7 @@ You can find a complete `sanity example here <https://github.com/jquant/jai-sdk/
 
     >>> import pandas as pd
     >>> from jai.processing import process_predict
-    >>>
+    ...
     >>> j = Jai(AUTH_KEY)
     >>> results = j.sanity(name, data)
     >>> processed = process_predict(results)

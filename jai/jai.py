@@ -36,7 +36,7 @@ class Jai(BaseJai):
                  url: str = None,
                  var_env: str = "JAI_SECRET"):
         """
-        Inicialize the Jai class.
+        Initialize the Jai class.
 
         An authorization key is needed to use the Mycelia API.
 
