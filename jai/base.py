@@ -91,7 +91,7 @@ class BaseJai(object):
             self.header = {"Auth": auth_key}
         else:
             self.__url = url[:-1] if url.endswith("/") else url
-            self.header = {"Auth": auth_key, "company-key": "api-test"}
+            self.header = {"company-key": auth_key}
 
     @property
     def url(self):
