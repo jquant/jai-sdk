@@ -64,7 +64,7 @@ You can find a complete `fill example here <https://github.com/jquant/jai-sdk/bl
 
     >>> import pandas as pd
     >>> from jai.processing import process_predict
-    >>>
+    ...
     >>> j = Jai(AUTH_KEY)
     >>> results = j.fill(name, data, COL_TO_FILL)
     >>> processed = process_predict(results)
@@ -86,7 +86,7 @@ You can find a complete `sanity example here <https://github.com/jquant/jai-sdk/
 
     >>> import pandas as pd
     >>> from jai.processing import process_predict
-    >>>
+    ...
     >>> j = Jai(AUTH_KEY)
     >>> results = j.sanity(name, data)
     >>> processed = process_predict(results)
