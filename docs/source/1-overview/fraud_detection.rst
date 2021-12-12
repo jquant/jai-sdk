@@ -23,7 +23,7 @@ With your authentication key, start authenticating in your JAI account:
 
 .. code-block:: python
 
-    >>> AUTH_KEY = "xXxxxXxxxxXxxxxxXxxxXxXxxx"
+    >>> AUTH_KEY = "insert_your_auth_key_here"
     >>> j = Jai(AUTH_KEY) 
 
 
@@ -136,64 +136,86 @@ For more information about the :code:`j.fit` args you can access `this part <htt
 Model Inference
 ***************
 
-Now that our Supervised Model is also JAI collection, we can perform predictions with it, applying the model to new examples very easily:
+Now that our Supervised Model is also JAI collection, we can perform predictions with it, applying the model to new examples very easily. Let's do it firstly without predict_proba:
 
 .. code-block:: python
 
-    >>> # every JAI collection can be queried using j.predict()
+    >>> # Now we will make the predictions
+    >>> #In this case, it will use 0.5 (which is default) as threshold to return the predicted class
     >>> ans = j.predict(
-    ...     # collection to be queried
-    ...     name='cc_fraud_supervised',
-    ...     predict_proba = True,
-    ...     # let's get the X_test we have separated before
-    ...     data=X_test
-    ... )
+    >>>    
+    >>>     # Collection to be queried
+    >>>     name='cc_fraud_supervised',
+    >>>    
+    >>>     # This will make your ansewer return as a dataframe
+    >>>     as_frame=True,
+    >>>     
+    >>>     # Here you will pass a dataframe to predict which examples are default or not
+    >>>     data=X_test
+    >>> )
 
-
-And now the :code:`ans` variable holds a list of predictions:
-
-.. code-block:: python
-
-    >>> # Here it's possible to see how the answer will come
-    >>> print(ans)
-
-    [{'id': 0, 'predict': {'0': 0.9910324814696065, '1': 0.008967518530393502}},
-    {'id': 16, 'predict': {'0': 0.9866393373524565, '1': 0.013360662647543594}},
-    {'id': 24, 'predict': {'0': 0.9831731282157427, '1': 0.01682687178425728}},
-    {'id': 26, 'predict': {'0': 0.9857890272232137, '1': 0.01421097277678632}},
-    {'id': 41, 'predict': {'0': 0.9794459983427174, '1': 0.020554001657282574}},
-    {'id': 87, 'predict': {'0': 0.9829296150692808, '1': 0.017070384930719124}},
-    {'id': 88, 'predict': {'0': 0.9830230947251252, '1': 0.016976905274874853}}]
-
-Manipulating the information received in :code:`ans`, we can check the :code:`roc_auc_score` of the model:
+Now let's put y_test alongside the predicted classes. Be careful when doing this: JAI returns the answers with sorted indexes.
 
 .. code-block:: python
-
-    >>> # Here we are taking the probabilities of the answer of being one
-    >>> ans = pd.DataFrame([(x["id"],x["predict"]["1"]) for x in ans],columns=["index","y_pred"]).set_index("index")
-    ... 
-    >>> # **ATENTION**: Be careful when comparing the true and predicted values. 
-    >>> # The ids of the answers are ordered inside JAI
+    >>> # ATTENTION: JAI ALWAYS RETURNS THE ANSWERS ORDERED BY ID! Bringin y_test like this will avoid mismathings.
     >>> ans["y_true"] = y_test
-    ... 
-    >>> # Let's print the top 5 of our predictions. 
-    >>> print(tabulate(ans[['y_pred', 'y_true']].head(), headers='keys', tablefmt='rst'))
-    
-    =======  ==========  ========
-      index      y_pred    y_true
-    =======  ==========  ========
-          0  0.00896752         0
-         16  0.0133607          0
-         24  0.0168269          0
-         26  0.014211           0
-         41  0.020554           0
-    =======  ==========  ========
+    >>> print(tabulate(ans.head(), headers='keys', tablefmt='rst'))
+    ====  =========  ========
+      id    predict    y_true
+    ====  =========  ========
+       0          0         0
+      16          0         0
+      24          0         0
+      26          0         0
+      41          0         0
+    ====  =========  ========
 
-    >>> from sklearn.metrics import roc_auc_score
-    >>> roc_auc_score(ans["y_true"], ans["y_pred"])
+    >>> print(metrics.classification_report( ans["y_true"],ans["predict"],target_names=['0','1']))
+                  precision    recall  f1-score   support
+
+               0       1.00      1.00      1.00     85307
+               1       0.77      0.79      0.78       136
+
+        accuracy                           1.00     85443
+       macro avg       0.89      0.90      0.89     85443
+    weighted avg       1.00      1.00      1.00     85443
     
+If you wish to define your threshold or use the predicted probabilities to rank the answers, we can make the predictions as follows:
+
+.. code-block:: python
+
+    >>> ans = j.predict(
+    >>>     
+    >>>     # Collection to be queried
+    >>>     name='cc_fraud_supervised',
+    >>>     
+    >>>     # This will bring the probabilities predicted
+    >>>     predict_proba = True,
+    >>>     
+    >>>     # This will make your ansewer return as a dataframe
+    >>>     as_frame=True,
+    >>>     
+    >>>     # Here you will pass a dataframe to predict which examples are default or not
+    >>>     data=X_test
+    >>> )
+    ...
+    >>> # ATTENTION: JAI ALWAYS RETURNS THE ANSWERS ORDERED BY ID! Bringin y_test like this will avoid mismathings.
+    >>> ans["y_true"] = y_test
+    >>> print(tabulate(ans.head(), headers='keys', tablefmt='rst'))
+    ====  ========  ==========  =========  ================  ========
+      id         0           1    predict    probability(%)    y_true
+    ====  ========  ==========  =========  ================  ========
+       0  0.991032  0.00896752          0             99.1          0
+      16  0.986639  0.0133607           0             98.66         0
+      24  0.983173  0.0168269           0             98.32         0
+      26  0.985789  0.014211            0             98.58         0
+      41  0.979446  0.020554            0             97.94         0
+    ====  ========  ==========  =========  ================  ========
+    
+    >>> # Calculating AUC Score using the predictions of examples being 1
+    >>> roc_auc_score(ans["y_true"], ans["1"])
     0.9621445967815895
-
+     
 ******************************
 Making inference from REST API
 ******************************
@@ -206,7 +228,7 @@ of the job of putting your model in production much easier!
     >>> # import requests libraries
     >>> import requests
     ... 
-    >>> AUTH_KEY = "xXxxxXxxxxXxxxxxXxxxXxXxxx"
+    >>> AUTH_KEY = "insert_your_auth_key_here"
     ... 
     >>> # set Authentication header
     >>> header={'Auth': AUTH_KEY}
