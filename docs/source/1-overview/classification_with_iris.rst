@@ -46,7 +46,7 @@ Let's have a quick glance on come columns of this dataset below:
     >>> import pandas as pd
     >>> from tabulate import tabulate
     >>> from sklearn.datasets import load_iris
-    ... 
+    ...
     >>> # Loading dataframe
     >>> df = pd.DataFrame(load_iris(as_frame=True).data)
     >>> target = load_iris(as_frame=True).target
@@ -70,16 +70,16 @@ Now we will train a Supervised Model to classify each flower example within the 
 previously shown.
   
 .. code-block:: python
-
+    
     >>> from sklearn.model_selection import train_test_split
-    ... 
+    ...
     >>> # Splitting the dataset to demonstrate j.predict
     >>> X_train, X_test, y_train, y_test = train_test_split(
     ...             df, target, test_size=0.3, random_state=42)
-    ... 
+    ...
     >>> # Creating a training table with the target
     >>> train = pd.concat([X_train,y_train],axis=1)
-    ... 
+    ...
     >>> # For the supervised model we have to pass the dataframe with the label to JAI
     >>> train = pd.concat([X_train,y_train],axis=1)
     ...
@@ -93,19 +93,17 @@ previously shown.
     ...     db_type='Supervised', 
     ...     # Verbose 2 -> shows the loss graph at the end of training
     ...     verbose=2,
-    ...     # The split type as stratified guarantee that the same proportion of both 
-    ...     # classes are maintained for train, validation and test
+    ...     # The split type as stratified guarantee that the same proportion of both classes are maintained for train, validation and test
     ...     split = {'type':'stratified'},
     ...     # When we set task as *classification* we use CrossEntropy Loss
     ...     label = {
     ...         "task": "classification",
     ...         "label_name": "target"
     ...         }
-    ...     # You can uncomment this line if you wish to test different parameters and 
-    ...     # maintain the same collection name
+    ...     # You can uncomment this line if you wish to test different parameters and maintain the same collection name
     ...     # overwrite = True
     ... )
-
+    
     Setup Report:
     Metrics classification:
                   precision    recall  f1-score   support
@@ -132,25 +130,27 @@ Now that our Supervised Model is also JAI collection, we can perform predictions
 .. code-block:: python
 
     >>> # Now we will make the predictions
-    >>> #In this case, it will use 0.5 (which is default) as threshold to return the predicted class
+    >>> # In this case, it will use 0.5 (which is default) as threshold to return the predicted class
     >>> ans = j.predict(
-    >>>    
-    >>>     # Collection to be queried
-    >>>     name='iris_supervised',
-    >>>    
-    >>>     # This will make your ansewer return as a dataframe
-    >>>     as_frame=True,
-    >>>     
-    >>>     # Here you will pass a dataframe to predict which examples are default or not
-    >>>     data=X_test
-    >>> )
+    ...
+    ...     # Collection to be queried
+    ...     name='iris_supervised',
+    ...    
+    ...     # This will make your ansewer return as a dataframe
+    ...     as_frame=True,
+    ...     
+    ...     # Here you will pass a dataframe to predict which examples are default or not
+    ...     data=X_test
+    ... )
 
 Now let's put y_test alongside the predicted classes. Be careful when doing this: JAI returns the answers with sorted indexes.
 
 .. code-block:: python
-    >>> # ATTENTION: JAI ALWAYS RETURNS THE ANSWERS ORDERED BY ID! Bringin y_test like this will avoid mismathings.
+
+    >>> # ATTENTION: JAI ALWAYS RETURNS THE ANSWERS ORDERED BY ID! Bringing y_test like this will avoid mismatching
     >>> ans["y_true"] = y_test
     >>> print(tabulate(ans.head(), headers='keys', tablefmt='rst'))
+    
     ====  =========  ========
       id    predict    y_true
     ====  =========  ========
@@ -162,6 +162,7 @@ Now let's put y_test alongside the predicted classes. Be careful when doing this
     ====  =========  ========
 
     >>> print(metrics.classification_report( ans["y_true"],ans["predict"],target_names=['0','1','2']))
+    
                   precision    recall  f1-score   support
 
                0       1.00      1.00      1.00        19
@@ -175,29 +176,30 @@ Now let's put y_test alongside the predicted classes. Be careful when doing this
 If you wish to define your threshold or use the predicted probabilities to rank the answers, we can make the predictions as follows:
 
 .. code-block:: python
-
+    
     >>> ans = j.predict(
-    >>>     
-    >>>     # Collection to be queried
-    >>>     name='iris_supervised',
-    >>>     
-    >>>     # This will bring the probabilities predicted
-    >>>     predict_proba = True,
-    >>>     
-    >>>     # This will make your ansewer return as a dataframe
-    >>>     as_frame=True,
-    >>>     
-    >>>     # Here you will pass a dataframe to predict which examples are default or not
-    >>>     data=X_test
-    >>> )
+    ...     
+    ...     # Collection to be queried
+    ...     name='iris_supervised',
+    ...     
+    ...     # This will bring the probabilities predicted
+    ...     predict_proba = True,
+    ...     
+    ...     # This will make your ansewer return as a dataframe
+    ...     as_frame=True,
+    ...     
+    ...     # Here you will pass a dataframe to predict which examples are default or not
+    ...     data=X_test
+    ... )
     ...
-    >>> # ATTENTION: JAI ALWAYS RETURNS THE ANSWERS ORDERED BY ID! Bringin y_test like this will avoid mismathings.
+    >>> # ATTENTION: JAI ALWAYS RETURNS THE ANSWERS ORDERED BY ID! Bringing y_test like this will avoid mismatching
     >>> ans["y_true"] = y_test
     >>> print(tabulate(ans.head(), headers='keys', tablefmt='rst'))
+    
     ====  ========  =========  =========  =========  ================  ========
       id         0          1          2    predict    probability(%)    y_true
     ====  ========  =========  =========  =========  ================  ========
-       4  0.967401  0.0158325  0.0167661          0             96.74         0
+       4  0.967401  0.0158325  0.0167661          0             96.74         0 
        9  0.975747  0.0116164  0.0126364          0             97.57         0
       10  0.962914  0.0186806  0.0184058          0             96.29         0
       11  0.969209  0.0147728  0.0160187          0             96.92         0
@@ -206,9 +208,10 @@ If you wish to define your threshold or use the predicted probabilities to rank 
     
     >>> # Calculating AUC Score
     >>> roc_auc_score(ans["y_true"], np.array(ans[["0","1","2"]]), multi_class='ovr')
+     
     1.0
     
-Eventhough this result might scare you, JAI backend is made to provide a robust performance and prevent overfitting. 
+Even though this result might scare you, JAI backend is made to provide a robust performance and prevent overfitting. 
 
 
 ******************************
@@ -220,26 +223,26 @@ of the job of putting your model in production much easier!
 
 .. code-block:: python
     
-    >>> # import requests libraries
+    >>> # Import requests libraries
     >>> import requests
-    ... 
+    ...
     >>> AUTH_KEY = "insert_your_auth_key_here"
-    ... 
-    >>> # set Authentication header
+    ...
+    >>> # Set Authentication header
     >>> header = {'Auth': AUTH_KEY}
-    ... 
-    >>> # set collection name
+    ...
+    >>> # Set collection name
     >>> db_name = 'iris_supervised' 
-    ... 
-    >>> # model inference endpoint
+    ...
+    >>> # Model inference endpoint
     >>> url_predict = f"https://mycelia.azure-api.net/predict/{db_name}"
-    ... 
-    >>> # json body
-    >>> # note that we need to provide a column named 'id'
-    >>> # also note that we drop the 'PRICE' column because it is not a feature
+    ...
+    >>> # Json body
+    >>> # Note that we need to provide a column named 'id'
+    >>> # Also note that we drop the 'PRICE' column because it is not a feature
     >>> body = X_test.reset_index().rename(columns={'index':'id'}).head().to_dict(orient='records')
-    ... 
-    >>> # make the request
+    ...
+    >>> # Make the request
     >>> ans = requests.put(url_predict, json=body, headers=header)
     >>> ans.json()
 
