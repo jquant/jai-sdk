@@ -26,7 +26,7 @@ With your authentication key, start authenticating in your JAI account:
 
 .. code-block:: python
 
-    >>> AUTH_KEY = "xXxxxXxxxxXxxxxxXxxxXxXxxx"
+    >>> AUTH_KEY = "insert_your_auth_key_here"
     >>> j = Jai(AUTH_KEY) 
 
 *******************
@@ -42,10 +42,11 @@ Let's have a quick glance on come columns of this dataset below:
 .. code-block:: python
 
     >>> # Importing other necessary libs
+    >>> import numpy as np
     >>> import pandas as pd
     >>> from tabulate import tabulate
     >>> from sklearn.datasets import load_iris
-    ... 
+    ...
     >>> # Loading dataframe
     >>> df = pd.DataFrame(load_iris(as_frame=True).data)
     >>> target = load_iris(as_frame=True).target
@@ -69,16 +70,16 @@ Now we will train a Supervised Model to classify each flower example within the 
 previously shown.
   
 .. code-block:: python
-
+    
     >>> from sklearn.model_selection import train_test_split
-    ... 
+    ...
     >>> # Splitting the dataset to demonstrate j.predict
     >>> X_train, X_test, y_train, y_test = train_test_split(
     ...             df, target, test_size=0.3, random_state=42)
-    ... 
+    ...
     >>> # Creating a training table with the target
     >>> train = pd.concat([X_train,y_train],axis=1)
-    ... 
+    ...
     >>> # For the supervised model we have to pass the dataframe with the label to JAI
     >>> train = pd.concat([X_train,y_train],axis=1)
     ...
@@ -92,19 +93,17 @@ previously shown.
     ...     db_type='Supervised', 
     ...     # Verbose 2 -> shows the loss graph at the end of training
     ...     verbose=2,
-    ...     # The split type as stratified guarantee that the same proportion of both 
-    ...     # classes are maintained for train, validation and test
+    ...     # The split type as stratified guarantee that the same proportion of both classes are maintained for train, validation and test
     ...     split = {'type':'stratified'},
     ...     # When we set task as *classification* we use CrossEntropy Loss
     ...     label = {
     ...         "task": "classification",
     ...         "label_name": "target"
     ...         }
-    ...     # You can uncomment this line if you wish to test different parameters and 
-    ...     # maintain the same collection name
+    ...     # You can uncomment this line if you wish to test different parameters and maintain the same collection name
     ...     # overwrite = True
     ... )
-
+    
     Setup Report:
     Metrics classification:
                   precision    recall  f1-score   support
@@ -126,27 +125,29 @@ For more information about the :code:`j.fit` args you can access
 Model Inference
 ***************
 
-Now that our Supervised Model is also JAI collection, we can perform predictions with it, 
-applying the model to new examples very easily:
+Now that our Supervised Model is also JAI collection, we can perform predictions with it, applying the model to new examples very easily. Let's do it firstly without predict_proba:
 
 .. code-block:: python
 
-    >>> # Every JAI collection can be queried using j.predict()
+    >>> # Now we will make the predictions
+    >>> # In this case, it will use 0.5 (which is default) as threshold to return the predicted class
     >>> ans = j.predict(
-    ...     # collection to be queried
-    ...     name = 'iris_supervised',
-    ...     as_frame = True,
-    ...     # let's get the X_test we have separated before
-    ...     data = X_test
+    ...
+    ...     # Collection to be queried
+    ...     name='iris_supervised',
+    ...    
+    ...     # This will make your ansewer return as a dataframe
+    ...     as_frame=True,
+    ...     
+    ...     # Here you will pass a dataframe to predict which examples are default or not
+    ...     data=X_test
     ... )
 
-And now the :code:`ans` variable holds a dataframe with both predictions and true values:
+Now let's put y_test alongside the predicted classes. Be careful when doing this: JAI returns the answers with sorted indexes.
 
 .. code-block:: python
 
-    >>> # Here it's possible to see how the answer will come
-    >>> # **ATENTION**: Be careful when comparing the true and predicted values. The ids of the 
-    >>> # answers are ordered inside JAI
+    >>> # ATTENTION: JAI ALWAYS RETURNS THE ANSWERS ORDERED BY ID! Bringing y_test like this will avoid mismatching
     >>> ans["y_true"] = y_test
     >>> print(tabulate(ans.head(), headers='keys', tablefmt='rst'))
     
@@ -160,26 +161,58 @@ And now the :code:`ans` variable holds a dataframe with both predictions and tru
       12          0         0
     ====  =========  ========
 
-Manipulating the information received in :code:`ans`, we can check the classification report of the prediction:
-
-.. code-block:: python
-
-    >>> # Checking the classification report
-    >>> from sklearn import metrics
     >>> print(metrics.classification_report( ans["y_true"],ans["predict"],target_names=['0','1','2']))
     
-                precision    recall  f1-score   support
- 
-             0       1.00      1.00      1.00        19
-             1       1.00      1.00      1.00        13
-             2       1.00      1.00      1.00        13
-     
-     accuracy                            1.00        45
-     macro avg       1.00      1.00      1.00        45
-     weighted avg    1.00      1.00      1.00        45
+                  precision    recall  f1-score   support
 
-For more information about the :code:`j.fit` args you can access :ref:`The Fit Method <source/2-using_jai/fit:The Fit Method>` 
-section of the documentation.
+               0       1.00      1.00      1.00        19
+               1       1.00      1.00      1.00        13
+               2       1.00      1.00      1.00        13
+
+        accuracy                           1.00        45
+       macro avg       1.00      1.00      1.00        45
+    weighted avg       1.00      1.00      1.00        45
+    
+If you wish to define your threshold or use the predicted probabilities to rank the answers, we can make the predictions as follows:
+
+.. code-block:: python
+    
+    >>> ans = j.predict(
+    ...     
+    ...     # Collection to be queried
+    ...     name='iris_supervised',
+    ...     
+    ...     # This will bring the probabilities predicted
+    ...     predict_proba = True,
+    ...     
+    ...     # This will make your ansewer return as a dataframe
+    ...     as_frame=True,
+    ...     
+    ...     # Here you will pass a dataframe to predict which examples are default or not
+    ...     data=X_test
+    ... )
+    ...
+    >>> # ATTENTION: JAI ALWAYS RETURNS THE ANSWERS ORDERED BY ID! Bringing y_test like this will avoid mismatching
+    >>> ans["y_true"] = y_test
+    >>> print(tabulate(ans.head(), headers='keys', tablefmt='rst'))
+    
+    ====  ========  =========  =========  =========  ================  ========
+      id         0          1          2    predict    probability(%)    y_true
+    ====  ========  =========  =========  =========  ================  ========
+       4  0.967401  0.0158325  0.0167661          0             96.74         0 
+       9  0.975747  0.0116164  0.0126364          0             97.57         0
+      10  0.962914  0.0186806  0.0184058          0             96.29         0
+      11  0.969209  0.0147728  0.0160187          0             96.92         0
+      12  0.977361  0.0108368  0.0118019          0             97.74         0
+    ====  ========  =========  =========  =========  ================  =======
+    
+    >>> # Calculating AUC Score
+    >>> roc_auc_score(ans["y_true"], np.array(ans[["0","1","2"]]), multi_class='ovr')
+     
+    1.0
+    
+Even though this result might scare you, JAI backend is made to provide a robust performance and prevent overfitting. 
+
 
 ******************************
 Making inference from REST API
@@ -190,26 +223,26 @@ of the job of putting your model in production much easier!
 
 .. code-block:: python
     
-    >>> # import requests libraries
+    >>> # Import requests libraries
     >>> import requests
-    ... 
-    >>> AUTH_KEY = "xXxxxXxxxxXxxxxxXxxxXxXxxx"
-    ... 
-    >>> # set Authentication header
+    ...
+    >>> AUTH_KEY = "insert_your_auth_key_here"
+    ...
+    >>> # Set Authentication header
     >>> header = {'Auth': AUTH_KEY}
-    ... 
-    >>> # set collection name
+    ...
+    >>> # Set collection name
     >>> db_name = 'iris_supervised' 
-    ... 
-    >>> # model inference endpoint
+    ...
+    >>> # Model inference endpoint
     >>> url_predict = f"https://mycelia.azure-api.net/predict/{db_name}"
-    ... 
-    >>> # json body
-    >>> # note that we need to provide a column named 'id'
-    >>> # also note that we drop the 'PRICE' column because it is not a feature
+    ...
+    >>> # Json body
+    >>> # Note that we need to provide a column named 'id'
+    >>> # Also note that we drop the 'PRICE' column because it is not a feature
     >>> body = X_test.reset_index().rename(columns={'index':'id'}).head().to_dict(orient='records')
-    ... 
-    >>> # make the request
+    ...
+    >>> # Make the request
     >>> ans = requests.put(url_predict, json=body, headers=header)
     >>> ans.json()
 
