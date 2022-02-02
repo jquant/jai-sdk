@@ -729,7 +729,7 @@ class Jai(BaseJai):
                                        filter_name)
                 insert_responses[task] = i
 
-            with tqdm(total=len(insert_responses)) as pbar:
+            with tqdm(total=len(insert_responses), desc="Insert Data") as pbar:
                 results = {}
                 for future in concurrent.futures.as_completed(
                         insert_responses):
