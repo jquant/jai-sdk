@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import requests
 import time
+import concurrent
 
 from io import BytesIO
 from .base import BaseJai
@@ -717,15 +718,26 @@ class Jai(BaseJai):
             information of whether or not that particular batch was successfully inserted.
         """
         insert_responses = {}
-        for i, b in enumerate(
-                trange(0, len(data), batch_size, desc="Insert Data")):
-            _batch = data.iloc[b:b + batch_size]
-            data_json = data2json(_batch,
-                                  dtype=db_type,
-                                  filter_name=filter_name,
-                                  predict=predict)
-            insert_responses[i] = self._insert_json(name, data_json,
-                                                    filter_name)
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for i, b in enumerate(range(0, len(data), batch_size)):
+                _batch = data.iloc[b:b + batch_size]
+                data_json = data2json(_batch,
+                                      dtype=db_type,
+                                      filter_name=filter_name,
+                                      predict=predict)
+                task = executor.submit(self._insert_json, name, data_json,
+                                       filter_name)
+                insert_responses[task] = i
+
+            with tqdm(total=len(insert_responses)) as pbar:
+                results = {}
+                for future in concurrent.futures.as_completed(
+                        insert_responses):
+                    arg = insert_responses[future]
+                    print(arg)
+                    results[arg] = future.result()
+                    pbar.update(1)
+
         return insert_responses
 
     def _check_kwargs(self, db_type, **kwargs):
