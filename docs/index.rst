@@ -3,48 +3,41 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-##########################
-JAI-SDK - Trust your data!
-##########################
+What is JAI-SDK?
+================
 
-Great to see you here!
-
-JAI is a productivity-oriented, vector-based, ML Platform, served via REST API or Python SDK (other languages coming soon).
+.. include:: source/what_is_jai.rst
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Getting Started
+   :hidden:
+   :maxdepth: -1
+   :caption: An overview of JAI-SDK
 
-   source/5min_jai
-   source/data_cleaning
+   source/1-overview/getting_started.rst
+   source/1-overview/jai_in_5_minutes.rst
+   source/1-overview/data_cleaning.rst
    
 .. toctree::
-   :maxdepth: 1
-   :caption: Managing Collections
+   :hidden:
+   :maxdepth: -1
+   :caption: Using JAI
 
-   use_cases/setup_data
-   use_cases/supervised
-   use_cases/check_database
-   use_cases/remove_data
-
+   source/2-using_jai/fit.rst
+   source/2-using_jai/report.rst
+   source/2-using_jai/using_environment.rst
+   source/2-using_jai/remove_data.rst
 
 .. toctree::
-   :maxdepth: 1
+   :hidden:
+   :maxdepth: -1
    :caption: Using Collections
    
-   use_cases/similarity
-   use_cases/predict
+   source/3-inference/similarity.rst
+   source/3-inference/predict.rst
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Advanced
-
-   advanced/report
-   advanced/hierarchical
-   advanced/multimodal
-
-.. toctree::
-   :maxdepth: 1
+   :hidden:
+   :maxdepth: -1
    :caption: Examples (Google Colab)
 
    Smartphone - Similarity Search <https://colab.research.google.com/drive/1NOVqCdnaizptTf42kZmeeWZ3dfvdIr1U?usp=sharing>
@@ -53,16 +46,17 @@ JAI is a productivity-oriented, vector-based, ML Platform, served via REST API o
    Movielens(100k) - Recommendation <https://drive.google.com/file/d/1LuMp_niA8iG2Hdbditk-94enqlMN6yC-/view?usp=sharing>
 
 .. toctree::
-   :maxdepth: 2
-   :caption: API Reference
+   :hidden:
+   :maxdepth: -1
+   :caption: API and Package Reference
    
-   source/jai
-   source/auxiliar
+   source/reference/jai.rst
+   source/reference/auxiliar.rst
 
-##################
-Indices and tables
-##################
+.. ##################
+.. Indices and tables
+.. ##################
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. * :ref:`genindex`
+.. * :ref:`modindex`
+.. * :ref:`search`

@@ -21,7 +21,9 @@ def raise_status_error(code):
         Expected Code.
 
     """
+
     def decorator(function):
+
         @functools.wraps(function)
         def new_function(*args, **kwargs):
             response = function(*args, **kwargs)
@@ -63,13 +65,14 @@ class BaseJai(object):
     """
     Base class for requests with the Mycelia API.
     """
+
     def __init__(self,
                  auth_key: str = None,
                  url: str = None,
                  environment: str = "default",
                  var_env: str = "JAI_SECRET"):
         """
-        Inicialize the Jai class.
+        Initialize the Jai class.
 
         An authorization key is needed to use the Mycelia API.
 

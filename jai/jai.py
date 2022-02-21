@@ -31,13 +31,14 @@ class Jai(BaseJai):
     and more.
 
     """
+
     def __init__(self,
                  auth_key: str = None,
                  url: str = None,
                  environment: str = "default",
                  var_env: str = "JAI_SECRET"):
         """
-        Inicialize the Jai class.
+        Initialize the Jai class.
 
         An authorization key is needed to use the Mycelia API.
 
@@ -896,6 +897,7 @@ class Jai(BaseJai):
         ------
         None.
         """
+
         def get_numbers(sts):
             curr_step, max_iterations = sts["Description"].split(
                 "Iteration: ")[1].strip().split(" / ")
