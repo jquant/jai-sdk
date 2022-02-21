@@ -3,33 +3,41 @@ from pandas._testing import assert_frame_equal
 import pandas as pd
 import pytest
 import numpy as np
+import json
+import os
 
 URL = 'http://localhost:8001'
-AUTH_KEY = "sdk_test"
+AUTH_KEY = ""
+HEADER_TEST = json.loads(os.environ['HEADER_TEST'])
 
 
 def test_url():
     j = Jai(AUTH_KEY)
+    j.header = HEADER_TEST
     assert j.url == "https://mycelia.azure-api.net"
 
 
 def test_custom_url():
     j = Jai(url=URL + "/", auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
     assert j.url == URL
 
 
 def test_names():
     j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
     assert isinstance(j.names, list)
 
 
 def test_info():
     j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
     assert isinstance(j.info, pd.DataFrame)
 
 
 def test_status():
     j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
     assert isinstance(j.status, dict)
 
 
@@ -38,6 +46,7 @@ def test_status():
 @pytest.mark.parametrize("suffix", ["", "_fix"])
 def test_generate_name(length, prefix, suffix):
     j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
     name = j.generate_name(length, prefix, suffix)
     assert len(name) == length, "generated name wrong."
 
@@ -50,12 +59,14 @@ def test_generate_name(length, prefix, suffix):
 
 def test_generate_error():
     j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
     with pytest.raises(ValueError):
         j.generate_name(8, "prefix", "suffix")
 
 
 def test_check_dtype_and_clean():
     j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
 
     # mock data
     r = 1100
@@ -76,4 +87,5 @@ def test_check_dtype_and_clean():
 }, "col2", "TextEdit")])
 def test_resolve_db_type(db_type, col, ans):
     j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
     assert j._resolve_db_type(db_type, col) == ans

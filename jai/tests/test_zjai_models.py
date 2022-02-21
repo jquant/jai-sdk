@@ -3,9 +3,12 @@ from .test_utils import setup_dataframe
 import pandas as pd
 import numpy as np
 import pytest
+import json
+import os
 
 URL = 'http://localhost:8001'
-AUTH_KEY = "sdk_test"
+AUTH_KEY = ""
+HEADER_TEST = json.loads(os.environ['HEADER_TEST'])
 MAX_SIZE = 50
 
 np.random.seed(42)
