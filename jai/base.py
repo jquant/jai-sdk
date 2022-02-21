@@ -87,12 +87,13 @@ class BaseJai(object):
         """
         if auth_key is None:
             auth_key = os.environ.get(var_env, "")
+
+        self.header = {"Auth": auth_key, "environment": environment}
+
         if url is None:
             self.__url = "https://mycelia.azure-api.net"
-            self.header = {"Auth": auth_key, "environment": environment}
         else:
             self.__url = url[:-1] if url.endswith("/") else url
-            self.header = {"company-key": auth_key, "environment": environment}
 
     @property
     def url(self):
@@ -100,6 +101,21 @@ class BaseJai(object):
         Get name and type of each database in your environment.
         """
         return self.__url
+
+    @raise_status_error(200)
+    def _user(self):
+        """
+        Get name and type of each database in your environment.
+        """
+        return requests.get(url=self.url + f"/user", headers=self.header)
+
+    @raise_status_error(200)
+    def _environments(self):
+        """
+        Get name and type of each database in your environment.
+        """
+        return requests.get(url=self.url + f"/environments",
+                            headers=self.header)
 
     @raise_status_error(200)
     def _info(self, mode="complete", get_size=True):
@@ -290,6 +306,49 @@ class BaseJai(object):
             True if name is in your environment. False, otherwise.
         """
         return requests.get(self.url + f"/validation/{name}",
+                            headers=self.header)
+
+    @raise_status_error(200)
+    def _rename(self, original_name: str, new_name: str):
+        """
+        Get name and type of each database in your environment.
+        """
+        body = {"original_name": original_name, "new_name": new_name}
+        return requests.get(url=self.url + f"/rename",
+                            headers=self.header,
+                            json=body)
+
+    @raise_status_error(200)
+    def _transfer(self,
+                  original_name: str,
+                  to_environment: str,
+                  new_name: str = None,
+                  from_environment: str = "default"):
+        """
+        Get name and type of each database in your environment.
+        """
+        body = {
+            "from_environment": from_environment,
+            "to_environment": to_environment,
+            "original_name": original_name,
+            "new_name": new_name
+        }
+        return requests.get(url=self.url + f"/transfer",
+                            headers=self.header,
+                            json=body)
+
+    @raise_status_error(200)
+    def _import_database(self,
+                         database_name: str,
+                         owner_id: str,
+                         owner_email: str,
+                         import_name: str = None):
+        """
+        Get name and type of each database in your environment.
+        """
+        body = {"database_name": database_name, "import_name": import_name}
+        return requests.get(url=self.url +
+                            f"/import?userId={owner_id}&email={owner_email}",
                             headers=self.header)
 
     @raise_status_error(202)
