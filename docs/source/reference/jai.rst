@@ -1,9 +1,9 @@
-##########
-Jai Module
-##########
+##############
+JAI Python API
+##############
 
 *********
-Jai class
+JAI Class
 *********
 
 .. automodule:: jai.jai
@@ -11,9 +11,9 @@ Jai class
    :undoc-members:
    :show-inheritance:
 
-************
-Setup kwargs
-************
+**********
+Fit kwargs
+**********
 
 Parameters that should be passed as a dictionary in compliance with the
 API methods. In other words, every keyword argument should be passed as if
