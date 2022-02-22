@@ -7,9 +7,12 @@ from jai.image import read_image_folder, resize_image_folder
 
 from pandas._testing import assert_series_equal
 from pathlib import Path
+import os
+import json
 
 URL = 'http://localhost:8001'
 AUTH_KEY = "sdk_test"
+HEADER_TEST = json.loads(os.environ['HEADER_TEST'])
 
 
 @pytest.fixture(scope="session")
@@ -221,4 +224,5 @@ def test_resize_image_folder_corrupted(
 def test_download_vectors(setup_npy_file, name):
     npy_file = setup_npy_file
     j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
     np.testing.assert_array_equal(npy_file, j.download_vectors(name=name))
