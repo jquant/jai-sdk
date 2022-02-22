@@ -33,6 +33,7 @@ class Jai(BaseJai):
     and more.
 
     """
+
     def __init__(self,
                  auth_key: str = None,
                  url: str = None,
@@ -909,6 +910,7 @@ class Jai(BaseJai):
         ------
         None.
         """
+
         def get_numbers(sts):
             curr_step, max_iterations = sts["Description"].split(
                 "Iteration: ")[1].strip().split(" / ")
