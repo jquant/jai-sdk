@@ -5,6 +5,7 @@ import numpy as np
 import requests
 import time
 import concurrent
+import psutil
 
 from io import BytesIO
 from .base import BaseJai
@@ -32,7 +33,6 @@ class Jai(BaseJai):
     and more.
 
     """
-
     def __init__(self,
                  auth_key: str = None,
                  url: str = None,
@@ -719,7 +719,9 @@ class Jai(BaseJai):
             information of whether or not that particular batch was successfully inserted.
         """
         insert_responses = {}
-        with concurrent.futures.ThreadPoolExecutor() as executor:
+        pcores = psutil.cpu_count(logical=False)
+        with concurrent.futures.ThreadPoolExecutor(
+                max_workers=pcores) as executor:
             for i, b in enumerate(range(0, len(data), batch_size)):
                 _batch = data.iloc[b:b + batch_size]
                 data_json = data2json(_batch,
@@ -735,7 +737,6 @@ class Jai(BaseJai):
                 for future in concurrent.futures.as_completed(
                         insert_responses):
                     arg = insert_responses[future]
-                    print(arg)
                     results[arg] = future.result()
                     pbar.update(1)
 
@@ -908,7 +909,6 @@ class Jai(BaseJai):
         ------
         None.
         """
-
         def get_numbers(sts):
             curr_step, max_iterations = sts["Description"].split(
                 "Iteration: ")[1].strip().split(" / ")
