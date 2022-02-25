@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 from pandas.api.types import is_integer_dtype
 from sklearn.model_selection import StratifiedShuffleSplit
 from tqdm import trange, tqdm
+from pyspark.sql import dataframe as psdf
 
 import warnings
 
@@ -865,6 +866,8 @@ class Jai(BaseJai):
         """
         if isinstance(data, (list, np.ndarray)):
             data = pd.Series(data)
+        elif isinstance(data, psdf.DataFrame):
+            data = data.toPandas()
         elif not isinstance(data, (pd.Series, pd.DataFrame)):
             raise TypeError(
                 f"Inserted data is of type `{data.__class__.__name__}`,\
