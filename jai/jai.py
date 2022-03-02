@@ -10,6 +10,7 @@ from .base import BaseJai
 from .processing import (process_similar, process_resolution, process_predict)
 from .functions.utils_funcs import data2json
 from .functions.classes import PossibleDtypes, Mode
+from .functions.validations import kwargs_validation
 from .functions import exceptions
 from fnmatch import fnmatch
 import matplotlib.pyplot as plt
@@ -743,7 +744,7 @@ class Jai(BaseJai):
         body: dict
             Body to be sent in the POST request to the API.
         """
-        possible = ["hyperparams", "callback_url"]
+        possible = ["hyperparams", "callback_url", "overwrite"]
         must = []
         if db_type == PossibleDtypes.selfsupervised:
             possible.extend([
@@ -760,7 +761,7 @@ class Jai(BaseJai):
 
         missing = [key for key in must if kwargs.get(key, None) is None]
         if len(missing) > 0:
-            raise ValueError(f"missing arguments {missing}")
+            raise ValueError(f"Missing the required arguments: {missing}")
 
         body = {}
         for key in possible:
@@ -771,7 +772,13 @@ class Jai(BaseJai):
                     warnings.warn(
                         f"`mycelia_bases` will be deprecated in a later version (0.18.0), please use `pretrained_bases` instead. ",
                         DeprecationWarning)
+        for key in kwargs.keys():
+            if key not in possible and key not in must:
+                raise ValueError(
+                    f'Inserted key argument "{key}" is not a valid one for dtype="{db_type}". Please check the documentation and try again.'
+                )
 
+        kwargs_validation(db_type, body)
         body["db_type"] = db_type
         return body
 
