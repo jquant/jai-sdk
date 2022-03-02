@@ -21,9 +21,7 @@ def raise_status_error(code):
         Expected Code.
 
     """
-
     def decorator(function):
-
         @functools.wraps(function)
         def new_function(*args, **kwargs):
             response = function(*args, **kwargs)
@@ -65,7 +63,6 @@ class BaseJai(object):
     """
     Base class for requests with the Mycelia API.
     """
-
     def __init__(self,
                  auth_key: str = None,
                  url: str = None,
@@ -115,7 +112,7 @@ class BaseJai(object):
     @raise_status_error(200)
     def _environments(self):
         """
-        Get name and type of each database in your environment.
+        Get name of environments available.
         """
         return requests.get(url=self.url + f"/environments",
                             headers=self.header)
@@ -139,6 +136,9 @@ class BaseJai(object):
 
     @raise_status_error(200)
     def _delete_status(self, name):
+        """
+        Remove database from status. Used when processing ended.
+        """
         return requests.delete(self.url + f"/status?db_name={name}",
                                headers=self.header)
 
@@ -352,7 +352,8 @@ class BaseJai(object):
         body = {"database_name": database_name, "import_name": import_name}
         return requests.get(url=self.url +
                             f"/import?userId={owner_id}&email={owner_email}",
-                            headers=self.header)
+                            headers=self.header,
+                            json=body)
 
     @raise_status_error(202)
     def _append(self, name: str):

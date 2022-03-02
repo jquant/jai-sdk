@@ -31,7 +31,6 @@ class Jai(BaseJai):
     and more.
 
     """
-
     def __init__(self,
                  auth_key: str = None,
                  url: str = None,
@@ -129,6 +128,21 @@ class Jai(BaseJai):
                 time.sleep(patience // max_tries)
                 tries += 1
         return self._status()
+
+    def user(self):
+        """
+        User information.
+
+        Returns:
+            dict: 
+            - userId: str
+            - email: str
+            - firstName: str
+            - lastName: str
+            - memberRole: str
+            - namespace: srt
+        """
+        return self._user()
 
     def fields(self, name: str):
         """
@@ -897,7 +911,6 @@ class Jai(BaseJai):
         ------
         None.
         """
-
         def get_numbers(sts):
             curr_step, max_iterations = sts["Description"].split(
                 "Iteration: ")[1].strip().split(" / ")
