@@ -35,6 +35,7 @@ class Jai(BaseJai):
     def __init__(self,
                  auth_key: str = None,
                  url: str = None,
+                 environment: str = "default",
                  var_env: str = "JAI_SECRET"):
         """
         Initialize the Jai class.
@@ -53,7 +54,7 @@ class Jai(BaseJai):
             None
 
         """
-        super(Jai, self).__init__(auth_key, url, var_env)
+        super(Jai, self).__init__(auth_key, url, environment, var_env)
 
     @property
     def names(self):
@@ -128,6 +129,27 @@ class Jai(BaseJai):
                 time.sleep(patience // max_tries)
                 tries += 1
         return self._status()
+
+    def user(self):
+        """
+        User information.
+
+        Returns:
+            dict: 
+            - userId: str
+            - email: str
+            - firstName: str
+            - lastName: str
+            - memberRole: str
+            - namespace: srt
+        """
+        return self._user()
+
+    def environments(self):
+        """
+        Return names of available environments.
+        """
+        return self._environments()
 
     def fields(self, name: str):
         """
@@ -615,6 +637,29 @@ class Jai(BaseJai):
         Another name for setup.
         """
         return self.setup(*args, **kwargs)
+
+    def rename(self, original_name: str, new_name: str):
+        return self._rename(original_name=original_name, new_name=new_name)
+
+    def transfer(self,
+                 original_name: str,
+                 to_environment: str,
+                 new_name: str = None,
+                 from_environment: str = "default"):
+        return self._transfer(original_name=original_name,
+                              to_environment=to_environment,
+                              new_name=new_name,
+                              from_environment=from_environment)
+
+    def import_database(self,
+                        database_name: str,
+                        owner_id: str,
+                        owner_email: str,
+                        import_name: str = None):
+        return self._import_database(database_name=database_name,
+                                     owner_id=owner_id,
+                                     owner_email=owner_email,
+                                     import_name=import_name)
 
     def add_data(self,
                  name: str,
