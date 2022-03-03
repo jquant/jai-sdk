@@ -49,9 +49,15 @@ def test_process_similar_threshold():
     }]
     gab = [{'id': 0, 'distance': 0, 'query_id': 0}]
     assert process_similar(
-        similar, 0, True) == gab, "process similar results failed. (threshold)"
+        similar, threshold=0,
+        return_self=True) == gab, "process similar results failed"
     assert process_similar(
-        similar, 1, True) == gab, "process similar results failed. (threshold)"
+        similar, threshold=1,
+        return_self=True) == gab, "process similar results failed"
+
+    assert process_similar(
+        similar, threshold=None,
+        return_self=True) == gab, "process similar results failed"
 
 
 def test_process_similar_self():
@@ -63,12 +69,15 @@ def test_process_similar_self():
         } for i in range(20)]
     }]
     assert process_similar(
-        similar, 0,
-        False) == [], "process similar results failed. (self param)"
-    assert process_similar(similar, 1, False) == [{
-        'id': 1,
-        'distance': 1,
-        'query_id': 0
+        similar, threshold=0, return_self=False
+    ) == [], "process similar results failed. (self param)"
+    assert process_similar(similar, threshold=0, return_self=True) == [{
+        'distance':
+        0,
+        'id':
+        0,
+        'query_id':
+        0
     }], "process similar results failed. (self param)"
 
 
@@ -80,46 +89,80 @@ def test_process_similar_null():
             'distance': i
         } for i in range(20)]
     }]
-    assert process_similar(similar, 0, False, False) == [{
-        'query_id': 0,
-        'distance': None,
-        'id': None
-    }], "process similar results failed. (null param)"
-    assert process_similar(similar, 1, False, False) == [{
-        'query_id': 0,
-        'id': 1,
-        'distance': 1
-    }], "process similar results failed. (null param)"
+    assert process_similar(similar,
+                           threshold=0,
+                           return_self=False,
+                           skip_null=False) == [{
+                               'query_id': 0,
+                               'distance': None,
+                               'id': None
+                           }], "process similar results failed. (null param)"
+    assert process_similar(
+        similar, threshold=0, return_self=False,
+        skip_null=True) == [], "process similar results failed. (null param)"
 
 
 # =============================================================================
 # Tests for process predict
 # =============================================================================
-@pytest.mark.parametrize('predict', [[{"id": 0, "predict": 'class1'}]])
-def test_process_predict(predict):
-    res = pd.DataFrame({'predict': 'class1'}, index=pd.Index([0], name="id"))
+@pytest.mark.parametrize('predict, res', [([{
+    "id": 0,
+    "predict": 0.1
+}], pd.DataFrame({'predict': 0.1}, index=pd.Index([0], name="id")))])
+def test_process_predict_regression(predict, res):
     assert (process_predict(predict) == res
             ).all(None), "process predict results failed."
 
 
-@pytest.mark.parametrize('predict', [[{
+@pytest.mark.parametrize(
+    'predict, res',
+    [([{
+        "id": 0,
+        "predict": {
+            '0.1': 1,
+            '0.5': 5,
+            '0.9': 9
+        }
+    }],
+      pd.DataFrame({
+          'predict_0.1': 1,
+          'predict_0.5': 5,
+          'predict_0.9': 9
+      },
+                   index=pd.Index([0], name="id")))])
+def test_process_predict_quantiles(predict, res):
+    assert (process_predict(predict) == res
+            ).all(None), "process predict results failed."
+
+
+@pytest.mark.parametrize('predict, res', [([{
     "id": 0,
-    "predict": {
-        'class0': 0.1,
-        'class1': .5,
-        'class2': .4
-    }
-}]])
-def test_process_predict_proba(predict):
-    res = pd.DataFrame(
-        {
-            'class0': 0.1,
-            'class1': .5,
-            'class2': .4,
-            'predict': 'class1',
-            'probability(%)': 50.0
-        },
-        index=pd.Index([0], name="id"))
+    "predict": 'class1'
+}], pd.DataFrame({'predict': 'class1'}, index=pd.Index([0], name="id")))])
+def test_process_predict_classification(predict, res):
+    assert (process_predict(predict) == res
+            ).all(None), "process predict results failed."
+
+
+@pytest.mark.parametrize('predict, res',
+                         [([{
+                             "id": 0,
+                             "predict": {
+                                 'class0': 0.1,
+                                 'class1': .5,
+                                 'class2': .4
+                             }
+                         }],
+                           pd.DataFrame(
+                               {
+                                   'class0': 0.1,
+                                   'class1': .5,
+                                   'class2': .4,
+                                   'predict': 'class1',
+                                   'probability(%)': 50.0
+                               },
+                               index=pd.Index([0], name="id")))])
+def test_process_predict_proba(predict, res):
     assert (process_predict(predict) == res
             ).all(None), "process predict results failed. (proba)"
 
