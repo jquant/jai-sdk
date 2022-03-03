@@ -31,7 +31,6 @@ class Jai(BaseJai):
     and more.
 
     """
-
     def __init__(self,
                  auth_key: str = None,
                  url: str = None,
@@ -632,6 +631,29 @@ class Jai(BaseJai):
         """
         return self.setup(*args, **kwargs)
 
+    def rename(self, original_name: str, new_name: str):
+        return self._rename(original_name=original_name, new_name=new_name)
+
+    def transfer(self,
+                 original_name: str,
+                 to_environment: str,
+                 new_name: str = None,
+                 from_environment: str = "default"):
+        return self._transfer(original_name=original_name,
+                              to_environment=to_environment,
+                              new_name=new_name,
+                              from_environment=from_environment)
+
+    def import_database(self,
+                        database_name: str,
+                        owner_id: str,
+                        owner_email: str,
+                        import_name: str = None):
+        return self._import_database(database_name=database_name,
+                                     owner_id=owner_id,
+                                     owner_email=owner_email,
+                                     import_name=import_name)
+
     def add_data(self,
                  name: str,
                  data,
@@ -912,7 +934,6 @@ class Jai(BaseJai):
         ------
         None.
         """
-
         def get_numbers(sts):
             curr_step, max_iterations = sts["Description"].split(
                 "Iteration: ")[1].strip().split(" / ")
