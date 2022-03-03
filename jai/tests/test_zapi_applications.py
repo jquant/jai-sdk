@@ -4,9 +4,12 @@ from .test_utils import setup_dataframe
 import pandas as pd
 import numpy as np
 import pytest
+import json
+import os
 
 URL = 'http://localhost:8001'
-AUTH_KEY = "sdk_test"
+AUTH_KEY = ""
+HEADER_TEST = json.loads(os.environ['HEADER_TEST'])
 
 np.random.seed(42)
 
@@ -26,6 +29,7 @@ def test_embedding(name, setup_dataframe):
     }).set_index("id")['Name'].iloc[:10]
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
     if j.is_valid(name):
         j.delete_database(name)
 
@@ -52,6 +56,7 @@ def test_fill(name, setup_dataframe):
     data = pd.concat([train, test.iloc[:half]])
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
     for n in j.names:
         if n.startswith(name):
             j.delete_database(n)
@@ -80,6 +85,7 @@ def test_sanity(name, setup_dataframe):
     data = pd.concat([train, test.iloc[:half]]).drop(columns=['Survived'])
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
     for n in j.names:
         if n.startswith(name):
             j.delete_database(n)
@@ -115,6 +121,7 @@ def test_match(name):
     data_right = pd.Series(B)
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
     if j.is_valid(name):
         j.delete_database(name)
     ok = j.match(name,
@@ -147,6 +154,7 @@ def test_resolution(name):
     data = pd.Series(data)
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
     if j.is_valid(name):
         j.delete_database(name)
     ok = j.resolution(name, data, top_k=20, threshold=.4, original_data=True)
