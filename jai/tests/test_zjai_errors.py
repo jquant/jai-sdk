@@ -219,3 +219,11 @@ def test_download_vectors_exception():
     j.header = HEADER_TEST
     with pytest.raises(ValueError):
         j.download_vectors(name="test")
+
+
+@pytest.mark.parametrize('name', ['test_resolution'])
+def test_filters(name):
+    j = Jai(url=VALID_URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
+    with pytest.raises(ValueError):
+        j.filters(name)

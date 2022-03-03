@@ -26,7 +26,7 @@ def test_custom_url():
 def test_names():
     j = Jai(url=URL, auth_key=AUTH_KEY)
     j.header = HEADER_TEST
-    assert isinstance(j.names, list)
+    assert j.names == ['test_match', 'test_resolution', 'titanic_ssupervised']
 
 
 def test_info():
@@ -89,3 +89,95 @@ def test_resolve_db_type(db_type, col, ans):
     j = Jai(url=URL, auth_key=AUTH_KEY)
     j.header = HEADER_TEST
     assert j._resolve_db_type(db_type, col) == ans
+
+
+@pytest.mark.parametrize('name', ['titanic_ssupervised'])
+def test_download_vectors(setup_npy_file, name):
+    npy_file = setup_npy_file
+    j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
+    np.testing.assert_array_equal(npy_file, j.download_vectors(name=name))
+
+
+def test_user():
+    j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
+    assert j.user() == {
+        'email': 'test_sdk@email.com',
+        'firstName': 'User SDK',
+        'lastName': 'Test',
+        'memberRole': 'dev',
+        'namespace': 'sdk',
+        'userId': 'random_string'
+    }
+
+
+def test_environments():
+    j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
+    assert j.environments() == ['sdk_test', 'sdk_prod']
+
+
+@pytest.mark.parametrize('name', ['test_resolution'])
+def test_describe(name):
+    j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
+    assert j.describe(name) == {
+        'dtype': 'TextEdit',
+        'features': [{
+            'dtype': 'text',
+            'name': '0'
+        }],
+        'has_filter': False,
+        'model_hyperparams': {
+            'batch_size': 128,
+            'channel': 8,
+            'embed_dim': 128,
+            'epochs': 20,
+            'k': 100,
+            'maxl': 0,
+            'mtc': False,
+            'nb': 1385451,
+            'nr': 1000,
+            'nt': 1000,
+            'random_append_train': False,
+            'random_train': False,
+            'shuffle_seed': 808,
+            'test_batch_size': 1024
+        },
+        'name': 'test_resolution',
+        'state': 'active',
+        'version': '2022-03-02-22h10'
+    }
+
+
+# def test_rename():
+#     j = Jai(url=URL, auth_key=AUTH_KEY)
+#     j.header = HEADER_TEST
+#     assert j.names == ['test_match', 'test_resolution', 'titanic_ssupervised']
+#     j.rename(original_name= 'test_match', new_name='test_match_new')
+#     assert j.names == [
+#         'test_match_new', 'test_resolution', 'titanic_ssupervised'
+#     ]
+#     j.rename(original_name= 'test_match_new', new_name='test_match')
+#     assert j.names == ['test_match', 'test_resolution', 'titanic_ssupervised']
+
+
+@pytest.mark.parametrize('db_name', ['test_match'])
+def test_transfer(db_name):
+    j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
+
+    j_prod = Jai(url=URL, auth_key=AUTH_KEY)
+    j_prod.header = {**HEADER_TEST, "environment": 'prod'}
+    if db_name in j_prod.names:
+        j_prod.delete_database(db_name)
+
+    j.transfer(original_name=db_name,
+               to_environment='prod',
+               from_environment='default')
+
+    assert j_prod.names == [db_name, 'titanic_ssupervised']
+
+    j_prod.delete_database(db_name)
+    assert j_prod.names == ['titanic_ssupervised']

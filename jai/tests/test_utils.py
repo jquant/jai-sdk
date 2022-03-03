@@ -1,18 +1,12 @@
 import numpy as np
 import pandas as pd
 import pytest
-from jai import Jai
 from jai.functions.utils_funcs import (series2json, df2json, data2json)
+from jai.functions.classes import FieldName
 from jai.image import read_image_folder, resize_image_folder
 
 from pandas._testing import assert_series_equal
 from pathlib import Path
-import os
-import json
-
-URL = 'http://localhost:8001'
-AUTH_KEY = "sdk_test"
-HEADER_TEST = json.loads(os.environ['HEADER_TEST'])
 
 
 @pytest.fixture(scope="session")
@@ -36,6 +30,15 @@ def setup_npy_file():
     NPY_FILE = Path("jai/test_data/sdk_test_titanic_ssupervised.npy")
     img_file = np.load(NPY_FILE)
     return img_file
+
+
+# =============================================================================
+# Tests for FieldName
+# =============================================================================
+def test_fieldname():
+    assert str(FieldName("text")) == "text", '__str__ method FAILED.'
+    assert str(
+        FieldName("image_base64")) == "image_base64", '__str__ method FAILED.'
 
 
 # =============================================================================
@@ -65,55 +68,86 @@ def test_df2json(col1, col2, ids):
     assert df2json(df) == '[' + out + ']', 'df2json failed.'
 
 
+@pytest.mark.parametrize("col_name, db_type", [("text", "Text"),
+                                               ("image_base64", "Image")])
 @pytest.mark.parametrize("dtype", ["series", "df", "df_id"])
-def test_data2json(setup_dataframe, setup_img_data, dtype):
-    dict_dbtype = {"Text": "text", "Image": "image_base64"}
-    db_types = ["Text", "Image"]
+def test_data2json(setup_dataframe, setup_img_data, dtype, col_name, db_type):
+
+    if db_type == "Text":
+        train, _ = setup_dataframe
+        data = train.rename(columns={
+            "PassengerId": "id",
+            "Name": col_name
+        }).set_index("id")[col_name]
+    else:
+        data = setup_img_data
+
+    if dtype == 'df':
+        data = data.to_frame()
+        ids = data.index
+        s = pd.Series(data[col_name],
+                      index=pd.Index(ids, name='id'),
+                      name=col_name)
+        gab = s.reset_index().to_json(orient='records')
+    elif dtype == 'df_id':
+        data = data.reset_index().rename(columns={"index": "id"})
+        gab = data.rename(columns={'Name': col_name}).to_json(orient='records')
+    else:
+        data = data.rename(col_name)
+        gab = data.reset_index().to_json(orient='records')
+
+    assert data2json(data, db_type) == gab, 'df2json failed.'
+
+
+@pytest.mark.parametrize("col_name, db_type", [("text", "Text"),
+                                               ("image_base64", "Image")])
+@pytest.mark.parametrize("filter_name", ["Pclass"])
+def test_data2json_filters(setup_dataframe, col_name, filter_name, db_type):
+
     train, _ = setup_dataframe
-    img_data = setup_img_data
+    train = train.rename(columns={
+        "PassengerId": "id",
+        "Name": col_name,
+    })
 
-    for db_type in db_types:
-        col_name = dict_dbtype[db_type]
+    data = train.set_index("id").loc[:, [col_name, filter_name]]
 
-        if db_type == "Text":
-            data = train.rename(columns={
-                "PassengerId": "id",
-                "Name": col_name
-            }).set_index("id")[col_name]
-        else:
-            data = img_data
+    gab = data.reset_index().to_json(orient='records')
 
-        if dtype == 'df':
-            data = data.to_frame()
-            ids = data.index
-            s = pd.Series(data[col_name],
-                          index=pd.Index(ids, name='id'),
-                          name=col_name)
-            gab = s.reset_index().to_json(orient='records')
-        elif dtype == 'df_id':
-            data = data.reset_index().rename(columns={"index": "id"})
-            gab = data.rename(columns={
-                'Name': col_name
-            }).to_json(orient='records')
-        else:
-            data = data.rename(col_name)
-            gab = data.reset_index().to_json(orient='records')
+    assert data2json(data, db_type,
+                     filter_name=filter_name) == gab, 'df2json failed.'
 
-        assert data2json(data, db_type) == gab, 'df2json failed.'
+    data = train.loc[:, ['id', col_name, filter_name]]
+    gab = data.to_json(orient='records')
+
+    assert data2json(data, db_type,
+                     filter_name=filter_name) == gab, 'df2json failed.'
 
 
 def test_data2json_exceptions(setup_dataframe):
     train, _ = setup_dataframe
     train = train.rename(columns={"PassengerId": "id"})
 
+    with pytest.raises(TypeError):
+        data2json(data=list(), dtype="Text")
+
+    with pytest.raises(TypeError):
+        data2json(data=tuple(), dtype="Text")
+
+    with pytest.raises(TypeError):
+        data2json(data=np.array([]), dtype="Text")
+
+    with pytest.raises(NotImplementedError):
+        data2json(data=dict(), dtype="Text")
+
     with pytest.raises(ValueError):
         data2json(data=train[["Name", "Sex"]], dtype="Text")
 
     with pytest.raises(ValueError):
-        data2json(data=train, dtype="Text")
+        data2json(data=train[["Name", "Sex", "Pclass"]], dtype="Text")
 
-    with pytest.raises(NotImplementedError):
-        data2json(data=dict(), dtype="Text")
+    with pytest.raises(ValueError):
+        data2json(data=train, dtype="Text")
 
     with pytest.raises(ValueError):
         data2json(data=train[["Name"]], dtype="SelfSupervised")
@@ -218,11 +252,3 @@ def test_resize_image_folder(image_folder=Path("jai/test_data/test_imgs")):
 def test_resize_image_folder_corrupted(
         image_folder=Path("jai/test_data/test_imgs_corrupted")):
     assert len(resize_image_folder(image_folder=image_folder))
-
-
-@pytest.mark.parametrize('name', ['titanic_ssupervised'])
-def test_download_vectors(setup_npy_file, name):
-    npy_file = setup_npy_file
-    j = Jai(url=URL, auth_key=AUTH_KEY)
-    j.header = HEADER_TEST
-    np.testing.assert_array_equal(npy_file, j.download_vectors(name=name))

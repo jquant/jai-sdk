@@ -21,9 +21,7 @@ def raise_status_error(code):
         Expected Code.
 
     """
-
     def decorator(function):
-
         @functools.wraps(function)
         def new_function(*args, **kwargs):
             response = function(*args, **kwargs)
@@ -65,7 +63,6 @@ class BaseJai(object):
     """
     Base class for requests with the Mycelia API.
     """
-
     def __init__(self,
                  auth_key: str = None,
                  url: str = None,
@@ -320,9 +317,9 @@ class BaseJai(object):
         Get name and type of each database in your environment.
         """
         body = {"original_name": original_name, "new_name": new_name}
-        return requests.get(url=self.url + f"/rename",
-                            headers=self.header,
-                            json=body)
+        return requests.post(url=self.url + f"/rename",
+                             headers=self.header,
+                             json=body)
 
     @raise_status_error(200)
     def _transfer(self,
@@ -339,9 +336,9 @@ class BaseJai(object):
             "original_name": original_name,
             "new_name": new_name
         }
-        return requests.get(url=self.url + f"/transfer",
-                            headers=self.header,
-                            json=body)
+        return requests.post(url=self.url + f"/transfer",
+                             headers=self.header,
+                             json=body)
 
     @raise_status_error(200)
     def _import_database(self,
@@ -353,10 +350,10 @@ class BaseJai(object):
         Get name and type of each database in your environment.
         """
         body = {"database_name": database_name, "import_name": import_name}
-        return requests.get(url=self.url +
-                            f"/import?userId={owner_id}&email={owner_email}",
-                            headers=self.header,
-                            json=body)
+        return requests.post(url=self.url +
+                             f"/import?userId={owner_id}&email={owner_email}",
+                             headers=self.header,
+                             json=body)
 
     @raise_status_error(202)
     def _append(self, name: str):

@@ -144,6 +144,12 @@ class Jai(BaseJai):
         """
         return self._user()
 
+    def environments(self):
+        """
+        Return names of available environments.
+        """
+        return self._environments()
+
     def fields(self, name: str):
         """
         Get the table fields for a Supervised/SelfSupervised database.
