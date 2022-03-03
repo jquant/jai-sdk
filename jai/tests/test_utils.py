@@ -25,13 +25,6 @@ def setup_img_data():
     return img_file
 
 
-@pytest.fixture(scope="session")
-def setup_npy_file():
-    NPY_FILE = Path("jai/test_data/sdk_test_titanic_ssupervised.npy")
-    img_file = np.load(NPY_FILE)
-    return img_file
-
-
 # =============================================================================
 # Tests for FieldName
 # =============================================================================

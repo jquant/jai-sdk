@@ -1,5 +1,6 @@
 from jai import Jai
 from pandas._testing import assert_frame_equal
+from pathlib import Path
 import pandas as pd
 import pytest
 import numpy as np
@@ -9,6 +10,13 @@ import os
 URL = 'http://localhost:8001'
 AUTH_KEY = ""
 HEADER_TEST = json.loads(os.environ['HEADER_TEST'])
+
+
+@pytest.fixture(scope="session")
+def setup_npy_file():
+    NPY_FILE = Path("jai/test_data/sdk_test_titanic_ssupervised.npy")
+    img_file = np.load(NPY_FILE)
+    return img_file
 
 
 def test_url():
@@ -122,7 +130,9 @@ def test_environments():
 def test_describe(name):
     j = Jai(url=URL, auth_key=AUTH_KEY)
     j.header = HEADER_TEST
-    assert j.describe(name) == {
+    description = j.describe(name)
+    description.pop("version")
+    assert description == {
         'dtype': 'TextEdit',
         'features': [{
             'dtype': 'text',
@@ -146,21 +156,20 @@ def test_describe(name):
             'test_batch_size': 1024
         },
         'name': 'test_resolution',
-        'state': 'active',
-        'version': '2022-03-02-22h10'
+        'state': 'active'
     }
 
 
-# def test_rename():
-#     j = Jai(url=URL, auth_key=AUTH_KEY)
-#     j.header = HEADER_TEST
-#     assert j.names == ['test_match', 'test_resolution', 'titanic_ssupervised']
-#     j.rename(original_name= 'test_match', new_name='test_match_new')
-#     assert j.names == [
-#         'test_match_new', 'test_resolution', 'titanic_ssupervised'
-#     ]
-#     j.rename(original_name= 'test_match_new', new_name='test_match')
-#     assert j.names == ['test_match', 'test_resolution', 'titanic_ssupervised']
+def test_rename():
+    j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
+    assert j.names == ['test_match', 'test_resolution', 'titanic_ssupervised']
+    j.rename(original_name='test_match', new_name='test_match_new')
+    assert j.names == [
+        'test_match_new', 'test_resolution', 'titanic_ssupervised'
+    ]
+    j.rename(original_name='test_match_new', new_name='test_match')
+    assert j.names == ['test_match', 'test_resolution', 'titanic_ssupervised']
 
 
 @pytest.mark.parametrize('db_name', ['test_match'])
