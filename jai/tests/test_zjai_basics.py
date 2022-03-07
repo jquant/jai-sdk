@@ -26,7 +26,6 @@ def test_url():
     j = Jai(AUTH_KEY)
     j.header = HEADER_TEST
     assert j.url == "https://mycelia.azure-api.net"
-    # assert j.
 
 
 def test_custom_url():

@@ -6,7 +6,7 @@ import pytest
 import json
 import os
 
-URL = 'http://localhost:8000'
+URL = 'http://localhost:8001'
 AUTH_KEY = ""
 HEADER_TEST = json.loads(os.environ['HEADER_TEST'])
 MAX_SIZE = 50
