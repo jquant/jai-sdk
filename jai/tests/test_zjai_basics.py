@@ -86,13 +86,13 @@ def test_check_dtype_and_clean():
         "number": [i for i in range(r)]
     })
 
-    # make a few lines on 'category' column NaN
-    data.loc[1050:, "category"] = np.nan
-    assert_frame_equal(j._check_dtype_and_clean(data, "Supervised"), data)
-
     # Send mockk data to Pyspark
     spark = SparkSession.builder.getOrCreate()
     data = spark.createDataFrame(data)
+    assert_frame_equal(j._check_dtype_and_clean(data, "Supervised"), data)
+
+    # make a few lines on 'category' column NaN
+    data.loc[1050:, "category"] = np.nan
     assert_frame_equal(j._check_dtype_and_clean(data, "Supervised"), data)
 
 
