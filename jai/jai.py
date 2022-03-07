@@ -33,7 +33,6 @@ class Jai(BaseJai):
     and more.
 
     """
-
     def __init__(self,
                  auth_key: str = None,
                  url: str = None,
@@ -827,7 +826,7 @@ class Jai(BaseJai):
             val = kwargs.get(key, None)
             if val is not None:
                 body[key] = val
-                if val == "mycelia_bases":
+                if key == "mycelia_bases":
                     warnings.warn(
                         f"`mycelia_bases` will be deprecated in a later version (0.18.0), please use `pretrained_bases` instead. ",
                         DeprecationWarning)
@@ -955,7 +954,6 @@ class Jai(BaseJai):
         ------
         None.
         """
-
         def get_numbers(sts):
             curr_step, max_iterations = sts["Description"].split(
                 "Iteration: ")[1].strip().split(" / ")

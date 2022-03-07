@@ -1,11 +1,12 @@
 from jai import Jai
 import pandas as pd
+import warnings
 import pytest
 import json
 import os
 
 INVALID_URL = 'http://google.com'
-VALID_URL = 'http://localhost:8001'
+VALID_URL = 'http://localhost:8000'
 AUTH_KEY = ""
 HEADER_TEST = json.loads(os.environ['HEADER_TEST'])
 
@@ -154,8 +155,11 @@ def test_check_kwargs_exception():
     j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
     j.header = HEADER_TEST
     with pytest.raises(ValueError):
-
         j._check_kwargs(db_type="Supervised")
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        j._check_kwargs(db_type="SelfSupervised", **{'mycelia_bases': []})
+        assert issubclass(w[-1].category, DeprecationWarning)
 
 
 def test_setup_database_exception():
