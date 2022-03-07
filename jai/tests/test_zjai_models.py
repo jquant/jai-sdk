@@ -6,7 +6,7 @@ import pytest
 import json
 import os
 
-URL = 'http://localhost:8001'
+URL = 'http://localhost:8000'
 AUTH_KEY = ""
 HEADER_TEST = json.loads(os.environ['HEADER_TEST'])
 MAX_SIZE = 50
@@ -54,6 +54,9 @@ def test_text(name, dtype, setup_dataframe):
 
     result = j.similar(name, query.index.values)
     assert isinstance(result, list), "similar id array result failed"
+
+    result = j.report(name)
+    assert result == None
 
     # try to use the fields method on a text database
     # this will raise an exception
@@ -130,7 +133,7 @@ def test_supervised(setup_dataframe):
     query = test.loc[np.random.choice(len(test), 10, replace=False)]
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
-    j.header = HEADER_TEST
+    # j.header = HEADER_TEST
     if j.is_valid(name):
         j.delete_database(name)
 

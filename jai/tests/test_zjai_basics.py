@@ -101,6 +101,10 @@ def test_check_dtype_and_clean():
     data.loc[1050:, "category"] = np.nan
     assert_frame_equal(j._check_dtype_and_clean(data, "Supervised"), data)
 
+    # Try text data
+    text = pd.Series(['a', 'b', 'c', np.nan, 'd', 'e', np.nan])
+    assert_series_equal(j._check_dtype_and_clean(text, "Text"), text.dropna())
+
 
 @pytest.mark.parametrize("db_type, col, ans", [({
     "col1": "FastText"
