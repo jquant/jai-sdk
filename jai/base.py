@@ -92,7 +92,6 @@ class BaseJai(object):
         else:
             self.__url = url[:-1] if url.endswith("/") else url
             self.header = {
-                "Auth": auth_key,
                 "SubscriptionId": "sdk_test",
                 "ProductId": "dev",
                 "GroupsId": "sdk"
