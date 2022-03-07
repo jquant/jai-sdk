@@ -6,7 +6,7 @@ import json
 import os
 
 INVALID_URL = 'http://google.com'
-VALID_URL = 'http://localhost:8000'
+VALID_URL = 'http://localhost:8001'
 AUTH_KEY = ""
 HEADER_TEST = json.loads(os.environ['HEADER_TEST'])
 
