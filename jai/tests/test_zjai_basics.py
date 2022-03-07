@@ -1,6 +1,9 @@
 from jai import Jai
-from pandas._testing import assert_frame_equal
 from pathlib import Path
+from pyspark.sql import SparkSession
+from pyspark.sql import dataframe as psdf
+from pandas._testing import assert_frame_equal
+
 import pandas as pd
 import pytest
 import numpy as np
@@ -85,6 +88,11 @@ def test_check_dtype_and_clean():
 
     # make a few lines on 'category' column NaN
     data.loc[1050:, "category"] = np.nan
+    assert_frame_equal(j._check_dtype_and_clean(data, "Supervised"), data)
+
+    # Send mockk data to Pyspark
+    spark = SparkSession.builder.getOrCreate()
+    data = spark.createDataFrame(data)
     assert_frame_equal(j._check_dtype_and_clean(data, "Supervised"), data)
 
 
