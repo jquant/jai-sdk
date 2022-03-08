@@ -778,7 +778,7 @@ class Jai(BaseJai):
                 pcores = 1
 
         except TypeError:
-            raise f"Variable max_insert_workers must be 'None' or 'int' instance, not {type(max_insert_workers)}."
+            raise f"Variable 'max_insert_workers' must be 'None' or 'int' instance, not {type(max_insert_workers)}."
 
         insert_responses = {}
         with concurrent.futures.ThreadPoolExecutor(
