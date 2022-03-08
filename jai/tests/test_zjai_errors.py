@@ -231,3 +231,11 @@ def test_filters(name):
     j.header = HEADER_TEST
     with pytest.raises(ValueError):
         j.filters(name)
+
+
+@pytest.mark.parametrize('max_insert_workers', ['1'])
+def test_max_insert_workers(max_insert_workers):
+    j = Jai(url=VALID_URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
+    with pytest.raises(TypeError):
+        j._insert_data(max_insert_workers=max_insert_workers)

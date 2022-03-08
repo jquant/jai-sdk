@@ -35,7 +35,6 @@ class Jai(BaseJai):
     and more.
 
     """
-
     def __init__(self,
                  auth_key: str = None,
                  url: str = None,
@@ -770,12 +769,18 @@ class Jai(BaseJai):
             Dictionary of responses for each batch. Each response contains
             information of whether or not that particular batch was successfully inserted.
         """
-        insert_responses = {}
-        if max_insert_workers is None:
-            pcores = psutil.cpu_count(logical=False)
-        else:
-            pcores = max_insert_workers
+        try:
+            if max_insert_workers is None:
+                pcores = psutil.cpu_count(logical=False)
+            elif max_insert_workers > 0:
+                pcores = max_insert_workers
+            else:
+                pcores = 1
 
+        except TypeError:
+            raise f"Variable max_insert_workers must be 'None' or 'int' instance, not {type(max_insert_workers)}"
+
+        insert_responses = {}
         with concurrent.futures.ThreadPoolExecutor(
                 max_workers=pcores) as executor:
 
@@ -966,7 +971,6 @@ class Jai(BaseJai):
         ------
         None.
         """
-
         def get_numbers(sts):
             curr_step, max_iterations = sts["Description"].split(
                 "Iteration: ")[1].strip().split(" / ")

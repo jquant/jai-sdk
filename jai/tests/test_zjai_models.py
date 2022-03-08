@@ -83,7 +83,8 @@ def test_selfsupervised(setup_dataframe):
             train,
             db_type="SelfSupervised",
             hyperparams={"max_epochs": 3},
-            overwrite=True)
+            overwrite=True,
+            max_insert_workers=1)
 
     assert j.is_valid(name), f"valid name {name} after setup failed"
 
@@ -138,6 +139,7 @@ def test_supervised(setup_dataframe):
           train,
           db_type="Supervised",
           overwrite=True,
+          max_insert_workers=0,
           hyperparams={"max_epochs": 3},
           label={
               "task": "metric_classification",
