@@ -1,11 +1,13 @@
 import secrets
 import json
+from joblib import parallel_backend
 import pandas as pd
 import numpy as np
 import requests
 import time
 import concurrent
 import psutil
+from typing import Optional
 
 from io import BytesIO
 from .base import BaseJai
@@ -33,7 +35,6 @@ class Jai(BaseJai):
     and more.
 
     """
-
     def __init__(self,
                  auth_key: str = None,
                  url: str = None,
@@ -535,6 +536,7 @@ class Jai(BaseJai):
               data,
               db_type: str,
               batch_size: int = 16384,
+              max_insert_workers: Optional[int] = None,
               frequency_seconds: int = 1,
               filter_name: str = None,
               verbose: int = 1,
@@ -596,11 +598,13 @@ class Jai(BaseJai):
         data = self._check_dtype_and_clean(data=data, db_type=db_type)
 
         # insert data
-        insert_responses = self._insert_data(data=data,
-                                             name=name,
-                                             batch_size=batch_size,
-                                             filter_name=filter_name,
-                                             db_type=db_type)
+        insert_responses = self._insert_data(
+            data=data,
+            name=name,
+            batch_size=batch_size,
+            filter_name=filter_name,
+            db_type=db_type,
+            max_insert_workers=max_insert_workers)
 
         # check if we inserted everything we were supposed to
         self._check_ids_consistency(name=name, data=data)
@@ -741,6 +745,7 @@ class Jai(BaseJai):
                      name,
                      db_type,
                      batch_size,
+                     max_insert_workers: Optional[int] = None,
                      filter_name: str = None,
                      predict: bool = False):
         """
@@ -765,7 +770,11 @@ class Jai(BaseJai):
             information of whether or not that particular batch was successfully inserted.
         """
         insert_responses = {}
-        pcores = psutil.cpu_count(logical=False)
+        if max_insert_workers is None:
+            pcores = psutil.cpu_count(logical=False)
+        else:
+            pcores = max_insert_workers
+
         with concurrent.futures.ThreadPoolExecutor(
                 max_workers=pcores) as executor:
             for i, b in enumerate(range(0, len(data), batch_size)):
@@ -955,7 +964,6 @@ class Jai(BaseJai):
         ------
         None.
         """
-
         def get_numbers(sts):
             curr_step, max_iterations = sts["Description"].split(
                 "Iteration: ")[1].strip().split(" / ")
