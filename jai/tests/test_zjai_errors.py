@@ -3,12 +3,12 @@ import pandas as pd
 import warnings
 import pytest
 import json
-import os
+from decouple import config
 
 INVALID_URL = 'http://google.com'
 VALID_URL = 'http://localhost:8001'
 AUTH_KEY = ""
-HEADER_TEST = json.loads(os.environ['HEADER_TEST'])
+HEADER_TEST = json.loads(config('HEADER_TEST'))
 
 
 def test_names_exception():
@@ -233,9 +233,14 @@ def test_filters(name):
         j.filters(name)
 
 
-@pytest.mark.parametrize('max_insert_workers', ['1'])
-def test_max_insert_workers(max_insert_workers):
+@pytest.mark.parametrize("name, batch_size, db_type, max_insert_workers",
+                         [("test", 1024, "SelfSupervised", "1")])
+def test_max_insert_workers(name, batch_size, db_type, max_insert_workers):
     j = Jai(url=VALID_URL, auth_key=AUTH_KEY)
     j.header = HEADER_TEST
     with pytest.raises(TypeError):
-        j._insert_data(max_insert_workers=max_insert_workers)
+        j._insert_data(data={},
+                       name=name,
+                       batch_size=batch_size,
+                       db_type=db_type,
+                       max_insert_workers=max_insert_workers)

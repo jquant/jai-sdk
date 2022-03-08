@@ -4,11 +4,11 @@ import pandas as pd
 import numpy as np
 import pytest
 import json
-import os
+from decouple import config
 
 URL = 'http://localhost:8001'
 AUTH_KEY = ""
-HEADER_TEST = json.loads(os.environ['HEADER_TEST'])
+HEADER_TEST = json.loads(config('HEADER_TEST'))
 MAX_SIZE = 50
 
 np.random.seed(42)

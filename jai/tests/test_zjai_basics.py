@@ -5,11 +5,11 @@ import pandas as pd
 import pytest
 import numpy as np
 import json
-import os
+from decouple import config
 
 URL = 'http://localhost:8001'
 AUTH_KEY = ""
-HEADER_TEST = json.loads(os.environ['HEADER_TEST'])
+HEADER_TEST = json.loads(config('HEADER_TEST'))
 
 
 @pytest.fixture(scope="session")
