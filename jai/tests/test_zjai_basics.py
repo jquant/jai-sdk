@@ -125,7 +125,7 @@ def test_environments():
     j.header = HEADER_TEST
     assert j.environments() == [{
         'key': 'default',
-        'id': 'sdk/prod',
+        'id': 'sdk/test',
         'name': 'sdk_test'
     }, {
         'id': 'sdk/prod',
