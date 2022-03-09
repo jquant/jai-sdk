@@ -123,7 +123,14 @@ def test_user():
 def test_environments():
     j = Jai(url=URL, auth_key=AUTH_KEY)
     j.header = HEADER_TEST
-    assert j.environments() == ['sdk_test', 'sdk_prod']
+    assert j.environments() == [{
+        'key': 'default',
+        'id': 'sdk/test',
+        'name': 'sdk_test'
+    }, {
+        'id': 'sdk/prod',
+        'name': 'sdk_prod'
+    }]
 
 
 @pytest.mark.parametrize('name', ['test_resolution'])
