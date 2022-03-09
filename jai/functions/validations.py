@@ -116,33 +116,57 @@ def kwargs_possibilities(dtype: str):
         'cat_process': cat_process_validation(dtype),
         'datetime_process': datetime_process_validation(dtype),
         'pretrained_bases': pretrained_bases_process_validation(dtype),
+        'mycelia_bases': pretrained_bases_process_validation(dtype),
         'features': features_process_validation(dtype),
         'label': label_process_validation(dtype),
         'split': split_process_validation(dtype)
     }
+
+    to_delete = []
+    for item in params.items():
+        if item[1] == ([], []):
+            to_delete.append(item[0])
+
+    for key in to_delete:
+        del params[key]
+
     return params
 
 
 def kwargs_validation(dtype: str, body: dict):
     params = kwargs_possibilities(dtype)
-    for key in body.keys():
-        if key in params.keys():
-            for subkey in params[key][1]:
-                if subkey not in body[key].keys():
-                    raise ValueError(
-                        f'{subkey} parameter is required for the dtype {dtype}.'
-                    )
-            for subkey in body[key]:
-                if (subkey not in params[key][0]) and (subkey
-                                                       not in params[key][1]):
-                    raise ValueError(
-                        f'Inserted key argument "{subkey}" is not a valid one for dtype="{dtype}". Please check the documentation and try again.'
-                    )
-        return "All inserted parameters are correct."
+    params_keys = set(params.keys())
+    correct_used_keys = set(body.keys()) & set(params_keys)
+    incorrect_used_keys = set(body.keys()) - params_keys
+
+    if not incorrect_used_keys:
+        for key in correct_used_keys:
+            used_subkeys = set(body[key])
+            possible_subkeys = set(params[key][0])
+            must_subkeys = set(params[key][1])
+            must_and_pos_subkeys = must_subkeys | possible_subkeys
+
+            if not must_subkeys <= used_subkeys:
+                diff = must_subkeys - used_subkeys
+                raise ValueError(
+                    f'{list(diff)} parameter is required for the dtype {dtype}.'
+                )
+            if not used_subkeys <= must_and_pos_subkeys:
+                diff = used_subkeys - must_and_pos_subkeys
+                raise ValueError(
+                    f'Inserted key argument {list(diff)} is not a valid one for dtpe="{dtype}".'\
+                        f' Please check the documentation and try again.'
+                )
+    else:
+        raise ValueError(
+            f'Inserted key(s) argument(s) {list(incorrect_used_keys)} is not a valid one for dtype="{dtype}". '\
+                 f'Please check the documentation and try again.')
+
+    return "All inserted parameters are correct."
 
 
 if __name__ == '__main__':
 
-    TEST = {'model_name': 'mnasnet', 'mode': 'classifier'}
+    TEST = {'hyperparams': {'model_name': 'int32', 'mode': 'test'}}
 
     print(kwargs_validation('Image', TEST))
