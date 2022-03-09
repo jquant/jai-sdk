@@ -136,8 +136,7 @@ def kwargs_possibilities(dtype: str):
 def kwargs_validation(dtype: str, body: dict):
     params = kwargs_possibilities(dtype)
     params_keys = set(params.keys())
-    body_keys = set(body.keys()) - set(
-        ["hyperparams", "callback_url", "overwrite"])
+    body_keys = set(body.keys()) - set(["callback_url", "overwrite"])
     correct_used_keys = body_keys & params_keys
     incorrect_used_keys = body_keys - params_keys
 
@@ -151,7 +150,7 @@ def kwargs_validation(dtype: str, body: dict):
             if not must_subkeys <= used_subkeys:
                 diff = must_subkeys - used_subkeys
                 raise ValueError(
-                    f'{list(diff)} parameter is required for the dtype {dtype}.'
+                    f'{list(diff)} parameter is required for the dtype "{dtype}".'
                 )
             if not used_subkeys <= must_and_pos_subkeys:
                 diff = used_subkeys - must_and_pos_subkeys
