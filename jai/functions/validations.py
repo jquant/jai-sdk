@@ -74,7 +74,7 @@ def features_process_validation(dtype: str):
     must = []
     if (dtype == PossibleDtypes.selfsupervised) or (
             dtype == PossibleDtypes.supervised):
-        possible.extend(['embedding_dim', 'fill_value', 'scaler', 'min_freq'])
+        possible.extend(['embedding_dim', 'fill_value', 'min_freq'])
         must.extend(['dtype', 'scaler'])
     return (possible, must)
 
@@ -82,7 +82,7 @@ def features_process_validation(dtype: str):
 def pretrained_bases_process_validation(dtype: str):
     possible = []
     must = []
-    if dtype == PossibleDtypes.selfsupervised:
+    if dtype == PossibleDtypes.supervised:
         possible.extend(['embedding_dim', 'aggregation_method'])
         must.extend(['db_parent', 'id_name'])
     elif dtype == PossibleDtypes.selfsupervised:
@@ -103,7 +103,7 @@ def split_process_validation(dtype: str):
 def label_process_validation(dtype: str):
     possible = []
     must = []
-    if (dtype == PossibleDtypes.supervised):
+    if dtype == PossibleDtypes.supervised:
         possible.extend(['regression_scaler', 'quantiles'])
         must.extend(['task', 'label_name'])
     return (possible, must)
