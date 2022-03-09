@@ -36,7 +36,6 @@ class Jai(BaseJai):
     and more.
 
     """
-
     def __init__(self,
                  auth_key: str = None,
                  url: str = None,
@@ -979,7 +978,6 @@ class Jai(BaseJai):
         ------
         None.
         """
-
         def get_numbers(sts):
             curr_step, max_iterations = sts["Description"].split(
                 "Iteration: ")[1].strip().split(" / ")
@@ -1507,6 +1505,11 @@ class Jai(BaseJai):
                                           kwargs.get("mycelia_bases", []))
             pretrained_bases.extend(prep_bases)
             kwargs['pretrained_bases'] = pretrained_bases
+            if not kwargs['pretrained_bases']:
+                del kwargs['pretrained_bases']
+            if 'mycelia_bases' in kwargs.keys():
+                if not kwargs['mycelia_bases']:
+                    del kwargs['mycelia_bases']
 
             self.setup(
                 name,
@@ -1731,6 +1734,11 @@ class Jai(BaseJai):
                                           kwargs.get("mycelia_bases", []))
             pretrained_bases.extend(prep_bases)
             kwargs['pretrained_bases'] = pretrained_bases
+            if not kwargs['pretrained_bases']:
+                del kwargs['pretrained_bases']
+            if 'mycelia_bases' in kwargs.keys():
+                if not kwargs['mycelia_bases']:
+                    del kwargs['mycelia_bases']
 
             self.setup(
                 name,
