@@ -129,7 +129,7 @@ def test_environments():
         'name': 'sdk_test'
     }, {
         'id': 'sdk/prod',
-        'name': 'sdk_test'
+        'name': 'sdk_prod'
     }]
 
 
