@@ -1,9 +1,13 @@
 import secrets
 import json
+from joblib import parallel_backend
 import pandas as pd
 import numpy as np
 import requests
 import time
+import concurrent
+import psutil
+from typing import Optional
 
 from io import BytesIO
 from .base import BaseJai
@@ -533,6 +537,7 @@ class Jai(BaseJai):
               data,
               db_type: str,
               batch_size: int = 16384,
+              max_insert_workers: Optional[int] = None,
               frequency_seconds: int = 1,
               filter_name: str = None,
               verbose: int = 1,
@@ -594,11 +599,13 @@ class Jai(BaseJai):
         data = self._check_dtype_and_clean(data=data, db_type=db_type)
 
         # insert data
-        insert_responses = self._insert_data(data=data,
-                                             name=name,
-                                             batch_size=batch_size,
-                                             filter_name=filter_name,
-                                             db_type=db_type)
+        insert_responses = self._insert_data(
+            data=data,
+            name=name,
+            batch_size=batch_size,
+            filter_name=filter_name,
+            db_type=db_type,
+            max_insert_workers=max_insert_workers)
 
         # check if we inserted everything we were supposed to
         self._check_ids_consistency(name=name, data=data)
@@ -739,6 +746,7 @@ class Jai(BaseJai):
                      name,
                      db_type,
                      batch_size,
+                     max_insert_workers: Optional[int] = None,
                      filter_name: str = None,
                      predict: bool = False):
         """
@@ -762,16 +770,39 @@ class Jai(BaseJai):
             Dictionary of responses for each batch. Each response contains
             information of whether or not that particular batch was successfully inserted.
         """
+        if max_insert_workers is None:
+            pcores = psutil.cpu_count(logical=False)
+        elif not isinstance(max_insert_workers, int):
+            raise TypeError(
+                f"Variable 'max_insert_workers' must be 'None' or 'int' instance, not {max_insert_workers.__class__.__name__}."
+            )
+        elif max_insert_workers > 0:
+            pcores = max_insert_workers
+        else:
+            pcores = 1
+
         insert_responses = {}
-        for i, b in enumerate(
-                trange(0, len(data), batch_size, desc="Insert Data")):
-            _batch = data.iloc[b:b + batch_size]
-            data_json = data2json(_batch,
-                                  dtype=db_type,
-                                  filter_name=filter_name,
-                                  predict=predict)
-            insert_responses[i] = self._insert_json(name, data_json,
-                                                    filter_name)
+        with concurrent.futures.ThreadPoolExecutor(
+                max_workers=pcores) as executor:
+
+            for i, b in enumerate(range(0, len(data), batch_size)):
+                _batch = data.iloc[b:b + batch_size]
+                data_json = data2json(_batch,
+                                      dtype=db_type,
+                                      filter_name=filter_name,
+                                      predict=predict)
+                task = executor.submit(self._insert_json, name, data_json,
+                                       filter_name)
+                insert_responses[task] = i
+
+            with tqdm(total=len(insert_responses), desc="Insert Data") as pbar:
+                results = {}
+                for future in concurrent.futures.as_completed(
+                        insert_responses):
+                    arg = insert_responses[future]
+                    results[arg] = future.result()
+                    pbar.update(1)
+
         return insert_responses
 
     def _check_kwargs(self, db_type, **kwargs):
@@ -813,7 +844,7 @@ class Jai(BaseJai):
             val = kwargs.get(key, None)
             if val is not None:
                 body[key] = val
-                if val == "mycelia_bases":
+                if key == "mycelia_bases":
                     warnings.warn(
                         f"`mycelia_bases` will be deprecated in a later version (0.18.0), please use `pretrained_bases` instead. ",
                         DeprecationWarning)
