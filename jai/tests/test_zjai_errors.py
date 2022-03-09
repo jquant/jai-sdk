@@ -158,7 +158,12 @@ def test_check_kwargs_exception():
         j._check_kwargs(db_type="Supervised")
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
-        j._check_kwargs(db_type="SelfSupervised", **{'mycelia_bases': ['db_parent': 'test', 'id_name': 'test']})
+        j._check_kwargs(
+            db_type="SelfSupervised",
+            **{'mycelia_bases': {
+                'db_parent': 'test',
+                'id_name': 'test'
+            }})
         assert issubclass(w[-1].category, DeprecationWarning)
 
 
