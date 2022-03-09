@@ -135,7 +135,7 @@ def kwargs_possibilities(dtype: str):
 
 def kwargs_validation(dtype: str, body: dict):
     params = kwargs_possibilities(dtype)
-    params_keys = set(params.keys()) + set(
+    params_keys = set(params.keys()) | set(
         ["hyperparams", "callback_url", "overwrite"])
     correct_used_keys = set(body.keys()) & set(params_keys)
     incorrect_used_keys = set(body.keys()) - params_keys
