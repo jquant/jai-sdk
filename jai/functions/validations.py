@@ -160,7 +160,7 @@ def kwargs_validation(dtype: str, body: dict):
                 )
     else:
         raise ValueError(
-            f'Inserted key(s) argument(s) {list(incorrect_used_keys)} is not a valid one for dtype="{dtype}". '\
+            f'Inserted key argument(s) {list(incorrect_used_keys)} are not a valid one for dtype="{dtype}". '\
                  f'Please check the documentation and try again.')
 
     return "All inserted parameters are correct."
