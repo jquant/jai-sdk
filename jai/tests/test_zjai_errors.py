@@ -154,8 +154,18 @@ def test_insert_json_exception():
 def test_check_kwargs_exception():
     j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
     j.header = HEADER_TEST
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as e:
         j._check_kwargs(db_type="Supervised")
+    assert e.value.args[0] == f"Missing the required arguments: ['label']"
+    with pytest.raises(ValueError) as e:
+        j._check_kwargs(
+            db_type="Supervised",
+            **{'trained_bases': {
+                'db_parent': 'test',
+                'id_name': 'test'
+            }})
+    assert e.value.args[0] == f'Inserted key argument(s) \'trained_bases\' are not a valid one for dtype="SelfSupervised".'\
+                    f' Please check the documentation and try again.'
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         j._check_kwargs(
@@ -164,7 +174,7 @@ def test_check_kwargs_exception():
                 'db_parent': 'test',
                 'id_name': 'test'
             }})
-        assert issubclass(w[-1].category, DeprecationWarning)
+    assert issubclass(w[-1].category, DeprecationWarning)
 
 
 def test_setup_database_exception():

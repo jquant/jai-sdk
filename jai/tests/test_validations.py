@@ -162,17 +162,17 @@ def test_possible_kwargs_validation(dtype, body, error):
     if error == 'wrong_key':
         with pytest.raises(ValueError) as e:
             validations.kwargs_validation(dtype, body)
-            assert e.value.args[
-            0] == f'Inserted key(s) argument(s) [\'cat_process\'] is not a valid one for dtype="{dtype}". '\
-                 f'Please check the documentation and try again.'
+        assert e.value.args[
+        0] == f'Inserted key(s) argument(s) [\'cat_process\'] is not a valid one for dtype="{dtype}". '\
+                f'Please check the documentation and try again.'
     elif error == 'wrong_subkey':
         with pytest.raises(ValueError) as e:
             validations.kwargs_validation(dtype, body)
-            assert e.value.args[
-            0] == f'Inserted key argument [\'model_name\'] is not a valid one for dtpe="{dtype}".'\
-                        f' Please check the documentation and try again.'
+        assert e.value.args[
+        0] == f'Inserted key argument [\'model_name\'] is not a valid one for dtpe="{dtype}".'\
+                    f' Please check the documentation and try again.'
     elif error == 'missing_must_key':
         with pytest.raises(ValueError) as e:
             validations.kwargs_validation(dtype, body)
-            assert e.value.args[
-                0] == f'\'[id_name]\' parameter is required for the dtype "{dtype}".'
+        assert e.value.args[
+            0] == f'\'[id_name]\' parameter is required for the dtype "{dtype}".'

@@ -851,7 +851,8 @@ class Jai(BaseJai):
         for key in kwargs.keys():
             if key not in possible and key not in must:
                 raise ValueError(
-                    f'Inserted key argument "{key}" is not a valid one for dtype="{db_type}". Please check the documentation and try again.'
+                    f'Inserted key argument(s) {key} are not a valid one for dtype="{db_type}".'\
+                        f' Please check the documentation and try again.'
                 )
 
         kwargs_validation(db_type, body)
@@ -1505,11 +1506,9 @@ class Jai(BaseJai):
                                           kwargs.get("mycelia_bases", []))
             pretrained_bases.extend(prep_bases)
             kwargs['pretrained_bases'] = pretrained_bases
+            kwargs.pop('mycelia_bases', None)
             if not kwargs['pretrained_bases']:
                 del kwargs['pretrained_bases']
-            if 'mycelia_bases' in kwargs.keys():
-                if not kwargs['mycelia_bases']:
-                    del kwargs['mycelia_bases']
 
             self.setup(
                 name,
@@ -1734,11 +1733,9 @@ class Jai(BaseJai):
                                           kwargs.get("mycelia_bases", []))
             pretrained_bases.extend(prep_bases)
             kwargs['pretrained_bases'] = pretrained_bases
+            kwargs.pop('mycelia_bases', None)
             if not kwargs['pretrained_bases']:
                 del kwargs['pretrained_bases']
-            if 'mycelia_bases' in kwargs.keys():
-                if not kwargs['mycelia_bases']:
-                    del kwargs['mycelia_bases']
 
             self.setup(
                 name,
