@@ -155,7 +155,7 @@ def kwargs_validation(dtype: str, body: dict):
             if not used_subkeys <= must_and_pos_subkeys:
                 diff = used_subkeys - must_and_pos_subkeys
                 raise ValueError(
-                    f'Inserted key argument {list(diff)} is not a valid one for dtpe="{dtype}".'\
+                    f'Inserted key argument(s) {list(diff)} are not a valid one for dtpe="{dtype}".'\
                         f' Please check the documentation and try again.'
                 )
     else:
