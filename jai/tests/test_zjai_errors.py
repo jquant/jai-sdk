@@ -159,12 +159,12 @@ def test_check_kwargs_exception():
     assert e.value.args[0] == f"Missing the required arguments: ['label']"
     with pytest.raises(ValueError) as e:
         j._check_kwargs(
-            db_type="Supervised",
+            db_type="SelfSupervised",
             **{'trained_bases': {
                 'db_parent': 'test',
                 'id_name': 'test'
             }})
-    assert e.value.args[0] == f'Inserted key argument(s) \'trained_bases\' are not a valid one for dtype="SelfSupervised".'\
+    assert e.value.args[0] == f'Inserted key argument \'trained_bases\' is not a valid one for dtype="SelfSupervised".'\
                     f' Please check the documentation and try again.'
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")

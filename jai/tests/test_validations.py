@@ -175,4 +175,4 @@ def test_possible_kwargs_validation(dtype, body, error):
         with pytest.raises(ValueError) as e:
             validations.kwargs_validation(dtype, body)
         assert e.value.args[
-            0] == f'\'[id_name]\' parameter is required for the dtype "{dtype}".'
+            0] == f'[\'id_name\'] parameter is required for the dtype "{dtype}".'

@@ -36,7 +36,6 @@ class Jai(BaseJai):
     and more.
 
     """
-
     def __init__(self,
                  auth_key: str = None,
                  url: str = None,
@@ -852,7 +851,7 @@ class Jai(BaseJai):
         for key in kwargs.keys():
             if key not in possible and key not in must:
                 raise ValueError(
-                    f'Inserted key argument(s) {key} are not a valid one for dtype="{db_type}".'\
+                    f'Inserted key argument \'{key}\' is not a valid one for dtype="{db_type}".'\
                         f' Please check the documentation and try again.'
                 )
 
@@ -980,7 +979,6 @@ class Jai(BaseJai):
         ------
         None.
         """
-
         def get_numbers(sts):
             curr_step, max_iterations = sts["Description"].split(
                 "Iteration: ")[1].strip().split(" / ")
