@@ -3,9 +3,12 @@ from .test_utils import setup_dataframe
 import pandas as pd
 import numpy as np
 import pytest
+import json
+from decouple import config
 
 URL = 'http://localhost:8001'
-AUTH_KEY = "sdk_test"
+AUTH_KEY = ""
+HEADER_TEST = json.loads(config('HEADER_TEST'))
 MAX_SIZE = 50
 
 np.random.seed(42)
@@ -26,6 +29,7 @@ def test_text(name, dtype, setup_dataframe):
     query = train.loc[np.random.choice(ids, 10, replace=False)]
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
     if j.is_valid(name):
         j.delete_database(name)
 
@@ -71,6 +75,7 @@ def test_selfsupervised(setup_dataframe):
     query = train.loc[np.random.choice(len(train), 10, replace=False)]
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
     if j.is_valid(name):
         j.delete_database(name)
 
@@ -78,7 +83,8 @@ def test_selfsupervised(setup_dataframe):
             train,
             db_type="SelfSupervised",
             hyperparams={"max_epochs": 3},
-            overwrite=True)
+            overwrite=True,
+            max_insert_workers=1)
 
     assert j.is_valid(name), f"valid name {name} after setup failed"
 
@@ -125,6 +131,7 @@ def test_supervised(setup_dataframe):
     query = test.loc[np.random.choice(len(test), 10, replace=False)]
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
     if j.is_valid(name):
         j.delete_database(name)
 
@@ -132,6 +139,7 @@ def test_supervised(setup_dataframe):
           train,
           db_type="Supervised",
           overwrite=True,
+          max_insert_workers=0,
           hyperparams={"max_epochs": 3},
           label={
               "task": "metric_classification",
