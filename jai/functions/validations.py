@@ -164,10 +164,3 @@ def kwargs_validation(dtype: str, body: dict):
                  f'Please check the documentation and try again.')
 
     return "All inserted parameters are correct."
-
-
-if __name__ == '__main__':
-
-    TEST = {'hyperparams': {'model_name': 'int32', 'mode': 'test'}}
-
-    print(kwargs_validation('Image', TEST))
