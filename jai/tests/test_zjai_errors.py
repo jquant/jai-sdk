@@ -1,13 +1,14 @@
 from jai import Jai
 import pandas as pd
+import warnings
 import pytest
 import json
-import os
+from decouple import config
 
 INVALID_URL = 'http://google.com'
 VALID_URL = 'http://localhost:8001'
 AUTH_KEY = ""
-HEADER_TEST = json.loads(os.environ['HEADER_TEST'])
+HEADER_TEST = json.loads(config('HEADER_TEST'))
 
 
 def test_names_exception():
@@ -154,8 +155,11 @@ def test_check_kwargs_exception():
     j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
     j.header = HEADER_TEST
     with pytest.raises(ValueError):
-
         j._check_kwargs(db_type="Supervised")
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        j._check_kwargs(db_type="SelfSupervised", **{'mycelia_bases': []})
+        assert issubclass(w[-1].category, DeprecationWarning)
 
 
 def test_setup_database_exception():
@@ -227,3 +231,16 @@ def test_filters(name):
     j.header = HEADER_TEST
     with pytest.raises(ValueError):
         j.filters(name)
+
+
+@pytest.mark.parametrize("name, batch_size, db_type, max_insert_workers",
+                         [("test", 1024, "SelfSupervised", "1")])
+def test_max_insert_workers(name, batch_size, db_type, max_insert_workers):
+    j = Jai(url=VALID_URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
+    with pytest.raises(TypeError):
+        j._insert_data(data={},
+                       name=name,
+                       batch_size=batch_size,
+                       db_type=db_type,
+                       max_insert_workers=max_insert_workers)
