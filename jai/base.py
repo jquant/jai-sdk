@@ -97,11 +97,6 @@ class BaseJai(object):
             self.__url = "https://mycelia.azure-api.net"
         else:
             self.__url = url[:-1] if url.endswith("/") else url
-            self.header = {
-                "SubscriptionId": "sdk_test",
-                "ProductId": "dev",
-                "GroupsId": "sdk"
-            }
 
     @property
     def url(self):
