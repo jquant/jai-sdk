@@ -36,7 +36,6 @@ class Jai(BaseJai):
     and more.
 
     """
-
     def __init__(self,
                  auth_key: str = None,
                  url: str = None,
@@ -980,7 +979,6 @@ class Jai(BaseJai):
         ------
         None.
         """
-
         def get_numbers(sts):
             curr_step, max_iterations = sts["Description"].split(
                 "Iteration: ")[1].strip().split(" / ")
@@ -1772,3 +1770,45 @@ class Jai(BaseJai):
                             predict_proba=True,
                             batch_size=batch_size,
                             as_frame=as_frame)
+
+    def insert_vectors(self, data, name, db_type, batch_size: int = 10000):
+        #! Modificar Documentação
+        """
+        Insert raw data for training. This is a protected method.
+
+        Args
+        ----------
+        name : str
+            String with the name of a database in your JAI environment.
+        db_type : str
+            Database type (Supervised, SelSupervised, Text...)
+        batch_size : int
+            Size of batch to send the data.
+        predict : bool
+            Allows table type data to have only one column for predictions,
+            if False, then tables must have at least 2 columns. `Default is False`.
+
+        Return
+        ------
+        insert_responses : dict
+            Dictionary of responses for each batch. Each response contains
+            information of whether or not that particular batch was successfully inserted.
+        """
+
+        insert_responses = []
+        for i, b in enumerate(
+                trange(0, len(data), batch_size, desc="Insert Vectors")):
+            _batch = data.iloc[b:b + batch_size]
+            data_json = data2json(_batch,
+                                  dtype=db_type,
+                                  filter_name=None,
+                                  predict=False)
+            if i == 0:
+                insert_responses[i] = self._insert_vectors_json(name,
+                                                                data_json,
+                                                                overwrite=True)
+            else:
+                insert_responses[i] = self._insert_vectors_json(
+                    name, data_json, overwrite=False)
+
+        return insert_responses
