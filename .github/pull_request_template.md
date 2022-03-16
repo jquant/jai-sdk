@@ -11,7 +11,7 @@
 
 ## Description
 
-Breifely describe the problem or reason why you have made this pull request.
+Briefly describe the problem or reason why you have made this pull request.
 
 ## Root cause
 
