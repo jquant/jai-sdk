@@ -76,6 +76,5 @@ def treat_unix(df_unix_col):
 
     """
     datime_col = pd.to_datetime(df_unix_col, unit="s")
-    
-    return datime_col
 
+    return datime_col
