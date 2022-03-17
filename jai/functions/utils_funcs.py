@@ -107,6 +107,15 @@ def data2json(data,
         raise ValueError(
             f"'Unsupervised' type has been replaced with {PossibleDtypes.selfsupervised} since version 0.6.0"
         )
+    elif dtype == PossibleDtypes.vector:
+        if isinstance(data, pd.DataFrame):
+            count_except_id = (data.columns != 'id').sum()
+            if count_except_id >= 2:
+                return df2json(data)
+
+            raise ValueError(
+                f"Data must be a DataFrame with at least 2 columns other than 'id'. Current column(s):\n{data.columns.tolist()}"
+            )
 
     raise ValueError(f"dtype {dtype} not recognized.")
 

@@ -94,11 +94,6 @@ class BaseJai(object):
             self.__url = "https://mycelia.azure-api.net"
         else:
             self.__url = url[:-1] if url.endswith("/") else url
-            self.header = {
-                'ProductId': 'dev',
-                'SubscriptionId': 'sdk_test',
-                'GroupsId': 'sdk'
-            }
 
     @property
     def url(self):
@@ -609,7 +604,7 @@ class BaseJai(object):
         return requests.delete(self.url + f"/database/{name}",
                                headers=self.header)
 
-    @raise_status_error(200)
+    @raise_status_error(201)
     def _insert_vectors_json(self,
                              name: str,
                              data_json,

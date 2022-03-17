@@ -947,8 +947,19 @@ class Jai(BaseJai):
         data : pandas.DataFrame or pandas.Series
             Data without NAs
         """
-        if isinstance(data, (list, np.ndarray)):
+        if isinstance(data, list):
             data = pd.Series(data)
+        elif isinstance(data, np.ndarray):
+            if not data.any():
+                raise ValueError(f"Inserted data is empty.")
+            elif data.ndim == 1:
+                data = pd.Series(data)
+            elif data.ndim == 2:
+                data = pd.DataFrame(data)
+            else:
+                raise ValueError(
+                    f"Inserted 'np.ndarray' data has many dimensions ({data.ndim}). JAI only accepts up to 2-d inputs."
+                )
         elif not isinstance(data, (pd.Series, pd.DataFrame)):
             raise TypeError(
                 f"Inserted data is of type `{data.__class__.__name__}`,\
@@ -1771,8 +1782,12 @@ class Jai(BaseJai):
                             batch_size=batch_size,
                             as_frame=as_frame)
 
-    def insert_vectors(self, data, name, db_type, batch_size: int = 10000):
-        #! Modificar Documentação
+    #! MODIFICAR DOCUMENTAÇÃO
+    def insert_vectors(self,
+                       data,
+                       name,
+                       batch_size: int = 10000,
+                       overwrite: bool = False):
         """
         Insert raw data for training. This is a protected method.
 
@@ -1795,12 +1810,27 @@ class Jai(BaseJai):
             information of whether or not that particular batch was successfully inserted.
         """
 
-        insert_responses = []
+        if name in self.names:
+            if overwrite:
+                self.delete_database(name)
+            else:
+                raise KeyError(
+                    f"Database '{name}' already exists in your environment. Set overwrite=True to overwrite it."
+                )
+        else:
+            # delete data reamains
+            self.delete_raw_data(name)
+
+        # make sure our data has the correct type and is free of NAs
+        data = self._check_dtype_and_clean(data=data,
+                                           db_type=PossibleDtypes.vector)
+
+        insert_responses = {}
         for i, b in enumerate(
                 trange(0, len(data), batch_size, desc="Insert Vectors")):
             _batch = data.iloc[b:b + batch_size]
             data_json = data2json(_batch,
-                                  dtype=db_type,
+                                  dtype=PossibleDtypes.vector,
                                   filter_name=None,
                                   predict=False)
             if i == 0:
