@@ -151,6 +151,13 @@ def test_insert_json_exception():
         j._insert_json(name="test", df_json=dict())
 
 
+def test_insert_vector_json_exception():
+    j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
+    with pytest.raises(TypeError):
+        j._insert_json(name="test", df_json=dict())
+
+
 def test_check_kwargs_exception():
     j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
     j.header = HEADER_TEST
