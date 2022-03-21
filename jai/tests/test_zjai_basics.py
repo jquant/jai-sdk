@@ -179,7 +179,8 @@ def test_rename():
     ]
     j.rename(original_name='test_match', new_name='test_match_new')
     assert j.names == [
-        'test_match_new', 'test_resolution', 'titanic_ssupervised'
+        'test_insert_vector', 'test_match_new', 'test_resolution',
+        'titanic_ssupervised'
     ]
     j.rename(original_name='test_match_new', new_name='test_match')
     assert j.names == [
