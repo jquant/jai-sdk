@@ -173,7 +173,10 @@ def test_describe(name):
 def test_rename():
     j = Jai(url=URL, auth_key=AUTH_KEY)
     j.header = HEADER_TEST
-    assert j.names == ['test_match', 'test_resolution', 'titanic_ssupervised']
+    assert j.names == [
+        'test_insert_vector', 'test_match', 'test_resolution',
+        'titanic_ssupervised'
+    ]
     j.rename(original_name='test_match', new_name='test_match_new')
     assert j.names == [
         'test_match_new', 'test_resolution', 'titanic_ssupervised'
