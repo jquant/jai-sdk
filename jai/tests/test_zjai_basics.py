@@ -34,7 +34,10 @@ def test_custom_url():
 def test_names():
     j = Jai(url=URL, auth_key=AUTH_KEY)
     j.header = HEADER_TEST
-    assert j.names == ['test_match', 'test_resolution', 'titanic_ssupervised']
+    assert j.names == [
+        'test_insert_vector', 'test_match', 'test_resolution',
+        'titanic_ssupervised'
+    ]
 
 
 def test_info():
@@ -176,7 +179,10 @@ def test_rename():
         'test_match_new', 'test_resolution', 'titanic_ssupervised'
     ]
     j.rename(original_name='test_match_new', new_name='test_match')
-    assert j.names == ['test_match', 'test_resolution', 'titanic_ssupervised']
+    assert j.names == [
+        'test_insert_vector', 'test_match', 'test_resolution',
+        'titanic_ssupervised'
+    ]
 
 
 @pytest.mark.parametrize('db_name', ['test_match'])
