@@ -6,7 +6,7 @@ import pytest
 import json
 from decouple import config
 
-URL = 'http://localhost:8000'
+URL = 'http://localhost:8001'
 AUTH_KEY = ""
 HEADER_TEST = json.loads(config('HEADER_TEST'))
 
