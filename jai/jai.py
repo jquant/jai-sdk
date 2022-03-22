@@ -37,7 +37,6 @@ class Jai(BaseJai):
     and more.
 
     """
-
     def __init__(self,
                  auth_key: str = None,
                  url: str = None,
@@ -992,7 +991,6 @@ class Jai(BaseJai):
         ------
         None.
         """
-
         def get_numbers(sts):
             curr_step, max_iterations = sts["Description"].split(
                 "Iteration: ")[1].strip().split(" / ")
@@ -1794,7 +1792,7 @@ class Jai(BaseJai):
         Insert raw vectors database directly into JAI without any need of fit.
 
         Args
-        ----
+        -----
         data : pd.DataFrame, pd.Series or np.ndarray
             Database data to be inserted.
         name : str
