@@ -174,6 +174,12 @@ def test_insert_vector_json_exception():
     assert e.value.args[
         0] == f"Data must be a DataFrame with at least 2 columns other than 'id'. Current column(s):\n[0]"
 
+    db = pd.DataFrame({'a': [1, 'a'], 'b': [1, 'c'], 'c': [1, np.nan]})
+    with pytest.raises(ValueError) as e:
+        j.insert_vectors(name="test", data=db, overwrite=True)
+    assert e.value.args[
+        0] == f"Columns ['a', 'b'] contains values types different from numeric."
+
 
 def test_check_kwargs_exception():
     j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)

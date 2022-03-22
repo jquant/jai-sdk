@@ -19,6 +19,7 @@ from .functions import exceptions
 from fnmatch import fnmatch
 import matplotlib.pyplot as plt
 from pandas.api.types import is_integer_dtype
+from pandas.api.types import is_numeric_dtype
 from sklearn.model_selection import StratifiedShuffleSplit
 from tqdm import trange, tqdm
 
@@ -36,7 +37,6 @@ class Jai(BaseJai):
     and more.
 
     """
-
     def __init__(self,
                  auth_key: str = None,
                  url: str = None,
@@ -991,7 +991,6 @@ class Jai(BaseJai):
         ------
         None.
         """
-
         def get_numbers(sts):
             curr_step, max_iterations = sts["Description"].split(
                 "Iteration: ")[1].strip().split(" / ")
@@ -1784,26 +1783,24 @@ class Jai(BaseJai):
                             batch_size=batch_size,
                             as_frame=as_frame)
 
-    #! MODIFICAR DOCUMENTAÇÃO
     def insert_vectors(self,
                        data,
                        name,
                        batch_size: int = 10000,
                        overwrite: bool = False):
         """
-        Insert raw data for training. This is a protected method.
+        Insert raw vectors database directly into JAI without any need of fit.
 
         Args
         ----------
+        data : pd.DataFrame, pd.Series or np.ndarray
+            Database data to be inserted.
         name : str
             String with the name of a database in your JAI environment.
-        db_type : str
-            Database type (Supervised, SelSupervised, Text...)
-        batch_size : int
+        batch_size : int, optional
             Size of batch to send the data.
-        predict : bool
-            Allows table type data to have only one column for predictions,
-            if False, then tables must have at least 2 columns. `Default is False`.
+        overwrite : bool, optional
+            If True, then the model is always retrained. Default is False.
 
         Return
         ------
@@ -1826,6 +1823,15 @@ class Jai(BaseJai):
         # make sure our data has the correct type and is free of NAs
         data = self._check_dtype_and_clean(data=data,
                                            db_type=PossibleDtypes.vector)
+
+        # Check if all values are numeric
+        non_num_cols = [
+            x for x in data.columns.tolist() if not is_numeric_dtype(data[x])
+        ]
+        if non_num_cols:
+            raise ValueError(
+                f"Columns {non_num_cols} contains values types different from numeric."
+            )
 
         insert_responses = {}
         for i, b in enumerate(
