@@ -1792,7 +1792,7 @@ class Jai(BaseJai):
         Insert raw vectors database directly into JAI without any need of fit.
 
         Args
-        ----------
+        ----
         data : pd.DataFrame, pd.Series or np.ndarray
             Database data to be inserted.
         name : str
