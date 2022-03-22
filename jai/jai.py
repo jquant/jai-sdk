@@ -1830,7 +1830,7 @@ class Jai(BaseJai):
         ]
         if non_num_cols:
             raise ValueError(
-                f"Columns {non_num_cols} contains values types different from numeric."
+                f"Columns {non_num_cols} contains values types different from numeric"
             )
 
         insert_responses = {}
