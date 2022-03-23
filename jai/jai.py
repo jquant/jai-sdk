@@ -963,8 +963,8 @@ class Jai(BaseJai):
                 )
         elif not isinstance(data, (pd.Series, pd.DataFrame)):
             raise TypeError(
-                f"Inserted data is of type `{data.__class__.__name__}`,\
- but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame")
+                f"Inserted data is of type `{data.__class__.__name__}`," \
+                    f"but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame")
         if db_type in [
                 PossibleDtypes.text, PossibleDtypes.fasttext,
                 PossibleDtypes.edit, PossibleDtypes.vector
