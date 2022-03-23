@@ -17,7 +17,9 @@ np.random.seed(42)
 def test_insert_vectors(name, setup_dataframe):
 
     data, _ = setup_dataframe
-    data = data.rename(columns={"PassengerId": "id"}).set_index("id")
+    data = data.drop(columns="Cabin").dropna().rename(columns={
+        "PassengerId": "id"
+    }).set_index("id")
     data = data.select_dtypes(exclude='object')
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
