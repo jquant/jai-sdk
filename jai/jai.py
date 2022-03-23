@@ -37,7 +37,6 @@ class Jai(BaseJai):
     and more.
 
     """
-
     def __init__(self,
                  auth_key: str = None,
                  url: str = None,
@@ -967,9 +966,8 @@ class Jai(BaseJai):
                 f"Inserted data is of type `{data.__class__.__name__}`,\
  but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame")
         if db_type in [
-                PossibleDtypes.text,
-                PossibleDtypes.fasttext,
-                PossibleDtypes.edit,
+                PossibleDtypes.text, PossibleDtypes.fasttext,
+                PossibleDtypes.edit, PossibleDtypes.vector
         ] and data.isna().to_numpy().any():
             print("Droping NA values")
             data = data.dropna()
@@ -992,7 +990,6 @@ class Jai(BaseJai):
         ------
         None.
         """
-
         def get_numbers(sts):
             curr_step, max_iterations = sts["Description"].split(
                 "Iteration: ")[1].strip().split(" / ")
@@ -1789,7 +1786,8 @@ class Jai(BaseJai):
                        data,
                        name,
                        batch_size: int = 10000,
-                       overwrite: bool = False):
+                       overwrite: bool = False,
+                       append: bool = False):
         """
         Insert raw vectors database directly into JAI without any need of fit.
 
@@ -1802,7 +1800,9 @@ class Jai(BaseJai):
         batch_size : int, optional
             Size of batch to send the data.
         overwrite : bool, optional
-            If True, then the model is always retrained. Default is False.
+            If True, then the vector database is always recriated. Default is False.
+        append : bool, optional
+            If True, then the inserted data will be added to the existent database. Default is False.
 
         Return
         ------
@@ -1813,13 +1813,18 @@ class Jai(BaseJai):
 
         if name in self.names:
             if overwrite:
+                create_new_collection = True
                 self.delete_database(name)
+            elif not overwrite and append:
+                create_new_collection = False
             else:
                 raise KeyError(
-                    f"Database '{name}' already exists in your environment. Set overwrite=True to overwrite it."
+                    f"Database '{name}' already exists in your environment." \
+                        f"Set overwrite=True to overwrite it or append=True to add new data to your database."
                 )
         else:
-            # delete data reamains
+            # delete data remains
+            create_new_collection = True
             self.delete_raw_data(name)
 
         # make sure our data has the correct type and is free of NAs
@@ -1843,7 +1848,7 @@ class Jai(BaseJai):
                                   dtype=PossibleDtypes.vector,
                                   filter_name=None,
                                   predict=False)
-            if i == 0:
+            if i == 0 and create_new_collection is True:
                 insert_responses[i] = self._insert_vectors_json(name,
                                                                 data_json,
                                                                 overwrite=True)
@@ -1852,3 +1857,9 @@ class Jai(BaseJai):
                     name, data_json, overwrite=False)
 
         return insert_responses
+
+
+#? overwrite is True and append is True -> OK
+#? overwrite is False and append is True -> OK
+#? overwrite is True and append is False -> OK
+#? overwrite is True and append is True -> OK

@@ -58,3 +58,62 @@ def test_insert_vectors(name, setup_dataframe):
                          overwrite=overwrite)
         assert e.value.args[0] == f"Database 'test_insert_vector' already exists in your environment." \
             "Set overwrite=True to overwrite it."
+
+
+@pytest.mark.parametrize("name", [('test_insert_vector')])
+def test_append_vectors(name, setup_dataframe):
+
+    data, _ = setup_dataframe
+    data = data.drop(columns=["PassengerId", "Cabin"]).dropna().reset_index(
+        drop=True)
+    data = data.select_dtypes(exclude='object')
+
+    j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
+
+    df0 = data[:100].iloc[:, :3]
+    j.insert_vectors(name=name, data=df0, overwrite=True)
+    j_info = j.info
+    length = j_info.loc[j_info['name'] == 'test_insert_vector',
+                        'size'].values[0]
+    assert length == 100
+
+    df1 = data[100:200].iloc[:, :3]
+    j.insert_vectors(name=name, data=df1, append=True)
+    j_info = j.info
+    length = j_info.loc[j_info['name'] == 'test_insert_vector',
+                        'size'].values[0]
+    assert length == 200
+
+
+@pytest.mark.parametrize("name, pretrained",
+                         [('test_insert_vector_ss', 'test_insert_vector')])
+def test_pretrained_with_vectors(name, pretrained, setup_dataframe):
+
+    data, _ = setup_dataframe
+    data = data.drop(columns=["PassengerId", "Cabin"]).dropna().reset_index(
+        drop=True)
+    data = data.select_dtypes(exclude='object')
+
+    j = Jai(url=URL, auth_key=AUTH_KEY)
+    j.header = HEADER_TEST
+
+    df0 = data.iloc[:200, 3:].reset_index().rename(columns={'index': 'myid'})
+    df0.index = df0.index.rename('id')
+    j.fit(name=name,
+          db_type='SelfSupervised',
+          data=df0,
+          overwrite=True,
+          pretrained_bases=[{
+              'db_parent': pretrained,
+              'id_name': 'myid'
+          }])
+
+    j_info = j.info
+    dep = j_info.loc[j_info['name'] == 'test_insert_vector_ss',
+                     'dependencies'].values[0]
+    assert dep == ['test_insert_vector']
+
+    j.delete_database('test_insert_vector_ss')
+    j_info = j.info
+    assert 'test_insert_vector_ss' not in j_info['name'].values
