@@ -14,6 +14,7 @@ class PossibleDtypes(str, Enum):
     recommendation_system = "RecommendationSystem"
     vector = "Vector"
 
+
 class FieldName(str, Enum):
     text = "text"
     image = "image_base64"
