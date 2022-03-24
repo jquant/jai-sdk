@@ -36,7 +36,6 @@ class Jai(BaseJai):
     and more.
 
     """
-
     def __init__(self,
                  auth_key: str = None,
                  url: str = None,
@@ -428,6 +427,83 @@ class Jai(BaseJai):
             results.extend(res["similarity"])
         return results
 
+    def recommendation(self,
+                       name: str,
+                       data,
+                       top_k: int = 5,
+                       filters=None,
+                       batch_size: int = 16384):
+        """
+        Query a database in search for the `top_k` most recommended entries for each
+        input data passed as argument.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+        data : list, np.ndarray, pd.Series or pd.DataFrame
+            Data to be queried for recommendation in your database.
+        top_k : int
+            Number of k recommendations that we want to return. `Default is 5`.
+        batch_size : int
+            Size of batches to send the data. `Default is 16384`.
+
+        Return
+        ------
+        results : list of dicts
+            A list with a dictionary for each input value identified with
+            'query_id' and 'result' which is a list with 'top_k' most recommended
+            items dictionaries, each dictionary has the 'id' from the database
+            previously setup and 'distance' in between the correspondent 'id'
+            and 'query_id'.
+
+        Example
+        -------
+        >>> name = 'chosen_name'
+        >>> DATA_ITEM = # data in the format of the database
+        >>> TOP_K = 3
+        >>> j = Jai(AUTH_KEY)
+        >>> df_index_distance = j.recommendation(name, DATA_ITEM, TOP_K)
+        >>> print(pd.DataFrame(df_index_distance['recommendation']))
+           id  distance
+        10007       0.0
+        45568    6995.6
+         8382    7293.2
+        """
+        dtype = self.get_dtype(name)
+
+        if isinstance(data, list):
+            data = np.array(data)
+
+        is_id = is_integer_dtype(data)
+
+        results = []
+        for i in trange(0, len(data), batch_size, desc="Recommendation"):
+            if is_id:
+                if isinstance(data, pd.Series):
+                    _batch = data.iloc[i:i + batch_size].tolist()
+                elif isinstance(data, pd.Index):
+                    _batch = data[i:i + batch_size].tolist()
+                else:
+                    _batch = data[i:i + batch_size].tolist()
+                res = self._recommendation_id(name,
+                                              _batch,
+                                              top_k=top_k,
+                                              filters=filters)
+            else:
+                if isinstance(data, (pd.Series, pd.DataFrame)):
+                    _batch = data.iloc[i:i + batch_size]
+                else:
+                    _batch = data[i:i + batch_size]
+                res = self._recommendation_json(name,
+                                                data2json(_batch,
+                                                          dtype=dtype,
+                                                          predict=True),
+                                                top_k=top_k,
+                                                filters=filters)
+            results.extend(res["recommendation"])
+        return results
+
     def predict(self,
                 name: str,
                 data,
@@ -627,14 +703,18 @@ class Jai(BaseJai):
                 print(f"- {key}: {value}")
 
         if frequency_seconds >= 1:
-            if db_type in ["Supervised", "SelfSupervised"]:
+            if db_type in [
+                    PossibleDtypes.selfsupervised, PossibleDtypes.supervised,
+                    PossibleDtypes.recommendation_system
+            ]:
                 print(
                     f"\nTraining might finish early due to early stopping criteria."
                 )
             self.wait_setup(name=name, frequency_seconds=frequency_seconds)
 
             if db_type in [
-                    PossibleDtypes.selfsupervised, PossibleDtypes.supervised
+                    PossibleDtypes.selfsupervised, PossibleDtypes.supervised,
+                    PossibleDtypes.recommendation_system
             ]:
                 self.report(name, verbose)
 
@@ -881,7 +961,8 @@ class Jai(BaseJai):
         """
         dtype = self.get_dtype(name)
         if dtype not in [
-                PossibleDtypes.selfsupervised, PossibleDtypes.supervised
+                PossibleDtypes.selfsupervised, PossibleDtypes.supervised,
+                PossibleDtypes.recommendation_system
         ]:
             return None
 
@@ -980,7 +1061,6 @@ class Jai(BaseJai):
         ------
         None.
         """
-
         def get_numbers(sts):
             curr_step, max_iterations = sts["Description"].split(
                 "Iteration: ")[1].strip().split(" / ")
