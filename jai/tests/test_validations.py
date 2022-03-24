@@ -153,9 +153,9 @@ def test_kwargs_possibilities(dtype, keys):
         }
     }, 'wrong_key'),
     (PossibleDtypes.supervised, {
-        'mycelia_bases': {
+        'mycelia_bases': [{
             'db_parent': 'test'
-        }
+        }]
     }, 'missing_must_key'),
 ])
 def test_possible_kwargs_validation(dtype, body, error):
@@ -176,3 +176,17 @@ def test_possible_kwargs_validation(dtype, body, error):
             validations.kwargs_validation(dtype, body)
         assert e.value.args[
             0] == f'[\'id_name\'] parameter is required for the dtype "{dtype}".'
+
+
+@pytest.mark.parametrize('dtype, body', [
+    (PossibleDtypes.supervised, {
+        'mycelia_bases': {
+            'db_parent': 'test'
+        }
+    }),
+])
+def test_wrong_pretrained_bases_input(dtype, body):
+    with pytest.raises(TypeError) as e:
+        validations.kwargs_validation(dtype, body)
+    assert e.value.args[
+        0] == "'pretrained_bases' parameter must be a list of dictonaries."

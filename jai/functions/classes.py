@@ -10,6 +10,7 @@ class PossibleDtypes(str, Enum):
     supervised = "Supervised"
     text = "Text"
     edit = "TextEdit"
+    vector = "Vector"
 
 
 class FieldName(str, Enum):

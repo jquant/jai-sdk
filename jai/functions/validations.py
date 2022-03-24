@@ -142,7 +142,16 @@ def kwargs_validation(dtype: str, body: dict):
 
     if not incorrect_used_keys:
         for key in correct_used_keys:
-            used_subkeys = set(body[key])
+            if key in set(['mycelia_bases', 'pretrained_bases']):
+                if isinstance(body[key], list):
+                    pb_keys = [list(x.keys()) for x in body[key]]
+                    used_subkeys = set().union(*pb_keys)
+                else:
+                    raise TypeError(
+                        "'pretrained_bases' parameter must be a list of dictonaries."
+                    )
+            else:
+                used_subkeys = set(body[key])
             possible_subkeys = set(params[key][0])
             must_subkeys = set(params[key][1])
             must_and_pos_subkeys = must_subkeys | possible_subkeys
