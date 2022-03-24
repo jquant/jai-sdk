@@ -19,6 +19,7 @@ from .functions import exceptions
 from fnmatch import fnmatch
 import matplotlib.pyplot as plt
 from pandas.api.types import is_integer_dtype
+from pandas.api.types import is_numeric_dtype
 from sklearn.model_selection import StratifiedShuffleSplit
 from tqdm import trange, tqdm
 
@@ -1029,16 +1030,26 @@ class Jai(BaseJai):
         data : pandas.DataFrame or pandas.Series
             Data without NAs
         """
-        if isinstance(data, (list, np.ndarray)):
+        if isinstance(data, list):
             data = pd.Series(data)
+        elif isinstance(data, np.ndarray):
+            if not data.any():
+                raise ValueError(f"Inserted data is empty.")
+            elif data.ndim == 1:
+                data = pd.Series(data)
+            elif data.ndim == 2:
+                data = pd.DataFrame(data)
+            else:
+                raise ValueError(
+                    f"Inserted 'np.ndarray' data has many dimensions ({data.ndim}). JAI only accepts up to 2-d inputs."
+                )
         elif not isinstance(data, (pd.Series, pd.DataFrame)):
             raise TypeError(
-                f"Inserted data is of type `{data.__class__.__name__}`,\
- but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame")
+                f"Inserted data is of type `{data.__class__.__name__}`," \
+                    f"but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame")
         if db_type in [
-                PossibleDtypes.text,
-                PossibleDtypes.fasttext,
-                PossibleDtypes.edit,
+                PossibleDtypes.text, PossibleDtypes.fasttext,
+                PossibleDtypes.edit, PossibleDtypes.vector
         ] and data.isna().to_numpy().any():
             print("Droping NA values")
             data = data.dropna()
@@ -1852,3 +1863,85 @@ class Jai(BaseJai):
                             predict_proba=True,
                             batch_size=batch_size,
                             as_frame=as_frame)
+
+    def insert_vectors(self,
+                       data,
+                       name,
+                       batch_size: int = 10000,
+                       overwrite: bool = False,
+                       append: bool = False):
+        """
+        Insert raw vectors database directly into JAI without any need of fit.
+
+        Args
+        -----
+        data : pd.DataFrame, pd.Series or np.ndarray
+            Database data to be inserted.
+        name : str
+            String with the name of a database in your JAI environment.
+        batch_size : int, optional
+            Size of batch to send the data.
+        overwrite : bool, optional
+            If True, then the vector database is always recriated. Default is False.
+        append : bool, optional
+            If True, then the inserted data will be added to the existent database. Default is False.
+
+        Return
+        ------
+        insert_responses : dict
+            Dictionary of responses for each batch. Each response contains
+            information of whether or not that particular batch was successfully inserted.
+        """
+
+        if name in self.names:
+            if overwrite:
+                create_new_collection = True
+                self.delete_database(name)
+            elif not overwrite and append:
+                create_new_collection = False
+            else:
+                raise KeyError(
+                    f"Database '{name}' already exists in your environment." \
+                        f"Set overwrite=True to overwrite it or append=True to add new data to your database."
+                )
+        else:
+            # delete data remains
+            create_new_collection = True
+            self.delete_raw_data(name)
+
+        # make sure our data has the correct type and is free of NAs
+        data = self._check_dtype_and_clean(data=data,
+                                           db_type=PossibleDtypes.vector)
+
+        # Check if all values are numeric
+        non_num_cols = [
+            x for x in data.columns.tolist() if not is_numeric_dtype(data[x])
+        ]
+        if non_num_cols:
+            raise ValueError(
+                f"Columns {non_num_cols} contains values types different from numeric."
+            )
+
+        insert_responses = {}
+        for i, b in enumerate(
+                trange(0, len(data), batch_size, desc="Insert Vectors")):
+            _batch = data.iloc[b:b + batch_size]
+            data_json = data2json(_batch,
+                                  dtype=PossibleDtypes.vector,
+                                  filter_name=None,
+                                  predict=False)
+            if i == 0 and create_new_collection is True:
+                insert_responses[i] = self._insert_vectors_json(name,
+                                                                data_json,
+                                                                overwrite=True)
+            else:
+                insert_responses[i] = self._insert_vectors_json(
+                    name, data_json, overwrite=False)
+
+        return insert_responses
+
+
+#? overwrite is True and append is True -> OK
+#? overwrite is False and append is True -> OK
+#? overwrite is True and append is False -> OK
+#? overwrite is True and append is True -> OK

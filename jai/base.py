@@ -678,3 +678,28 @@ class BaseJai(object):
         """
         return requests.delete(self.url + f"/database/{name}",
                                headers=self.header)
+
+    @raise_status_error(201)
+    def _insert_vectors_json(self,
+                             name: str,
+                             data_json,
+                             overwrite: bool = False):
+        """
+        Insert data in JSON format. This is a protected method.
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+        data_json : dict
+            Data in JSON format.
+        Return
+        ------
+        response : dict
+            Dictionary with the API response.
+        """
+
+        url = self.url + f"/vector/{name}?overwrite={overwrite}"
+
+        header = copy(self.header)
+        header['Content-Type'] = "application/json"
+        return requests.post(url, headers=header, data=data_json)

@@ -12,7 +12,7 @@ class PossibleDtypes(str, Enum):
     edit = "TextEdit"
     recommendation = "Recommendation"
     recommendation_system = "RecommendationSystem"
-
+    vector = "Vector"
 
 class FieldName(str, Enum):
     text = "text"
