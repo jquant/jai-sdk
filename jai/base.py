@@ -32,7 +32,6 @@ def raise_status_error(code):
             message = f"Something went wrong.\n\nSTATUS: {response.status_code}\n"
             try:
                 res_json = response.json()
-                print(res_json)
                 if isinstance(res_json, dict):
                     detail = res_json.get(
                         'message', res_json.get('detail', response.text))
@@ -526,7 +525,7 @@ class BaseJai(object):
                             headers=self.header)
 
     @raise_status_error(200)
-    def _temp_ids(self, name: str, mode: Mode = "simple"):
+    def _temp_ids(self, name: str, mode: Mode = "complete"):
         """
         Get id information of a RAW database (i.e., before training). This is a protected method
 

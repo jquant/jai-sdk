@@ -56,3 +56,30 @@ def split(dataframe, columns, sort: bool = False, prefix: str = "id_"):
         bases[col] = base
 
     return bases, dataframe
+
+
+def split_recommendation(dataframe,
+                         split_config: dict,
+                         columns: str,
+                         sort: bool = False,
+                         prefix: str = "id_"):
+
+    pretrained_bases, df_merge = split(dataframe,
+                                       columns,
+                                       sort=sort,
+                                       prefix=prefix)
+
+    main_bases = {}
+    for name, split_cols in split_config.items():
+        split_cols = [
+            prefix + col if col in columns else col for col in split_cols
+        ]
+        df_out = df_merge.loc[:, split_cols].drop_duplicates().reset_index(
+        ).rename(columns={'index': prefix + name})
+        df_merge = df_merge.merge(df_out,
+                                  left_on=split_cols,
+                                  right_on=split_cols).drop(columns=split_cols)
+        main_bases[name] = df_out.set_index(prefix + name)
+
+    main_bases["main"] = df_merge
+    return main_bases, pretrained_bases

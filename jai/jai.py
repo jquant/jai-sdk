@@ -668,9 +668,6 @@ class Jai(BaseJai):
                 raise KeyError(
                     f"Database '{name}' already exists in your environment. Set overwrite=True to overwrite it."
                 )
-        else:
-            # delete data reamains
-            self.delete_raw_data(name)
 
         # make sure our data has the correct type and is free of NAs
         data = self._check_dtype_and_clean(data=data, db_type=db_type)
@@ -679,13 +676,11 @@ class Jai(BaseJai):
         insert_responses = self._insert_data(
             data=data,
             name=name,
-            batch_size=batch_size,
-            filter_name=filter_name,
             db_type=db_type,
+            batch_size=batch_size,
+            overwrite=overwrite,
+            filter_name=filter_name,
             max_insert_workers=max_insert_workers)
-
-        # check if we inserted everything we were supposed to
-        self._check_ids_consistency(name=name, data=data)
 
         # train model
         body = self._check_kwargs(db_type=db_type, **kwargs)
@@ -791,13 +786,11 @@ class Jai(BaseJai):
         # insert data
         insert_responses = self._insert_data(data=data,
                                              name=name,
-                                             batch_size=batch_size,
                                              db_type=db_type,
+                                             batch_size=batch_size,
+                                             overwrite=True,
                                              filter_name=filter_name,
                                              predict=True)
-
-        # check if we inserted everything we were supposed to
-        self._check_ids_consistency(name=name, data=data)
 
         # add data per se
         add_data_response = self._append(name=name)
@@ -827,6 +820,7 @@ class Jai(BaseJai):
                      name,
                      db_type,
                      batch_size,
+                     overwrite: bool = False,
                      max_insert_workers: Optional[int] = None,
                      filter_name: str = None,
                      predict: bool = False):
@@ -862,7 +856,13 @@ class Jai(BaseJai):
         else:
             pcores = 1
 
-        insert_responses = {}
+        if self._check_ids_consistency(
+                name=name, data=data, handle_error="bool") and not overwrite:
+            return {0: "Data was already inserted. No operation was executed."}
+        else:
+            self.delete_raw_data(name)
+
+        dict_futures = {}
         with concurrent.futures.ThreadPoolExecutor(
                 max_workers=pcores) as executor:
 
@@ -874,15 +874,17 @@ class Jai(BaseJai):
                                       predict=predict)
                 task = executor.submit(self._insert_json, name, data_json,
                                        filter_name)
-                insert_responses[task] = i
+                dict_futures[task] = i
 
-            with tqdm(total=len(insert_responses), desc="Insert Data") as pbar:
-                results = {}
-                for future in concurrent.futures.as_completed(
-                        insert_responses):
-                    arg = insert_responses[future]
-                    results[arg] = future.result()
+            with tqdm(total=len(dict_futures), desc="Insert Data") as pbar:
+                insert_responses = {}
+                for future in concurrent.futures.as_completed(dict_futures):
+                    arg = dict_futures[future]
+                    insert_responses[arg] = future.result()
                     pbar.update(1)
+
+        # check if we inserted everything we were supposed to
+        self._check_ids_consistency(name=name, data=data)
 
         return insert_responses
 
@@ -987,7 +989,7 @@ class Jai(BaseJai):
         print(result["Loading from checkpoint"].split("\n")
               [1]) if 'Loading from checkpoint' in result.keys() else None
 
-    def _check_ids_consistency(self, name, data):
+    def _check_ids_consistency(self, name, data, handle_error="raise"):
         """
         Check if inserted data is consistent with what we expect.
         This is mainly to assert that all data was properly inserted.
@@ -998,18 +1000,40 @@ class Jai(BaseJai):
             Database name.
         data : pandas.DataFrame or pandas.Series
             Inserted data.
+        handle_error : 'raise' or 'bool'
+            If data is inconsistent:
+            - `raise`: delete data and raise an error.
+            - `bool`: returns False.
 
         Return
         ------
-        None or Exception
-            If an inconsistency is found, an error is raised.
+        bool or Exception
+            If an inconsistency is found, an error is raised. If no inconsistency is found, returns True.
         """
-        inserted_ids = self._temp_ids(name)
+        handle_error = handle_error.lower()
+        if handle_error not in ['raise', 'bool']:
+            warnings.warn(
+                f"handle_error must be `raise` or `bool`, found: `{handle_error}`. Using `raise`."
+            )
+            handle_error = 'raise'
+
+        # using mode='simple' to reduce the volume of data transit.
+        try:
+            inserted_ids = self._temp_ids(name, "simple")
+        except ValueError as error:
+            if handle_error == "raise":
+                raise error
+            return False
+
         if len(data) != int(inserted_ids[0].split()[0]):
-            print(f"Found invalid ids: {inserted_ids[0]}")
-            print(self.delete_raw_data(name))
-            raise Exception(
-                "Something went wrong on data insertion. Please try again.")
+            if handle_error == "raise":
+                print(f"Found invalid ids: {inserted_ids[0]}")
+                print(self.delete_raw_data(name))
+                raise Exception(
+                    "Something went wrong on data insertion. Please try again."
+                )
+            return False
+        return True
 
     def _check_dtype_and_clean(self, data, db_type):
         """
