@@ -34,7 +34,6 @@ def raise_status_error(code):
             message = f"Something went wrong.\n\nSTATUS: {response.status_code}\n"
             try:
                 res_json = response.json()
-                print(res_json)
                 if isinstance(res_json, dict):
                     detail = res_json.get(
                         'message', res_json.get('detail', response.text))
@@ -240,6 +239,81 @@ class BaseJai(object):
         filtering = "" if filters is None else "".join(
             ["&filters=" + s for s in filters])
         url = self.url + f"/similar/data/{name}?top_k={top_k}" + filtering
+        header = copy(self.header)
+        header['Content-Type'] = "application/json"
+        return requests.put(url, headers=header, data=data_json)
+
+    @raise_status_error(200)
+    def _recommendation_id(self,
+                           name: str,
+                           id_item: list,
+                           top_k: int = 5,
+                           filters=None):
+        """
+        Creates a list of dicts, with the index and distance of the k items most similars given an id.
+        This is a protected method.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+
+        id_item : list
+            List of ids of the item the user is looking for.
+
+        top_k : int
+            Number of k similar items we want to return. `Default is 5`.
+
+        Return
+        ------
+        response : dict
+            Dictionary with the index and distance of `the k most similar items`.
+        """
+
+        if not isinstance(id_item, list):
+            raise TypeError(
+                f"id_item param must be int or list, `{id_item.__class__.__name__}` found."
+            )
+
+        filtering = "" if filters is None else "".join(
+            ["&filters=" + s for s in filters])
+        url = self.url + f"/recommendation/id/{name}?top_k={top_k}" + filtering
+        return requests.put(
+            url,
+            headers=self.header,
+            json=id_item,
+        )
+
+    @raise_status_error(200)
+    def _recommendation_json(self,
+                             name: str,
+                             data_json,
+                             top_k: int = 5,
+                             filters=None):
+        """
+        Creates a list of dicts, with the index and distance of the k items most similars given a JSON data entry.
+        This is a protected method
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+
+        data_json : dict (JSON)
+            Data in JSON format. Each input in the dictionary will be used to search for the `top_k` most
+            similar entries in the database.
+
+        top_k : int
+            Number of k similar items we want to return. `Default is 5`.
+
+        Return
+        ------
+        response : dict
+            Dictionary with the index and distance of `the k most similar items`.
+        """
+        filtering = "" if filters is None else "".join(
+            ["&filters=" + s for s in filters])
+        url = self.url + f"/recommendation/data/{name}?top_k={top_k}" + filtering
         header = copy(self.header)
         header['Content-Type'] = "application/json"
         return requests.put(url, headers=header, data=data_json)
@@ -454,7 +528,7 @@ class BaseJai(object):
                             headers=self.header)
 
     @raise_status_error(200)
-    def _temp_ids(self, name: str, mode: Mode = "simple"):
+    def _temp_ids(self, name: str, mode: Mode = "complete"):
         """
         Get id information of a RAW database (i.e., before training). This is a protected method
 

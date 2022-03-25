@@ -90,7 +90,7 @@ def test_features_process_validation(dtype, results):
 @pytest.mark.parametrize(
     'dtype, results',
     [(PossibleDtypes.selfsupervised,
-      (['embedding_dim'], ['db_parent', 'id_name'])),
+      (['embedding_dim', 'aggregation_method'], ['db_parent', 'id_name'])),
      (PossibleDtypes.supervised,
       (['embedding_dim', 'aggregation_method'], ['db_parent', 'id_name'])),
      (PossibleDtypes.image, ([], [])), (PossibleDtypes.text, ([], [])),

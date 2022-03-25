@@ -23,6 +23,15 @@ def hyperparams_validation(dtype: str):
             'max_epochs', 'patience', 'min_delta', 'random_seed',
             'stochastic_weight_avg', 'pruning_method', 'pruning_amount'
         ])
+    elif dtype == PossibleDtypes.recommendation_system:
+        possible.extend([
+            'batch_size', 'learning_rate', 'encoder_layer', 'decoder_layer',
+            'hidden_latent_dim', 'dropout_rate', 'momentum',
+            'pretraining_ratio', 'noise_level', 'check_val_every_n_epoch',
+            'gradient_clip_val', 'gradient_clip_algorithm', 'min_epochs',
+            'max_epochs', 'patience', 'min_delta', 'random_seed',
+            'stochastic_weight_avg', 'pruning_method', 'pruning_amount'
+        ])
     elif dtype == PossibleDtypes.image:
         possible.extend(['model_name', 'mode', 'resize_H', 'resize_W'])
     elif dtype == PossibleDtypes.text:
@@ -45,8 +54,10 @@ def hyperparams_validation(dtype: str):
 def num_process_validation(dtype: str):
     possible = []
     must = []
-    if (dtype == PossibleDtypes.selfsupervised) or (
-            dtype == PossibleDtypes.supervised):
+    if dtype in [
+            PossibleDtypes.selfsupervised, PossibleDtypes.supervised,
+            PossibleDtypes.recommendation_system
+    ]:
         possible.extend(['embedding_dim', 'scaler', 'fill_value'])
     return (possible, must)
 
@@ -54,8 +65,10 @@ def num_process_validation(dtype: str):
 def cat_process_validation(dtype: str):
     possible = []
     must = []
-    if (dtype == PossibleDtypes.selfsupervised) or (
-            dtype == PossibleDtypes.supervised):
+    if dtype in [
+            PossibleDtypes.selfsupervised, PossibleDtypes.supervised,
+            PossibleDtypes.recommendation_system
+    ]:
         possible.extend(['embedding_dim', 'fill_value', 'min_freq'])
     return (possible, must)
 
@@ -63,8 +76,10 @@ def cat_process_validation(dtype: str):
 def datetime_process_validation(dtype: str):
     possible = []
     must = []
-    if (dtype == PossibleDtypes.selfsupervised) or (
-            dtype == PossibleDtypes.supervised):
+    if dtype in [
+            PossibleDtypes.selfsupervised, PossibleDtypes.supervised,
+            PossibleDtypes.recommendation_system
+    ]:
         possible.extend(['embedding_dim'])
     return (possible, must)
 
@@ -72,8 +87,10 @@ def datetime_process_validation(dtype: str):
 def features_process_validation(dtype: str):
     possible = []
     must = []
-    if (dtype == PossibleDtypes.selfsupervised) or (
-            dtype == PossibleDtypes.supervised):
+    if dtype in [
+            PossibleDtypes.selfsupervised, PossibleDtypes.supervised,
+            PossibleDtypes.recommendation_system
+    ]:
         possible.extend(['embedding_dim', 'fill_value', 'min_freq'])
         must.extend(['dtype', 'scaler'])
     return (possible, must)
@@ -82,11 +99,11 @@ def features_process_validation(dtype: str):
 def pretrained_bases_process_validation(dtype: str):
     possible = []
     must = []
-    if dtype == PossibleDtypes.supervised:
+    if dtype in [
+            PossibleDtypes.selfsupervised, PossibleDtypes.supervised,
+            PossibleDtypes.recommendation_system
+    ]:
         possible.extend(['embedding_dim', 'aggregation_method'])
-        must.extend(['db_parent', 'id_name'])
-    elif dtype == PossibleDtypes.selfsupervised:
-        possible.extend(['embedding_dim'])
         must.extend(['db_parent', 'id_name'])
     return (possible, must)
 
@@ -94,8 +111,10 @@ def pretrained_bases_process_validation(dtype: str):
 def split_process_validation(dtype: str):
     possible = []
     must = []
-    if (dtype == PossibleDtypes.selfsupervised) or (
-            dtype == PossibleDtypes.supervised):
+    if dtype in [
+            PossibleDtypes.selfsupervised, PossibleDtypes.supervised,
+            PossibleDtypes.recommendation_system
+    ]:
         possible.extend(['type', 'split_column', 'test_size', 'gap'])
     return (possible, must)
 
