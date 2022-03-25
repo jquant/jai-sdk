@@ -57,7 +57,7 @@ def split(dataframe, columns, sort: bool = False, prefix: str = "id_"):
 
     return bases, dataframe
 
-
+  
 def split_recommendation(dataframe,
                          split_config: dict,
                          columns: str,
@@ -112,3 +112,26 @@ def split_recommendation(dataframe,
 
     main_bases["main"] = df_merge
     return main_bases, pretrained_bases
+
+
+
+def treat_unix(df_unix_col):
+    """
+    Transform the type of the unix timestamp column to datetime 
+    returning a series that replaces the original 
+    column.
+
+    Parameters
+    ----------
+    dataframe : pd.DataFrame
+        Dataframe with only the unix column.
+
+    Returns
+    -------
+    datime_col : column with the type altered to datetime that
+        should substitute the unix timestamp column.
+
+    """
+    datime_col = pd.to_datetime(df_unix_col, unit="s")
+
+    return datime_col
