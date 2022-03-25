@@ -11,3 +11,9 @@ class ValidationError(ValueError):
     """
     Error validating the given inputs
     """
+
+
+class ParamError(ValueError):
+    """
+    Error inserting collection
+    """

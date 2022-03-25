@@ -14,10 +14,12 @@ from .base import BaseJai
 from .processing import (process_similar, process_resolution, process_predict)
 from .functions.utils_funcs import data2json
 from .functions.classes import PossibleDtypes, Mode
+from .functions.validations import kwargs_validation
 from .functions import exceptions
 from fnmatch import fnmatch
 import matplotlib.pyplot as plt
 from pandas.api.types import is_integer_dtype
+from pandas.api.types import is_numeric_dtype
 from sklearn.model_selection import StratifiedShuffleSplit
 from tqdm import trange, tqdm
 
@@ -427,6 +429,83 @@ class Jai(BaseJai):
             results.extend(res["similarity"])
         return results
 
+    def recommendation(self,
+                       name: str,
+                       data,
+                       top_k: int = 5,
+                       filters=None,
+                       batch_size: int = 16384):
+        """
+        Query a database in search for the `top_k` most recommended entries for each
+        input data passed as argument.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+        data : list, np.ndarray, pd.Series or pd.DataFrame
+            Data to be queried for recommendation in your database.
+        top_k : int
+            Number of k recommendations that we want to return. `Default is 5`.
+        batch_size : int
+            Size of batches to send the data. `Default is 16384`.
+
+        Return
+        ------
+        results : list of dicts
+            A list with a dictionary for each input value identified with
+            'query_id' and 'result' which is a list with 'top_k' most recommended
+            items dictionaries, each dictionary has the 'id' from the database
+            previously setup and 'distance' in between the correspondent 'id'
+            and 'query_id'.
+
+        Example
+        -------
+        >>> name = 'chosen_name'
+        >>> DATA_ITEM = # data in the format of the database
+        >>> TOP_K = 3
+        >>> j = Jai(AUTH_KEY)
+        >>> df_index_distance = j.recommendation(name, DATA_ITEM, TOP_K)
+        >>> print(pd.DataFrame(df_index_distance['recommendation']))
+           id  distance
+        10007       0.0
+        45568    6995.6
+         8382    7293.2
+        """
+        dtype = self.get_dtype(name)
+
+        if isinstance(data, list):
+            data = np.array(data)
+
+        is_id = is_integer_dtype(data)
+
+        results = []
+        for i in trange(0, len(data), batch_size, desc="Recommendation"):
+            if is_id:
+                if isinstance(data, pd.Series):
+                    _batch = data.iloc[i:i + batch_size].tolist()
+                elif isinstance(data, pd.Index):
+                    _batch = data[i:i + batch_size].tolist()
+                else:
+                    _batch = data[i:i + batch_size].tolist()
+                res = self._recommendation_id(name,
+                                              _batch,
+                                              top_k=top_k,
+                                              filters=filters)
+            else:
+                if isinstance(data, (pd.Series, pd.DataFrame)):
+                    _batch = data.iloc[i:i + batch_size]
+                else:
+                    _batch = data[i:i + batch_size]
+                res = self._recommendation_json(name,
+                                                data2json(_batch,
+                                                          dtype=dtype,
+                                                          predict=True),
+                                                top_k=top_k,
+                                                filters=filters)
+            results.extend(res["recommendation"])
+        return results
+
     def predict(self,
                 name: str,
                 data,
@@ -591,9 +670,6 @@ class Jai(BaseJai):
                 raise KeyError(
                     f"Database '{name}' already exists in your environment. Set overwrite=True to overwrite it."
                 )
-        else:
-            # delete data reamains
-            self.delete_raw_data(name)
 
         # make sure our data has the correct type and is free of NAs
         data = self._check_dtype_and_clean(data=data, db_type=db_type)
@@ -602,13 +678,11 @@ class Jai(BaseJai):
         insert_responses = self._insert_data(
             data=data,
             name=name,
-            batch_size=batch_size,
-            filter_name=filter_name,
             db_type=db_type,
+            batch_size=batch_size,
+            overwrite=overwrite,
+            filter_name=filter_name,
             max_insert_workers=max_insert_workers)
-
-        # check if we inserted everything we were supposed to
-        self._check_ids_consistency(name=name, data=data)
 
         # train model
         body = self._check_kwargs(db_type=db_type, **kwargs)
@@ -626,14 +700,18 @@ class Jai(BaseJai):
                 print(f"- {key}: {value}")
 
         if frequency_seconds >= 1:
-            if db_type in ["Supervised", "SelfSupervised"]:
+            if db_type in [
+                    PossibleDtypes.selfsupervised, PossibleDtypes.supervised,
+                    PossibleDtypes.recommendation_system
+            ]:
                 print(
                     f"\nTraining might finish early due to early stopping criteria."
                 )
             self.wait_setup(name=name, frequency_seconds=frequency_seconds)
 
             if db_type in [
-                    PossibleDtypes.selfsupervised, PossibleDtypes.supervised
+                    PossibleDtypes.selfsupervised, PossibleDtypes.supervised,
+                    PossibleDtypes.recommendation_system
             ]:
                 self.report(name, verbose)
 
@@ -710,13 +788,11 @@ class Jai(BaseJai):
         # insert data
         insert_responses = self._insert_data(data=data,
                                              name=name,
-                                             batch_size=batch_size,
                                              db_type=db_type,
+                                             batch_size=batch_size,
+                                             overwrite=True,
                                              filter_name=filter_name,
                                              predict=True)
-
-        # check if we inserted everything we were supposed to
-        self._check_ids_consistency(name=name, data=data)
 
         # add data per se
         add_data_response = self._append(name=name)
@@ -746,6 +822,7 @@ class Jai(BaseJai):
                      name,
                      db_type,
                      batch_size,
+                     overwrite: bool = False,
                      max_insert_workers: Optional[int] = None,
                      filter_name: str = None,
                      predict: bool = False):
@@ -781,7 +858,13 @@ class Jai(BaseJai):
         else:
             pcores = 1
 
-        insert_responses = {}
+        if self._check_ids_consistency(
+                name=name, data=data, handle_error="bool") and not overwrite:
+            return {0: "Data was already inserted. No operation was executed."}
+        else:
+            self.delete_raw_data(name)
+
+        dict_futures = {}
         with concurrent.futures.ThreadPoolExecutor(
                 max_workers=pcores) as executor:
 
@@ -793,15 +876,17 @@ class Jai(BaseJai):
                                       predict=predict)
                 task = executor.submit(self._insert_json, name, data_json,
                                        filter_name)
-                insert_responses[task] = i
+                dict_futures[task] = i
 
-            with tqdm(total=len(insert_responses), desc="Insert Data") as pbar:
-                results = {}
-                for future in concurrent.futures.as_completed(
-                        insert_responses):
-                    arg = insert_responses[future]
-                    results[arg] = future.result()
+            with tqdm(total=len(dict_futures), desc="Insert Data") as pbar:
+                insert_responses = {}
+                for future in concurrent.futures.as_completed(dict_futures):
+                    arg = dict_futures[future]
+                    insert_responses[arg] = future.result()
                     pbar.update(1)
+
+        # check if we inserted everything we were supposed to
+        self._check_ids_consistency(name=name, data=data)
 
         return insert_responses
 
@@ -820,7 +905,7 @@ class Jai(BaseJai):
         body: dict
             Body to be sent in the POST request to the API.
         """
-        possible = ["hyperparams", "callback_url"]
+        possible = ["hyperparams", "callback_url", "overwrite"]
         must = []
         if db_type == PossibleDtypes.selfsupervised:
             possible.extend([
@@ -837,7 +922,7 @@ class Jai(BaseJai):
 
         missing = [key for key in must if kwargs.get(key, None) is None]
         if len(missing) > 0:
-            raise ValueError(f"missing arguments {missing}")
+            raise ValueError(f"Missing the required arguments: {missing}")
 
         body = {}
         for key in possible:
@@ -848,7 +933,14 @@ class Jai(BaseJai):
                     warnings.warn(
                         f"`mycelia_bases` will be deprecated in a later version (0.18.0), please use `pretrained_bases` instead. ",
                         DeprecationWarning)
+        for key in kwargs.keys():
+            if key not in possible and key not in must:
+                raise ValueError(
+                    f'Inserted key argument \'{key}\' is not a valid one for dtype="{db_type}".'\
+                        f' Please check the documentation and try again.'
+                )
 
+        kwargs_validation(db_type, body)
         body["db_type"] = db_type
         return body
 
@@ -873,7 +965,8 @@ class Jai(BaseJai):
         """
         dtype = self.get_dtype(name)
         if dtype not in [
-                PossibleDtypes.selfsupervised, PossibleDtypes.supervised
+                PossibleDtypes.selfsupervised, PossibleDtypes.supervised,
+                PossibleDtypes.recommendation_system
         ]:
             return None
 
@@ -898,7 +991,7 @@ class Jai(BaseJai):
         print(result["Loading from checkpoint"].split("\n")
               [1]) if 'Loading from checkpoint' in result.keys() else None
 
-    def _check_ids_consistency(self, name, data):
+    def _check_ids_consistency(self, name, data, handle_error="raise"):
         """
         Check if inserted data is consistent with what we expect.
         This is mainly to assert that all data was properly inserted.
@@ -909,18 +1002,40 @@ class Jai(BaseJai):
             Database name.
         data : pandas.DataFrame or pandas.Series
             Inserted data.
+        handle_error : 'raise' or 'bool'
+            If data is inconsistent:
+            - `raise`: delete data and raise an error.
+            - `bool`: returns False.
 
         Return
         ------
-        None or Exception
-            If an inconsistency is found, an error is raised.
+        bool or Exception
+            If an inconsistency is found, an error is raised. If no inconsistency is found, returns True.
         """
-        inserted_ids = self._temp_ids(name)
+        handle_error = handle_error.lower()
+        if handle_error not in ['raise', 'bool']:
+            warnings.warn(
+                f"handle_error must be `raise` or `bool`, found: `{handle_error}`. Using `raise`."
+            )
+            handle_error = 'raise'
+
+        # using mode='simple' to reduce the volume of data transit.
+        try:
+            inserted_ids = self._temp_ids(name, "simple")
+        except ValueError as error:
+            if handle_error == "raise":
+                raise error
+            return False
+
         if len(data) != int(inserted_ids[0].split()[0]):
-            print(f"Found invalid ids: {inserted_ids[0]}")
-            print(self.delete_raw_data(name))
-            raise Exception(
-                "Something went wrong on data insertion. Please try again.")
+            if handle_error == "raise":
+                print(f"Found invalid ids: {inserted_ids[0]}")
+                print(self.delete_raw_data(name))
+                raise Exception(
+                    "Something went wrong on data insertion. Please try again."
+                )
+            return False
+        return True
 
     def _check_dtype_and_clean(self, data, db_type):
         """
@@ -940,16 +1055,26 @@ class Jai(BaseJai):
         data : pandas.DataFrame or pandas.Series
             Data without NAs
         """
-        if isinstance(data, (list, np.ndarray)):
+        if isinstance(data, list):
             data = pd.Series(data)
+        elif isinstance(data, np.ndarray):
+            if not data.any():
+                raise ValueError(f"Inserted data is empty.")
+            elif data.ndim == 1:
+                data = pd.Series(data)
+            elif data.ndim == 2:
+                data = pd.DataFrame(data)
+            else:
+                raise ValueError(
+                    f"Inserted 'np.ndarray' data has many dimensions ({data.ndim}). JAI only accepts up to 2-d inputs."
+                )
         elif not isinstance(data, (pd.Series, pd.DataFrame)):
             raise TypeError(
-                f"Inserted data is of type `{data.__class__.__name__}`,\
- but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame")
+                f"Inserted data is of type `{data.__class__.__name__}`," \
+                    f"but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame")
         if db_type in [
-                PossibleDtypes.text,
-                PossibleDtypes.fasttext,
-                PossibleDtypes.edit,
+                PossibleDtypes.text, PossibleDtypes.fasttext,
+                PossibleDtypes.edit, PossibleDtypes.vector
         ] and data.isna().to_numpy().any():
             print("Droping NA values")
             data = data.dropna()
@@ -1500,6 +1625,9 @@ class Jai(BaseJai):
                                           kwargs.get("mycelia_bases", []))
             pretrained_bases.extend(prep_bases)
             kwargs['pretrained_bases'] = pretrained_bases
+            kwargs.pop('mycelia_bases', None)
+            if not kwargs['pretrained_bases']:
+                del kwargs['pretrained_bases']
 
             self.setup(
                 name,
@@ -1724,6 +1852,9 @@ class Jai(BaseJai):
                                           kwargs.get("mycelia_bases", []))
             pretrained_bases.extend(prep_bases)
             kwargs['pretrained_bases'] = pretrained_bases
+            kwargs.pop('mycelia_bases', None)
+            if not kwargs['pretrained_bases']:
+                del kwargs['pretrained_bases']
 
             self.setup(
                 name,
@@ -1758,3 +1889,85 @@ class Jai(BaseJai):
                             predict_proba=True,
                             batch_size=batch_size,
                             as_frame=as_frame)
+
+    def insert_vectors(self,
+                       data,
+                       name,
+                       batch_size: int = 10000,
+                       overwrite: bool = False,
+                       append: bool = False):
+        """
+        Insert raw vectors database directly into JAI without any need of fit.
+
+        Args
+        -----
+        data : pd.DataFrame, pd.Series or np.ndarray
+            Database data to be inserted.
+        name : str
+            String with the name of a database in your JAI environment.
+        batch_size : int, optional
+            Size of batch to send the data.
+        overwrite : bool, optional
+            If True, then the vector database is always recriated. Default is False.
+        append : bool, optional
+            If True, then the inserted data will be added to the existent database. Default is False.
+
+        Return
+        ------
+        insert_responses : dict
+            Dictionary of responses for each batch. Each response contains
+            information of whether or not that particular batch was successfully inserted.
+        """
+
+        if name in self.names:
+            if overwrite:
+                create_new_collection = True
+                self.delete_database(name)
+            elif not overwrite and append:
+                create_new_collection = False
+            else:
+                raise KeyError(
+                    f"Database '{name}' already exists in your environment." \
+                        f"Set overwrite=True to overwrite it or append=True to add new data to your database."
+                )
+        else:
+            # delete data remains
+            create_new_collection = True
+            self.delete_raw_data(name)
+
+        # make sure our data has the correct type and is free of NAs
+        data = self._check_dtype_and_clean(data=data,
+                                           db_type=PossibleDtypes.vector)
+
+        # Check if all values are numeric
+        non_num_cols = [
+            x for x in data.columns.tolist() if not is_numeric_dtype(data[x])
+        ]
+        if non_num_cols:
+            raise ValueError(
+                f"Columns {non_num_cols} contains values types different from numeric."
+            )
+
+        insert_responses = {}
+        for i, b in enumerate(
+                trange(0, len(data), batch_size, desc="Insert Vectors")):
+            _batch = data.iloc[b:b + batch_size]
+            data_json = data2json(_batch,
+                                  dtype=PossibleDtypes.vector,
+                                  filter_name=None,
+                                  predict=False)
+            if i == 0 and create_new_collection is True:
+                insert_responses[i] = self._insert_vectors_json(name,
+                                                                data_json,
+                                                                overwrite=True)
+            else:
+                insert_responses[i] = self._insert_vectors_json(
+                    name, data_json, overwrite=False)
+
+        return insert_responses
+
+
+#? overwrite is True and append is True -> OK
+#? overwrite is False and append is True -> OK
+#? overwrite is True and append is False -> OK
+#? overwrite is True and append is True -> OK

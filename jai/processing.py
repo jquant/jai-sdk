@@ -120,7 +120,7 @@ def process_similar(results,
     return similar
 
 
-def process_predict(predicts, digits=2, percentage=True):
+def process_predict(predicts, digits: int = 2, percentage: bool = True):
     """
     Process the output from the predict methods from supervised models.
 
@@ -128,6 +128,10 @@ def process_predict(predicts, digits=2, percentage=True):
     ----------
     predicts : List of Dicts.
         output from predict methods.
+    digits : int, optional
+        If prediction is a probability, number of digits to round the predicted values.
+    percentage : bool, optional
+        If prediction is a probability, whether to return percentage value or decimal.
         
     Returns
     -------

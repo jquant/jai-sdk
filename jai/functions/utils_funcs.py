@@ -79,6 +79,14 @@ def data2json(data,
     - pd.DataFrame with 2 columns, one must be named '{filter_name}'\n\
     - pd.DataFrame with 3 columns, two of them must be named 'id' and '{filter_name}'"
         )
+    elif dtype in [
+            PossibleDtypes.recommendation, PossibleDtypes.recommendation_system
+    ]:
+        if isinstance(data, pd.DataFrame):
+            return df2json(data)
+        raise NotImplementedError(
+            f"type `{data.__class__.__name__}` is not implemented, use pd.DataFrame instead."
+        )
     elif dtype == PossibleDtypes.selfsupervised:
         if isinstance(data, pd.DataFrame):
             count_except_id = (data.columns != 'id').sum()
@@ -107,6 +115,15 @@ def data2json(data,
         raise ValueError(
             f"'Unsupervised' type has been replaced with {PossibleDtypes.selfsupervised} since version 0.6.0"
         )
+    elif dtype == PossibleDtypes.vector:
+        if isinstance(data, pd.DataFrame):
+            count_except_id = (data.columns != 'id').sum()
+            if count_except_id >= 2:
+                return df2json(data)
+
+            raise ValueError(
+                f"Data must be a DataFrame with at least 2 columns other than 'id'. Current column(s):\n{data.columns.tolist()}"
+            )
 
     raise ValueError(f"dtype {dtype} not recognized.")
 
