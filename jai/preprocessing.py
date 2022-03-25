@@ -13,13 +13,13 @@ def split(dataframe, columns, sort: bool = False, prefix: str = "id_"):
     ----------
     dataframe : pd.DataFrame
         Dataframe to be factored.
-    columns : str, list of str or dict, optional
+    columns : str, list of str or dict
         Column to be separated from dataset.
         If column has multiple data, use a dict with the format column name as
         key and separator as value. Use `None` if no separator is needed.
-    sort : bool
-        sort values of the split data.
-    prefix : str
+    sort : bool, optional
+        sort values of the split data. 
+    prefix : str, optional
         prefix added to the splitted column names.
 
     Returns
@@ -63,6 +63,35 @@ def split_recommendation(dataframe,
                          columns: str,
                          sort: bool = False,
                          prefix: str = "id_"):
+    """
+    Split data into the 3 datasets for recommendation and also splits columns 
+    returning the datasets for pretrained bases and replacing the original column with the
+    corresponding index of the new dataframe
+
+    Parameters
+    ----------
+    dataframe : pd.DataFrame
+        Dataframe to be factored.
+    split_config : dict
+        Dictionary with id names (prefix param will be added to those names) as keys and
+        list of columns of those datasets as values. Must have length 2 and no common values.
+    columns : str, list of str or dict
+        Column to be separated from dataset.
+        If column has multiple data, use a dict with the format column name as
+        key and separator as value. Use `None` if no separator is needed.
+    sort : bool
+        sort values of the split data.
+    prefix : str
+        prefix added to the splitted column names.
+
+    Returns
+    -------
+    main_bases : list of pd.DataFrame
+        original dataframe with columns replaced by the ids of the correlated base.
+
+    pretrained_bases : pd.DataFrame
+        list of dataframes with each base extracted.
+    """
 
     pretrained_bases, df_merge = split(dataframe,
                                        columns,
