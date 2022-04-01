@@ -21,9 +21,7 @@ def raise_status_error(code):
         Expected Code.
 
     """
-
     def decorator(function):
-
         @functools.wraps(function)
         def new_function(*args, **kwargs):
             response = function(*args, **kwargs)
@@ -64,7 +62,6 @@ class BaseJai(object):
     """
     Base class for requests with the Mycelia API.
     """
-
     def __init__(self,
                  auth_key: str = None,
                  url: str = None,
@@ -173,6 +170,7 @@ class BaseJai(object):
                     name: str,
                     id_item: list,
                     top_k: int = 5,
+                    orient: str = "nested",
                     filters=None):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given an id.
@@ -189,6 +187,9 @@ class BaseJai(object):
         top_k : int
             Number of k similar items we want to return. `Default is 5`.
 
+        orient : "nested" or "flat"
+            Changes the output format. `Default is "nested"`.
+            
         Return
         ------
         response : dict
@@ -202,7 +203,7 @@ class BaseJai(object):
 
         filtering = "" if filters is None else "".join(
             ["&filters=" + s for s in filters])
-        url = self.url + f"/similar/id/{name}?top_k={top_k}" + filtering
+        url = self.url + f"/similar/id/{name}?top_k={top_k}&orient={orient}" + filtering
         return requests.put(
             url,
             headers=self.header,
@@ -214,6 +215,7 @@ class BaseJai(object):
                       name: str,
                       data_json,
                       top_k: int = 5,
+                      orient: str = "nested",
                       filters=None):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given a JSON data entry.
@@ -231,6 +233,9 @@ class BaseJai(object):
         top_k : int
             Number of k similar items we want to return. `Default is 5`.
 
+        orient : "nested" or "flat"
+            Changes the output format. `Default is "nested"`.
+
         Return
         ------
         response : dict
@@ -238,7 +243,7 @@ class BaseJai(object):
         """
         filtering = "" if filters is None else "".join(
             ["&filters=" + s for s in filters])
-        url = self.url + f"/similar/data/{name}?top_k={top_k}" + filtering
+        url = self.url + f"/similar/data/{name}?top_k={top_k}&orient={orient}" + filtering
         header = copy(self.header)
         header['Content-Type'] = "application/json"
         return requests.put(url, headers=header, data=data_json)
@@ -248,6 +253,7 @@ class BaseJai(object):
                            name: str,
                            id_item: list,
                            top_k: int = 5,
+                           orient: str = "nested",
                            filters=None):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given an id.
@@ -264,6 +270,9 @@ class BaseJai(object):
         top_k : int
             Number of k similar items we want to return. `Default is 5`.
 
+        orient : "nested" or "flat"
+            Changes the output format. `Default is "nested"`.
+
         Return
         ------
         response : dict
@@ -277,7 +286,7 @@ class BaseJai(object):
 
         filtering = "" if filters is None else "".join(
             ["&filters=" + s for s in filters])
-        url = self.url + f"/recommendation/id/{name}?top_k={top_k}" + filtering
+        url = self.url + f"/recommendation/id/{name}?top_k={top_k}&orient={orient}" + filtering
         return requests.put(
             url,
             headers=self.header,
@@ -289,6 +298,7 @@ class BaseJai(object):
                              name: str,
                              data_json,
                              top_k: int = 5,
+                             orient: str = "nested",
                              filters=None):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given a JSON data entry.
@@ -306,6 +316,9 @@ class BaseJai(object):
         top_k : int
             Number of k similar items we want to return. `Default is 5`.
 
+        orient : "nested" or "flat"
+            Changes the output format. `Default is "nested"`.
+
         Return
         ------
         response : dict
@@ -313,7 +326,7 @@ class BaseJai(object):
         """
         filtering = "" if filters is None else "".join(
             ["&filters=" + s for s in filters])
-        url = self.url + f"/recommendation/data/{name}?top_k={top_k}" + filtering
+        url = self.url + f"/recommendation/data/{name}?top_k={top_k}&orient={orient}" + filtering
         header = copy(self.header)
         header['Content-Type'] = "application/json"
         return requests.put(url, headers=header, data=data_json)
