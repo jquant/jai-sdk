@@ -105,7 +105,9 @@ class Jai(BaseJai):
                 "db_version": "last modified",
                 "db_parents": "dependencies",
             })
-        return df.sort_values(by="name")
+        if len(df) > 0:
+            return df.sort_values(by="name")
+        return []
 
     # TODO: this property should be removed in the future
     @property
@@ -127,13 +129,11 @@ class Jai(BaseJai):
             "Description": "Training of database YOUR_DATABASE has ended."
         }
         """
-        tries = 0
-        while tries < max_tries:
+        for _ in range(max_tries):
             try:
                 return self._status()
-            except:
+            except BaseException:
                 time.sleep(patience // max_tries)
-                tries += 1
         return self._status()
 
     @staticmethod

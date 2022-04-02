@@ -268,6 +268,6 @@ def kwargs_validation(db_type: str, **kwargs):
             )
         body[key] = kwargs[key]
 
-    if body.get('hyperparams', {}).get('patience', 0) > 0:
+    if body.get('hyperparams', {}).get('patience', 10) > 0:
         print("Training might finish early due to early stopping criteria.")
     return body
