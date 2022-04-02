@@ -173,13 +173,13 @@ def test_possible_kwargs_validation(dtype, body, error):
     if error == 'wrong_key':
         with pytest.raises(ValueError) as e:
             kwargs_validation(dtype, **body)
-        error_msg = f'Inserted key argument `cat_process` is not a valid one for dtype="{dtype}". '\
+        error_msg = f'Inserted argument `cat_process` is not a valid one for dtype="{dtype}". '\
             f'Please check the documentation and try again.'
         assert e.value.args[0] == error_msg
     elif error == 'wrong_subkey':
         with pytest.raises(ValueError) as e:
             kwargs_validation(dtype, **body)
-        error_msg = f'Inserted key argument `model_name` is not a valid one for dtpe="{dtype}".'\
+        error_msg = f'Inserted argument `model_name` is not a valid one for dtpe="{dtype}".'\
             f' Please check the documentation and try again.'
         assert e.value.args[0] == error_msg
     elif error == 'missing_must_key':
@@ -220,5 +220,5 @@ def test_check_kwargs_exception():
                 'db_parent': 'test',
                 'id_name': 'test'
             }})
-    assert e.value.args[0] == f'Inserted key argument `trained_bases` is not a valid one for dtype="SelfSupervised".'\
+    assert e.value.args[0] == f'Inserted argument `trained_bases` is not a valid one for dtype="SelfSupervised".'\
                     f' Please check the documentation and try again.'

@@ -1,13 +1,8 @@
 from .types import PossibleDtypes
 from .exceptions import ParamError, DeprecatedError
 
-import warnings
 import pandas as pd
 import numpy as np
-
-
-def _raise_param_error(param_name, param_value):
-    raise ParamError(f"`{param_name}` value {param_value} is illegal")
 
 
 def check_dtype_and_clean(data, db_type):
@@ -235,12 +230,12 @@ def kwargs_validation(db_type: str, **kwargs):
     incorrect_used_keys = body_keys - params_keys
 
     if incorrect_used_keys:
-        raise ValueError(
-            f'Inserted key {plurality(incorrect_used_keys)} not a valid one for dtype="{db_type}". {doc_msg}'
+        raise ParamError(
+            f'Inserted {plurality(incorrect_used_keys)} not a valid one for dtype="{db_type}". {doc_msg}'
         )
 
     if 'label' not in body_keys and db_type == PossibleDtypes.supervised:
-        raise ValueError(f'Missing the required arguments: `label`. {doc_msg}')
+        raise ParamError(f'Missing the required arguments: `label`. {doc_msg}')
 
     body = {"db_type": db_type}
     for key in correct_used_keys:
@@ -263,13 +258,13 @@ def kwargs_validation(db_type: str, **kwargs):
 
         if not must_subkeys <= used_subkeys:
             diff = must_subkeys - used_subkeys
-            raise ValueError(
+            raise ParamError(
                 f'{list(diff)} parameter is required for the dtype "{db_type}".'
             )
         if not used_subkeys <= must_and_pos_subkeys:
             diff = used_subkeys - must_and_pos_subkeys
-            raise ValueError(
-                f'Inserted key {plurality(diff)} not a valid one for dtpe="{db_type}". {doc_msg}'
+            raise ParamError(
+                f'Inserted {plurality(diff)} not a valid one for dtpe="{db_type}". {doc_msg}'
             )
         body[key] = kwargs[key]
 
