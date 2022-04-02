@@ -43,7 +43,7 @@ def split(dataframe, columns, sort: bool = False, prefix: str = "id_"):
             f"Empty values will be represented with -1 as id values and cause issues later, we recommend treating them before split.\n\
             Found empty values on the following columns:\n\
             - {'- '.join(na_columns.index[na_columns])}",
-            stacklevel=1)
+            stacklevel=3)
 
     bases = {}
     for col, sep in columns.items():
