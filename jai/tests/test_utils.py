@@ -1,9 +1,8 @@
 import numpy as np
 import pandas as pd
 import pytest
-from jai.functions.utils_funcs import (series2json, df2json, data2json)
-from jai.functions.classes import FieldName
-from jai.image import read_image_folder, resize_image_folder
+from jai.core.utils_funcs import (series2json, df2json, data2json)
+from jai.core.image import read_image_folder, resize_image_folder
 
 from pandas._testing import assert_series_equal
 from pathlib import Path
@@ -13,6 +12,7 @@ from pathlib import Path
 def setup_dataframe():
     TITANIC_TRAIN = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/train.csv"
     TITANIC_TEST = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/test.csv"
+
     train = pd.read_csv(TITANIC_TRAIN)
     test = pd.read_csv(TITANIC_TEST)
     return train, test
@@ -23,15 +23,6 @@ def setup_img_data():
     IMG_FILE = Path("jai/test_data/test_imgs/dataframe_img.pkl")
     img_file = pd.read_pickle(IMG_FILE)
     return img_file
-
-
-# =============================================================================
-# Tests for FieldName
-# =============================================================================
-def test_fieldname():
-    assert str(FieldName("text")) == "text", '__str__ method FAILED.'
-    assert str(
-        FieldName("image_base64")) == "image_base64", '__str__ method FAILED.'
 
 
 # =============================================================================
@@ -195,7 +186,7 @@ def test_read_image_folder_corrupted(
 
 def test_read_image_folder_corrupted_ignore(
         image_folder=Path("jai/test_data/test_imgs_corrupted")):
-    #create empty Series
+    # create empty Series
     index = pd.Index([], name='id')
     empty_series = pd.Series([], index=index, name='image_base64')
     data = read_image_folder(image_folder=image_folder, ignore_corrupt=True)

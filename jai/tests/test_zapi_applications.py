@@ -1,5 +1,4 @@
 from jai import Jai
-from pandas.api.types import infer_dtype
 from .test_utils import setup_dataframe
 import pandas as pd
 import numpy as np
@@ -129,7 +128,8 @@ def test_match(name):
                  data_right,
                  top_k=15,
                  threshold=0.5,
-                 original_data=True)
+                 original_data=True,
+                 overwrite=True)
 
     assert ok['id_left'].tolist() == expected, "match failed"
 

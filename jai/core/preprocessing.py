@@ -1,7 +1,7 @@
 import pandas as pd
 import warnings
 
-__all__ = ["split"]
+__all__ = ["split", "split_recommendation", "treat_unix"]
 
 
 def split(dataframe, columns, sort: bool = False, prefix: str = "id_"):
@@ -19,7 +19,7 @@ def split(dataframe, columns, sort: bool = False, prefix: str = "id_"):
         If column has multiple data, use a dict with the format column name as
         key and separator as value. Use `None` if no separator is needed.
     sort : bool, optional
-        sort values of the split data. 
+        sort values of the split data.
     prefix : str, optional
         prefix added to the splitted column names.
 
@@ -73,17 +73,18 @@ def split_recommendation(dataframe,
                          sort: bool = False,
                          prefix: str = "id_"):
     """
-    Split data into the 3 datasets for recommendation and also splits columns 
-    returning the datasets for pretrained bases and replacing the original column with the
-    corresponding index of the new dataframe
+    Split data into the 3 datasets for recommendation and also splits columns
+    returning the datasets for pretrained bases and replacing the original
+    column with the corresponding index of the new dataframe
 
     Parameters
     ----------
     dataframe : pd.DataFrame
         Dataframe to be factored.
     split_config : dict
-        Dictionary with id names (prefix param will be added to those names) as keys and
-        list of columns of those datasets as values. Must have length 2 and no common values.
+        Dictionary with id names (prefix param will be added to those names)
+        as keys and list of columns of those datasets as values. Must have
+        length 2 and no common values.
     columns : str, list of str or dict
         Column to be separated from dataset.
         If column has multiple data, use a dict with the format column name as
@@ -125,15 +126,15 @@ def split_recommendation(dataframe,
 
 def treat_unix(df_unix_col):
     """
-    Transform the type of the unix timestamp column to datetime 
-    returning a series that replaces the original 
+    Transform the type of the unix timestamp column to datetime
+    returning a series that replaces the original
     column.
 
     Parameters
     ----------
     dataframe : pd.DataFrame
         Dataframe with only the unix column.
-        
+
     Returns
     -------
     datime_col : column with the type altered to datetime that

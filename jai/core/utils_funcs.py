@@ -1,15 +1,28 @@
-import json
-import re
 import pandas as pd
 import numpy as np
 
-from typing import List
-from pathlib import Path
 from operator import itemgetter
 from functools import cmp_to_key
-from .classes import FieldName, PossibleDtypes
+from .types import PossibleDtypes
 
-__all__ = ["data2json"]
+__all__ = ["build_name", "data2json", "resolve_db_type"]
+
+
+# Helper function to decide which kind of text model to use
+def resolve_db_type(db_type, col):
+    if isinstance(db_type, str):
+        return db_type
+    elif isinstance(db_type, dict) and col in db_type:
+        return db_type[col]
+    else:
+        return "TextEdit"
+
+
+# Helper function to build the database names of columns that
+# are automatically processed during 'sanity' and 'fill' methods
+def build_name(name, col):
+    origin = name + "_" + col
+    return origin.lower().replace("-", "_").replace(" ", "_")
 
 
 def series2json(data_series):

@@ -1,4 +1,72 @@
-from .classes import PossibleDtypes
+from .types import PossibleDtypes
+from .exceptions import ParamError, DeprecatedError
+
+import warnings
+import pandas as pd
+import numpy as np
+
+
+def _raise_param_error(param_name, param_value):
+    raise ParamError(f"`{param_name}` value {param_value} is illegal")
+
+
+def check_dtype_and_clean(data, db_type):
+    """
+    Check data type and remove NAs from the data.
+    This is a protected method.
+
+    Args
+    ----
+    data : pandas.DataFrame or pandas.Series
+        Data to be checked and cleaned.
+
+    db_type : str
+        Database type (Supervised, SelfSupervised, Text...)
+
+    Return
+    ------
+    data : pandas.DataFrame or pandas.Series
+        Data without NAs
+    """
+    if isinstance(data, list):
+        data = pd.Series(data)
+    elif isinstance(data, np.ndarray):
+        if not data.any():
+            raise ValueError(f"Inserted data is empty.")
+        elif data.ndim == 1:
+            data = pd.Series(data)
+        elif data.ndim == 2:
+            data = pd.DataFrame(data)
+        else:
+            raise ValueError(
+                f"Inserted 'np.ndarray' data has many dimensions ({data.ndim}). JAI only accepts up to 2-d inputs."
+            )
+    elif not isinstance(data, (pd.Series, pd.DataFrame)):
+        raise TypeError(
+            f"Inserted data is of type `{data.__class__.__name__}`," \
+                f"but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame")
+    if db_type in [
+            PossibleDtypes.text, PossibleDtypes.fasttext, PossibleDtypes.edit,
+            PossibleDtypes.vector
+    ] and data.isna().to_numpy().any():
+        print("Droping NA values")
+        data = data.dropna()
+    return data
+
+
+# Helper function to validate name lengths before training
+def check_name_lengths(name, cols):
+    invalid_cols = []
+    for col in cols:
+        if len(name + "_" + col) > 32:
+            invalid_cols.append(col)
+
+    if len(invalid_cols):
+        raise ValueError(
+            f"The following column names are too large to concatenate\
+            with database '{name}':\n{invalid_cols}\nPlease enter a shorter database name or\
+            shorter column names; 'name_column' string must be at most 32 characters long."
+        )
 
 
 def hyperparams_validation(dtype: str):
@@ -152,43 +220,59 @@ def kwargs_possibilities(dtype: str):
     return params
 
 
-def kwargs_validation(dtype: str, body: dict):
-    params = kwargs_possibilities(dtype)
+def plurality(list_keys):
+    if len(list_keys) > 1:
+        return f"arguments `{'`, `'.join(list_keys)}` are"
+    return f"argument `{list(list_keys)[0]}` is"
+
+
+def kwargs_validation(db_type: str, **kwargs):
+    doc_msg = 'Please check the documentation and try again.'
+    params = kwargs_possibilities(db_type)
     params_keys = set(params.keys())
-    body_keys = set(body.keys()) - set(["callback_url", "overwrite"])
+    body_keys = set(kwargs.keys()) - set(["callback_url", "overwrite"])
     correct_used_keys = body_keys & params_keys
     incorrect_used_keys = body_keys - params_keys
 
-    if not incorrect_used_keys:
-        for key in correct_used_keys:
-            if key in set(['mycelia_bases', 'pretrained_bases']):
-                if isinstance(body[key], list):
-                    pb_keys = [list(x.keys()) for x in body[key]]
-                    used_subkeys = set().union(*pb_keys)
-                else:
-                    raise TypeError(
-                        "'pretrained_bases' parameter must be a list of dictonaries."
-                    )
-            else:
-                used_subkeys = set(body[key])
-            possible_subkeys = set(params[key][0])
-            must_subkeys = set(params[key][1])
-            must_and_pos_subkeys = must_subkeys | possible_subkeys
-
-            if not must_subkeys <= used_subkeys:
-                diff = must_subkeys - used_subkeys
-                raise ValueError(
-                    f'{list(diff)} parameter is required for the dtype "{dtype}".'
-                )
-            if not used_subkeys <= must_and_pos_subkeys:
-                diff = used_subkeys - must_and_pos_subkeys
-                raise ValueError(
-                    f'Inserted key argument(s) {list(diff)} are not a valid one for dtpe="{dtype}".'\
-                        f' Please check the documentation and try again.'
-                )
-    else:
+    if incorrect_used_keys:
         raise ValueError(
-            f'Inserted key argument(s) {list(incorrect_used_keys)} are not a valid one for dtype="{dtype}". '\
-                 f'Please check the documentation and try again.')
+            f'Inserted key {plurality(incorrect_used_keys)} not a valid one for dtype="{db_type}". {doc_msg}'
+        )
 
-    return "All inserted parameters are correct."
+    if 'label' not in body_keys and db_type == PossibleDtypes.supervised:
+        raise ValueError(f'Missing the required arguments: `label`. {doc_msg}')
+
+    body = {"db_type": db_type}
+    for key in correct_used_keys:
+        if key == "mycelia_bases":
+            raise DeprecatedError(
+                "`mycelia_bases` has been deprecated, please use `pretrained_bases` instead."
+            )
+        elif key == 'pretrained_bases':
+            if not isinstance(kwargs[key], list):
+                raise TypeError(
+                    "'pretrained_bases' parameter must be a list of dictonaries."
+                )
+            pb_keys = [list(x.keys()) for x in kwargs[key]]
+            used_subkeys = set().union(*pb_keys)
+        else:
+            used_subkeys = set(kwargs[key])
+        possible_subkeys = set(params[key][0])
+        must_subkeys = set(params[key][1])
+        must_and_pos_subkeys = must_subkeys | possible_subkeys
+
+        if not must_subkeys <= used_subkeys:
+            diff = must_subkeys - used_subkeys
+            raise ValueError(
+                f'{list(diff)} parameter is required for the dtype "{db_type}".'
+            )
+        if not used_subkeys <= must_and_pos_subkeys:
+            diff = used_subkeys - must_and_pos_subkeys
+            raise ValueError(
+                f'Inserted key {plurality(diff)} not a valid one for dtpe="{db_type}". {doc_msg}'
+            )
+        body[key] = kwargs[key]
+
+    if body.get('hyperparams', {}).get('patience', 0) > 0:
+        print("Training might finish early due to early stopping criteria.")
+    return body

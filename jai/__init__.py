@@ -4,8 +4,7 @@
 
 __version__ = "v0.19.0"
 
-__all__ = [
-    "__version__", "functions", "jai", "image", "preprocessing", "processing"
-]
+from jai.core.jai import Jai
+from jai.core import *
 
-from .jai import Jai
+__all__ = ["__version__", "Jai", "image", "preprocessing", "processing"]

@@ -1,6 +1,13 @@
-from jai.functions.classes import PossibleDtypes
-import jai.functions.validations as validations
+from jai.core.types import PossibleDtypes
+from jai.core.validations import (
+    num_process_validation, cat_process_validation,
+    datetime_process_validation, features_process_validation,
+    pretrained_bases_process_validation, split_process_validation,
+    label_process_validation, kwargs_possibilities, kwargs_validation,
+    hyperparams_validation)
+from jai.core.exceptions import DeprecatedError
 import pytest
+import warnings
 
 
 @pytest.mark.parametrize('dtype, results', [
@@ -34,7 +41,7 @@ import pytest
     ], []))
 ])
 def test_hyperparams_validation(dtype, results):
-    assert validations.hyperparams_validation(dtype) == results
+    assert hyperparams_validation(dtype) == results
 
 
 @pytest.mark.parametrize('dtype, results',
@@ -47,7 +54,7 @@ def test_hyperparams_validation(dtype, results):
                           (PossibleDtypes.fasttext, ([], [])),
                           (PossibleDtypes.edit, ([], []))])
 def test_num_process_validation(dtype, results):
-    assert validations.num_process_validation(dtype) == results
+    assert num_process_validation(dtype) == results
 
 
 @pytest.mark.parametrize('dtype, results',
@@ -60,7 +67,7 @@ def test_num_process_validation(dtype, results):
                           (PossibleDtypes.fasttext, ([], [])),
                           (PossibleDtypes.edit, ([], []))])
 def test_cat_process_validation(dtype, results):
-    assert validations.cat_process_validation(dtype) == results
+    assert cat_process_validation(dtype) == results
 
 
 @pytest.mark.parametrize('dtype, results',
@@ -72,7 +79,7 @@ def test_cat_process_validation(dtype, results):
                           (PossibleDtypes.fasttext, ([], [])),
                           (PossibleDtypes.edit, ([], []))])
 def test_datetime_process_validation(dtype, results):
-    assert validations.datetime_process_validation(dtype) == results
+    assert datetime_process_validation(dtype) == results
 
 
 @pytest.mark.parametrize(
@@ -84,7 +91,7 @@ def test_datetime_process_validation(dtype, results):
      (PossibleDtypes.image, ([], [])), (PossibleDtypes.text, ([], [])),
      (PossibleDtypes.fasttext, ([], [])), (PossibleDtypes.edit, ([], []))])
 def test_features_process_validation(dtype, results):
-    assert validations.features_process_validation(dtype) == results
+    assert features_process_validation(dtype) == results
 
 
 @pytest.mark.parametrize(
@@ -96,7 +103,7 @@ def test_features_process_validation(dtype, results):
      (PossibleDtypes.image, ([], [])), (PossibleDtypes.text, ([], [])),
      (PossibleDtypes.fasttext, ([], [])), (PossibleDtypes.edit, ([], []))])
 def test_pretrained_bases_process_validation(dtype, results):
-    assert validations.pretrained_bases_process_validation(dtype) == results
+    assert pretrained_bases_process_validation(dtype) == results
 
 
 @pytest.mark.parametrize('dtype, results',
@@ -109,7 +116,7 @@ def test_pretrained_bases_process_validation(dtype, results):
                           (PossibleDtypes.fasttext, ([], [])),
                           (PossibleDtypes.edit, ([], []))])
 def test_split_process_validation(dtype, results):
-    assert validations.split_process_validation(dtype) == results
+    assert split_process_validation(dtype) == results
 
 
 @pytest.mark.parametrize(
@@ -120,7 +127,7 @@ def test_split_process_validation(dtype, results):
      (PossibleDtypes.image, ([], [])), (PossibleDtypes.text, ([], [])),
      (PossibleDtypes.fasttext, ([], [])), (PossibleDtypes.edit, ([], []))])
 def test_label_process_validation(dtype, results):
-    assert validations.label_process_validation(dtype) == results
+    assert label_process_validation(dtype) == results
 
 
 @pytest.mark.parametrize(
@@ -137,7 +144,7 @@ def test_label_process_validation(dtype, results):
      (PossibleDtypes.fasttext, ['hyperparams']),
      (PossibleDtypes.edit, ['hyperparams'])])
 def test_kwargs_possibilities(dtype, keys):
-    params = validations.kwargs_possibilities(dtype)
+    params = kwargs_possibilities(dtype)
     assert list(params.keys()) == keys
 
 
@@ -153,27 +160,31 @@ def test_kwargs_possibilities(dtype, keys):
         }
     }, 'wrong_key'),
     (PossibleDtypes.supervised, {
-        'mycelia_bases': [{
+        'pretrained_bases': [{
             'db_parent': 'test'
-        }]
+        }],
+        "label": {
+            "label_name": "Label",
+            "task": "Regression"
+        }
     }, 'missing_must_key'),
 ])
 def test_possible_kwargs_validation(dtype, body, error):
     if error == 'wrong_key':
         with pytest.raises(ValueError) as e:
-            validations.kwargs_validation(dtype, body)
-        assert e.value.args[
-        0] == f'Inserted key argument(s) [\'cat_process\'] are not a valid one for dtype="{dtype}". '\
-                f'Please check the documentation and try again.'
+            kwargs_validation(dtype, **body)
+        error_msg = f'Inserted key argument `cat_process` is not a valid one for dtype="{dtype}". '\
+            f'Please check the documentation and try again.'
+        assert e.value.args[0] == error_msg
     elif error == 'wrong_subkey':
         with pytest.raises(ValueError) as e:
-            validations.kwargs_validation(dtype, body)
-        assert e.value.args[
-        0] == f'Inserted key argument(s) [\'model_name\'] are not a valid one for dtpe="{dtype}".'\
-                    f' Please check the documentation and try again.'
+            kwargs_validation(dtype, **body)
+        error_msg = f'Inserted key argument `model_name` is not a valid one for dtpe="{dtype}".'\
+            f' Please check the documentation and try again.'
+        assert e.value.args[0] == error_msg
     elif error == 'missing_must_key':
         with pytest.raises(ValueError) as e:
-            validations.kwargs_validation(dtype, body)
+            kwargs_validation(dtype, **body)
         assert e.value.args[
             0] == f'[\'id_name\'] parameter is required for the dtype "{dtype}".'
 
@@ -182,11 +193,32 @@ def test_possible_kwargs_validation(dtype, body, error):
     (PossibleDtypes.supervised, {
         'mycelia_bases': {
             'db_parent': 'test'
+        },
+        "label": {
+            "label_name": "Label",
+            "task": "Regression"
         }
     }),
 ])
 def test_wrong_pretrained_bases_input(dtype, body):
-    with pytest.raises(TypeError) as e:
-        validations.kwargs_validation(dtype, body)
+    with pytest.raises(DeprecatedError) as e:
+        kwargs_validation(dtype, **body)
     assert e.value.args[
-        0] == "'pretrained_bases' parameter must be a list of dictonaries."
+        0] == "`mycelia_bases` has been deprecated, please use `pretrained_bases` instead."
+
+
+def test_check_kwargs_exception():
+    with pytest.raises(ValueError) as e:
+        kwargs_validation(db_type="Supervised")
+    assert e.value.args[
+        0] == f"Missing the required arguments: `label`. Please check the documentation and try again."
+
+    with pytest.raises(ValueError) as e:
+        kwargs_validation(
+            db_type="SelfSupervised",
+            **{'trained_bases': {
+                'db_parent': 'test',
+                'id_name': 'test'
+            }})
+    assert e.value.args[0] == f'Inserted key argument `trained_bases` is not a valid one for dtype="SelfSupervised".'\
+                    f' Please check the documentation and try again.'

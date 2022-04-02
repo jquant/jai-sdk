@@ -4,7 +4,7 @@ import warnings
 
 from copy import deepcopy
 from tqdm import tqdm
-from .functions.utils_funcs import multikeysort
+from .utils_funcs import multikeysort
 
 __all__ = [
     "find_threshold", "process_similar", "process_predict",

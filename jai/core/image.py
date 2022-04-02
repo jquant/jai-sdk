@@ -21,7 +21,8 @@ def resize_image_folder(image_folder,
     image_folder: str or Path
         Path to images folder.
     output_folder: str of Path, optional
-        Folder to save resized images to disk. Default is "resized", created at the root of image_folder
+        Folder to save resized images to disk. Default is "resized", created
+        at the root of image_folder.
     basewidth: int, optional
         Basewidth to rescale the images to. Default is 300.
     extensions: List, optional
@@ -116,9 +117,7 @@ def read_image_folder(image_folder: str = None,
 
     if image_folder is not None:
         images = Path(image_folder).iterdir()
-    elif images is not None:
-        pass
-    else:
+    elif images is None:
         raise ValueError(
             "must pass the folder of the images or a list with the paths of each image."
         )

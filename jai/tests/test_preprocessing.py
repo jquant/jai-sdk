@@ -2,7 +2,7 @@ import pytest
 import pandas as pd
 
 from pandas.testing import assert_frame_equal, assert_series_equal
-from jai.preprocessing import split
+from jai.core.preprocessing import split
 
 
 # =============================================================================
