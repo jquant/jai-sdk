@@ -1,8 +1,8 @@
 import pytest
 import numpy as np
 import pandas as pd
-from jai.core.processing import (find_threshold, process_similar,
-                                 process_predict, process_resolution)
+from jai.utilities.processing import (find_threshold, process_similar,
+                                      predict2df, process_resolution)
 
 
 # =============================================================================
@@ -110,7 +110,7 @@ def test_process_similar_null():
     "predict": 0.1
 }], pd.DataFrame({'predict': 0.1}, index=pd.Index([0], name="id")))])
 def test_process_predict_regression(predict, res):
-    assert (process_predict(predict) == res
+    assert (predict2df(predict) == res
             ).all(None), "process predict results failed."
 
 
@@ -131,7 +131,7 @@ def test_process_predict_regression(predict, res):
       },
                    index=pd.Index([0], name="id")))])
 def test_process_predict_quantiles(predict, res):
-    assert (process_predict(predict) == res
+    assert (predict2df(predict) == res
             ).all(None), "process predict results failed."
 
 
@@ -140,7 +140,7 @@ def test_process_predict_quantiles(predict, res):
     "predict": 'class1'
 }], pd.DataFrame({'predict': 'class1'}, index=pd.Index([0], name="id")))])
 def test_process_predict_classification(predict, res):
-    assert (process_predict(predict) == res
+    assert (predict2df(predict) == res
             ).all(None), "process predict results failed."
 
 
@@ -163,7 +163,7 @@ def test_process_predict_classification(predict, res):
                                },
                                index=pd.Index([0], name="id")))])
 def test_process_predict_proba(predict, res):
-    assert (process_predict(predict) == res
+    assert (predict2df(predict) == res
             ).all(None), "process predict results failed. (proba)"
 
 

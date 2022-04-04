@@ -10,11 +10,12 @@ from typing import Optional
 
 from io import BytesIO
 from .base import BaseJai
-from .processing import (process_similar, process_resolution, process_predict)
 from .utils_funcs import build_name, data2json, resolve_db_type
 from .types import PossibleDtypes, Mode
 from .validations import (check_name_lengths, check_dtype_and_clean,
                           kwargs_validation)
+from jai.utilities.processing import (process_similar, process_resolution,
+                                      predict2df)
 
 from fnmatch import fnmatch
 import matplotlib.pyplot as plt
@@ -562,7 +563,7 @@ class Jai(BaseJai):
                                 predict_proba=predict_proba)
             results.extend(res)
 
-        return process_predict(results) if as_frame else results
+        return predict2df(results) if as_frame else results
 
     def ids(self, name: str, mode: Mode = "simple"):
         """
@@ -1414,11 +1415,11 @@ class Jai(BaseJai):
         Example
         -------
         >>> import pandas as pd
-        >>> from jai.processing import process_predict
+        >>> from jai.processing import predict2df
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.fill(name, data, COL_TO_FILL)
-        >>> processed = process_predict(results)
+        >>> processed = predict2df(results)
         >>> pd.DataFrame(processed).sort_values('id')
                   id   sanity_prediction    confidence_level (%)
            0       1             value_1                    70.9
@@ -1591,11 +1592,11 @@ class Jai(BaseJai):
         Example
         -------
         >>> import pandas as pd
-        >>> from jai.processing import process_predict
+        >>> from jai.processing import predict2df
         >>>
         >>> j = Jai(AUTH_KEY)
         >>> results = j.sanity(name, data)
-        >>> processed = process_predict(results)
+        >>> processed = predict2df(results)
         >>> pd.DataFrame(processed).sort_values('id')
                   id   sanity_prediction    confidence_level (%)
            0       1               Valid                    70.9

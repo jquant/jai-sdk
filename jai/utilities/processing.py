@@ -4,12 +4,33 @@ import warnings
 
 from copy import deepcopy
 from tqdm import tqdm
-from .utils_funcs import multikeysort
+from jai.core.utils_funcs import multikeysort
 
 __all__ = [
-    "find_threshold", "process_similar", "process_predict",
-    "process_resolution"
+    "find_threshold", "process_filter_similarsimilar", "predict2df",
+    "filter_resolution", "treat_unix"
 ]
+
+
+def treat_unix(df_unix_col):
+    """
+    Transform the type of the unix timestamp column to datetime
+    returning a series that replaces the original
+    column.
+
+    Parameters
+    ----------
+    dataframe : pd.DataFrame
+        Dataframe with only the unix column.
+
+    Returns
+    -------
+    datime_col : column with the type altered to datetime that
+        should substitute the unix timestamp column.
+    """
+    datime_col = pd.to_datetime(df_unix_col, unit="s")
+
+    return datime_col
 
 
 def find_threshold(results, sample_size=0.1, quantile=0.05):
@@ -62,10 +83,10 @@ def find_threshold(results, sample_size=0.1, quantile=0.05):
     return threshold
 
 
-def process_similar(results,
-                    threshold: float = None,
-                    return_self: bool = True,
-                    skip_null: bool = True):
+def filter_similar(results,
+                   threshold: float = None,
+                   return_self: bool = True,
+                   skip_null: bool = True):
     """
     Process the output from the similar methods.
 
@@ -120,7 +141,7 @@ def process_similar(results,
     return similar
 
 
-def process_predict(predicts, digits: int = 2, percentage: bool = True):
+def predict2df(predicts, digits: int = 2, percentage: bool = True):
     """
     Process the output from the predict methods from supervised models.
 
@@ -171,10 +192,10 @@ def process_predict(predicts, digits: int = 2, percentage: bool = True):
     return pd.DataFrame(values, index=index)
 
 
-def process_resolution(results,
-                       threshold=None,
-                       return_self=True,
-                       res_id="resolution_id"):
+def filter_resolution(results,
+                      threshold=None,
+                      return_self=True,
+                      res_id="resolution_id"):
     """
     Process the results of similarity for resolution goals.
 
