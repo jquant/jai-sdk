@@ -1,17 +1,26 @@
-import base64
 import pandas as pd
 
+from base64 import b64encode, b64decode
 from pathlib import Path
 from PIL import Image
-from typing import List, Tuple
+from typing import List, Tuple, Union
 from tqdm import tqdm
 from io import BytesIO
 
 __all__ = ["read_image_folder"]
 
 
-def read_image_folder(image_folder: str = None,
-                      images: List = None,
+def encode_image(image) -> str:
+    img_file = BytesIO()
+    image.save(img_file, format="PNG")
+    return b64encode(img_file.getvalue()).decode("utf-8")
+
+
+def decode_image(encoded_string):
+    return Image.open(BytesIO(b64decode(encoded_string))).convert("RGB")
+
+
+def read_image_folder(image_folder: Union[str, Path],
                       resize: Tuple[int, int] = None,
                       ignore_corrupt=False,
                       extensions: List = [".png", ".jpg", ".jpeg"]):
@@ -24,8 +33,6 @@ def read_image_folder(image_folder: str = None,
     ----------
     image_folder : str or Path, optional
         Path for the images folder. The default is None.
-    images : List of Path, optional
-        List of Paths for each image. The default is None.
     new_size : Tuple of int, optional
         New shape to resize images. The default is None.
     ignore_corrupt : TYPE, optional
@@ -45,20 +52,11 @@ def read_image_folder(image_folder: str = None,
         Pandas Series with acceptable format for jai usage.
 
     """
-    name = "image_base64"
-    if image_folder is not None:
-        name = Path(image_folder).name
-        images = Path(image_folder).iterdir()
-    elif images is None:
-        raise ValueError(
-            "must pass the folder of the images or a list with the paths of each image."
-        )
+    name = Path(image_folder).name
 
-    ids = []
     encoded_images = []
-    filenames = []
     corrupted_files = []
-    for i, filename in enumerate(tqdm(images)):
+    for i, filename in enumerate(tqdm(Path(image_folder).iterdir())):
         if filename.suffix in extensions:
             try:
                 im = Image.open(filename)
@@ -72,18 +70,12 @@ def read_image_folder(image_folder: str = None,
                 img = Image.open(filename)
                 if resize is not None:
                     img = img.resize(resize, Image.ANTIALIAS).convert('RGB')
-                im_file = BytesIO()
-                img.save(im_file, format="PNG")
-                encoded_string = base64.b64encode(
-                    im_file.getvalue()).decode("utf-8")
+                encoded_string = encode_image(img)
 
                 # test if decoding is working
-                Image.open(BytesIO(
-                    base64.b64decode(encoded_string))).convert("RGB")
+                decode_image(encoded_string)
 
-                encoded_images.append(encoded_string)
-                filenames.append(filename.name)
-                ids.append(i)
+                encoded_images.append({'id':i, name:encoded_string, "filename": filename.name})
             except KeyboardInterrupt:
                 raise KeyboardInterrupt
             except:
@@ -96,9 +88,4 @@ def read_image_folder(image_folder: str = None,
         print("Here are the files that seem to be corrupted:")
         [print(f"{f}") for f in corrupted_files]
 
-    index = pd.Index(ids, name='id')
-    return pd.DataFrame({
-        name: encoded_images,
-        "filename": filenames
-    },
-                        index=index)
+    return pd.DataFrame(encoded_images).set_index("id")

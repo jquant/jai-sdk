@@ -57,7 +57,7 @@ def raise_status_error(code):
                         raise ValidationError(message + msg)
                     elif error == "ParamError":
                         raise ParamError(message + msg)
-                    raise ValueError(message + response.text)
+                    raise BaseException(message + response.text)
             else:
                 raise ValueError(message + detail)
 

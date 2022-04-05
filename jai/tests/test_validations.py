@@ -7,7 +7,6 @@ from jai.core.validations import (
     hyperparams_validation)
 from jai.core.exceptions import DeprecatedError
 import pytest
-import warnings
 
 
 @pytest.mark.parametrize('dtype, results', [

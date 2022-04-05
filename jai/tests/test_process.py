@@ -1,8 +1,8 @@
 import pytest
 import numpy as np
 import pandas as pd
-from jai.utilities.processing import (find_threshold, process_similar,
-                                      predict2df, process_resolution)
+from jai.utilities._processing import (find_threshold, filter_similar,
+                                       predict2df, filter_resolution)
 
 
 # =============================================================================
@@ -37,9 +37,9 @@ def test_find_threshold(similar, threshold):
 
 
 # =============================================================================
-# Tests for process similar
+# Tests for filter similar
 # =============================================================================
-def test_process_similar_threshold():
+def test_filter_similar_threshold():
     similar = [{
         "query_id": 0,
         "results": [{
@@ -48,19 +48,19 @@ def test_process_similar_threshold():
         } for i in range(20)]
     }]
     gab = [{'id': 0, 'distance': 0, 'query_id': 0}]
-    assert process_similar(
+    assert filter_similar(
         similar, threshold=0,
-        return_self=True) == gab, "process similar results failed"
-    assert process_similar(
+        return_self=True) == gab, "filter similar results failed"
+    assert filter_similar(
         similar, threshold=1,
-        return_self=True) == gab, "process similar results failed"
+        return_self=True) == gab, "filter similar results failed"
 
-    assert process_similar(
+    assert filter_similar(
         similar, threshold=None,
-        return_self=True) == gab, "process similar results failed"
+        return_self=True) == gab, "filter similar results failed"
 
 
-def test_process_similar_self():
+def test_filter_similar_self():
     similar = [{
         "query_id": 0,
         "results": [{
@@ -68,20 +68,20 @@ def test_process_similar_self():
             'distance': i
         } for i in range(20)]
     }]
-    assert process_similar(
-        similar, threshold=0, return_self=False
-    ) == [], "process similar results failed. (self param)"
-    assert process_similar(similar, threshold=0, return_self=True) == [{
+    assert filter_similar(
+        similar, threshold=0,
+        return_self=False) == [], "filter similar results failed. (self param)"
+    assert filter_similar(similar, threshold=0, return_self=True) == [{
         'distance':
         0,
         'id':
         0,
         'query_id':
         0
-    }], "process similar results failed. (self param)"
+    }], "filter similar results failed. (self param)"
 
 
-def test_process_similar_null():
+def test_filter_similar_null():
     similar = [{
         "query_id": 0,
         "results": [{
@@ -89,29 +89,29 @@ def test_process_similar_null():
             'distance': i
         } for i in range(20)]
     }]
-    assert process_similar(similar,
-                           threshold=0,
-                           return_self=False,
-                           skip_null=False) == [{
-                               'query_id': 0,
-                               'distance': None,
-                               'id': None
-                           }], "process similar results failed. (null param)"
-    assert process_similar(
+    assert filter_similar(similar,
+                          threshold=0,
+                          return_self=False,
+                          skip_null=False) == [{
+                              'query_id': 0,
+                              'distance': None,
+                              'id': None
+                          }], "filter similar results failed. (null param)"
+    assert filter_similar(
         similar, threshold=0, return_self=False,
-        skip_null=True) == [], "process similar results failed. (null param)"
+        skip_null=True) == [], "filter similar results failed. (null param)"
 
 
 # =============================================================================
-# Tests for process predict
+# Tests for filter predict
 # =============================================================================
 @pytest.mark.parametrize('predict, res', [([{
     "id": 0,
     "predict": 0.1
 }], pd.DataFrame({'predict': 0.1}, index=pd.Index([0], name="id")))])
 def test_process_predict_regression(predict, res):
-    assert (predict2df(predict) == res
-            ).all(None), "process predict results failed."
+    assert (
+        predict2df(predict) == res).all(None), "filter predict results failed."
 
 
 @pytest.mark.parametrize(
@@ -131,8 +131,8 @@ def test_process_predict_regression(predict, res):
       },
                    index=pd.Index([0], name="id")))])
 def test_process_predict_quantiles(predict, res):
-    assert (predict2df(predict) == res
-            ).all(None), "process predict results failed."
+    assert (
+        predict2df(predict) == res).all(None), "filter predict results failed."
 
 
 @pytest.mark.parametrize('predict, res', [([{
@@ -140,8 +140,8 @@ def test_process_predict_quantiles(predict, res):
     "predict": 'class1'
 }], pd.DataFrame({'predict': 'class1'}, index=pd.Index([0], name="id")))])
 def test_process_predict_classification(predict, res):
-    assert (predict2df(predict) == res
-            ).all(None), "process predict results failed."
+    assert (
+        predict2df(predict) == res).all(None), "filter predict results failed."
 
 
 @pytest.mark.parametrize('predict, res',
@@ -164,11 +164,11 @@ def test_process_predict_classification(predict, res):
                                index=pd.Index([0], name="id")))])
 def test_process_predict_proba(predict, res):
     assert (predict2df(predict) == res
-            ).all(None), "process predict results failed. (proba)"
+            ).all(None), "filter predict results failed. (proba)"
 
 
 # =============================================================================
-# Tests for process resolution
+# Tests for filter resolution
 # =============================================================================
 def test_process_resolution():
     similar = [{
@@ -250,5 +250,5 @@ def test_process_resolution():
         'id': 5,
         'resolution_id': 5
     }]
-    assert process_resolution(
-        similar, .2) == expect, "process resolution results failed."
+    assert filter_resolution(similar,
+                             .2) == expect, "filter resolution results failed."

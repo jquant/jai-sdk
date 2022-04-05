@@ -4,11 +4,11 @@ import warnings
 
 from copy import deepcopy
 from tqdm import tqdm
-from jai.core.utils_funcs import multikeysort
+from ._utils import multikeysort
 
 __all__ = [
-    "find_threshold", "process_filter_similarsimilar", "predict2df",
-    "filter_resolution", "treat_unix"
+    "find_threshold", "filter_similar", "predict2df", "filter_resolution",
+    "treat_unix"
 ]
 
 

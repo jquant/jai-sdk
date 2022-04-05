@@ -29,6 +29,15 @@ jobs:
         with:
           args: . --verbose --recursive --in-place --parallel
 
+      # https://github.com/myint/autoflake
+      - name: Install autoflake
+        run: |
+          python -m pip install --upgrade autoflake
+
+      - name: Removing unused variables and imports
+        run: |
+          autoflake --remove-unused-variables --remove-all-unused-imports --ignore-init-module-imports --recursive --in-place mycelia/
+
       - name: action metadata
         run: |
           echo -e "action     : ${{ github.action }}"

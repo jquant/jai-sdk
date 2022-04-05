@@ -14,8 +14,8 @@ from .utils_funcs import build_name, data2json, resolve_db_type
 from .types import PossibleDtypes, Mode
 from .validations import (check_name_lengths, check_dtype_and_clean,
                           kwargs_validation)
-from jai.utilities.processing import (process_similar, process_resolution,
-                                      predict2df)
+from jai.utilities._processing import (filter_similar, filter_resolution,
+                                       predict2df)
 
 from fnmatch import fnmatch
 import matplotlib.pyplot as plt
@@ -1280,9 +1280,9 @@ class Jai(BaseJai):
                                data_right,
                                top_k=top_k,
                                batch_size=batch_size)
-        processed = process_similar(similar,
-                                    threshold=threshold,
-                                    return_self=True)
+        processed = filter_similar(similar,
+                                   threshold=threshold,
+                                   return_self=True)
         match = pd.DataFrame(processed).sort_values('query_id')
         match = match.rename(columns={"id": "id_left", "query_id": "id_right"})
         if original_data:
@@ -1364,9 +1364,9 @@ class Jai(BaseJai):
                              hyperparams=hyperparams,
                              overwrite=overwrite)
         simliar = self.similar(name, ids, top_k=top_k, batch_size=batch_size)
-        connect = process_resolution(simliar,
-                                     threshold=threshold,
-                                     return_self=return_self)
+        connect = filter_resolution(simliar,
+                                    threshold=threshold,
+                                    return_self=return_self)
         r = pd.DataFrame(connect).set_index('id').sort_index()
 
         if original_data:
