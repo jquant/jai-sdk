@@ -105,6 +105,8 @@ class Jai(BaseJai):
                 "db_version": "last modified",
                 "db_parents": "dependencies",
             })
+        if len(df) == 0:
+            return df
         return df.sort_values(by="name")
 
     # TODO: this property should be removed in the future
