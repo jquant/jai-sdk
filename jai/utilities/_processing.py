@@ -40,8 +40,8 @@ def find_threshold(results, sample_size=0.1, quantile=0.05):
     Takes a sample of size **sample_size** of the **results** list and uses the
     **quantile** of the distances of the sample to use as threshold.
 
-    This is a automated function, we strongly advise to set the threshold manualy
-    to get more accurate results.
+    This is a automated function, we strongly advise to set the threshold
+    manualy to get more accurate results.
 
     Parameters
     ----------
@@ -53,11 +53,11 @@ def find_threshold(results, sample_size=0.1, quantile=0.05):
         less than 1, then we use **sample_size=0.5** or 1. The default is 0.1.
     quantile : float, optional
         Quantile of the distances of all the query results of the sample taken.
-        We suggest to use the similar method with a top_k big enough for the quantile,
-        i.e., the total number of distances is `len(results) * sample_size * top_k`,
-        top_k helps to get more values of distances as of using a small top_k
-        will make a distance group of only distances close to 0 and threshold
-        may not be representative. The default is 0.05.
+        We suggest to use the similar method with a top_k big enough for the
+        quantile, i.e., the total number of distances is `len(results) *
+        sample_size * top_k`, top_k helps to get more values of distances as of
+        using a small top_k will make a distance group of only distances close
+        to 0 and threshold may not be representative. The default is 0.05.
 
     Returns
     -------
@@ -75,7 +75,7 @@ def find_threshold(results, sample_size=0.1, quantile=0.05):
     samples = np.random.randint(0, len(results), n)
     distribution = []
     for s in tqdm(samples, desc="Fiding threshold"):
-        d = [l['distance'] for l in results[s]['results'][1:]]
+        d = [r['distance'] for r in results[s]['results'][1:]]
         distribution.extend(d)
     threshold = np.quantile(distribution, quantile)
     warnings.warn("Threshold calculated automatically.")
@@ -90,9 +90,9 @@ def filter_similar(results,
     """
     Process the output from the similar methods.
 
-    For each of the inputs, gives back the closest value. If result_self is False,
-    avoids returning cases where 'id' is equal to 'query_id' and returns the
-    next closest if necessary.
+    For each of the inputs, gives back the closest value. If result_self is
+    False, avoids returning cases where 'id' is equal to 'query_id' and
+    returns the next closest if necessary.
 
     Parameters
     ----------
@@ -102,10 +102,11 @@ def filter_similar(results,
         value for the distance threshold. The default is None.
         if set to None, we used the auxiliar function find_threshold.
     return_self : bool, optional
-        option to return the queried id from the query result or not. The default is True.
-    skip_null: bool, optional
-        option to skip ids without similar results, if False, returns empty results.
+        option to return the queried id from the query result or not.
         The default is True.
+    skip_null: bool, optional
+        option to skip ids without similar results, if False, returns empty
+        results. The default is True.
 
     Raises
     ------
@@ -150,10 +151,12 @@ def predict2df(predicts, digits: int = 2, percentage: bool = True):
     predicts : List of Dicts.
         output from predict methods.
     digits : int, optional
-        If prediction is a probability, number of digits to round the predicted values.
+        If prediction is a probability, number of digits to round the
+        predicted values.
     percentage : bool, optional
-        If prediction is a probability, whether to return percentage value or decimal.
-        
+        If prediction is a probability, whether to return percentage value or
+        decimal.
+
     Returns
     -------
     list
@@ -211,7 +214,8 @@ def filter_resolution(results,
         value for the distance threshold. The default is None.
         if set to None, we used the auxiliar function find_threshold.
     return_self : bool, optional
-        option to return the queried id from the query result or not. The default is True.
+        option to return the queried id from the query result or not.
+        The default is True.
     res_id: str, optional
         name of the key for the resolution. The default is "resolution_id".
 

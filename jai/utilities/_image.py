@@ -22,10 +22,11 @@ def decode_image(encoded_string):
 
 def read_image_folder(image_folder: Union[str, Path],
                       resize: Tuple[int, int] = None,
-                      ignore_corrupt=False,
+                      handle_errors: str = "ignore",
                       extensions: List = [".png", ".jpg", ".jpeg"]):
     """
-    Function to read images from folder and transform to a format compatible to jai.
+    Function to read images from folder and transform to a format compatible
+    to jai.
 
     Must pass the folder of the images or a list of paths for each image.
 
@@ -35,11 +36,13 @@ def read_image_folder(image_folder: Union[str, Path],
         Path for the images folder. The default is None.
     new_size : Tuple of int, optional
         New shape to resize images. The default is None.
-    ignore_corrupt : TYPE, optional
-        If ignore corrupt images. If True, could probably result in a internal
-        error later on. The default is False.
+    handle_errors : str, optional
+        Whether to ignore errors and skipped files. 
+        If "ignore", could probably result in a internal error later on.
+        The default is "ignore".
     extensions : List, optional
-        List of acceptable extensions. The default is [".png", ".jpg", ".jpeg"].
+        List of acceptable extensions.
+        The default is [".png", ".jpg", ".jpeg"].
 
     Raises
     ------
@@ -48,21 +51,25 @@ def read_image_folder(image_folder: Union[str, Path],
 
     Returns
     -------
-    pd.Series
-        Pandas Series with acceptable format for jai usage.
+    pd.Dataframe
+        Pandas Dataframe with acceptable format for jai usage.
 
     """
-    name = Path(image_folder).name
+    image_folder = Path(image_folder)
+    name = image_folder.name
+
+    if handle_errors not in ['raise', 'warn', 'ignore']:
+        raise ValueError("handle_errors must be 'raise', 'warn' or 'ignore'")
 
     encoded_images = []
     corrupted_files = []
-    for i, filename in enumerate(tqdm(Path(image_folder).iterdir())):
+    ignored_files = []
+    for i, filename in enumerate(tqdm(image_folder.iterdir())):
         if filename.suffix in extensions:
             try:
                 im = Image.open(filename)
-                im.verify(
-                )  # I perform also verify, don't know if he sees other types o defects
-                im.close()  # reload is necessary in my case
+                im.verify()
+                im.close()
                 im = Image.open(filename)
                 im.transpose(Image.FLIP_LEFT_RIGHT)
                 im.close()
@@ -75,21 +82,35 @@ def read_image_folder(image_folder: Union[str, Path],
                 # test if decoding is working
                 decode_image(encoded_string)
 
-                encoded_images.append({
-                    'id': i,
-                    name: encoded_string,
-                    "filename": filename.name
-                })
             except KeyboardInterrupt:
                 raise KeyboardInterrupt
-            except:
-                if ignore_corrupt:
-                    corrupted_files.append(filename)
-                    continue
-                raise ValueError(f"file {filename} seems to be corrupted.")
+            except Exception as error:
+                if handle_errors == 'raise':
+                    raise ValueError(
+                        f"file {filename} seems to be corrupted. {error}")
 
-    if len(corrupted_files) > 0:
+                corrupted_files.append(filename)
+
+            encoded_images.append({
+                'id': i,
+                name: encoded_string,
+                "filename": filename.name
+            })
+        else:
+            if handle_errors == 'raise':
+                raise ValueError(
+                    f"file {filename} does not have the proper extension.\
+                        acceptable extensions: {extensions}")
+            ignored_files.append(filename)
+
+    if handle_errors == 'warn' and len(ignored_files) > 0:
+        print("Here are the ignored files:")
+        ignored_message = '\n'.join(ignored_files)
+        print(f"{ignored_message}")
+
+    if handle_errors == 'warn' and len(corrupted_files) > 0:
         print("Here are the files that seem to be corrupted:")
-        [print(f"{f}") for f in corrupted_files]
+        corrupted_message = '\n'.join(corrupted_files)
+        print(f"{corrupted_message}")
 
     return pd.DataFrame(encoded_images).set_index("id")

@@ -176,7 +176,7 @@ class Jai(BaseJai):
         User information.
 
         Returns:
-            dict: 
+            dict:
             - userId: str
             - email: str
             - firstName: str

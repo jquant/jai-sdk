@@ -28,7 +28,8 @@ def split(dataframe, columns, sort: bool = False, prefix: str = "id_"):
     bases : list of pd.DataFrame
         list of dataframes with each base extracted.
     dataframe : pd.DataFrame
-        original dataframe with columns replaced by the ids of the correlated base.
+        original dataframe with columns replaced by the ids of the correlated
+        base.
 
     """
     dataframe = dataframe.copy()
@@ -40,7 +41,8 @@ def split(dataframe, columns, sort: bool = False, prefix: str = "id_"):
     na_columns = dataframe.isna().any(0).loc[columns.keys()]
     if na_columns.any():
         warnings.warn(
-            f"Empty values will be represented with -1 as id values and cause issues later, we recommend treating them before split.\n\
+            f"Empty values will be represented with -1 as id values and cause\
+            issues later, we recommend treating them before split.\n\
             Found empty values on the following columns:\n\
             - {'- '.join(na_columns.index[na_columns])}",
             stacklevel=3)
@@ -97,7 +99,8 @@ def split_recommendation(dataframe,
     Returns
     -------
     main_bases : list of pd.DataFrame
-        original dataframe with columns replaced by the ids of the correlated base.
+        original dataframe with columns replaced by the ids of the correlated
+        base.
 
     pretrained_bases : pd.DataFrame
         list of dataframes with each base extracted.
