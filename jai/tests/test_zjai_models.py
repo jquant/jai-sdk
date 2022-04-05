@@ -1,5 +1,4 @@
 from jai import Jai
-from .test_utils import setup_dataframe
 import pandas as pd
 import numpy as np
 import pytest

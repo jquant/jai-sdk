@@ -1,5 +1,4 @@
 from jai import Jai
-from .test_utils import setup_dataframe
 import pandas as pd
 import numpy as np
 import pytest
@@ -89,7 +88,7 @@ def test_sanity(name, setup_dataframe):
         if n.startswith(name):
             j.delete_database(n)
 
-    x = j.sanity(name, data)
+    j.sanity(name, data)
     assert j.is_valid(name), f"valid name {name} after train sanity"
 
     v = j.sanity(name, test.iloc[half:])

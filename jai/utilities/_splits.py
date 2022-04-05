@@ -122,4 +122,3 @@ def split_recommendation(dataframe,
 
     main_bases["main"] = df_merge
     return main_bases, pretrained_bases
-
