@@ -4,6 +4,8 @@ from .exceptions import ParamError, DeprecatedError
 import pandas as pd
 import numpy as np
 
+import warnings
+
 
 def check_dtype_and_clean(data, db_type):
     """
@@ -44,7 +46,7 @@ def check_dtype_and_clean(data, db_type):
             PossibleDtypes.text, PossibleDtypes.fasttext, PossibleDtypes.edit,
             PossibleDtypes.vector
     ] and data.isna().to_numpy().any():
-        print("Droping NA values")
+        warnings.warn(f"Droping NA values.")
         data = data.dropna()
     return data
 

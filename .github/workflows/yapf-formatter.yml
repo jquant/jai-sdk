@@ -36,7 +36,7 @@ jobs:
 
       - name: Removing unused variables and imports
         run: |
-          autoflake --remove-unused-variables --remove-all-unused-imports --ignore-init-module-imports --recursive --in-place mycelia/
+          autoflake jai/ --remove-unused-variables --remove-all-unused-imports --ignore-init-module-imports --recursive --in-place
 
       - name: action metadata
         run: |

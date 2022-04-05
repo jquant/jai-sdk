@@ -75,7 +75,11 @@ def read_image_folder(image_folder: Union[str, Path],
                 # test if decoding is working
                 decode_image(encoded_string)
 
-                encoded_images.append({'id':i, name:encoded_string, "filename": filename.name})
+                encoded_images.append({
+                    'id': i,
+                    name: encoded_string,
+                    "filename": filename.name
+                })
             except KeyboardInterrupt:
                 raise KeyboardInterrupt
             except:
