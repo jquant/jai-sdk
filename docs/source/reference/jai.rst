@@ -37,9 +37,9 @@ Here are the parameters that can be used for Image models:
   * **model_name** (*torchvision*) -- Model for image preprocessing
     {"resnet50", "resnet18", "alexnet", "squeezenet", "vgg16", "densenet", 
     "inception", "googlenet", "shufflenet", "mobilenet", "resnext50_32x4d",
-    "wide_resnet50_2", "mnasnet"}. *Default is "vgg16"*.
+    "wide_resnet50_2", "mnasnet"}. *Default is "resnet50"*.
   * **mode** -- last layer of the model, varies for each model
-    {"classifier", "dense", "conv", "avgpool" or "int"}. *Default is -3*.
+    {"classifier", "dense", "conv", "avgpool" or "int"}. *Default is "classifier"*.
   * **resize_H** (*int*) -- Height of image resizing, must be greater or
     equal to 224. *Default is 224*.
   * **resize_W**: (*int*) width of image resizing, must be greater or
@@ -52,7 +52,7 @@ Here are the parameters that can be used for Text models:
 
 * **hyperparams** (*dict*) -- Text model hyperparams:   
   
-  * **nlp_model** (*transformers*) -- Model name for text preprocessing.
+  * **nlp_model** (*transformers*) -- Model name for text preprocessing. *Default is "distilroberta-base"*.
   * **max_length** (*int*) -- Controls the maximum length to use by one
     of the truncation/padding parameters. *Default is 100*.
 
@@ -118,13 +118,13 @@ Here are the parameters that can be used for SelfSupervised models:
     *Default is "2L"*.
   * **hidden_latent_dim** (*int*) -- Hidden layer size. *Default is 64*.
   * **dropout_rate** (*int*) -- Dropout rate for the encoder layer. *Default is 0.1*.
-  * **momentum** (*int*) -- momentum param for batch norm for the encoder layer. *Default is 0.001*.
+  * **momentum** (*int*) -- momentum param for batch norm for the encoder layer. *Default is 0.1*.
   * **pretraining_ratio** (*int*) -- rate of feature masking on self-supervised training. 
     *Default is 0.1*.
   * **noise_level** (*float*) -- noise level on masking process, if 0 then data is masked else noise is added. *Default is 0*.
   * **check_val_every_n_epoch** (*int*) -- number of epochs to check the validation set. *Default is 1*.
   * **gradient_clip_val** (*float*) -- The value at which to clip gradients. *Default is 0*.
-  * **gradient_clip_algorithm** (*str*) -- The gradient clipping algorithm to use {"norm", "value"}. *Default is norm*.
+  * **gradient_clip_algorithm** (*str*) -- The gradient clipping algorithm to use {"norm", "value"}. *Default is "norm"*.
   * **min_epochs** (*int*) -- Force training for at least these many epochs. *Default is 15*.
   * **max_epochs** (*int*) -- Stop training once this number of epochs is reached. *Default is 500*.
   * **patience** (*int*) -- Number of validation checks with no improvement after which training will be stopped.
