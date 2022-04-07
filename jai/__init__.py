@@ -2,7 +2,7 @@
 --- ___init___.py ---
 """
 
-__version__ = "v0.19.0"
+__version__ = "v0.19.1"
 
 from jai.core.jai import Jai
 from jai.utilities._image import read_image_folder

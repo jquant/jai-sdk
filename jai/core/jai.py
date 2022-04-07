@@ -106,9 +106,9 @@ class Jai(BaseJai):
                 "db_version": "last modified",
                 "db_parents": "dependencies",
             })
-        if len(df) > 0:
-            return df.sort_values(by="name")
-        return []
+        if len(df) == 0:
+            return df
+        return df.sort_values(by="name")
 
     # TODO: this property should be removed in the future
     @property
@@ -357,6 +357,7 @@ class Jai(BaseJai):
                 name: str,
                 data,
                 top_k: int = 5,
+                orient: str = "nested",
                 filters=None,
                 batch_size: int = 16384):
         """
@@ -371,6 +372,8 @@ class Jai(BaseJai):
             Data to be queried for similar inputs in your database.
         top_k : int
             Number of k similar items that we want to return. `Default is 5`.
+        orient : "nested" or "flat"
+            Changes the output format. `Default is "nested"`.
         batch_size : int
             Size of batches to send the data. `Default is 16384`.
 
@@ -415,6 +418,7 @@ class Jai(BaseJai):
                 res = self._similar_id(name,
                                        _batch,
                                        top_k=top_k,
+                                       orient=orient,
                                        filters=filters)
             else:
                 if isinstance(data, (pd.Series, pd.DataFrame)):
@@ -426,6 +430,7 @@ class Jai(BaseJai):
                                                    dtype=dtype,
                                                    predict=True),
                                          top_k=top_k,
+                                         orient=orient,
                                          filters=filters)
             results.extend(res["similarity"])
         return results
@@ -434,6 +439,7 @@ class Jai(BaseJai):
                        name: str,
                        data,
                        top_k: int = 5,
+                       orient: str = "nested",
                        filters=None,
                        batch_size: int = 16384):
         """
@@ -448,6 +454,8 @@ class Jai(BaseJai):
             Data to be queried for recommendation in your database.
         top_k : int
             Number of k recommendations that we want to return. `Default is 5`.
+        orient : "nested" or "flat"
+            Changes the output format. `Default is "nested"`.
         batch_size : int
             Size of batches to send the data. `Default is 16384`.
 
@@ -492,6 +500,7 @@ class Jai(BaseJai):
                 res = self._recommendation_id(name,
                                               _batch,
                                               top_k=top_k,
+                                              orient=orient,
                                               filters=filters)
             else:
                 if isinstance(data, (pd.Series, pd.DataFrame)):
@@ -503,6 +512,7 @@ class Jai(BaseJai):
                                                           dtype=dtype,
                                                           predict=True),
                                                 top_k=top_k,
+                                                orient=orient,
                                                 filters=filters)
             results.extend(res["recommendation"])
         return results
