@@ -38,6 +38,14 @@ jobs:
         run: |
           autoflake jai/ --remove-unused-variables --remove-all-unused-imports --ignore-init-module-imports --recursive --in-place
 
+      # https://github.com/PyCQA/isort
+      # https://github.com/isort/isort-action
+      - uses: isort/isort-action@master
+        with:
+            sortPaths: "jai/"
+            configuration: "--atomic"
+            
+
       - name: action metadata
         run: |
           echo -e "action     : ${{ github.action }}"
