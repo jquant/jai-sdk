@@ -1,11 +1,12 @@
-from jai import Jai
-from jai.core.validations import check_name_lengths, check_dtype_and_clean
+import json
 
+import numpy as np
 import pandas as pd
 import pytest
-import json
-import numpy as np
 from decouple import config
+
+from jai import Jai
+from jai.core.validations import check_dtype_and_clean, check_name_lengths
 
 INVALID_URL = 'http://google.com'
 VALID_URL = 'http://localhost:8001'

@@ -1,11 +1,12 @@
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
-from jai.core.utils_funcs import (series2json, df2json, data2json)
-from jai.utilities._image import read_image_folder
-
 from pandas._testing import assert_series_equal
-from pathlib import Path
+
+from jai.core.utils_funcs import data2json, df2json, series2json
+from jai.utilities._image import read_image_folder
 
 
 @pytest.fixture(scope="session")

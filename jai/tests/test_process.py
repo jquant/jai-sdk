@@ -1,8 +1,9 @@
-import pytest
 import numpy as np
 import pandas as pd
-from jai.utilities._processing import (find_threshold, filter_similar,
-                                       predict2df, filter_resolution)
+import pytest
+
+from jai.utilities._processing import (filter_resolution, filter_similar,
+                                       find_threshold, predict2df)
 
 
 # =============================================================================

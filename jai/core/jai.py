@@ -1,30 +1,29 @@
-import secrets
-import json
-import pandas as pd
-import numpy as np
-import requests
-import time
 import concurrent
-import psutil
+import json
+import secrets
+import time
+import warnings
+from fnmatch import fnmatch
+from io import BytesIO
 from typing import Optional
 
-from io import BytesIO
-from .base import BaseJai
-from .utils_funcs import build_name, data2json, resolve_db_type
-from .types import PossibleDtypes, Mode
-from .validations import (check_name_lengths, check_dtype_and_clean,
-                          kwargs_validation)
-from jai.utilities._processing import (filter_similar, filter_resolution,
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import psutil
+import requests
+from pandas.api.types import is_integer_dtype, is_numeric_dtype
+from sklearn.model_selection import StratifiedShuffleSplit
+from tqdm import tqdm, trange
+
+from jai.utilities._processing import (filter_resolution, filter_similar,
                                        predict2df)
 
-from fnmatch import fnmatch
-import matplotlib.pyplot as plt
-from pandas.api.types import is_integer_dtype
-from pandas.api.types import is_numeric_dtype
-from sklearn.model_selection import StratifiedShuffleSplit
-from tqdm import trange, tqdm
-
-import warnings
+from .base import BaseJai
+from .types import Mode, PossibleDtypes
+from .utils_funcs import build_name, data2json, resolve_db_type
+from .validations import (check_dtype_and_clean, check_name_lengths,
+                          kwargs_validation)
 
 __all__ = ["Jai"]
 

@@ -1,12 +1,15 @@
-from jai.core.types import PossibleDtypes
-from jai.core.validations import (
-    num_process_validation, cat_process_validation,
-    datetime_process_validation, features_process_validation,
-    pretrained_bases_process_validation, split_process_validation,
-    label_process_validation, kwargs_possibilities, kwargs_validation,
-    hyperparams_validation)
-from jai.core.exceptions import DeprecatedError
 import pytest
+
+from jai.core.exceptions import DeprecatedError
+from jai.core.types import PossibleDtypes
+from jai.core.validations import (cat_process_validation,
+                                  datetime_process_validation,
+                                  features_process_validation,
+                                  hyperparams_validation, kwargs_possibilities,
+                                  kwargs_validation, label_process_validation,
+                                  num_process_validation,
+                                  pretrained_bases_process_validation,
+                                  split_process_validation)
 
 
 @pytest.mark.parametrize('dtype, results', [

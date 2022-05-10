@@ -1,9 +1,11 @@
-from jai import Jai
+import json
+
 import numpy as np
 import pandas as pd
 import pytest
-import json
 from decouple import config
+
+from jai import Jai
 
 URL = 'http://localhost:8001'
 AUTH_KEY = ""

@@ -1,11 +1,11 @@
-import pandas as pd
-
-from base64 import b64encode, b64decode
-from pathlib import Path
-from PIL import Image
-from typing import List, Tuple, Union
-from tqdm import tqdm
+from base64 import b64decode, b64encode
 from io import BytesIO
+from pathlib import Path
+from typing import List, Tuple, Union
+
+import pandas as pd
+from PIL import Image
+from tqdm import tqdm
 
 __all__ = ["read_image_folder"]
 

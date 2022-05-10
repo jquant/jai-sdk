@@ -1,6 +1,6 @@
 import functools
 
-from .exceptions import DeprecatedError, ValidationError, ParamError
+from .exceptions import DeprecatedError, ParamError, ValidationError
 
 
 def deprecated(func):

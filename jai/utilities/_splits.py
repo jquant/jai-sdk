@@ -1,5 +1,6 @@
-import pandas as pd
 import warnings
+
+import pandas as pd
 
 __all__ = ["split", "split_recommendation"]
 

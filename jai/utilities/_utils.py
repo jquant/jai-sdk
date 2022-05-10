@@ -1,5 +1,5 @@
-from operator import itemgetter
 from functools import cmp_to_key
+from operator import itemgetter
 
 
 def cmp(x, y):

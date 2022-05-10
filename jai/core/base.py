@@ -1,11 +1,11 @@
-import os
 import json
-import requests
-
+import os
 from copy import copy
 
-from .types import Mode
+import requests
+
 from .decorators import raise_status_error
+from .types import Mode
 
 __all__ = ["BaseJai"]
 

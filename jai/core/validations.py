@@ -1,10 +1,10 @@
-from .types import PossibleDtypes
-from .exceptions import ParamError, DeprecatedError
-
-import pandas as pd
-import numpy as np
-
 import warnings
+
+import numpy as np
+import pandas as pd
+
+from .exceptions import DeprecatedError, ParamError
+from .types import PossibleDtypes
 
 
 def check_dtype_and_clean(data, db_type):

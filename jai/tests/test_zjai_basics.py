@@ -1,14 +1,15 @@
-from jai import Jai
-from jai.core.validations import check_dtype_and_clean
-from jai.core.utils_funcs import resolve_db_type
-
-from pandas._testing import assert_frame_equal
+import json
 from pathlib import Path
+
+import numpy as np
 import pandas as pd
 import pytest
-import numpy as np
-import json
 from decouple import config
+from pandas._testing import assert_frame_equal
+
+from jai import Jai
+from jai.core.utils_funcs import resolve_db_type
+from jai.core.validations import check_dtype_and_clean
 
 URL = 'http://localhost:8001'
 AUTH_KEY = ""

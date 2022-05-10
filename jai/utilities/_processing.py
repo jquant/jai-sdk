@@ -1,9 +1,10 @@
+import warnings
+from copy import deepcopy
+
 import numpy as np
 import pandas as pd
-import warnings
-
-from copy import deepcopy
 from tqdm import tqdm
+
 from ._utils import multikeysort
 
 __all__ = [
