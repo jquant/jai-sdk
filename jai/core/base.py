@@ -15,13 +15,11 @@ class BaseJai(object):
     Base class for requests with the Mycelia API.
     """
 
-    def __init__(
-        self,
-        auth_key: str = None,
-        url: str = None,
-        environment: str = "default",
-        var_env: str = "JAI_SECRET",
-    ):
+    def __init__(self,
+                 auth_key: str = None,
+                 url: str = None,
+                 environment: str = "default",
+                 var_env: str = "JAI_SECRET"):
         """
         Initialize the Jai class.
 
@@ -367,13 +365,11 @@ class BaseJai(object):
                              json=body)
 
     @raise_status_error(200)
-    def _transfer(
-        self,
-        original_name: str,
-        to_environment: str,
-        new_name: str = None,
-        from_environment: str = "default",
-    ):
+    def _transfer(self,
+                  original_name: str,
+                  to_environment: str,
+                  new_name: str = None,
+                  from_environment: str = "default"):
         """
         Get name and type of each database in your environment.
         """
@@ -388,22 +384,19 @@ class BaseJai(object):
                              json=body)
 
     @raise_status_error(200)
-    def _import_database(
-        self,
-        database_name: str,
-        owner_id: str,
-        owner_email: str,
-        import_name: str = None,
-    ):
+    def _import_database(self,
+                         database_name: str,
+                         owner_id: str,
+                         owner_email: str,
+                         import_name: str = None):
         """
         Get name and type of each database in your environment.
         """
         body = {"database_name": database_name, "import_name": import_name}
-        return requests.post(
-            url=self.url + f"/import?userId={owner_id}&email={owner_email}",
-            headers=self.header,
-            json=body,
-        )
+        return requests.post(url=self.url +
+                             f"/import?userId={owner_id}&email={owner_email}",
+                             headers=self.header,
+                             json=body)
 
     @raise_status_error(202)
     def _append(self, name: str):

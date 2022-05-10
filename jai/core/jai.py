@@ -1854,9 +1854,3 @@ class Jai(BaseJai):
                     name, data_json, overwrite=False)
 
         return insert_responses
-
-
-# ? overwrite is True and append is True -> OK
-# ? overwrite is False and append is True -> OK
-# ? overwrite is True and append is False -> OK
-# ? overwrite is True and append is True -> OK

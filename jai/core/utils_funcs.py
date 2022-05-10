@@ -88,7 +88,7 @@ def data2json(data,
                     return df2json(data.set_index('id'))
             raise ValueError(one_column)
         raise NotImplementedError(
-            f"type `{data.__class__.__name__}` is not accepted. {one_column}")
+            f"type `{data.__class__.__name__}` is not accepted.\n{one_column}")
     elif dtype in [
             PossibleDtypes.recommendation, PossibleDtypes.recommendation_system
     ]:
