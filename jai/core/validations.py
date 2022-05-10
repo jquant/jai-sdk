@@ -76,7 +76,7 @@ def hyperparams_validation(dtype: str):
             'pretraining_ratio', 'noise_level', 'check_val_every_n_epoch',
             'gradient_clip_val', 'gradient_clip_algorithm', 'min_epochs',
             'max_epochs', 'patience', 'min_delta', 'random_seed',
-            'stochastic_weight_avg', 'pruning_method', 'pruning_amount',
+            'swa_parameters', 'pruning_method', 'pruning_amount',
             'training_type'
         ])
     elif dtype == PossibleDtypes.supervised:
@@ -86,7 +86,7 @@ def hyperparams_validation(dtype: str):
             'pretraining_ratio', 'noise_level', 'check_val_every_n_epoch',
             'gradient_clip_val', 'gradient_clip_algorithm', 'min_epochs',
             'max_epochs', 'patience', 'min_delta', 'random_seed',
-            'stochastic_weight_avg', 'pruning_method', 'pruning_amount'
+            'swa_parameters', 'pruning_method', 'pruning_amount'
         ])
     elif dtype == PossibleDtypes.recommendation_system:
         possible.extend([
@@ -95,7 +95,7 @@ def hyperparams_validation(dtype: str):
             'pretraining_ratio', 'noise_level', 'check_val_every_n_epoch',
             'gradient_clip_val', 'gradient_clip_algorithm', 'min_epochs',
             'max_epochs', 'patience', 'min_delta', 'random_seed',
-            'stochastic_weight_avg', 'pruning_method', 'pruning_amount'
+            'swa_parameters', 'pruning_method', 'pruning_amount'
         ])
     elif dtype == PossibleDtypes.image:
         possible.extend(['model_name', 'mode', 'resize_H', 'resize_W'])
