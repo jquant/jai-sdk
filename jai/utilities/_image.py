@@ -108,7 +108,7 @@ def read_image_folder(image_folder: Union[Path, List[Path]],
                     raise ValueError(
                         f"file {filename} seems to be corrupted. {error}")
 
-                corrupted_files.append(filename)
+                corrupted_files.append(filename.as_posix())
                 continue
 
             encoded_images.append({
@@ -121,7 +121,7 @@ def read_image_folder(image_folder: Union[Path, List[Path]],
                 raise ValueError(
                     f"file {filename} does not have the proper extension.\
                         acceptable extensions: {extensions}")
-            ignored_files.append(filename)
+            ignored_files.append(filename.as_posix())
 
     if handle_errors == 'warn' and len(ignored_files) > 0:
         print("Here are the ignored files:")
