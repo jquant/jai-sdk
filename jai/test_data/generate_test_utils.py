@@ -9,7 +9,7 @@ def generate_read_image_folder(image_folder):
                                  id_pattern="img(\d+)")
     print()
     print(img_data)
-    img_data.to_parquet(image_folder / "dataframe_img.parquet")
+    img_data.to_csv(image_folder / "dataframe_img.csv")
 
 
 if __name__ == '__main__':
