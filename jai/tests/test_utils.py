@@ -177,7 +177,7 @@ def test_read_image_folder(setup_img_data,
     img_data = setup_img_data
     data = read_image_folder(image_folder=image_folder)
     data = data.rename(columns={"test_imgs": "image_base64"})
-    assert_frame_equal(img_data.to_frame(), data['image_base64'])
+    assert_series_equal(img_data.to_frame(), data['image_base64'])
 
 
 def test_read_image_folder_corrupted_ignore(
@@ -213,4 +213,4 @@ def test_read_image_folder_list(setup_img_data,
     img_data = img_data.reset_index(drop=True).rename_axis(index="id")
     data = read_image_folder(image_folder=images)
     data = data.rename(columns={"test_imgs": "image_base64"})
-    assert_frame_equal(img_data.to_frame(), data['image_base64'])
+    assert_series_equal(img_data.to_frame(), data['image_base64'])
