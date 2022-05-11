@@ -65,7 +65,8 @@ def test_data2json(setup_dataframe, setup_img_data, dtype, col_name, db_type):
             "Name": col_name
         }).set_index("id")[col_name]
     else:
-        data = setup_img_data
+        data = setup_img_data.rename(columns={"test_imgs": "image_base64"})
+        data = data['image_base64']
 
     if dtype == 'df':
         data = data.to_frame()
@@ -172,25 +173,26 @@ def test_df_error(col1, col2, ids):
         df2json(df)
 
 
-def test_read_image_folder(setup_img_data,
-                           image_folder=Path("jai/test_data/test_imgs")):
+@pytest.mark.parametrize('image_folder', [Path("jai/test_data/test_imgs")])
+def test_read_image_folder(setup_img_data, image_folder):
     img_data = setup_img_data
-    data = read_image_folder(image_folder=image_folder)
-    data = data.rename(columns={"test_imgs": "image_base64"})
-    assert_frame_equal(img_data.to_frame(), data[['image_base64']])
+    data = read_image_folder(image_folder=image_folder, id_pattern="img(\d+)")
+    assert_frame_equal(img_data, data)
 
 
-def test_read_image_folder_corrupted_ignore(
-        image_folder=Path("jai/test_data/test_imgs_corrupted")):
+@pytest.mark.parametrize('image_folder',
+                         [Path("jai/test_data/test_imgs_corrupted")])
+def test_read_image_folder_corrupted_ignore(image_folder):
     # create empty Series
-    index = pd.Index([], name='id')
-    empty_df = pd.DataFrame([], index=index)
-    data = read_image_folder(image_folder=image_folder)
+    empty_df = pd.DataFrame([])
+    data = read_image_folder(image_folder=image_folder,
+                             id_pattern="img(\d+)_corrupted")
     assert_frame_equal(empty_df, data)
 
 
-def test_read_image_folder_corrupted(
-        image_folder=Path("jai/test_data/test_imgs_corrupted")):
+@pytest.mark.parametrize('image_folder',
+                         [Path("jai/test_data/test_imgs_corrupted")])
+def test_read_image_folder_corrupted(image_folder):
     with pytest.raises(ValueError):
         read_image_folder(image_folder=image_folder, handle_errors="raise")
 
@@ -201,15 +203,12 @@ def test_read_image_folder_no_parameters():
         read_image_folder()
 
 
-def test_read_image_folder_list(setup_img_data,
-                                images=[
-                                    Path("jai/test_data/test_imgs/"),
-                                ]):
+@pytest.mark.parametrize('images', [[Path("jai/test_data/test_imgs/")]])
+def test_read_image_folder_list(setup_img_data, images):
     # the idea for this particular test is to simply make use of the
     # previously generated dataframe for the read_image_folder test; since
     # we are passing the paths to each image file DIRECTLY, the indexes will
     # differ. That is why we reset it and rename it to "id" again
     img_data = setup_img_data
-    data = read_image_folder(image_folder=images)
-    data = data.rename(columns={"test_imgs": "image_base64"})
-    assert_frame_equal(img_data.to_frame(), data[['image_base64']])
+    data = read_image_folder(image_folder=images, id_pattern="img(\d+)")
+    assert_frame_equal(img_data, data)

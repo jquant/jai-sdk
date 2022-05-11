@@ -78,7 +78,12 @@ def read_image_folder(image_folder: Union[Path, List[Path]],
     for i, filename in enumerate(tqdm(loop_files)):
         if filename.suffix in extensions:
             if id_pattern is not None:
-                i = int(re.search(id_pattern, filename.stem).group(1))
+                search = re.search(id_pattern, filename.stem)
+                if search is None:
+                    raise ValueError(
+                        f"Pattern `{id_pattern}` found no matches on filename `{filename.stem}`."
+                    )
+                i = int(search.group(1))
 
             try:
                 im = Image.open(filename)
