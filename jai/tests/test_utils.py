@@ -184,7 +184,7 @@ def test_read_image_folder_corrupted_ignore(
         image_folder=Path("jai/test_data/test_imgs_corrupted")):
     # create empty Series
     index = pd.Index([], name='id')
-    empty_df = pd.DataFrame([], index=index, columns=['image_base64'])
+    empty_df = pd.DataFrame([], index=index)
     data = read_image_folder(image_folder=image_folder)
     assert_frame_equal(empty_df, data)
 
@@ -210,7 +210,6 @@ def test_read_image_folder_list(setup_img_data,
     # we are passing the paths to each image file DIRECTLY, the indexes will
     # differ. That is why we reset it and rename it to "id" again
     img_data = setup_img_data
-    img_data = img_data.reset_index(drop=True).rename_axis(index="id")
     data = read_image_folder(image_folder=images)
     data = data.rename(columns={"test_imgs": "image_base64"})
     assert_frame_equal(img_data.to_frame(), data[['image_base64']])
