@@ -3,10 +3,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-from pandas._testing import assert_series_equal
+from pandas._testing import assert_series_equal, assert_frame_equal
 
 from jai.core.utils_funcs import data2json, df2json, series2json
-from jai.utilities._image import read_image_folder
+from jai.utilities import read_image_folder
 
 
 @pytest.fixture(scope="session")
@@ -176,7 +176,7 @@ def test_read_image_folder(setup_img_data,
                            image_folder=Path("jai/test_data/test_imgs")):
     img_data = setup_img_data
     data = read_image_folder(image_folder=image_folder)
-    assert_series_equal(img_data, data)
+    assert_frame_equal(img_data.to_frame(), data)
 
 
 def test_read_image_folder_corrupted(
@@ -190,13 +190,13 @@ def test_read_image_folder_corrupted_ignore(
     # create empty Series
     index = pd.Index([], name='id')
     empty_series = pd.Series([], index=index, name='image_base64')
-    data = read_image_folder(image_folder=image_folder, ignore_corrupt=True)
+    data = read_image_folder(image_folder=image_folder, handle_errors="raise")
     assert_series_equal(empty_series, data)
 
 
 def test_read_image_folder_no_parameters():
     # just call function with no parameters
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         read_image_folder()
 
 

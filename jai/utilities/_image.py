@@ -20,7 +20,7 @@ def decode_image(encoded_string):
     return Image.open(BytesIO(b64decode(encoded_string))).convert("RGB")
 
 
-def read_image_folder(image_folder: Union[str, Path],
+def read_image_folder(image_folder: Union[Path, List[Path]],
                       resize: Tuple[int, int] = None,
                       handle_errors: str = "ignore",
                       extensions: List = [".png", ".jpg", ".jpeg"]):
@@ -55,8 +55,13 @@ def read_image_folder(image_folder: Union[str, Path],
         Pandas Dataframe with acceptable format for jai usage.
 
     """
-    image_folder = Path(image_folder)
-    name = image_folder.name
+    if isinstance(image_folder, (Path, str)):
+        image_folder = Path(image_folder)
+        name = image_folder.name
+        loop_files = image_folder.iterdir()
+    else:
+        name = Path(image_folder[0]).name
+        loop_files = image_folder.iterdir()
 
     if handle_errors not in ['raise', 'warn', 'ignore']:
         raise ValueError("handle_errors must be 'raise', 'warn' or 'ignore'")
@@ -64,7 +69,7 @@ def read_image_folder(image_folder: Union[str, Path],
     encoded_images = []
     corrupted_files = []
     ignored_files = []
-    for i, filename in enumerate(tqdm(image_folder.iterdir())):
+    for i, filename in enumerate(tqdm(loop_files)):
         if filename.suffix in extensions:
             try:
                 im = Image.open(filename)
@@ -90,6 +95,7 @@ def read_image_folder(image_folder: Union[str, Path],
                         f"file {filename} seems to be corrupted. {error}")
 
                 corrupted_files.append(filename)
+                continue
 
             encoded_images.append({
                 'id': i,

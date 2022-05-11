@@ -25,9 +25,12 @@ def check_dtype_and_clean(data, db_type):
     data : pandas.DataFrame or pandas.Series
         Data without NAs
     """
-    if isinstance(data, list):
-        data = pd.Series(data)
-    elif isinstance(data, np.ndarray):
+    if not isinstance(data, (list, np.ndarray, pd.Series, pd.DataFrame)):
+        raise TypeError(
+            f"Inserted data is of type `{data.__class__.__name__}`," \
+                f"but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame")
+
+    if isinstance(data, np.ndarray):
         if not data.any():
             raise ValueError(f"Inserted data is empty.")
         elif data.ndim == 1:
@@ -38,10 +41,9 @@ def check_dtype_and_clean(data, db_type):
             raise ValueError(
                 f"Inserted 'np.ndarray' data has many dimensions ({data.ndim}). JAI only accepts up to 2-d inputs."
             )
-    elif not isinstance(data, (pd.Series, pd.DataFrame)):
-        raise TypeError(
-            f"Inserted data is of type `{data.__class__.__name__}`," \
-                f"but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame")
+    elif isinstance(data, list):
+        data = pd.Series(data)
+
     if db_type in [
             PossibleDtypes.text, PossibleDtypes.fasttext, PossibleDtypes.edit,
             PossibleDtypes.vector

@@ -2,14 +2,11 @@ import pytest
 
 from jai.core.exceptions import DeprecatedError
 from jai.core.types import PossibleDtypes
-from jai.core.validations import (cat_process_validation,
-                                  datetime_process_validation,
-                                  features_process_validation,
-                                  hyperparams_validation, kwargs_possibilities,
-                                  kwargs_validation, label_process_validation,
-                                  num_process_validation,
-                                  pretrained_bases_process_validation,
-                                  split_process_validation)
+from jai.core.validations import (
+    cat_process_validation, datetime_process_validation,
+    features_process_validation, hyperparams_validation, kwargs_possibilities,
+    kwargs_validation, label_process_validation, num_process_validation,
+    pretrained_bases_process_validation, split_process_validation)
 
 
 @pytest.mark.parametrize('dtype, results', [
@@ -18,7 +15,7 @@ from jai.core.validations import (cat_process_validation,
         'hidden_latent_dim', 'dropout_rate', 'momentum', 'pretraining_ratio',
         'noise_level', 'check_val_every_n_epoch', 'gradient_clip_val',
         'gradient_clip_algorithm', 'min_epochs', 'max_epochs', 'patience',
-        'min_delta', 'random_seed', 'stochastic_weight_avg', 'pruning_method',
+        'min_delta', 'random_seed', 'swa_parameters', 'pruning_method',
         'pruning_amount', 'training_type'
     ], [])),
     (PossibleDtypes.supervised, ([
@@ -26,7 +23,7 @@ from jai.core.validations import (cat_process_validation,
         'hidden_latent_dim', 'dropout_rate', 'momentum', 'pretraining_ratio',
         'noise_level', 'check_val_every_n_epoch', 'gradient_clip_val',
         'gradient_clip_algorithm', 'min_epochs', 'max_epochs', 'patience',
-        'min_delta', 'random_seed', 'stochastic_weight_avg', 'pruning_method',
+        'min_delta', 'random_seed', 'swa_parameters', 'pruning_method',
         'pruning_amount'
     ], [])),
     (PossibleDtypes.image,

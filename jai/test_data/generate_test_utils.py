@@ -4,7 +4,7 @@ from pathlib import Path
 jai_folder = Path.cwd().parent.parent  # no one's proud of this
 sys.path.append(jai_folder.as_posix())
 
-from jai.image import read_image_folder, resize_image_folder
+from jai.utilities import read_image_folder, resize_image_folder
 
 
 def generate_read_image_folder(image_folder=Path("test_imgs")):

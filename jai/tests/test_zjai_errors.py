@@ -173,7 +173,7 @@ def test_insert_vector_json_exception():
     with pytest.raises(ValueError) as e:
         j.insert_vectors(name="test", data=db, overwrite=True)
     assert e.value.args[
-        0] == f"Data must be a DataFrame with at least 2 columns other than 'id'. Current column(s):\n[0]"
+        0] == f"Data must be a DataFrame with at least 2 columns other than `id`. Current column(s):\n[0]"
 
     db = pd.DataFrame({'a': [1, 'a'], 'b': [1, 'c'], 'c': [1, np.nan]})
     with pytest.raises(ValueError) as e:
