@@ -181,11 +181,13 @@ def test_read_image_folder(setup_img_data, image_folder):
 
 @pytest.mark.parametrize('image_folder',
                          [Path("jai/test_data/test_imgs_corrupted")])
-def test_read_image_folder_corrupted_ignore(image_folder):
+@pytest.mark.parametrize('handle_errors', ["ignore", "warn"])
+def test_read_image_folder_corrupted_ignore(image_folder, handle_errors):
     # create empty Series
     empty_df = pd.DataFrame([])
     data = read_image_folder(image_folder=image_folder,
-                             id_pattern="img(\d+)_corrupted")
+                             id_pattern="img(\d+)_corrupted",
+                             handle_errors=handle_errors)
     assert_frame_equal(empty_df, data)
 
 
