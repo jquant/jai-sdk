@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-from pandas._testing import assert_series_equal
+from pandas._testing import assert_frame_equal
 
 from jai.core.utils_funcs import data2json, df2json, series2json
 from jai.utilities import read_image_folder
