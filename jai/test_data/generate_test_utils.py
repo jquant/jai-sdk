@@ -9,7 +9,7 @@ def generate_read_image_folder(image_folder):
                                  id_pattern="img(\d+)")
     print()
     print(img_data)
-    img_data.to_pickle(image_folder / "dataframe_img.pkl", protocol=4)
+    img_data.to_parquet(image_folder / "dataframe_img.parquet")
 
 
 if __name__ == '__main__':

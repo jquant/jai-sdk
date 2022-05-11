@@ -21,9 +21,8 @@ def setup_dataframe():
 
 @pytest.fixture(scope="session")
 def setup_img_data():
-    IMG_FILE = Path("jai/test_data/test_imgs/dataframe_img.pkl")
-    img_file = pd.read_pickle(IMG_FILE)
-    return img_file
+    IMG_FILE = Path("jai/test_data/test_imgs/dataframe_img.parquet")
+    return pd.read_parquet(IMG_FILE)
 
 
 # =============================================================================
