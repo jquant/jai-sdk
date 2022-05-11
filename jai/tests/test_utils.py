@@ -176,13 +176,7 @@ def test_read_image_folder(setup_img_data,
                            image_folder=Path("jai/test_data/test_imgs")):
     img_data = setup_img_data
     data = read_image_folder(image_folder=image_folder)
-    assert_frame_equal(img_data.to_frame(), data)
-
-
-def test_read_image_folder_corrupted(
-        image_folder=Path("jai/test_data/test_imgs_corrupted")):
-    with pytest.raises(ValueError):
-        read_image_folder(image_folder=image_folder)
+    assert_frame_equal(img_data.to_frame(), data.set_index("id"))
 
 
 def test_read_image_folder_corrupted_ignore(
@@ -190,8 +184,14 @@ def test_read_image_folder_corrupted_ignore(
     # create empty Series
     index = pd.Index([], name='id')
     empty_series = pd.Series([], index=index, name='image_base64')
-    data = read_image_folder(image_folder=image_folder, handle_errors="raise")
+    data = read_image_folder(image_folder=image_folder)
     assert_series_equal(empty_series, data)
+
+
+def test_read_image_folder_corrupted(
+        image_folder=Path("jai/test_data/test_imgs_corrupted")):
+    with pytest.raises(ValueError):
+        read_image_folder(image_folder=image_folder, handle_errors="raise")
 
 
 def test_read_image_folder_no_parameters():
@@ -200,17 +200,15 @@ def test_read_image_folder_no_parameters():
         read_image_folder()
 
 
-def test_read_image_folder_single_img(
-    setup_img_data,
-    images=[
-        Path("jai/test_data/test_imgs/img0.jpg"),
-        Path("jai/test_data/test_imgs/img1.jpg")
-    ]):
+def test_read_image_folder_list(setup_img_data,
+                                images=[
+                                    Path("jai/test_data/test_imgs/"),
+                                ]):
     # the idea for this particular test is to simply make use of the
     # previously generated dataframe for the read_image_folder test; since
     # we are passing the paths to each image file DIRECTLY, the indexes will
     # differ. That is why we reset it and rename it to "id" again
     img_data = setup_img_data
     img_data = img_data.reset_index(drop=True).rename_axis(index="id")
-    data = read_image_folder(images=images)
+    data = read_image_folder(image_folder=images)
     assert_series_equal(img_data, data)
