@@ -121,4 +121,6 @@ def read_image_folder(image_folder: Union[Path, List[Path]],
         corrupted_message = '\n'.join(corrupted_files)
         print(f"{corrupted_message}")
 
-    return pd.DataFrame(encoded_images).set_index("id")
+    if len(encoded_images):
+        return pd.DataFrame(encoded_images).set_index("id")
+    return pd.DataFrame(encoded_images)
