@@ -1,7 +1,7 @@
+import argparse
 from pathlib import Path
 
 from jai.utilities import read_image_folder
-import argparse
 
 
 def generate_read_image_folder(image_folder):
