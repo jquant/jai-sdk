@@ -22,7 +22,7 @@ def setup_dataframe():
 @pytest.fixture(scope="session")
 def setup_img_data():
     IMG_FILE = Path("jai/test_data/test_imgs/dataframe_img.csv")
-    return pd.read_csv(IMG_FILE).set_index("id")
+    return pd.read_csv(IMG_FILE).set_index("id").sort_index()
 
 
 # =============================================================================
@@ -176,7 +176,7 @@ def test_df_error(col1, col2, ids):
 def test_read_image_folder(setup_img_data, image_folder):
     img_data = setup_img_data
     data = read_image_folder(image_folder=image_folder, id_pattern="img(\d+)")
-    assert_frame_equal(img_data, data)
+    assert_frame_equal(img_data, data.sort_index())
 
 
 @pytest.mark.parametrize('image_folder',
@@ -210,4 +210,4 @@ def test_read_image_folder_list(setup_img_data, images):
     # differ. That is why we reset it and rename it to "id" again
     img_data = setup_img_data
     data = read_image_folder(image_folder=images, id_pattern="img(\d+)")
-    assert_frame_equal(img_data, data)
+    assert_frame_equal(img_data, data.sort_index())
