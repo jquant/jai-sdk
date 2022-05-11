@@ -7,6 +7,7 @@ from typing import List, Tuple, Union
 import pandas as pd
 from PIL import Image
 from tqdm import tqdm
+import re
 
 __all__ = ["read_image_folder"]
 
@@ -24,6 +25,7 @@ def decode_image(encoded_string):
 def read_image_folder(image_folder: Union[Path, List[Path]],
                       resize: Tuple[int, int] = None,
                       handle_errors: str = "ignore",
+                      id_pattern: str = None,
                       extensions: List = [".png", ".jpg", ".jpeg"]):
     """
     Function to read images from folder and transform to a format compatible
@@ -41,6 +43,8 @@ def read_image_folder(image_folder: Union[Path, List[Path]],
         Whether to ignore errors and skipped files. 
         If "ignore", could probably result in a internal error later on.
         The default is "ignore".
+    id_pattern : str, optional
+        regex string to find id value. The default is None.
     extensions : List, optional
         List of acceptable extensions.
         The default is [".png", ".jpg", ".jpeg"].
@@ -73,6 +77,9 @@ def read_image_folder(image_folder: Union[Path, List[Path]],
     ignored_files = []
     for i, filename in enumerate(tqdm(loop_files)):
         if filename.suffix in extensions:
+            if id_pattern is not None:
+                i = int(re.search(id_pattern, filename.stem).group(1))
+
             try:
                 im = Image.open(filename)
                 im.verify()

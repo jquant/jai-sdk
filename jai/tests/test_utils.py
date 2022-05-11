@@ -184,7 +184,7 @@ def test_read_image_folder_corrupted_ignore(
         image_folder=Path("jai/test_data/test_imgs_corrupted")):
     # create empty Series
     index = pd.Index([], name='id')
-    empty_df = pd.DataFrame([], index=index, name='image_base64')
+    empty_df = pd.DataFrame([], index=index, columns=['image_base64'])
     data = read_image_folder(image_folder=image_folder)
     assert_frame_equal(empty_df, data)
 
