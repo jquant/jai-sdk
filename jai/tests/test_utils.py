@@ -176,7 +176,7 @@ def test_read_image_folder(setup_img_data,
                            image_folder=Path("jai/test_data/test_imgs")):
     img_data = setup_img_data
     data = read_image_folder(image_folder=image_folder)
-    assert_frame_equal(img_data.to_frame(), data.set_index("id"))
+    assert_frame_equal(img_data.to_frame(), data['image_base64'])
 
 
 def test_read_image_folder_corrupted_ignore(

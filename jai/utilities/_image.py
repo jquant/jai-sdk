@@ -6,6 +6,7 @@ from typing import List, Tuple, Union
 import pandas as pd
 from PIL import Image
 from tqdm import tqdm
+from itertools import chain
 
 __all__ = ["read_image_folder"]
 
@@ -61,7 +62,8 @@ def read_image_folder(image_folder: Union[Path, List[Path]],
         loop_files = image_folder.iterdir()
     else:
         name = Path(image_folder[0]).name
-        loop_files = image_folder.iterdir()
+        loop_files = chain(
+            *[Path(folder).iterdir() for folder in image_folder])
 
     if handle_errors not in ['raise', 'warn', 'ignore']:
         raise ValueError("handle_errors must be 'raise', 'warn' or 'ignore'")
