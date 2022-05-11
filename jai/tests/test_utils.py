@@ -177,16 +177,16 @@ def test_read_image_folder(setup_img_data,
     img_data = setup_img_data
     data = read_image_folder(image_folder=image_folder)
     data = data.rename(columns={"test_imgs": "image_base64"})
-    assert_series_equal(img_data, data['image_base64'])
+    assert_frame_equal(img_data.to_frame(), data[['image_base64']])
 
 
 def test_read_image_folder_corrupted_ignore(
         image_folder=Path("jai/test_data/test_imgs_corrupted")):
     # create empty Series
     index = pd.Index([], name='id')
-    empty_series = pd.Series([], index=index, name='image_base64')
+    empty_df = pd.DataFrame([], index=index, name='image_base64')
     data = read_image_folder(image_folder=image_folder)
-    assert_series_equal(empty_series, data)
+    assert_frame_equal(empty_df, data)
 
 
 def test_read_image_folder_corrupted(
@@ -213,4 +213,4 @@ def test_read_image_folder_list(setup_img_data,
     img_data = img_data.reset_index(drop=True).rename_axis(index="id")
     data = read_image_folder(image_folder=images)
     data = data.rename(columns={"test_imgs": "image_base64"})
-    assert_series_equal(img_data, data['image_base64'])
+    assert_frame_equal(img_data.to_frame(), data[['image_base64']])
