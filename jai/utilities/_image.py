@@ -1,3 +1,4 @@
+import re
 from base64 import b64decode, b64encode
 from io import BytesIO
 from itertools import chain
@@ -7,7 +8,6 @@ from typing import List, Tuple, Union
 import pandas as pd
 from PIL import Image
 from tqdm import tqdm
-import re
 
 __all__ = ["read_image_folder"]
 
