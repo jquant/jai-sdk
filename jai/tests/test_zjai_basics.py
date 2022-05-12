@@ -1,16 +1,14 @@
-from jai import Jai
-from pathlib import Path
-from pyspark.sql import SparkSession
-from pyspark.sql import dataframe as psdf
-from pandas._testing import assert_frame_equal, assert_series_equal
-
 import json
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
 from decouple import config
+from pandas._testing import assert_frame_equal, assert_series_equal
+from pyspark.sql import SparkSession
 
+from jai import Jai
 from jai.core.utils_funcs import resolve_db_type
 from jai.core.validations import check_dtype_and_clean
 

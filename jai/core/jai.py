@@ -13,9 +13,10 @@ import pandas as pd
 import psutil
 import requests
 from pandas.api.types import is_integer_dtype, is_numeric_dtype
-from sklearn.model_selection import StratifiedShuffleSplit
-from tqdm import trange, tqdm
 from pyspark.sql import dataframe as psdf
+from sklearn.model_selection import StratifiedShuffleSplit
+from tqdm import tqdm, trange
+
 from jai.utilities._processing import (filter_resolution, filter_similar,
                                        predict2df)
 
