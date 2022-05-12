@@ -4,11 +4,15 @@ from pyspark.sql import SparkSession
 from pyspark.sql import dataframe as psdf
 from pandas._testing import assert_frame_equal, assert_series_equal
 
+import json
+
+import numpy as np
 import pandas as pd
 import pytest
-import numpy as np
-import json
 from decouple import config
+
+from jai.core.utils_funcs import resolve_db_type
+from jai.core.validations import check_dtype_and_clean
 
 URL = 'http://localhost:8001'
 AUTH_KEY = ""
@@ -37,7 +41,10 @@ def test_custom_url():
 def test_names():
     j = Jai(url=URL, auth_key=AUTH_KEY)
     j.header = HEADER_TEST
-    assert j.names == ['test_match', 'test_resolution', 'titanic_ssupervised']
+    assert j.names == [
+        'test_insert_vector', 'test_match', 'test_resolution',
+        'titanic_ssupervised'
+    ]
 
 
 def test_info():
@@ -98,7 +105,7 @@ def test_check_dtype_and_clean():
 
     # make a few lines on 'category' column NaN
     data.loc[1050:, "category"] = np.nan
-    assert_frame_equal(j._check_dtype_and_clean(data, "Supervised"), data)
+    assert_frame_equal(check_dtype_and_clean(data, "Supervised"), data)
 
     # Try text data
     text = pd.Series(['a', 'b', 'c', np.nan, 'd', 'e', np.nan])
@@ -113,7 +120,7 @@ def test_check_dtype_and_clean():
 def test_resolve_db_type(db_type, col, ans):
     j = Jai(url=URL, auth_key=AUTH_KEY)
     j.header = HEADER_TEST
-    assert j._resolve_db_type(db_type, col) == ans
+    assert resolve_db_type(db_type, col) == ans
 
 
 @pytest.mark.parametrize('name', ['titanic_ssupervised'])
@@ -187,13 +194,20 @@ def test_describe(name):
 def test_rename():
     j = Jai(url=URL, auth_key=AUTH_KEY)
     j.header = HEADER_TEST
-    assert j.names == ['test_match', 'test_resolution', 'titanic_ssupervised']
+    assert j.names == [
+        'test_insert_vector', 'test_match', 'test_resolution',
+        'titanic_ssupervised'
+    ]
     j.rename(original_name='test_match', new_name='test_match_new')
     assert j.names == [
-        'test_match_new', 'test_resolution', 'titanic_ssupervised'
+        'test_insert_vector', 'test_match_new', 'test_resolution',
+        'titanic_ssupervised'
     ]
     j.rename(original_name='test_match_new', new_name='test_match')
-    assert j.names == ['test_match', 'test_resolution', 'titanic_ssupervised']
+    assert j.names == [
+        'test_insert_vector', 'test_match', 'test_resolution',
+        'titanic_ssupervised'
+    ]
 
 
 @pytest.mark.parametrize('db_name', ['test_match'])
