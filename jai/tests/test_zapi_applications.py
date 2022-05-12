@@ -1,17 +1,27 @@
-from jai import Jai
-from pandas.api.types import infer_dtype
-from .test_utils import setup_dataframe
-import pandas as pd
-import numpy as np
-import pytest
 import json
-import os
+
+import numpy as np
+import pandas as pd
+import pytest
+from decouple import config
+
+from jai import Jai
 
 URL = 'http://localhost:8001'
 AUTH_KEY = ""
-HEADER_TEST = json.loads(os.environ['HEADER_TEST'])
+HEADER_TEST = json.loads(config('HEADER_TEST'))
 
 np.random.seed(42)
+
+
+@pytest.fixture(scope="session")
+def setup_dataframe():
+    TITANIC_TRAIN = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/train.csv"
+    TITANIC_TEST = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/test.csv"
+
+    train = pd.read_csv(TITANIC_TRAIN)
+    test = pd.read_csv(TITANIC_TEST)
+    return train, test
 
 
 # =============================================================================
@@ -90,7 +100,7 @@ def test_sanity(name, setup_dataframe):
         if n.startswith(name):
             j.delete_database(n)
 
-    x = j.sanity(name, data)
+    j.sanity(name, data)
     assert j.is_valid(name), f"valid name {name} after train sanity"
 
     v = j.sanity(name, test.iloc[half:])
@@ -129,7 +139,8 @@ def test_match(name):
                  data_right,
                  top_k=15,
                  threshold=0.5,
-                 original_data=True)
+                 original_data=True,
+                 overwrite=True)
 
     assert ok['id_left'].tolist() == expected, "match failed"
 

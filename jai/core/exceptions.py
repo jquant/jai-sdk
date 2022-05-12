@@ -1,4 +1,4 @@
-__all__ = ["DeprecatedError", "ValidationError"]
+__all__ = ["DeprecatedError", "ValidationError", "ParamError"]
 
 
 class DeprecatedError(AttributeError):
@@ -10,4 +10,10 @@ class DeprecatedError(AttributeError):
 class ValidationError(ValueError):
     """
     Error validating the given inputs
+    """
+
+
+class ParamError(ValueError):
+    """
+    Error inserting collection
     """
