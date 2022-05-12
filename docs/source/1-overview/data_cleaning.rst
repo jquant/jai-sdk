@@ -63,11 +63,11 @@ You can find a complete `fill example here <https://github.com/jquant/jai-sdk/bl
 .. code-block:: python
 
     >>> import pandas as pd
-    >>> from jai.processing import process_predict
+    >>> from jai.processing import predict2df
     ...
     >>> j = Jai(AUTH_KEY)
     >>> results = j.fill(name, data, COL_TO_FILL)
-    >>> processed = process_predict(results)
+    >>> processed = predict2df(results)
     >>> pd.DataFrame(processed).sort_values('id')
               id   sanity_prediction    confidence_level (%)
        0       1             value_1                    70.9
@@ -85,11 +85,11 @@ You can find a complete `sanity example here <https://github.com/jquant/jai-sdk/
 .. code-block:: python
 
     >>> import pandas as pd
-    >>> from jai.processing import process_predict
+    >>> from jai.processing import predict2df
     ...
     >>> j = Jai(AUTH_KEY)
     >>> results = j.sanity(name, data)
-    >>> processed = process_predict(results)
+    >>> processed = predict2df(results)
     >>> pd.DataFrame(processed).sort_values('id')
               id   sanity_prediction    confidence_level (%)
        0       1               Valid                    70.9

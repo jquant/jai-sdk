@@ -1,11 +1,12 @@
-from multiprocessing.sharedctypes import Value
-from jai import Jai
-import pandas as pd
-import warnings
-import pytest
 import json
+
 import numpy as np
+import pandas as pd
+import pytest
 from decouple import config
+
+from jai import Jai
+from jai.core.validations import check_dtype_and_clean, check_name_lengths
 
 INVALID_URL = 'http://google.com'
 VALID_URL = 'http://localhost:8001'
@@ -129,16 +130,16 @@ def test_check_dtype_and_clean_exception():
     j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
     j.header = HEADER_TEST
     with pytest.raises(TypeError):
-        j._check_dtype_and_clean(data=dict(), db_type="SelfSupervised")
+        check_dtype_and_clean(data=dict(), db_type="SelfSupervised")
 
     db = np.array([])
     with pytest.raises(ValueError) as e:
-        j._check_dtype_and_clean(data=db, db_type="SelfSupervised")
+        check_dtype_and_clean(data=db, db_type="SelfSupervised")
     assert e.value.args[0] == f"Inserted data is empty."
 
     db = np.array([[[1]]])
     with pytest.raises(ValueError) as e:
-        j._check_dtype_and_clean(data=db, db_type="SelfSupervised")
+        check_dtype_and_clean(data=db, db_type="SelfSupervised")
     assert e.value.args[
         0] == f"Inserted 'np.ndarray' data has many dimensions ({db.ndim}). JAI only accepts up to 2-d inputs."
 
@@ -172,39 +173,13 @@ def test_insert_vector_json_exception():
     with pytest.raises(ValueError) as e:
         j.insert_vectors(name="test", data=db, overwrite=True)
     assert e.value.args[
-        0] == f"Data must be a DataFrame with at least 2 columns other than 'id'. Current column(s):\n[0]"
+        0] == f"Data must be a DataFrame with at least 2 columns other than `id`. Current column(s):\n[0]"
 
     db = pd.DataFrame({'a': [1, 'a'], 'b': [1, 'c'], 'c': [1, np.nan]})
     with pytest.raises(ValueError) as e:
         j.insert_vectors(name="test", data=db, overwrite=True)
     assert e.value.args[
         0] == f"Columns ['a', 'b'] contains values types different from numeric."
-
-
-def test_check_kwargs_exception():
-    j = Jai(url=INVALID_URL, auth_key=AUTH_KEY)
-    j.header = HEADER_TEST
-    with pytest.raises(ValueError) as e:
-        j._check_kwargs(db_type="Supervised")
-    assert e.value.args[0] == f"Missing the required arguments: ['label']"
-    with pytest.raises(ValueError) as e:
-        j._check_kwargs(
-            db_type="SelfSupervised",
-            **{'trained_bases': {
-                'db_parent': 'test',
-                'id_name': 'test'
-            }})
-    assert e.value.args[0] == f'Inserted key argument \'trained_bases\' is not a valid one for dtype="SelfSupervised".'\
-                    f' Please check the documentation and try again.'
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always")
-        j._check_kwargs(
-            db_type="SelfSupervised",
-            **{'mycelia_bases': [{
-                'db_parent': 'test',
-                'id_name': 'test'
-            }]})
-    assert issubclass(w[-1].category, DeprecationWarning)
 
 
 def test_setup_database_exception():
@@ -226,7 +201,7 @@ def test_check_name_lengths_exception():
     j = Jai(url=VALID_URL, auth_key=AUTH_KEY)
     j.header = HEADER_TEST
     with pytest.raises(ValueError):
-        j._check_name_lengths(name="test", cols=[j.generate_name(length=35)])
+        check_name_lengths(name="test", cols=[j.generate_name(length=35)])
 
 
 @pytest.mark.parametrize("name, batch_size, db_type",

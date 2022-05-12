@@ -1,4 +1,4 @@
-__all__ = ["DeprecatedError", "ValidationError"]
+__all__ = ["DeprecatedError", "ValidationError", "ParamError"]
 
 
 class DeprecatedError(AttributeError):

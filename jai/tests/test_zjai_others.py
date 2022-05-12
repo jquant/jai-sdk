@@ -1,16 +1,27 @@
-from jai import Jai
-from .test_utils import setup_dataframe
-import pandas as pd
-import numpy as np
-import pytest
 import json
+
+import numpy as np
+import pandas as pd
+import pytest
 from decouple import config
+
+from jai import Jai
 
 URL = 'http://localhost:8001'
 AUTH_KEY = ""
 HEADER_TEST = json.loads(config('HEADER_TEST'))
 
 np.random.seed(42)
+
+
+@pytest.fixture(scope="session")
+def setup_dataframe():
+    TITANIC_TRAIN = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/train.csv"
+    TITANIC_TEST = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/test.csv"
+
+    train = pd.read_csv(TITANIC_TRAIN)
+    test = pd.read_csv(TITANIC_TEST)
+    return train, test
 
 
 @pytest.mark.parametrize("name", [('test_insert_vector')])

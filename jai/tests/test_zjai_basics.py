@@ -1,11 +1,15 @@
-from jai import Jai
-from pandas._testing import assert_frame_equal
+import json
 from pathlib import Path
+
+import numpy as np
 import pandas as pd
 import pytest
-import numpy as np
-import json
 from decouple import config
+from pandas._testing import assert_frame_equal
+
+from jai import Jai
+from jai.core.utils_funcs import resolve_db_type
+from jai.core.validations import check_dtype_and_clean
 
 URL = 'http://localhost:8001'
 AUTH_KEY = ""
@@ -88,7 +92,7 @@ def test_check_dtype_and_clean():
 
     # make a few lines on 'category' column NaN
     data.loc[1050:, "category"] = np.nan
-    assert_frame_equal(j._check_dtype_and_clean(data, "Supervised"), data)
+    assert_frame_equal(check_dtype_and_clean(data, "Supervised"), data)
 
 
 @pytest.mark.parametrize("db_type, col, ans", [({
@@ -99,7 +103,7 @@ def test_check_dtype_and_clean():
 def test_resolve_db_type(db_type, col, ans):
     j = Jai(url=URL, auth_key=AUTH_KEY)
     j.header = HEADER_TEST
-    assert j._resolve_db_type(db_type, col) == ans
+    assert resolve_db_type(db_type, col) == ans
 
 
 @pytest.mark.parametrize('name', ['titanic_ssupervised'])

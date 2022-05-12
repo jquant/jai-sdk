@@ -1,18 +1,19 @@
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
-from jai.functions.utils_funcs import (series2json, df2json, data2json)
-from jai.functions.classes import FieldName
-from jai.image import read_image_folder, resize_image_folder
+from pandas._testing import assert_frame_equal
 
-from pandas._testing import assert_series_equal
-from pathlib import Path
+from jai.core.utils_funcs import data2json, df2json, series2json
+from jai.utilities import read_image_folder
 
 
 @pytest.fixture(scope="session")
 def setup_dataframe():
     TITANIC_TRAIN = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/train.csv"
     TITANIC_TEST = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/test.csv"
+
     train = pd.read_csv(TITANIC_TRAIN)
     test = pd.read_csv(TITANIC_TEST)
     return train, test
@@ -20,18 +21,8 @@ def setup_dataframe():
 
 @pytest.fixture(scope="session")
 def setup_img_data():
-    IMG_FILE = Path("jai/test_data/test_imgs/dataframe_img.pkl")
-    img_file = pd.read_pickle(IMG_FILE)
-    return img_file
-
-
-# =============================================================================
-# Tests for FieldName
-# =============================================================================
-def test_fieldname():
-    assert str(FieldName("text")) == "text", '__str__ method FAILED.'
-    assert str(
-        FieldName("image_base64")) == "image_base64", '__str__ method FAILED.'
+    IMG_FILE = Path("jai/test_data/test_imgs/dataframe_img.csv")
+    return pd.read_csv(IMG_FILE).set_index("id").sort_index()
 
 
 # =============================================================================
@@ -73,7 +64,8 @@ def test_data2json(setup_dataframe, setup_img_data, dtype, col_name, db_type):
             "Name": col_name
         }).set_index("id")[col_name]
     else:
-        data = setup_img_data
+        data = setup_img_data.rename(columns={"test_imgs": "image_base64"})
+        data = data['image_base64']
 
     if dtype == 'df':
         data = data.to_frame()
@@ -180,68 +172,44 @@ def test_df_error(col1, col2, ids):
         df2json(df)
 
 
-def test_read_image_folder(setup_img_data,
-                           image_folder=Path("jai/test_data/test_imgs")):
+@pytest.mark.parametrize('image_folder', [Path("jai/test_data/test_imgs")])
+def test_read_image_folder(setup_img_data, image_folder):
     img_data = setup_img_data
-    data = read_image_folder(image_folder=image_folder)
-    assert_series_equal(img_data, data)
+    data = read_image_folder(image_folder=image_folder, id_pattern="img(\d+)")
+    assert_frame_equal(img_data, data.sort_index())
 
 
-def test_read_image_folder_corrupted(
-        image_folder=Path("jai/test_data/test_imgs_corrupted")):
+@pytest.mark.parametrize('image_folder',
+                         [Path("jai/test_data/test_imgs_corrupted")])
+@pytest.mark.parametrize('handle_errors', ["ignore", "warn"])
+def test_read_image_folder_corrupted_ignore(image_folder, handle_errors):
+    # create empty Series
+    empty_df = pd.DataFrame([])
+    data = read_image_folder(image_folder=image_folder,
+                             id_pattern="img(\d+)_corrupted",
+                             handle_errors=handle_errors)
+    assert_frame_equal(empty_df, data)
+
+
+@pytest.mark.parametrize('image_folder',
+                         [Path("jai/test_data/test_imgs_corrupted")])
+def test_read_image_folder_corrupted(image_folder):
     with pytest.raises(ValueError):
-        read_image_folder(image_folder=image_folder)
-
-
-def test_read_image_folder_corrupted_ignore(
-        image_folder=Path("jai/test_data/test_imgs_corrupted")):
-    #create empty Series
-    index = pd.Index([], name='id')
-    empty_series = pd.Series([], index=index, name='image_base64')
-    data = read_image_folder(image_folder=image_folder, ignore_corrupt=True)
-    assert_series_equal(empty_series, data)
+        read_image_folder(image_folder=image_folder, handle_errors="raise")
 
 
 def test_read_image_folder_no_parameters():
     # just call function with no parameters
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         read_image_folder()
 
 
-def test_read_image_folder_single_img(
-    setup_img_data,
-    images=[
-        Path("jai/test_data/test_imgs/img0.jpg"),
-        Path("jai/test_data/test_imgs/img1.jpg")
-    ]):
+@pytest.mark.parametrize('images', [[Path("jai/test_data/test_imgs/")]])
+def test_read_image_folder_list(setup_img_data, images):
     # the idea for this particular test is to simply make use of the
     # previously generated dataframe for the read_image_folder test; since
     # we are passing the paths to each image file DIRECTLY, the indexes will
     # differ. That is why we reset it and rename it to "id" again
     img_data = setup_img_data
-    img_data = img_data.reset_index(drop=True).rename_axis(index="id")
-    data = read_image_folder(images=images)
-    assert_series_equal(img_data, data)
-
-
-def test_resize_image_folder(image_folder=Path("jai/test_data/test_imgs")):
-    # paths
-    previously_generated_imgs = image_folder / "generate_resize"
-    test_generated_imgs = image_folder / "resized"
-
-    # if things go well
-    resize_image_folder(image_folder=image_folder)
-    set_previous = set(
-        [item.name for item in list(previously_generated_imgs.iterdir())])
-    set_current = set(
-        [item.name for item in list(test_generated_imgs.iterdir())])
-    assert set_previous == set_current
-
-    # if things go south
-    with pytest.raises(Exception):
-        resize_image_folder(image_folder="not_found")
-
-
-def test_resize_image_folder_corrupted(
-        image_folder=Path("jai/test_data/test_imgs_corrupted")):
-    assert len(resize_image_folder(image_folder=image_folder))
+    data = read_image_folder(image_folder=images, id_pattern="img(\d+)")
+    assert_frame_equal(img_data, data.sort_index())

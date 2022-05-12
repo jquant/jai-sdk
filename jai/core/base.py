@@ -1,63 +1,13 @@
-import os
 import json
-import requests
-import functools
-
+import os
 from copy import copy
 
-from .functions.classes import Mode
-from .functions import exceptions
+import requests
+
+from .decorators import raise_status_error
+from .types import Mode
 
 __all__ = ["BaseJai"]
-
-
-def raise_status_error(code):
-    """
-    Decorator to process responses with unexpected response codes.
-
-    Args
-    ----
-    code: int
-        Expected Code.
-
-    """
-
-    def decorator(function):
-
-        @functools.wraps(function)
-        def new_function(*args, **kwargs):
-            response = function(*args, **kwargs)
-            if response.status_code == code:
-                return response.json()
-            # find a way to process this
-            # what errors to raise, etc.
-            message = f"Something went wrong.\n\nSTATUS: {response.status_code}\n"
-            try:
-                res_json = response.json()
-                if isinstance(res_json, dict):
-                    detail = res_json.get(
-                        'message', res_json.get('detail', response.text))
-                else:
-                    detail = response.text
-            except:
-                detail = response.text
-
-            detail = str(detail)
-
-            if "Error: " in detail:
-                error, msg = detail.split(": ", 1)
-                try:
-                    raise eval(error)(message + msg)
-                except NameError:
-                    raise eval("exceptions." + error)(message + msg)
-                except:
-                    raise ValueError(message + response.text)
-            else:
-                raise ValueError(message + detail)
-
-        return new_function
-
-    return decorator
 
 
 class BaseJai(object):
@@ -230,8 +180,8 @@ class BaseJai(object):
             String with the name of a database in your JAI environment.
 
         data_json : dict (JSON)
-            Data in JSON format. Each input in the dictionary will be used to search for the `top_k` most
-            similar entries in the database.
+            Data in JSON format. Each input in the dictionary will be used to
+            search for the `top_k` most similar entries in the database.
 
         top_k : int
             Number of k similar items we want to return. `Default is 5`.
@@ -242,13 +192,14 @@ class BaseJai(object):
         Return
         ------
         response : dict
-            Dictionary with the index and distance of `the k most similar items`.
+            Dictionary with the index and distance of `the k most similar
+            items`.
         """
         filtering = "" if filters is None else "".join(
             ["&filters=" + s for s in filters])
         url = self.url + f"/similar/data/{name}?top_k={top_k}&orient={orient}" + filtering
         header = copy(self.header)
-        header['Content-Type'] = "application/json"
+        header["Content-Type"] = "application/json"
         return requests.put(url, headers=header, data=data_json)
 
     @raise_status_error(200)
@@ -259,8 +210,8 @@ class BaseJai(object):
                            orient: str = "nested",
                            filters=None):
         """
-        Creates a list of dicts, with the index and distance of the k items most similars given an id.
-        This is a protected method.
+        Creates a list of dicts, with the index and distance of the k items
+        most similars given an id. This is a protected method.
 
         Args
         ----
@@ -279,13 +230,13 @@ class BaseJai(object):
         Return
         ------
         response : dict
-            Dictionary with the index and distance of `the k most similar items`.
+            Dictionary with the index and distance of `the k most similar
+            items`.
         """
 
         if not isinstance(id_item, list):
-            raise TypeError(
-                f"id_item param must be int or list, `{id_item.__class__.__name__}` found."
-            )
+            raise TypeError(f"id_item param must be int or list, \
+                    `{id_item.__class__.__name__}` found.")
 
         filtering = "" if filters is None else "".join(
             ["&filters=" + s for s in filters])
@@ -331,7 +282,7 @@ class BaseJai(object):
             ["&filters=" + s for s in filters])
         url = self.url + f"/recommendation/data/{name}?top_k={top_k}&orient={orient}" + filtering
         header = copy(self.header)
-        header['Content-Type'] = "application/json"
+        header["Content-Type"] = "application/json"
         return requests.put(url, headers=header, data=data_json)
 
     @raise_status_error(200)
@@ -354,11 +305,10 @@ class BaseJai(object):
         results : dict
             Dictionary of predctions for the data passed as parameter.
         """
-        url = self.url + \
-            f"/predict/{name}?predict_proba={predict_proba}"
+        url = self.url + f"/predict/{name}?predict_proba={predict_proba}"
 
         header = copy(self.header)
-        header['Content-Type'] = "application/json"
+        header["Content-Type"] = "application/json"
         return requests.put(url, headers=header, data=data_json)
 
     @raise_status_error(200)
@@ -427,7 +377,7 @@ class BaseJai(object):
             "from_environment": from_environment,
             "to_environment": to_environment,
             "original_name": original_name,
-            "new_name": new_name
+            "new_name": new_name,
         }
         return requests.post(url=self.url + f"/transfer",
                              headers=self.header,
@@ -487,7 +437,7 @@ class BaseJai(object):
         url = self.url + f"/data/{name}" + filtering
 
         header = copy(self.header)
-        header['Content-Type'] = "application/json"
+        header["Content-Type"] = "application/json"
         return requests.post(url, headers=header, data=data_json)
 
     @raise_status_error(201)
@@ -617,7 +567,7 @@ class BaseJai(object):
         ------
         None.
         """
-        return requests.post(self.url + f'/cancel/{name}', headers=self.header)
+        return requests.post(self.url + f"/cancel/{name}", headers=self.header)
 
     @raise_status_error(200)
     def _delete_ids(self, name, ids):
@@ -719,5 +669,5 @@ class BaseJai(object):
         url = self.url + f"/vector/{name}?overwrite={overwrite}"
 
         header = copy(self.header)
-        header['Content-Type'] = "application/json"
+        header["Content-Type"] = "application/json"
         return requests.post(url, headers=header, data=data_json)
