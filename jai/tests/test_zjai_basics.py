@@ -94,11 +94,11 @@ def test_check_dtype_and_clean():
     # Send mock data to Pyspark
     spark = SparkSession.builder.getOrCreate()
     psdata = spark.createDataFrame(data)
-    assert_frame_equal(j._check_dtype_and_clean(psdata, "Supervised"), data)
+    assert_frame_equal(check_dtype_and_clean(psdata, "Supervised"), data)
 
     # Send np.ndarray
     nparray = np.array([10, 20, 30, 40, 50])
-    assert_series_equal(j._check_dtype_and_clean(nparray, "Supervised"),
+    assert_series_equal(check_dtype_and_clean(nparray, "Supervised"),
                         pd.Series(nparray))
 
     # make a few lines on 'category' column NaN
@@ -107,7 +107,7 @@ def test_check_dtype_and_clean():
 
     # Try text data
     text = pd.Series(['a', 'b', 'c', np.nan, 'd', 'e', np.nan])
-    assert_series_equal(j._check_dtype_and_clean(text, "Text"), text.dropna())
+    assert_series_equal(check_dtype_and_clean(text, "Text"), text.dropna())
 
 
 @pytest.mark.parametrize("db_type, col, ans", [({
