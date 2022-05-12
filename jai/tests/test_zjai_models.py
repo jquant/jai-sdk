@@ -145,7 +145,7 @@ def test_supervised(setup_dataframe):
     query = test.loc[np.random.choice(len(test), 10, replace=False)]
 
     j = Jai(url=URL, auth_key=AUTH_KEY)
-    # j.header = HEADER_TEST
+    j.header = HEADER_TEST
     if j.is_valid(name):
         j.delete_database(name)
 
