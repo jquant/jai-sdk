@@ -9,7 +9,7 @@ import pandas as pd
 from PIL import Image
 from tqdm import tqdm
 
-__all__ = ["read_image_folder"]
+__all__ = ["read_image"]
 
 
 def encode_image(image) -> str:
@@ -22,11 +22,11 @@ def decode_image(encoded_string):
     return Image.open(BytesIO(b64decode(encoded_string))).convert("RGB")
 
 
-def read_image_folder(image_folder: Union[Path, List[Path]],
-                      resize: Tuple[int, int] = None,
-                      handle_errors: str = "ignore",
-                      id_pattern: str = None,
-                      extensions: List = [".png", ".jpg", ".jpeg"]):
+def read_image(folder: Union[Path, List[Path]],
+               resize: Tuple[int, int] = None,
+               handle_errors: str = "ignore",
+               id_pattern: str = None,
+               extensions: List = [".png", ".jpg", ".jpeg"]):
     """
     Function to read images from folder and transform to a format compatible
     to jai.
@@ -35,7 +35,7 @@ def read_image_folder(image_folder: Union[Path, List[Path]],
 
     Parameters
     ----------
-    image_folder : str or Path, optional
+    folder : str or Path, optional
         Path for the images folder. The default is None.
     new_size : Tuple of int, optional
         New shape to resize images. The default is None.
@@ -60,14 +60,13 @@ def read_image_folder(image_folder: Union[Path, List[Path]],
         Pandas Dataframe with acceptable format for jai usage.
 
     """
-    if isinstance(image_folder, (Path, str)):
-        image_folder = Path(image_folder)
-        name = image_folder.name
-        loop_files = image_folder.iterdir()
+    if isinstance(folder, (Path, str)):
+        _folder = Path(folder)
+        name = _folder.name
+        file_loop = _folder.iterdir()
     else:
-        name = Path(image_folder[0]).name
-        loop_files = chain(
-            *[Path(folder).iterdir() for folder in image_folder])
+        name = Path(folder[0]).name
+        file_loop = chain(*[Path(f).iterdir() for f in folder])
 
     if handle_errors not in ['raise', 'warn', 'ignore']:
         raise ValueError("handle_errors must be 'raise', 'warn' or 'ignore'")
@@ -75,7 +74,7 @@ def read_image_folder(image_folder: Union[Path, List[Path]],
     encoded_images = []
     corrupted_files = []
     ignored_files = []
-    for i, filename in enumerate(tqdm(loop_files)):
+    for i, filename in enumerate(tqdm(file_loop)):
         if filename.suffix in extensions:
             if id_pattern is not None:
                 search = re.search(id_pattern, filename.stem)
@@ -124,13 +123,13 @@ def read_image_folder(image_folder: Union[Path, List[Path]],
             ignored_files.append(filename.as_posix())
 
     if handle_errors == 'warn' and len(ignored_files) > 0:
-        print("Here are the ignored files:")
         ignored_message = '\n'.join(ignored_files)
+        print("Here are the ignored files:")
         print(f"{ignored_message}")
 
     if handle_errors == 'warn' and len(corrupted_files) > 0:
-        print("Here are the files that seem to be corrupted:")
         corrupted_message = '\n'.join(corrupted_files)
+        print("Here are the files that seem to be corrupted:")
         print(f"{corrupted_message}")
 
     if len(encoded_images):

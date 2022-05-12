@@ -1,12 +1,11 @@
 import argparse
 from pathlib import Path
 
-from jai.utilities import read_image_folder
+from jai.utilities import read_image
 
 
 def generate_read_image_folder(image_folder):
-    img_data = read_image_folder(image_folder=image_folder,
-                                 id_pattern="img(\d+)")
+    img_data = read_image(image_folder=image_folder, id_pattern="img(\d+)")
     print()
     print(img_data)
     img_data.to_csv(image_folder / "dataframe_img.csv")
