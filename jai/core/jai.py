@@ -16,8 +16,7 @@ from pandas.api.types import is_integer_dtype, is_numeric_dtype
 from sklearn.model_selection import StratifiedShuffleSplit
 from tqdm import tqdm, trange
 
-from jai.utilities._processing import (filter_resolution, filter_similar,
-                                       predict2df)
+from jai.utilities import (filter_resolution, filter_similar, predict2df)
 
 from .base import BaseJai
 from .types import Mode, PossibleDtypes
