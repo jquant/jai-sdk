@@ -54,12 +54,12 @@ def data2json(data,
               dtype: PossibleDtypes,
               filter_name: str = None,
               predict: bool = False):
-    one_column = f"Data formats accepted for dtype {dtype} are:\n\
-    - pd.Series\n\
-    - pd.DataFrame with 1 column\n\
-    - pd.DataFrame with 2 columns, one must be named `id`\n\
-    - pd.DataFrame with 2 columns, one must be named `{filter_name}`\n\
-    - pd.DataFrame with 3 columns, two of them must be named `id` and `{filter_name}`"
+    one_column = f"Data formats accepted for dtype {dtype} are:\n"\
+        "- pd.Series\n"\
+        "- pd.DataFrame with 1 column\n"\
+        "- pd.DataFrame with 2 columns, one must be named `id`\n"\
+        "- pd.DataFrame with 2 columns, one must be named `{filter_name}`\n"\
+        "- pd.DataFrame with 3 columns, two of them must be named `id` and `{filter_name}`"
 
     if dtype in [
             PossibleDtypes.edit, PossibleDtypes.text, PossibleDtypes.fasttext,
