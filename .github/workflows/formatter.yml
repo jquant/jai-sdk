@@ -5,8 +5,6 @@ on:
     branches: [master, dev, dependencies]
     paths:
       - "**.py"
-  pull_request:
-    branches: [master, dev]
 
 jobs:
   build:
