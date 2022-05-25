@@ -4,7 +4,39 @@ import numpy as np
 import pandas as pd
 
 from .exceptions import DeprecatedError, ParamError
-from .types import PossibleDtypes
+from ..types.generic import PossibleDtypes
+
+from pydantic import ValidationError, parse_obj_as
+from typing import List
+
+
+def check_response(model,
+                   obj,
+                   list_of: bool = False,
+                   as_list: bool = False,
+                   as_dict: bool = False):
+    if sum([list_of, as_list, as_dict]) > 1:
+        raise ValueError(
+            "Can't use `list_of`, `as_list` and `as_dict` simultaneously.")
+
+    if model is None:
+        print(obj)  # Remove
+        warnings.warn(
+            "No check is available for this method when `safe_mode` is on.",
+            stacklevel=3)
+        return obj
+
+    try:
+        if list_of:
+            return [i.dict() for i in parse_obj_as(List[model], obj)]
+        elif as_list:
+            return [i.dict() for i in parse_obj_as(model, obj)]
+        elif as_dict:
+            return {k: v.dict() for k, v in parse_obj_as(model, obj).items()}
+        return parse_obj_as(model, obj)
+    except ValidationError:
+        print(obj)  # Remove
+        raise ValueError("Wrong value generic message.")
 
 
 def check_dtype_and_clean(data, db_type):

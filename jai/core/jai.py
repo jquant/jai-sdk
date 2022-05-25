@@ -20,9 +20,16 @@ from jai.utilities import (filter_resolution, filter_similar, predict2df)
 
 from .base import BaseJai
 from .utils_funcs import build_name, data2json, resolve_db_type
-from .validations import (check_dtype_and_clean, check_name_lengths,
-                          kwargs_validation)
+from .validations import (check_response, check_dtype_and_clean,
+                          check_name_lengths, kwargs_validation)
 from ..types.generic import Mode, PossibleDtypes
+from ..types.responses import (EnvironmentsResponse, UserResponse,
+                               StatusResponse, InfoSizeResponse,
+                               SimilarNestedResponse, PredictResponse,
+                               ValidResponse, RecNestedResponse, FlatResponse)
+
+from typing import List, Dict, Any
+from pydantic import HttpUrl
 
 __all__ = ["Jai"]
 
@@ -39,7 +46,8 @@ class Jai(BaseJai):
 
     def __init__(self,
                  environment: str = "default",
-                 var_env: str = "JAI_AUTH"):
+                 var_env: str = "JAI_AUTH",
+                 safe_mode: bool = False):
         """
         Initialize the Jai class.
 
@@ -49,8 +57,6 @@ class Jai(BaseJai):
         ----------
         auth_key : str
             Authorization key for the use of the API.
-        url : str, optional
-            Param used for development purposes. `Default is None`.
 
         Returns
         -------
@@ -58,6 +64,7 @@ class Jai(BaseJai):
 
         """
         super(Jai, self).__init__(environment, var_env)
+        self.safe_mode = safe_mode
 
     @property
     def names(self):
@@ -74,7 +81,10 @@ class Jai(BaseJai):
         ['jai_database', 'jai_selfsupervised', 'jai_supervised']
 
         """
-        return sorted(self._info(mode="names"))
+        names = self._info(mode="names")
+        if self.safe_mode:
+            names = check_response(List[str], names)
+        return sorted(names)
 
     @property
     def info(self):
@@ -95,7 +105,11 @@ class Jai(BaseJai):
         1            jai_selfsupervised    SelfSupervised
         2                jai_supervised        Supervised
         """
-        df = pd.DataFrame(self._info()).rename(
+        info = self._info()
+        if self.safe_mode:
+            info = check_response(InfoSizeResponse, info, list_of=True)
+
+        df = pd.DataFrame(info).rename(
             columns={
                 "db_name": "name",
                 "db_type": "type",
@@ -128,10 +142,20 @@ class Jai(BaseJai):
         """
         for _ in range(max_tries):
             try:
-                return self._status()
+                status = self._status()
+                if self.safe_mode:
+                    return check_response(Dict[str, StatusResponse],
+                                          status,
+                                          as_dict=True)
+                return status
             except BaseException:
                 time.sleep(patience // max_tries)
-        return self._status()
+        status = self._status()
+        if self.safe_mode:
+            return check_response(Dict[str, StatusResponse],
+                                  status,
+                                  as_dict=True)
+        return status
 
     @staticmethod
     def get_auth_key(email: str,
@@ -180,13 +204,20 @@ class Jai(BaseJai):
             - memberRole: str
             - namespace: srt
         """
-        return self._user()
+        user = self._user()
+        if self.safe_mode:
+            return check_response(UserResponse, user).dict()
+        return user
 
     def environments(self):
         """
         Return names of available environments.
         """
-        return self._environments()
+        envs = self._environments()
+        if self.safe_mode:
+            # I'm not sure how to handle the missing `key`, maybe change API side
+            return check_response(EnvironmentsResponse, envs, list_of=True)
+        return envs
 
     def generate_name(self,
                       length: int = 8,
@@ -262,7 +293,11 @@ class Jai(BaseJai):
         >>> print(fields)
         {'id': 0, 'feature1': 0.01, 'feature2': 'string', 'feature3': 0}
         """
-        return self._fields(name)
+        fields = self._fields(name)
+        if self.safe_mode:
+            # I'm not sure how to handle the missing `key`, maybe change API side
+            return check_response(Dict[str, str], fields)
+        return fields
 
     def describe(self, name: str):
         """
@@ -278,7 +313,11 @@ class Jai(BaseJai):
         response : dict
             Dictionary with database description.
         """
-        return self._describe(name)
+        description = self._describe(name)
+        if self.safe_mode:
+            # I'm not sure how to handle the missing `key`, maybe change API side
+            return check_response(None, description)
+        return description
 
     def get_dtype(self, name: str):
         """
@@ -330,7 +369,10 @@ class Jai(BaseJai):
         ...
         [-0.03121682 -0.2101511   0.4893339  ...  0.00758727  0.15916921  0.1226602 ]]
         """
-        r = requests.get(self._download_vectors(name))
+        url = self._download_vectors(name)
+        if self.safe_mode:
+            url = check_response(HttpUrl, url)
+        r = requests.get(url)
         return np.load(BytesIO(r.content))
 
     def filters(self, name: str):
@@ -347,7 +389,10 @@ class Jai(BaseJai):
         response : list of strings
             List of valid filter values.
         """
-        return self._filters(name)
+        filters = self._filters(name)
+        if self.safe_mode:
+            return check_response(None, filters)
+        return filters
 
     def similar(self,
                 name: str,
@@ -428,7 +473,14 @@ class Jai(BaseJai):
                                          top_k=top_k,
                                          orient=orient,
                                          filters=filters)
-            results.extend(res["similarity"])
+            if orient == "flat":
+                if self.safe_mode:
+                    res = check_response(FlatResponse, res, list_of=True)
+                results.extend(res)
+            else:
+                if self.safe_mode:
+                    res = check_response(SimilarNestedResponse, res).dict()
+                results.extend(res["similarity"])
         return results
 
     def recommendation(self,
@@ -510,7 +562,14 @@ class Jai(BaseJai):
                                                 top_k=top_k,
                                                 orient=orient,
                                                 filters=filters)
-            results.extend(res["recommendation"])
+            if orient == "flat":
+                if self.safe_mode:
+                    res = check_response(FlatResponse, res, list_of=True)
+                results.extend(res)
+            else:
+                if self.safe_mode:
+                    res = check_response(RecNestedResponse, res).dict()
+                results.extend(res["recommendation"])
         return results
 
     def predict(self,
@@ -567,6 +626,8 @@ class Jai(BaseJai):
             res = self._predict(name,
                                 data2json(_batch, dtype=dtype, predict=True),
                                 predict_proba=predict_proba)
+            if self.safe_mode:
+                res = check_response(PredictResponse, res, list_of=True)
             results.extend(res)
 
         return predict2df(results) if as_frame else results
@@ -592,7 +653,10 @@ class Jai(BaseJai):
         >>> print(ids)
         ['891 items from 0 to 890']
         """
-        return self._ids(name, mode)
+        ids = self._ids(name, mode)
+        if self.safe_mode:
+            return check_response(List[Any], ids)
+        return ids
 
     def is_valid(self, name: str):
         """
@@ -617,7 +681,10 @@ class Jai(BaseJai):
         >>> print(check_valid)
         True
         """
-        return self._is_valid(name)["value"]
+        valid = self._is_valid(name)
+        if self.safe_mode:
+            return check_response(ValidResponse, valid).dict()["value"]
+        return valid["value"]
 
     def setup(self,
               name: str,
