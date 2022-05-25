@@ -2,10 +2,14 @@ name: Code Formatter
 
 on:
   push:
-    branches: [master, dev, dependencies]
+    branches: [main, dev]
     paths:
       - "**.py"
-
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - "**.py"
+    
 jobs:
   build:
     name: Code Formatter
