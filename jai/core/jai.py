@@ -431,7 +431,10 @@ class Jai(BaseJai):
                                          top_k=top_k,
                                          orient=orient,
                                          filters=filters)
-            results.extend(res["similarity"])
+            if orient == "flat":
+                results.extend(res)
+            else:
+                results.extend(res["similarity"])
         return results
 
     def recommendation(self,
@@ -513,7 +516,10 @@ class Jai(BaseJai):
                                                 top_k=top_k,
                                                 orient=orient,
                                                 filters=filters)
-            results.extend(res["recommendation"])
+            if orient == "flat":
+                results.extend(res)
+            else:
+                results.extend(res["recommendation"])
         return results
 
     def predict(self,
