@@ -1,5 +1,4 @@
 import concurrent
-import json
 import time
 import warnings
 from fnmatch import fnmatch
@@ -7,15 +6,12 @@ from typing import Optional
 
 import matplotlib.pyplot as plt
 import psutil
-from pandas.api.types import is_numeric_dtype
-from tqdm import tqdm, trange
+from tqdm import tqdm
 
-from jai.core.base import BaseJai
-from jai.core.types import PossibleDtypes
-from jai.core.utils_funcs import data2json
-from jai.core.validations import (check_dtype_and_clean, kwargs_validation)
-
-import os
+from ..core.base import BaseJai
+from ..types.generic import PossibleDtypes
+from ..core.utils_funcs import data2json
+from ..core.validations import check_dtype_and_clean
 
 __all__ = ["Setup"]
 
@@ -32,10 +28,8 @@ class Setup(BaseJai):
 
     def __init__(self,
                  name: str,
-                 auth_key: str = None,
-                 url: str = None,
                  environment: str = "default",
-                 var_env: str = "JAI_SECRET",
+                 env_var: str = "JAI_AUTH",
                  verbose: int = 1):
         """
         Initialize the Jai class.
@@ -50,18 +44,11 @@ class Setup(BaseJai):
             None
 
         """
+        super(Setup, self).__init__(environment, env_var)
+
         self.name = name
         self._type = None
 
-        if url is None:
-            self.__url = "https://mycelia.azure-api.net"
-        else:
-            self.__url = url[:-1] if url.endswith("/") else url
-
-        if auth_key is None:
-            auth_key = os.environ.get(var_env, "")
-
-        self.header = {"Auth": auth_key, "environment": environment}
         self.user = self._user()
 
         if verbose:
@@ -69,36 +56,87 @@ class Setup(BaseJai):
                 [f"- {k}: {v}" for k, v in self.user.items()])
             print(f"Connection established.\n{user_print}")
 
-    @property
-    def url(self):
-        """
-        Get name and type of each database in your environment.
-        """
-        return self.__url
+        self.set_insert = {
+            "batch_size": 16384,
+            "filter_name": None,
+            "overwrite": True,
+            "max_insert_workers": None
+        }
 
     def check_setted(self):
         if self._type is None:
             raise ValueError("Model not setted yet.")
-
-    def set_text_model(self):
-        pass
 
     @property
     def insert_params(self):
         return self._insert_params
 
     @insert_params.setter
-    def set_insert(self,
-                   batch_size: int = 16384,
-                   filter_name: str = None,
-                   overwrite: bool = False,
-                   max_insert_workers: Optional[int] = None):
-        self._insert_params = {
-            "batch_size": batch_size,
-            "filter_name": filter_name,
-            "max_insert_workers": max_insert_workers,
-            "overwrite": overwrite
-        }
+    def insert_params(self, value):
+        self._insert_params = value
+
+    def set_params(self,
+                   db_type: str,
+                   hyperparams=None,
+                   features=None,
+                   num_process: dict = None,
+                   cat_process: dict = None,
+                   datetime_process: dict = None,
+                   pretrained_bases: list = None,
+                   label: dict = None,
+                   split: dict = None):
+        self.db_type = db_type
+
+        kwargs = dict(db_type=db_type,
+                      hyperparams=hyperparams,
+                      features=features,
+                      num_process=num_process,
+                      cat_process=cat_process,
+                      datetime_process=datetime_process,
+                      pretrained_bases=pretrained_bases,
+                      label=label,
+                      split=split)
+
+        self.setup_params = self._check_params(
+            db_type=db_type,
+            hyperparams=hyperparams,
+            features=features,
+            num_process=num_process,
+            cat_process=cat_process,
+            datetime_process=datetime_process,
+            pretrained_bases=pretrained_bases,
+            label=label,
+            split=split)
+
+        print(self.setup_params)
+        print(kwargs)
+
+        warn_list = []
+        print("\nRecognized setup args:")
+        for key, value in kwargs.items():
+            input = self.setup_params.get(key, None)
+            if isinstance(input, dict) and isinstance(value, dict):
+                if not input.items() <= value.items():
+                    warn_list.append(
+                        f"argument: `{key}`; values: ({input} != {value})")
+
+                intersection = input.keys() & value.keys()
+                m = max([len(s) for s in intersection] + [0])
+                value = "".join(
+                    [f"\n  * {k:{m}s}: {value[k]}" for k in intersection])
+
+            else:
+                if input != value:
+                    warn_list.append(
+                        f"argument: `{key}`; values: ({input} != {value})")
+
+            if value is not None:
+                print(f"- {key}: {value}")
+
+        if len(warn_list):
+            warn_str = "\n".join(warn_list)
+            warnings.warn("Values from input and from API response differ.\n" +
+                          warn_str)
 
     def run(self,
             data,
@@ -116,34 +154,25 @@ class Setup(BaseJai):
                         Set overwrite=True to overwrite it.")
 
         # make sure our data has the correct type and is free of NAs
-        data = check_dtype_and_clean(data=data, db_type=db_type)
+        data = check_dtype_and_clean(data=data, db_type=self.db_type)
 
         # insert data
-        insert_responses = self._insert_data(data=data)
+        insert_responses = self._insert_data(
+            data=data,
+            name=name,
+            db_typee=self.db_type,
+            batch_size=self.insert_params['batch_size'],
+            overwrite=self.insert_params['overwrite'],
+            max_insert_workers=self.insert_params['max_insert_workers'],
+            filter_name=self.insert_params['filter_name'],
+            predict=False)
 
         # train model
-        body = kwargs_validation(db_type=db_type, **kwargs)
-        setup_response = self._setup(name, self.body, overwrite)
-        if "kwargs" in setup_response:
-            print("\nRecognized setup args:")
-            for key, value in setup_response["kwargs"].items():
-                kwarg_input = kwargs.get(key, None)
-                if isinstance(kwarg_input, dict):
-                    value = json.loads(value)
-                    intersection = kwarg_input.keys() & value.keys()
-                    m = max([len(s) for s in intersection] + [0])
-                    value = "".join(
-                        [f"\n  * {k:{m}s}: {value[k]}" for k in intersection])
-                print(f"- {key}: {value}")
+        setup_response = self._setup(name, self.setup_params, overwrite)
 
         if frequency_seconds >= 1:
             self.wait_setup(name=name, frequency_seconds=frequency_seconds)
-
-            if db_type in [
-                    PossibleDtypes.selfsupervised, PossibleDtypes.supervised,
-                    PossibleDtypes.recommendation_system
-            ]:
-                self.report(name, verbose)
+            self.report(name, verbose)
 
         return insert_responses, setup_response
 
@@ -355,6 +384,9 @@ class Setup(BaseJai):
         ------
         None.
         """
+
+        if frequency_seconds >= 1:
+            return
 
         def get_numbers(sts):
             curr_step, max_iterations = sts["Description"].split(

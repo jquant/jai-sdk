@@ -1,7 +1,7 @@
 import pytest
 
 from jai.core.exceptions import DeprecatedError
-from jai.core.types import PossibleDtypes
+from jai.types.generic import PossibleDtypes
 from jai.core.validations import (cat_process_validation,
                                   datetime_process_validation,
                                   features_process_validation,

@@ -19,10 +19,10 @@ from tqdm import tqdm, trange
 from jai.utilities import (filter_resolution, filter_similar, predict2df)
 
 from .base import BaseJai
-from .types import Mode, PossibleDtypes
 from .utils_funcs import build_name, data2json, resolve_db_type
 from .validations import (check_dtype_and_clean, check_name_lengths,
                           kwargs_validation)
+from ..types.generic import Mode, PossibleDtypes
 
 __all__ = ["Jai"]
 
@@ -38,10 +38,8 @@ class Jai(BaseJai):
     """
 
     def __init__(self,
-                 auth_key: str = None,
-                 url: str = None,
                  environment: str = "default",
-                 var_env: str = "JAI_SECRET"):
+                 var_env: str = "JAI_AUTH"):
         """
         Initialize the Jai class.
 
@@ -59,7 +57,7 @@ class Jai(BaseJai):
             None
 
         """
-        super(Jai, self).__init__(auth_key, url, environment, var_env)
+        super(Jai, self).__init__(environment, var_env)
 
     @property
     def names(self):

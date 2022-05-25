@@ -4,8 +4,9 @@ from copy import copy
 
 import requests
 
+from .authentication import get_authentication
 from .decorators import raise_status_error
-from .types import Mode
+from ..types.generic import Mode
 
 __all__ = ["BaseJai"]
 
@@ -16,10 +17,8 @@ class BaseJai(object):
     """
 
     def __init__(self,
-                 auth_key: str = None,
-                 url: str = None,
                  environment: str = "default",
-                 var_env: str = "JAI_SECRET"):
+                 env_var: str = "JAI_AUTH"):
         """
         Initialize the Jai class.
 
@@ -37,15 +36,10 @@ class BaseJai(object):
             None
 
         """
-        if auth_key is None:
-            auth_key = os.environ.get(var_env, "")
-
+        auth_key = get_authentication(env_var)
         self.header = {"Auth": auth_key, "environment": environment}
 
-        if url is None:
-            self.__url = "https://mycelia.azure-api.net"
-        else:
-            self.__url = url[:-1] if url.endswith("/") else url
+        self.__url = "https://mycelia.azure-api.net"
 
     @property
     def url(self):
@@ -53,6 +47,13 @@ class BaseJai(object):
         Get name and type of each database in your environment.
         """
         return self.__url
+
+    @url.setter
+    def url(self, value):
+        """
+        Set url.
+        """
+        self.__url = value[:-1] if value.endswith("/") else value
 
     @raise_status_error(200)
     def _user(self):
@@ -440,6 +441,32 @@ class BaseJai(object):
         header["Content-Type"] = "application/json"
         return requests.post(url, headers=header, data=data_json)
 
+    @raise_status_error(200)
+    def _check_params(self,
+                      db_type: str,
+                      hyperparams=None,
+                      features=None,
+                      num_process: dict = None,
+                      cat_process: dict = None,
+                      datetime_process: dict = None,
+                      pretrained_bases: list = None,
+                      label: dict = None,
+                      split: dict = None):
+        body = {
+            "db_type": db_type,
+            "hyperparams": hyperparams,
+            "features": features,
+            "num_process": num_process,
+            "cat_process": cat_process,
+            "datetime_process": datetime_process,
+            "pretrained_bases": pretrained_bases,
+            "label": label,
+            "split": split
+        }
+        return requests.put(self.url + "/parameters",
+                            headers=self.header,
+                            json=body)
+
     @raise_status_error(201)
     def _setup(self, name: str, body, overwrite=False):
         """
@@ -665,9 +692,105 @@ class BaseJai(object):
         response : dict
             Dictionary with the API response.
         """
-
-        url = self.url + f"/vector/{name}?overwrite={overwrite}"
-
         header = copy(self.header)
         header["Content-Type"] = "application/json"
-        return requests.post(url, headers=header, data=data_json)
+        return requests.post(self.url +
+                             f"/vector/{name}?overwrite={overwrite}",
+                             headers=header,
+                             data=data_json)
+
+    @raise_status_error(201)
+    def _linear_train(self,
+                      name: str,
+                      data_dict,
+                      y,
+                      task,
+                      metric,
+                      learning_rate: float = None,
+                      l2: float = 0.1,
+                      model_params: dict = None,
+                      pretrained_bases: list = None,
+                      overwrite: bool = False):
+        """
+        Insert data in JSON format. This is a protected method.
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+        data_dict : dict
+            Data in list of dicts format.
+        Return
+        ------
+        response : dict
+            Dictionary with the API response.
+        """
+        if model_params is None:
+            model_params = {}
+        if pretrained_bases is None:
+            pretrained_bases = []
+
+        return requests.post(
+            self.url + f'linear/batch/{name}?overwrite={overwrite}',
+            headers=self.header,
+            json={
+                "X": data_dict,
+                "y": y,
+                "hyperparams": {
+                    "task": task,
+                    "metric": metric,
+                    "learning_rate": learning_rate,
+                    "l2": l2,
+                    "model": model_params
+                },
+                "pretrained_bases": pretrained_bases
+            },
+        )
+
+    @raise_status_error(201)
+    def _linear_learn(self, name: str, data_dict, y: list):
+        """
+        Insert data in JSON format. This is a protected method.
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+        data_dict : dict
+            Data in list of dicts format.
+        Return
+        ------
+        response : dict
+            Dictionary with the API response.
+        """
+        return requests.post(self.url + f'linear/learn/{name}',
+                             headers=self.header,
+                             json={
+                                 "X": data_dict,
+                                 "y": y
+                             })
+
+    @raise_status_error(201)
+    def _linear_predict(self,
+                        name: str,
+                        data_dict: list,
+                        predict_proba: bool = False):
+        """
+        Insert data in JSON format. This is a protected method.
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+        data_dict : dict
+            Data in list of dicts format.
+        predict_proba : bool
+            Makes probability predictions for classification models.
+
+        Return
+        ------
+        response : dict
+            Dictionary with the API response.
+        """
+
+        return requests.post(
+            self.url + f'linear/predict/{name}?predict_proba={predict_proba}',
+            headers=self.header,
+            json=data_dict)

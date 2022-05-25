@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from .types import PossibleDtypes
+from ..types.generic import PossibleDtypes
 
 __all__ = ["build_name", "data2json", "resolve_db_type"]
 
