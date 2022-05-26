@@ -24,12 +24,21 @@ from .validations import (check_response, check_dtype_and_clean,
                           check_name_lengths, kwargs_validation)
 from ..types.generic import Mode, PossibleDtypes
 from ..types.responses import (EnvironmentsResponse, UserResponse,
-                               StatusResponse, InfoSizeResponse,
-                               SimilarNestedResponse, PredictResponse,
-                               ValidResponse, RecNestedResponse, FlatResponse)
+                               ReportResponse, StatusResponse,
+                               InfoSizeResponse, InsertDataResponse,
+                               SetupResponse, SimilarNestedResponse,
+                               PredictResponse, ValidResponse,
+                               RecNestedResponse, FlatResponse)
 
-from typing import List, Dict, Any
 from pydantic import HttpUrl
+
+from typing import Any, Optional, Dict, List, Union
+import sys
+
+if sys.version < '3.8':
+    from typing_extensions import Literal
+else:
+    from typing import Literal
 
 __all__ = ["Jai"]
 
@@ -215,7 +224,7 @@ class Jai(BaseJai):
         """
         envs = self._environments()
         if self.safe_mode:
-            # I'm not sure how to handle the missing `key`, maybe change API side
+            # TODO: I'm not sure how to handle the missing `key`, maybe change API side
             return check_response(EnvironmentsResponse, envs, list_of=True)
         return envs
 
@@ -295,8 +304,10 @@ class Jai(BaseJai):
         """
         fields = self._fields(name)
         if self.safe_mode:
-            # I'm not sure how to handle the missing `key`, maybe change API side
-            return check_response(Dict[str, str], fields)
+            return check_response(
+                Dict[str, Literal["int32", "int64", "float32", "float64",
+                                  "string", "embedding", "label", "datetime"]],
+                fields)
         return fields
 
     def describe(self, name: str):
@@ -315,8 +326,8 @@ class Jai(BaseJai):
         """
         description = self._describe(name)
         if self.safe_mode:
-            # I'm not sure how to handle the missing `key`, maybe change API side
-            return check_response(None, description)
+            # TODO: I'm not sure how to handle the missing `key`, maybe change API side
+            return check_response(None, description) # TODO Validator
         return description
 
     def get_dtype(self, name: str):
@@ -391,7 +402,7 @@ class Jai(BaseJai):
         """
         filters = self._filters(name)
         if self.safe_mode:
-            return check_response(None, filters)
+            return check_response(None, filters) # TODO Validator
         return filters
 
     def similar(self,
@@ -773,6 +784,10 @@ class Jai(BaseJai):
         # train model
         body = kwargs_validation(db_type=db_type, **kwargs)
         setup_response = self._setup(name, body, overwrite)
+        if self.safe_mode:
+            setup_response = check_response(SetupResponse,
+                                            setup_response).dict()
+
         if "kwargs" in setup_response:
             print("\nRecognized setup args:")
             for key, value in setup_response["kwargs"].items():
@@ -803,27 +818,36 @@ class Jai(BaseJai):
         return self.setup(*args, **kwargs)
 
     def rename(self, original_name: str, new_name: str):
-        return self._rename(original_name=original_name, new_name=new_name)
+        response = self._rename(original_name=original_name, new_name=new_name)
+        if self.safe_mode:
+            return check_response(None, response)  # TODO Validator
+        return response
 
     def transfer(self,
                  original_name: str,
                  to_environment: str,
                  new_name: str = None,
                  from_environment: str = "default"):
-        return self._transfer(original_name=original_name,
-                              to_environment=to_environment,
-                              new_name=new_name,
-                              from_environment=from_environment)
+        response = self._transfer(original_name=original_name,
+                                  to_environment=to_environment,
+                                  new_name=new_name,
+                                  from_environment=from_environment)
+        if self.safe_mode:
+            return check_response(None, response)  # TODO Validator
+        return response
 
     def import_database(self,
                         database_name: str,
                         owner_id: str,
                         owner_email: str,
                         import_name: str = None):
-        return self._import_database(database_name=database_name,
-                                     owner_id=owner_id,
-                                     owner_email=owner_email,
-                                     import_name=import_name)
+        response = self._import_database(database_name=database_name,
+                                         owner_id=owner_id,
+                                         owner_email=owner_email,
+                                         import_name=import_name)
+        if self.safe_mode:
+            return check_response(None, response)  # TODO Validator
+        return response
 
     def add_data(self,
                  name: str,
@@ -875,6 +899,9 @@ class Jai(BaseJai):
 
         # add data per se
         add_data_response = self._append(name=name)
+        if self.safe_mode:
+            add_data_response = check_response(
+                None, add_data_response)  # TODO Validator
 
         if frequency_seconds >= 1:
             self.wait_setup(name=name, frequency_seconds=frequency_seconds)
@@ -961,7 +988,11 @@ class Jai(BaseJai):
                 insert_responses = {}
                 for future in concurrent.futures.as_completed(dict_futures):
                     arg = dict_futures[future]
-                    insert_responses[arg] = future.result()
+                    insert_res = future.result()
+                    if self.safe_mode:
+                        insert_res = check_response(InsertDataResponse,
+                                                    insert_res)
+                    insert_responses[arg] = insert_res
                     pbar.update(1)
 
         # check if we inserted everything we were supposed to
@@ -996,6 +1027,10 @@ class Jai(BaseJai):
             return None
 
         result = self._report(name, verbose)
+
+        if self.safe_mode:
+            result = check_response(ReportResponse, result).dict(by_alias=True)
+
         if return_report:
             return result
 
@@ -1047,6 +1082,8 @@ class Jai(BaseJai):
         # using mode='simple' to reduce the volume of data transit.
         try:
             inserted_ids = self._temp_ids(name, "simple")
+            if self.safe_mode:
+                inserted_ids = check_response(List[str], inserted_ids)
         except ValueError as error:
             if handle_error == "raise":
                 raise error
@@ -1140,9 +1177,14 @@ class Jai(BaseJai):
 
         except KeyboardInterrupt:
             print("\n\nInterruption caught!\n\n")
-            raise KeyboardInterrupt(self._cancel_setup(name))
+            response = self._cancel_setup(name)
+            if self.safe_mode:
+                response = check_response(None, response)  # TODO Validator
+            raise KeyboardInterrupt(response)
 
-        self._delete_status(name)
+        response = self._delete_status(name)
+        if self.safe_mode:
+            check_response(None, response)  # TODO Validator
         return status
 
     def delete_ids(self, name, ids):
@@ -1162,7 +1204,10 @@ class Jai(BaseJai):
         response : dict
             Dictionary with the API response.
         """
-        return self._delete_ids(name, ids)
+        response = self._delete_ids(name, ids)
+        if self.safe_mode:
+            return check_response(None, response)  # TODO Validator
+        return response
 
     def delete_raw_data(self, name: str):
         """
@@ -1185,7 +1230,10 @@ class Jai(BaseJai):
         >>> j.delete_raw_data(name=name)
         'All raw data from database 'chosen_name' was deleted!'
         """
-        return self._delete_raw_data(name)
+        response = self._delete_raw_data(name)
+        if self.safe_mode:
+            return check_response(None, response)  # TODO Validator
+        return response
 
     def delete_database(self, name: str):
         """
@@ -1208,7 +1256,10 @@ class Jai(BaseJai):
         >>> j.delete_database(name=name)
         'Bombs away! We nuked database chosen_name!'
         """
-        return self._delete_database(name)
+        response = self._delete_database(name)
+        if self.safe_mode:
+            return check_response(None, response)  # TODO Validator
+        return response
 
     # Helper function to delete the whole tree of databases related with
     # database 'name'
@@ -1909,11 +1960,16 @@ class Jai(BaseJai):
                                   filter_name=None,
                                   predict=False)
             if i == 0 and create_new_collection is True:
-                insert_responses[i] = self._insert_vectors_json(name,
-                                                                data_json,
-                                                                overwrite=True)
+                response = self._insert_vectors_json(name,
+                                                     data_json,
+                                                     overwrite=True)
             else:
-                insert_responses[i] = self._insert_vectors_json(
-                    name, data_json, overwrite=False)
+                response = self._insert_vectors_json(name,
+                                                     data_json,
+                                                     overwrite=False)
+
+            if self.safe_mode:
+                response = check_response(None, response) # TODO Validator
+            insert_responses[i] = response
 
         return insert_responses

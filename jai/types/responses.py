@@ -1,5 +1,12 @@
 from pydantic import BaseModel, Field
-from typing import Any, Optional, Dict, List, Literal, Union
+from typing import Any, Optional, Dict, List, Union
+from enum import Enum
+import sys
+
+if sys.version < '3.8':
+    from typing_extensions import Literal
+else:
+    from typing import Literal
 
 
 class UserResponse(BaseModel):
@@ -80,3 +87,33 @@ class PredictResponse(BaseModel):
 class ValidResponse(BaseModel):
     value: bool
     message: str
+
+
+class InsertDataResponse(BaseModel):
+    Task: str
+    Status: str
+    Description: str
+    Interrupted: bool
+
+
+class SetupResponse(BaseModel):
+    Task: str
+    Status: str
+    Description: str
+    kwargs: Dict
+
+
+class ReportResponse(BaseModel):
+    train_ids: List[Any] = Field(..., alias="Train Ids")
+    val_ids: List[Any] = Field(..., alias="Validation Ids")
+    test_ids: Optional[List[Any]] = Field(..., alias="Evaluation Ids")
+    auth_batch_size: Optional[str] = Field(..., alias="Auto scale batch size")
+    auth_lr_finder: Optional[str] = Field(..., alias="Auto lr finder")
+    model_training: Dict[str, List[List[Any]]] = Field(...,
+                                                       alias="Model Training")
+    metrics_train: Optional[str] = Field(..., alias="Metrics Train")
+    metrics_val: Optional[str] = Field(..., alias="Metrics Validation")
+    metrics_test: Optional[str] = Field(..., alias="Model Evaluation")
+    thresholds: Optional[Dict[Any, float]] = Field(...,
+                                                   alias="Optimal Thresholds")
+    baseline_models: Optional[str] = Field(..., alias="Baseline Model")

@@ -20,7 +20,7 @@ def check_response(model,
             "Can't use `list_of`, `as_list` and `as_dict` simultaneously.")
 
     if model is None:
-        print(obj)  # Remove
+        print(obj)  # TODO: Remove
         warnings.warn(
             "No check is available for this method when `safe_mode` is on.",
             stacklevel=3)
@@ -35,8 +35,10 @@ def check_response(model,
             return {k: v.dict() for k, v in parse_obj_as(model, obj).items()}
         return parse_obj_as(model, obj)
     except ValidationError:
-        print(obj)  # Remove
-        raise ValueError("Wrong value generic message.")
+        print(obj)  # TODO: Remove
+        print(type(obj))  # TODO: Remove
+        raise ValueError(
+            "Wrong value generic message.")  # TODO: Change message
 
 
 def check_dtype_and_clean(data, db_type):
