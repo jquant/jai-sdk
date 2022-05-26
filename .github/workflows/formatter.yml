@@ -12,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Set env.BRANCH
+        run: echo "BRANCH=$(echo $GITHUB_REF | cut -d'/' -f 3)" >> $GITHUB_ENV
+        
       - name: checkout repo
         uses: actions/checkout@v2.3.4
         with:
@@ -51,5 +54,5 @@ jobs:
             There appear to be some python formatting errors in ${{ github.sha }}. This pull request
             uses the [psf/black](https://github.com/psf/black) formatter to fix these issues.
           base: ${{ github.head_ref }} # Creates pull request onto pull request or commit branch
-          branch: actions-black/${{ github.head_ref }}
+          branch: actions-black/${{ env.BRANCH }}
           
