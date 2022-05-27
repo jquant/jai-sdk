@@ -8,7 +8,6 @@ from decouple import config
 from jai import Jai
 
 URL = 'http://localhost:8001'
-AUTH_KEY = ""
 HEADER_TEST = json.loads(config('HEADER_TEST'))
 MAX_SIZE = 50
 
@@ -28,10 +27,11 @@ def setup_dataframe():
 # =============================================================================
 # Test Text
 # =============================================================================
+@pytest.mark.parametrize("safe_mode", [False, True])
 @pytest.mark.parametrize("name,dtype", [("test_nlp", "Text"),
                                         ("test_fasttext", "FastText"),
                                         ("test_edittext", "TextEdit")])
-def test_text(name, dtype, setup_dataframe):
+def test_text(safe_mode, name, dtype, setup_dataframe):
     train, _ = setup_dataframe
     train = train.rename(columns={
         "PassengerId": "id"
@@ -39,7 +39,8 @@ def test_text(name, dtype, setup_dataframe):
     ids = train.index.tolist()
     query = train.loc[np.random.choice(ids, 10, replace=False)]
 
-    j = Jai(url=URL, auth_key=AUTH_KEY)
+    j = Jai(safe_mode=safe_mode)
+    j.url = URL
     j.header = HEADER_TEST
     if j.is_valid(name):
         j.delete_database(name)
@@ -81,14 +82,16 @@ def test_text(name, dtype, setup_dataframe):
 # =============================================================================
 # Test Self-supervised
 # =============================================================================
-def test_selfsupervised(setup_dataframe):
+@pytest.mark.parametrize("safe_mode", [False, True])
+def test_selfsupervised(setup_dataframe, safe_mode):
     name = 'test_selfsupervised'
 
     train, _ = setup_dataframe
     train = train.drop(columns=["PassengerId"]).iloc[:MAX_SIZE]
     query = train.loc[np.random.choice(len(train), 10, replace=False)]
 
-    j = Jai(url=URL, auth_key=AUTH_KEY)
+    j = Jai(safe_mode=safe_mode)
+    j.url = URL
     j.header = HEADER_TEST
     if j.is_valid(name):
         j.delete_database(name)
@@ -136,7 +139,8 @@ def test_selfsupervised(setup_dataframe):
 # =============================================================================
 # Test Supervised
 # =============================================================================
-def test_supervised(setup_dataframe):
+@pytest.mark.parametrize("safe_mode", [False, True])
+def test_supervised(setup_dataframe, safe_mode):
     name = 'test_supervised'
 
     train, test = setup_dataframe
@@ -144,7 +148,8 @@ def test_supervised(setup_dataframe):
     test = test.rename(columns={"PassengerId": "id"}).iloc[:MAX_SIZE]
     query = test.loc[np.random.choice(len(test), 10, replace=False)]
 
-    j = Jai(url=URL, auth_key=AUTH_KEY)
+    j = Jai(safe_mode=safe_mode)
+    j.url = URL
     j.header = HEADER_TEST
     if j.is_valid(name):
         j.delete_database(name)

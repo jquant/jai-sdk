@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+import warnings
 from ..types.generic import PossibleDtypes
 
 __all__ = ["build_name", "data2json", "resolve_db_type"]
@@ -136,3 +137,32 @@ def data2json(data,
             )
 
     raise ValueError(f"dtype {dtype} not recognized.")
+
+
+def print_args(kwargs, params):
+    warn_list = []
+    print("\nRecognized setup args:")
+    for key, value in kwargs.items():
+        input = params.get(key, None)
+        if isinstance(input, dict) and isinstance(value, dict):
+            if not input.items() <= value.items():
+                warn_list.append(
+                    f"argument: `{key}`; values: ({input} != {value})")
+
+            intersection = input.keys() & value.keys()
+            m = max([len(s) for s in intersection] + [0])
+            value = "".join(
+                [f"\n  * {k:{m}s}: {value[k]}" for k in intersection])
+
+        else:
+            if input != value:
+                warn_list.append(
+                    f"argument: `{key}`; values: ({input} != {value})")
+
+        if value is not None:
+            print(f"- {key}: {value}")
+
+    if len(warn_list):
+        warn_str = "\n".join(warn_list)
+        warnings.warn("Values from input and from API response differ.\n" +
+                      warn_str)

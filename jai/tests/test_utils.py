@@ -5,8 +5,9 @@ import pandas as pd
 import pytest
 from pandas._testing import assert_frame_equal
 
-from jai.core.utils_funcs import data2json, df2json, series2json
 from jai.utilities import read_image
+from jai.core.validations import check_dtype_and_clean
+from jai.core.utils_funcs import data2json, df2json, series2json, resolve_db_type
 
 
 @pytest.fixture(scope="session")
@@ -211,3 +212,25 @@ def test_read_image_list(setup_img_data, images):
     img_data = setup_img_data
     data = read_image(folder=images, id_pattern="img(\d+)")
     assert_frame_equal(img_data, data.sort_index())
+
+
+def test_check_dtype_and_clean():
+    # mock data
+    r = 1100
+    data = pd.DataFrame({
+        "category": [str(i) for i in range(r)],
+        "number": [i for i in range(r)]
+    })
+
+    # make a few lines on 'category' column NaN
+    data.loc[1050:, "category"] = np.nan
+    assert_frame_equal(check_dtype_and_clean(data, "Supervised"), data)
+
+
+@pytest.mark.parametrize("db_type, col, ans", [({
+    "col1": "FastText"
+}, "col1", "FastText"), ({
+    "col1": "FastText"
+}, "col2", "TextEdit")])
+def test_resolve_db_type(db_type, col, ans):
+    assert resolve_db_type(db_type, col) == ans

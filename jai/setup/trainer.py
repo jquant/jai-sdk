@@ -10,7 +10,9 @@ from tqdm import tqdm
 
 from ..core.base import BaseJai
 from ..types.generic import PossibleDtypes
-from ..core.utils_funcs import data2json
+from ..types.hyperparams import InsertParams
+
+from ..core.utils_funcs import data2json, print_args
 from ..core.validations import check_dtype_and_clean
 
 __all__ = ["Setup"]
@@ -30,7 +32,8 @@ class Setup(BaseJai):
                  name: str,
                  environment: str = "default",
                  env_var: str = "JAI_AUTH",
-                 verbose: int = 1):
+                 verbose: int = 1,
+                 safe_mode: bool = False):
         """
         Initialize the Jai class.
 
@@ -48,6 +51,7 @@ class Setup(BaseJai):
 
         self.name = name
         self._type = None
+        self.safe_mode = safe_mode
 
         self.user = self._user()
 
@@ -73,7 +77,15 @@ class Setup(BaseJai):
 
     @insert_params.setter
     def insert_params(self, value):
-        self._insert_params = value
+        self._insert_params = InsertParams(value).dict()
+
+    @property
+    def setup_params(self):
+        return self._setup_params
+
+    @setup_params.setter
+    def setup_params(self, value):
+        self._setup_params = value
 
     def set_params(self,
                    db_type: str,
@@ -110,33 +122,7 @@ class Setup(BaseJai):
 
         print(self.setup_params)
         print(kwargs)
-
-        warn_list = []
-        print("\nRecognized setup args:")
-        for key, value in kwargs.items():
-            input = self.setup_params.get(key, None)
-            if isinstance(input, dict) and isinstance(value, dict):
-                if not input.items() <= value.items():
-                    warn_list.append(
-                        f"argument: `{key}`; values: ({input} != {value})")
-
-                intersection = input.keys() & value.keys()
-                m = max([len(s) for s in intersection] + [0])
-                value = "".join(
-                    [f"\n  * {k:{m}s}: {value[k]}" for k in intersection])
-
-            else:
-                if input != value:
-                    warn_list.append(
-                        f"argument: `{key}`; values: ({input} != {value})")
-
-            if value is not None:
-                print(f"- {key}: {value}")
-
-        if len(warn_list):
-            warn_str = "\n".join(warn_list)
-            warnings.warn("Values from input and from API response differ.\n" +
-                          warn_str)
+        print_args(kwargs, self.setup_params)
 
     def run(self,
             data,
@@ -169,6 +155,8 @@ class Setup(BaseJai):
 
         # train model
         setup_response = self._setup(name, self.setup_params, overwrite)
+
+        print_args(self.setup_params, setup_response['kwags'])
 
         if frequency_seconds >= 1:
             self.wait_setup(name=name, frequency_seconds=frequency_seconds)

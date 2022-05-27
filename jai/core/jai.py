@@ -23,12 +23,11 @@ from .utils_funcs import build_name, data2json, resolve_db_type
 from .validations import (check_response, check_dtype_and_clean,
                           check_name_lengths, kwargs_validation)
 from ..types.generic import Mode, PossibleDtypes
-from ..types.responses import (EnvironmentsResponse, UserResponse,
-                               ReportResponse, StatusResponse,
-                               InfoSizeResponse, InsertDataResponse,
-                               SetupResponse, SimilarNestedResponse,
-                               PredictResponse, ValidResponse,
-                               RecNestedResponse, FlatResponse)
+from ..types.responses import (
+    EnvironmentsResponse, UserResponse, Report1Response, Report2Response,
+    AddDataResponse, StatusResponse, InfoSizeResponse, InsertDataResponse,
+    SetupResponse, SimilarNestedResponse, PredictResponse, ValidResponse,
+    InsertVectorResponse, RecNestedResponse, FlatResponse)
 
 from pydantic import HttpUrl
 
@@ -225,7 +224,12 @@ class Jai(BaseJai):
         envs = self._environments()
         if self.safe_mode:
             # TODO: I'm not sure how to handle the missing `key`, maybe change API side
-            return check_response(EnvironmentsResponse, envs, list_of=True)
+            environments = []
+            for v in check_response(EnvironmentsResponse, envs, list_of=True):
+                if v['key'] is None:
+                    v.pop('key')
+                environments.append(v)
+            return environments
         return envs
 
     def generate_name(self,
@@ -326,8 +330,7 @@ class Jai(BaseJai):
         """
         description = self._describe(name)
         if self.safe_mode:
-            # TODO: I'm not sure how to handle the missing `key`, maybe change API side
-            return check_response(None, description) # TODO Validator
+            return check_response(None, description)  # TODO Validator
         return description
 
     def get_dtype(self, name: str):
@@ -402,7 +405,7 @@ class Jai(BaseJai):
         """
         filters = self._filters(name)
         if self.safe_mode:
-            return check_response(None, filters) # TODO Validator
+            return check_response(List[str], filters)  
         return filters
 
     def similar(self,
@@ -820,7 +823,7 @@ class Jai(BaseJai):
     def rename(self, original_name: str, new_name: str):
         response = self._rename(original_name=original_name, new_name=new_name)
         if self.safe_mode:
-            return check_response(None, response)  # TODO Validator
+            return check_response(str, response)
         return response
 
     def transfer(self,
@@ -833,7 +836,7 @@ class Jai(BaseJai):
                                   new_name=new_name,
                                   from_environment=from_environment)
         if self.safe_mode:
-            return check_response(None, response)  # TODO Validator
+            return check_response(str, response)
         return response
 
     def import_database(self,
@@ -846,7 +849,7 @@ class Jai(BaseJai):
                                          owner_email=owner_email,
                                          import_name=import_name)
         if self.safe_mode:
-            return check_response(None, response)  # TODO Validator
+            return check_response(str, response)
         return response
 
     def add_data(self,
@@ -900,8 +903,8 @@ class Jai(BaseJai):
         # add data per se
         add_data_response = self._append(name=name)
         if self.safe_mode:
-            add_data_response = check_response(
-                None, add_data_response)  # TODO Validator
+            add_data_response = check_response(AddDataResponse,
+                                               add_data_response)
 
         if frequency_seconds >= 1:
             self.wait_setup(name=name, frequency_seconds=frequency_seconds)
@@ -1029,7 +1032,15 @@ class Jai(BaseJai):
         result = self._report(name, verbose)
 
         if self.safe_mode:
-            result = check_response(ReportResponse, result).dict(by_alias=True)
+            if verbose >= 2:
+                result = check_response(Report2Response,
+                                        result).dict(by_alias=True)
+            elif verbose == 1:
+                result = check_response(Report1Response,
+                                        result).dict(by_alias=True)
+            else:
+                result = check_response(Report1Response,
+                                        result).dict(by_alias=True)
 
         if return_report:
             return result
@@ -1179,12 +1190,12 @@ class Jai(BaseJai):
             print("\n\nInterruption caught!\n\n")
             response = self._cancel_setup(name)
             if self.safe_mode:
-                response = check_response(None, response)  # TODO Validator
+                response = check_response(str, response)
             raise KeyboardInterrupt(response)
 
         response = self._delete_status(name)
         if self.safe_mode:
-            check_response(None, response)  # TODO Validator
+            check_response(str, response)
         return status
 
     def delete_ids(self, name, ids):
@@ -1206,7 +1217,7 @@ class Jai(BaseJai):
         """
         response = self._delete_ids(name, ids)
         if self.safe_mode:
-            return check_response(None, response)  # TODO Validator
+            return check_response(str, response)
         return response
 
     def delete_raw_data(self, name: str):
@@ -1232,7 +1243,7 @@ class Jai(BaseJai):
         """
         response = self._delete_raw_data(name)
         if self.safe_mode:
-            return check_response(None, response)  # TODO Validator
+            return check_response(str, response)
         return response
 
     def delete_database(self, name: str):
@@ -1258,7 +1269,7 @@ class Jai(BaseJai):
         """
         response = self._delete_database(name)
         if self.safe_mode:
-            return check_response(None, response)  # TODO Validator
+            return check_response(str, response)
         return response
 
     # Helper function to delete the whole tree of databases related with
@@ -1969,7 +1980,7 @@ class Jai(BaseJai):
                                                      overwrite=False)
 
             if self.safe_mode:
-                response = check_response(None, response) # TODO Validator
+                response = check_response(InsertVectorResponse, response)
             insert_responses[i] = response
 
         return insert_responses

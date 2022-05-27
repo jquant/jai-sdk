@@ -8,7 +8,6 @@ from decouple import config
 from jai import Jai
 
 URL = 'http://localhost:8001'
-AUTH_KEY = ""
 HEADER_TEST = json.loads(config('HEADER_TEST'))
 
 np.random.seed(42)
@@ -24,8 +23,9 @@ def setup_dataframe():
     return train, test
 
 
+@pytest.mark.parametrize("safe_mode", [False, True])
 @pytest.mark.parametrize("name", [('test_insert_vector')])
-def test_insert_vectors(name, setup_dataframe):
+def test_insert_vectors(safe_mode, name, setup_dataframe):
 
     data, _ = setup_dataframe
     data = data.drop(columns="Cabin").dropna().rename(columns={
@@ -33,7 +33,8 @@ def test_insert_vectors(name, setup_dataframe):
     }).set_index("id")
     data = data.select_dtypes(exclude='object')
 
-    j = Jai(url=URL, auth_key=AUTH_KEY)
+    j = Jai(safe_mode=safe_mode)
+    j.url = URL
     j.header = HEADER_TEST
 
     df0 = data[:400]
@@ -73,15 +74,17 @@ def test_insert_vectors(name, setup_dataframe):
             "Set overwrite=True to overwrite it."
 
 
+@pytest.mark.parametrize("safe_mode", [False, True])
 @pytest.mark.parametrize("name", [('test_insert_vector')])
-def test_append_vectors(name, setup_dataframe):
+def test_append_vectors(safe_mode, name, setup_dataframe):
 
     data, _ = setup_dataframe
     data = data.drop(columns=["PassengerId", "Cabin"]).dropna().reset_index(
         drop=True)
     data = data.select_dtypes(exclude='object')
 
-    j = Jai(url=URL, auth_key=AUTH_KEY)
+    j = Jai(safe_mode=safe_mode)
+    j.url = URL
     j.header = HEADER_TEST
 
     df0 = data[:100].iloc[:, :3]
@@ -99,16 +102,18 @@ def test_append_vectors(name, setup_dataframe):
     assert length == 200
 
 
+@pytest.mark.parametrize("safe_mode", [False, True])
 @pytest.mark.parametrize("name, pretrained",
                          [('test_insert_vector_ss', 'test_insert_vector')])
-def test_pretrained_with_vectors(name, pretrained, setup_dataframe):
+def test_pretrained_with_vectors(safe_mode, name, pretrained, setup_dataframe):
 
     data, _ = setup_dataframe
     data = data.drop(columns=["PassengerId", "Cabin"]).dropna().reset_index(
         drop=True)
     data = data.select_dtypes(exclude='object')
 
-    j = Jai(url=URL, auth_key=AUTH_KEY)
+    j = Jai(safe_mode=safe_mode)
+    j.url = URL
     j.header = HEADER_TEST
 
     df0 = data.iloc[:200, 3:].reset_index().rename(columns={'index': 'myid'})

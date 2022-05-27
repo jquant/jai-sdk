@@ -8,7 +8,7 @@ from decouple import config
 from jai import Jai
 
 URL = 'http://localhost:8001'
-AUTH_KEY = ""
+print(config("JAI_AUTH"))
 HEADER_TEST = json.loads(config('HEADER_TEST'))
 
 np.random.seed(42)
@@ -27,8 +27,9 @@ def setup_dataframe():
 # =============================================================================
 # Test Embedding
 # =============================================================================
+@pytest.mark.parametrize("safe_mode", [False, True])
 @pytest.mark.parametrize("name", ["test_embedding"])
-def test_embedding(name, setup_dataframe):
+def test_embedding(safe_mode, name, setup_dataframe):
 
     train, test = setup_dataframe
     train = train.rename(columns={
@@ -38,7 +39,8 @@ def test_embedding(name, setup_dataframe):
         "PassengerId": "id"
     }).set_index("id")['Name'].iloc[:10]
 
-    j = Jai(url=URL, auth_key=AUTH_KEY)
+    j = Jai(safe_mode=safe_mode)
+    j.url = URL
     j.header = HEADER_TEST
     if j.is_valid(name):
         j.delete_database(name)
@@ -56,8 +58,9 @@ def test_embedding(name, setup_dataframe):
 # =============================================================================
 # Test Fill
 # =============================================================================
+@pytest.mark.parametrize("safe_mode", [False, True])
 @pytest.mark.parametrize("name", ["test_fill"])
-def test_fill(name, setup_dataframe):
+def test_fill(safe_mode, name, setup_dataframe):
 
     train, test = setup_dataframe
     train = train.set_index("PassengerId").iloc[:10]
@@ -65,7 +68,8 @@ def test_fill(name, setup_dataframe):
     half = test.shape[0] // 2
     data = pd.concat([train, test.iloc[:half]])
 
-    j = Jai(url=URL, auth_key=AUTH_KEY)
+    j = Jai(safe_mode=safe_mode)
+    j.url = URL
     j.header = HEADER_TEST
     for n in j.names:
         if n.startswith(name):
@@ -85,8 +89,9 @@ def test_fill(name, setup_dataframe):
 # =============================================================================
 # Test Sanity
 # =============================================================================
+@pytest.mark.parametrize("safe_mode", [False, True])
 @pytest.mark.parametrize("name", ["test_sanity"])
-def test_sanity(name, setup_dataframe):
+def test_sanity(safe_mode, name, setup_dataframe):
 
     train, test = setup_dataframe
     train = train.set_index("PassengerId").iloc[:50]
@@ -94,7 +99,8 @@ def test_sanity(name, setup_dataframe):
     half = test.shape[0] // 2
     data = pd.concat([train, test.iloc[:half]]).drop(columns=['Survived'])
 
-    j = Jai(url=URL, auth_key=AUTH_KEY)
+    j = Jai(safe_mode=safe_mode)
+    j.url = URL
     j.header = HEADER_TEST
     for n in j.names:
         if n.startswith(name):
@@ -112,8 +118,9 @@ def test_sanity(name, setup_dataframe):
 # =============================================================================
 # Test Match Application
 # =============================================================================
+@pytest.mark.parametrize("safe_mode", [False, True])
 @pytest.mark.parametrize("name", ["test_match"])
-def test_match(name):
+def test_match(safe_mode, name):
 
     A = [
         "Apple", "Watermelon", "Orange", "Nectarine", "Grape", "Lemon",
@@ -130,7 +137,8 @@ def test_match(name):
     data_left = pd.Series(A)
     data_right = pd.Series(B)
 
-    j = Jai(url=URL, auth_key=AUTH_KEY)
+    j = Jai(safe_mode=safe_mode)
+    j.url = URL
     j.header = HEADER_TEST
     if j.is_valid(name):
         j.delete_database(name)
@@ -148,8 +156,9 @@ def test_match(name):
 # =============================================================================
 # Test Resolution Application
 # =============================================================================
+@pytest.mark.parametrize("safe_mode", [False, True])
 @pytest.mark.parametrize("name", ["test_resolution"])
-def test_resolution(name):
+def test_resolution(safe_mode, name):
 
     data = [
         "Apple", "Watermelon", "Orange", "Strawberry", "Nectarine", "Grape",
@@ -164,7 +173,8 @@ def test_resolution(name):
     expected = np.arange(19)
     data = pd.Series(data)
 
-    j = Jai(url=URL, auth_key=AUTH_KEY)
+    j = Jai(safe_mode=safe_mode)
+    j.url = URL
     j.header = HEADER_TEST
     if j.is_valid(name):
         j.delete_database(name)
