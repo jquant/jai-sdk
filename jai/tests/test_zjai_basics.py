@@ -76,14 +76,6 @@ def test_generate_name(length, prefix, suffix):
         assert name.endswith(suffix), "suffix not in generated name."
 
 
-def test_generate_error():
-    j = Jai()
-    j.url = URL
-    j.header = HEADER_TEST
-    with pytest.raises(ValueError):
-        j.generate_name(8, "prefix", "suffix")
-
-
 @pytest.mark.parametrize("safe_mode", [False, True])
 @pytest.mark.parametrize('name', ['titanic_ssupervised'])
 def test_download_vectors(safe_mode, setup_npy_file, name):

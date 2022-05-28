@@ -29,6 +29,14 @@ def test_info_exception():
         j.info
 
 
+def test_generate_error():
+    j = Jai()
+    j.url = VALID_URL
+    j.header = HEADER_TEST
+    with pytest.raises(ValueError):
+        j.generate_name(8, "prefix", "suffix")
+
+
 def test_similar_exception_id():
     j = Jai()
     j.url = INVALID_URL

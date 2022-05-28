@@ -45,9 +45,3 @@ class VisionHyperparams(BaseModel):
     mode: Union[int, VisionModes] = "classifier"
     resize_H: int = Field(224, desciption='height of image resizing', ge=224)
     resize_W: int = Field(224, desciption='width of image resizing', ge=224)
-
-
-print(VisionHyperparams().dict())
-print(VisionHyperparams(model_name="vgg16").dict())
-print(VisionHyperparams(model_name="vgg16", mode=-1).dict())
-print(VisionHyperparams(model_name="vgg16", mode="dense").json())
