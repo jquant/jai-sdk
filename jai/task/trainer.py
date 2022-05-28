@@ -5,33 +5,31 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 import pandas as pd
 
-from ..core.base import BaseJai
+from .base import TaskBase
 from ..core.utils_funcs import print_args
 from ..core.validations import check_response, check_dtype_and_clean
 
 from ..types.generic import PossibleDtypes
 from ..types.hyperparams import InsertParams
 
-from ..types.responses import (
-    EnvironmentsResponse, UserResponse, Report1Response, Report2Response,
-    AddDataResponse, StatusResponse, InfoResponse, InsertDataResponse,
-    SetupResponse, SimilarNestedResponse, PredictResponse, ValidResponse,
-    InsertVectorResponse, RecNestedResponse, FlatResponse)
+from ..types.responses import (UserResponse, Report1Response, Report2Response,
+                               AddDataResponse, StatusResponse, InfoResponse)
 
-from pydantic import HttpUrl
-
-from typing import Any, Optional, Dict, List, Union
+from typing import Dict
 import sys
-
-if sys.version < '3.8':
-    from typing_extensions import Literal
-else:
-    from typing import Literal
 
 __all__ = ["Trainer"]
 
 
-class Trainer(BaseJai):
+def get_numbers(status):
+    if fnmatch(status["Description"], "*Iteration:*"):
+        curr_step, max_iterations = status["Description"].split(
+            "Iteration: ")[1].strip().split(" / ")
+        return int(curr_step), int(max_iterations)
+    return False, 0, 0
+
+
+class Trainer(TaskBase):
     """
     Base class for communication with the Mycelia API.
 
@@ -60,53 +58,21 @@ class Trainer(BaseJai):
             None
 
         """
-        super(Trainer, self).__init__(environment, env_var)
-        self.safe_mode = safe_mode
+        super(Trainer, self).__init__(name=name,
+                                      environment=environment,
+                                      env_var=env_var,
+                                      verbose=verbose,
+                                      safe_mode=safe_mode)
+
         self._verbose = verbose
-        self._type = None
         self._setup_params = None
 
-        self._user = self._user()
-        if self.safe_mode:
-            self._user = check_response(UserResponse, self._user).dict()
-
-        if verbose:
-            user_print = '\n'.join(
-                [f"- {k}: {v}" for k, v in self.user.items()])
-            print(f"Connection established.\n{user_print}")
-
-        self.name = name
-        self.set_insert = {
+        self._insert_params = {
             "batch_size": 16384,
             "filter_name": None,
             "overwrite": True,
             "max_insert_workers": None
         }
-
-    @property
-    def user(self):
-        return self._user
-
-    @property
-    def db_type(self):
-        info = self._info(get_size=False)
-        if self.safe_mode:
-            info = check_response(InfoResponse, info, list_of=True)
-        df_info = pd.DataFrame(info)
-        if self.name in df_info["db_name"].to_numpy():
-            self._type = df_info.loc[df_info["db_name"] == self.name,
-                                     "db_type"].values[0]
-
-        return self._type
-
-    @property
-    def name(self):
-        return self._name
-
-    @name.setter
-    def name(self, value):
-        self._name = value
-        self.exists()
 
     @property
     def insert_params(self):
@@ -119,13 +85,9 @@ class Trainer(BaseJai):
     @property
     def setup_params(self):
         if self._setup_params is None:
-            raise ValueError("Generic error message."
-                             )  #TODO: run setup_params first message.
+            raise ValueError(
+                "Generic error message.")  #TODO: run set_params first message.
         return self._setup_params
-
-    @setup_params.setter
-    def setup_params(self, value):
-        self._setup_params = value
 
     def set_params(self,
                    db_type: str,
@@ -148,7 +110,7 @@ class Trainer(BaseJai):
                       label=label,
                       split=split)
 
-        self.setup_params = self._check_params(
+        self._setup_params = self._check_params(
             db_type=db_type,
             hyperparams=hyperparams,
             features=features,
@@ -163,16 +125,13 @@ class Trainer(BaseJai):
         print(kwargs)
         print_args(kwargs, self.setup_params)
 
-    def exists(self):
-        return self.db_type is None
-
     def setup(self,
               data,
               *,
               overwrite: bool = False,
               frequency_seconds: int = 1):
 
-        if self.exists():
+        if self.is_valid():
             if overwrite:
                 self.delete_database()
             else:
@@ -187,7 +146,7 @@ class Trainer(BaseJai):
         insert_responses = self._insert_data(
             data=data,
             name=self.name,
-            db_typee=self.db_type,
+            db_type=self.setup_params['db_type'],
             batch_size=self.insert_params['batch_size'],
             overwrite=self.insert_params['overwrite'],
             max_insert_workers=self.insert_params['max_insert_workers'],
@@ -197,7 +156,7 @@ class Trainer(BaseJai):
         # train model
         setup_response = self._setup(self.name, params, overwrite)
 
-        print_args(params, setup_response['kwags'])
+        print_args(params, setup_response['kwargs'])
 
         if frequency_seconds >= 1:
             self.wait_setup(frequency_seconds=frequency_seconds)
@@ -226,7 +185,7 @@ class Trainer(BaseJai):
             Dictionary of responses for each batch. Each response contains
             information of whether or not that particular batch was successfully inserted.
         """
-        if self.exists():
+        if not self.is_valid():
             raise KeyError(
                 f"Database '{self.name}' does not exist in your environment.\n"
                 "Run a `setup` set your database up first.")
@@ -241,7 +200,7 @@ class Trainer(BaseJai):
         insert_responses = self._insert_data(
             data=data,
             name=self.name,
-            db_typee=self.db_type,
+            db_type=self.db_type,
             batch_size=self.insert_params['batch_size'],
             overwrite=self.insert_params['overwrite'],
             max_insert_workers=self.insert_params['max_insert_workers'],
@@ -259,7 +218,7 @@ class Trainer(BaseJai):
 
         return insert_responses, add_data_response
 
-    def status(self, max_tries=5, patience=25):
+    def status(self):
         """
         Get the status of your JAI environment when training.
 
@@ -277,22 +236,10 @@ class Trainer(BaseJai):
             "Description": "Training of database YOUR_DATABASE has ended."
         }
         """
-        for _ in range(max_tries):
-            try:
-                status = self._status()
-                if self.safe_mode:
-                    return check_response(Dict[str, StatusResponse],
-                                          status,
-                                          as_dict=True)
-                return status
-            except BaseException:
-                time.sleep(patience // max_tries)
-        status = self._status()
+        status = self._status()[self.name]
         if self.safe_mode:
-            return check_response(Dict[str, StatusResponse],
-                                  status,
-                                  as_dict=True)
-        return status[self.name]
+            return check_response(StatusResponse, status).dict()
+        return status
 
     def report(self, verbose: int = 2, return_report: bool = False):
         """
@@ -370,15 +317,8 @@ class Trainer(BaseJai):
         None.
         """
 
-        if frequency_seconds <= 1:
+        if frequency_seconds < 1:
             return
-
-        def get_numbers(sts):
-            if fnmatch(sts["Description"], "*Iteration:*"):
-                curr_step, max_iterations = sts["Description"].split(
-                    "Iteration: ")[1].strip().split(" / ")
-                return int(curr_step), int(max_iterations)
-            return False, 0, 0
 
         end_message = 'Task ended successfully.'
         error_message = 'Something went wrong.'
@@ -446,6 +386,26 @@ class Trainer(BaseJai):
             check_response(str, response)
         return status
 
+    def delete_ids(self, ids):
+        """
+        Delete the specified ids from database.
+
+        Args
+        ----
+
+        ids : list
+            List of ids to be removed from database.
+
+        Return
+        -------
+        response : dict
+            Dictionary with the API response.
+        """
+        response = self._delete_ids(self.name, ids)
+        if self.safe_mode:
+            return check_response(str, response)
+        return response
+
     def delete_raw_data(self):
         """
         Delete raw data. It is good practice to do this after training a model.
@@ -464,6 +424,32 @@ class Trainer(BaseJai):
         'All raw data from database 'chosen_name' was deleted!'
         """
         response = self._delete_raw_data(self.name)
+        if self.safe_mode:
+            return check_response(str, response)
+        return response
+
+    def delete_database(self):
+        """
+        Delete a database and everything that goes with it (I thank you all).
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Return
+        ------
+        response : dict
+            Dictionary with the API response.
+
+        Example
+        -------
+        >>> name = 'chosen_name'
+        >>> j = Jai(AUTH_KEY)
+        >>> j.delete_database(name=name)
+        'Bombs away! We nuked database chosen_name!'
+        """
+        response = self._delete_database(self.name)
         if self.safe_mode:
             return check_response(str, response)
         return response

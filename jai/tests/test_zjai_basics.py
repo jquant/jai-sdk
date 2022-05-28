@@ -7,9 +7,24 @@ import pytest
 from decouple import config
 
 from jai import Jai
+import os
+from copy import deepcopy
 
-URL = 'http://localhost:8001'
-HEADER_TEST = json.loads(config('HEADER_TEST'))
+
+@pytest.fixture(scope='session')
+def clean_environ():
+    # Remove JAI_URL from environment variables
+    old_environ = deepcopy(os.environ)
+    os.environ.pop("JAI_URL", None)
+
+    # Remove JAI_URL from config (.env, settings.ini)
+    config("key", "anything")
+    old_data = deepcopy(config.config.repository.data)
+    config.config.repository.data.pop("JAI_URL", None)
+    yield
+    # restore initial values
+    os.environ = old_environ
+    config.config.repository.data = old_data
 
 
 @pytest.fixture(scope="session")
@@ -19,24 +34,20 @@ def setup_npy_file():
     return img_file
 
 
-def test_url():
+def test_url(clean_environ):
     j = Jai()
-    j.header = HEADER_TEST
     assert j.url == "https://mycelia.azure-api.net"
 
 
-def test_custom_url():
+def test_custom_url(clean_environ):
     j = Jai()
-    j.url = URL + "/"
-    j.header = HEADER_TEST
-    assert j.url == URL
+    j.url = "http://localhost:8001/"
+    assert j.url == "http://localhost:8001"
 
 
 @pytest.mark.parametrize("safe_mode", [False, True])
 def test_names(safe_mode):
     j = Jai(safe_mode=safe_mode)
-    j.url = URL
-    j.header = HEADER_TEST
     assert j.names == [
         'test_insert_vector', 'test_match', 'test_resolution',
         'titanic_ssupervised'
@@ -46,16 +57,13 @@ def test_names(safe_mode):
 @pytest.mark.parametrize("safe_mode", [False, True])
 def test_info(safe_mode):
     j = Jai(safe_mode=safe_mode)
-    j.url = URL
-    j.header = HEADER_TEST
+
     assert isinstance(j.info, pd.DataFrame)
 
 
 @pytest.mark.parametrize("safe_mode", [False, True])
 def test_status(safe_mode):
     j = Jai(safe_mode=safe_mode)
-    j.url = URL
-    j.header = HEADER_TEST
     assert isinstance(j.status, dict)
 
 
@@ -64,8 +72,6 @@ def test_status(safe_mode):
 @pytest.mark.parametrize("suffix", ["", "_fix"])
 def test_generate_name(length, prefix, suffix):
     j = Jai()
-    j.url = URL
-    j.header = HEADER_TEST
     name = j.generate_name(length, prefix, suffix)
     assert len(name) == length, "generated name wrong."
 
@@ -81,16 +87,12 @@ def test_generate_name(length, prefix, suffix):
 def test_download_vectors(safe_mode, setup_npy_file, name):
     npy_file = setup_npy_file
     j = Jai(safe_mode=safe_mode)
-    j.url = URL
-    j.header = HEADER_TEST
     np.testing.assert_array_equal(npy_file, j.download_vectors(name=name))
 
 
 @pytest.mark.parametrize("safe_mode", [False, True])
 def test_user(safe_mode):
     j = Jai(safe_mode=safe_mode)
-    j.url = URL
-    j.header = HEADER_TEST
     assert j.user() == {
         'email': 'test_sdk@email.com',
         'firstName': 'User SDK',
@@ -104,8 +106,6 @@ def test_user(safe_mode):
 @pytest.mark.parametrize("safe_mode", [False, True])
 def test_environments(safe_mode):
     j = Jai(safe_mode=safe_mode)
-    j.url = URL
-    j.header = HEADER_TEST
     assert j.environments() == [{
         'key': 'default',
         'id': 'sdk/test',
@@ -120,8 +120,6 @@ def test_environments(safe_mode):
 @pytest.mark.parametrize('name', ['test_resolution'])
 def test_describe(safe_mode, name):
     j = Jai(safe_mode=safe_mode)
-    j.url = URL
-    j.header = HEADER_TEST
     description = j.describe(name)
     description.pop("version")
     assert description == {
@@ -155,8 +153,6 @@ def test_describe(safe_mode, name):
 @pytest.mark.parametrize("safe_mode", [False, True])
 def test_rename(safe_mode):
     j = Jai(safe_mode=safe_mode)
-    j.url = URL
-    j.header = HEADER_TEST
     assert j.names == [
         'test_insert_vector', 'test_match', 'test_resolution',
         'titanic_ssupervised'
@@ -177,12 +173,8 @@ def test_rename(safe_mode):
 @pytest.mark.parametrize('db_name', ['test_match'])
 def test_transfer(safe_mode, db_name):
     j = Jai(safe_mode=safe_mode)
-    j.url = URL
-    j.header = HEADER_TEST
 
-    j_prod = Jai(safe_mode=safe_mode)
-    j_prod.url = URL
-    j_prod.header = {**HEADER_TEST, "environment": 'prod'}
+    j_prod = Jai(safe_mode=safe_mode, environment='prod')
     if db_name in j_prod.names:
         j_prod.delete_database(db_name)
 

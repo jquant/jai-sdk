@@ -7,9 +7,6 @@ from decouple import config
 
 from jai import Jai
 
-URL = 'http://localhost:8001'
-HEADER_TEST = json.loads(config('HEADER_TEST'))
-
 np.random.seed(42)
 
 
@@ -34,8 +31,6 @@ def test_insert_vectors(safe_mode, name, setup_dataframe):
     data = data.select_dtypes(exclude='object')
 
     j = Jai(safe_mode=safe_mode)
-    j.url = URL
-    j.header = HEADER_TEST
 
     df0 = data[:400]
     overwrite = False
@@ -84,8 +79,6 @@ def test_append_vectors(safe_mode, name, setup_dataframe):
     data = data.select_dtypes(exclude='object')
 
     j = Jai(safe_mode=safe_mode)
-    j.url = URL
-    j.header = HEADER_TEST
 
     df0 = data[:100].iloc[:, :3]
     j.insert_vectors(name=name, data=df0, overwrite=True)
@@ -113,8 +106,6 @@ def test_pretrained_with_vectors(safe_mode, name, pretrained, setup_dataframe):
     data = data.select_dtypes(exclude='object')
 
     j = Jai(safe_mode=safe_mode)
-    j.url = URL
-    j.header = HEADER_TEST
 
     df0 = data.iloc[:200, 3:].reset_index().rename(columns={'index': 'myid'})
     df0.index = df0.index.rename('id')

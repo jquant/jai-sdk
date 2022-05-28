@@ -7,8 +7,6 @@ from decouple import config
 
 from jai import Jai
 
-URL = 'http://localhost:8001'
-HEADER_TEST = json.loads(config('HEADER_TEST'))
 MAX_SIZE = 50
 
 np.random.seed(42)
@@ -27,41 +25,40 @@ def setup_dataframe():
 # =============================================================================
 # Test Text
 # =============================================================================
-# @pytest.mark.parametrize("safe_mode", [False, True])
-# @pytest.mark.parametrize("name,dtype", [("test_nlp", "Text"),
-#                                         ("test_fasttext", "FastText"),
-#                                         ("test_edittext", "TextEdit")])
-# def test_text(safe_mode, name, dtype, setup_dataframe):
-#     train, _ = setup_dataframe
-#     train = train.rename(columns={
-#         "PassengerId": "id"
-#     }).set_index("id")['Name'].iloc[:MAX_SIZE]
-#     ids = train.index.tolist()
-#     query = train.loc[np.random.choice(ids, 10, replace=False)]
+@pytest.mark.parametrize("safe_mode", [False, True])
+@pytest.mark.parametrize("name,dtype", [("test_nlp", "Text"),
+                                        ("test_fasttext", "FastText"),
+                                        ("test_edittext", "TextEdit")])
+def test_text(safe_mode, name, dtype, setup_dataframe):
+    train, _ = setup_dataframe
+    train = train.rename(columns={
+        "PassengerId": "id"
+    }).set_index("id")['Name'].iloc[:MAX_SIZE]
+    ids = train.index.tolist()
+    query = train.loc[np.random.choice(ids, 10, replace=False)]
 
-#     j = Jai(safe_mode=safe_mode)
-#     j.url = URL
-#     j.header = HEADER_TEST
-#     if j.is_valid(name):
-#         j.delete_database(name)
+    j = Jai(safe_mode=safe_mode)
 
-#     j.setup(name, train, db_type=dtype, overwrite=True)
-#     assert j.is_valid(name), f"valid name {name} after setup failed"
+    if j.is_valid(name):
+        j.delete_database(name)
 
-#     assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"
-#                            ], 'ids simple failed'
-#     assert sorted(j.ids(name, 'complete')) == ids, "ids complete failed"
+    j.setup(name, train, db_type=dtype, overwrite=True)
+    assert j.is_valid(name), f"valid name {name} after setup failed"
 
-#     result = j.similar(name, query)
-#     assert isinstance(result, list), "similar data result failed"
+    assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"
+                           ], 'ids simple failed'
+    assert sorted(j.ids(name, 'complete')) == ids, "ids complete failed"
 
-#     # try to use the fields method on a text database
-#     # this will raise an exception
-#     with pytest.raises(ValueError):
-#         j.fields(name)
+    result = j.similar(name, query)
+    assert isinstance(result, list), "similar data result failed"
 
-#     j.delete_database(name)
-#     assert not j.is_valid(name), "valid name after delete failed"
+    # try to use the fields method on a text database
+    # this will raise an exception
+    with pytest.raises(ValueError):
+        j.fields(name)
+
+    j.delete_database(name)
+    assert not j.is_valid(name), "valid name after delete failed"
 
 
 @pytest.mark.parametrize("safe_mode", [False, True])
@@ -75,8 +72,7 @@ def test_filter_text(safe_mode, name, dtype, setup_dataframe):
     query = train.loc[np.random.choice(ids, 10, replace=False), 'Name']
 
     j = Jai(safe_mode=safe_mode)
-    j.url = URL
-    j.header = HEADER_TEST
+
     if j.is_valid(name):
         j.delete_database(name)
 
@@ -131,8 +127,7 @@ def test_selfsupervised(setup_dataframe, safe_mode):
     query = train.loc[np.random.choice(len(train), 10, replace=False)]
 
     j = Jai(safe_mode=safe_mode)
-    j.url = URL
-    j.header = HEADER_TEST
+
     if j.is_valid(name):
         j.delete_database(name)
 
@@ -189,8 +184,7 @@ def test_supervised(setup_dataframe, safe_mode):
     query = test.loc[np.random.choice(len(test), 10, replace=False)]
 
     j = Jai(safe_mode=safe_mode)
-    j.url = URL
-    j.header = HEADER_TEST
+
     if j.is_valid(name):
         j.delete_database(name)
 

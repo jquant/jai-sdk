@@ -15,7 +15,7 @@ from tqdm import tqdm, trange
 
 from jai.utilities import (filter_resolution, filter_similar, predict2df)
 
-from ..core.base import BaseJai
+from .base import TaskBase
 from ..core.utils_funcs import build_name, data2json, resolve_db_type
 from ..core.validations import (check_response, check_dtype_and_clean,
                                 check_name_lengths, kwargs_validation)
@@ -39,7 +39,7 @@ else:
 __all__ = ["Query"]
 
 
-class Query(BaseJai):
+class Query(TaskBase):
     """
     Base class for communication with the Mycelia API.
 
@@ -53,8 +53,8 @@ class Query(BaseJai):
                  name: str,
                  environment: str = "default",
                  env_var: str = "JAI_AUTH",
-                 verbose: int = 1,
                  safe_mode: bool = False,
+                 verbose: int = 1,
                  batch_size: int = 16384):
         """
         Initialize the Jai class.
@@ -69,48 +69,16 @@ class Query(BaseJai):
             None
 
         """
-        super(Query, self).__init__(environment, env_var)
-        self.safe_mode = safe_mode
-        self._verbose = verbose
-        self._setup_params = None
+        super(Query, self).__init__(name=name,
+                                    environment=environment,
+                                    env_var=env_var,
+                                      verbose=verbose,
+                                    safe_mode=safe_mode)
 
-        self._user = self._user()
-        if self.safe_mode:
-            self._user = check_response(UserResponse, self._user).dict()
-
-        if verbose:
-            user_print = '\n'.join(
-                [f"- {k}: {v}" for k, v in self.user.items()])
-            print(f"Connection established.\n{user_print}")
-
-        self.name = name
         self.batch_size = batch_size
-
-    @property
-    def user(self):
-        return self._user
-
-    @property
-    def db_type(self):
-        return self._type
-
-    @property
-    def name(self):
-        return self._name
-
-    @name.setter
-    def name(self, value):
-        info = self._info(get_size=False)
-        if self.safe_mode:
-            info = check_response(InfoResponse, info, list_of=True)
-        df_info = pd.DataFrame(info)
-        if self.name not in df_info["db_name"].to_numpy():
+        if not self.is_valid():
             raise ValueError(
                 "Generic Error Message")  # TODO: Database not does not exist
-
-        self._type = df_info.loc[df_info["db_name"] == self.name,
-                                 "db_type"].values[0]
-        self._name = value
 
     def _generate_batch(self, data, is_id: bool = False, desc: str = None):
 

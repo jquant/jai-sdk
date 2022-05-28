@@ -7,10 +7,6 @@ from decouple import config
 
 from jai import Jai
 
-URL = 'http://localhost:8001'
-print(config("JAI_AUTH"))
-HEADER_TEST = json.loads(config('HEADER_TEST'))
-
 np.random.seed(42)
 
 
@@ -40,8 +36,7 @@ def test_embedding(safe_mode, name, setup_dataframe):
     }).set_index("id")['Name'].iloc[:10]
 
     j = Jai(safe_mode=safe_mode)
-    j.url = URL
-    j.header = HEADER_TEST
+
     if j.is_valid(name):
         j.delete_database(name)
 
@@ -69,8 +64,7 @@ def test_fill(safe_mode, name, setup_dataframe):
     data = pd.concat([train, test.iloc[:half]])
 
     j = Jai(safe_mode=safe_mode)
-    j.url = URL
-    j.header = HEADER_TEST
+
     for n in j.names:
         if n.startswith(name):
             j.delete_database(n)
@@ -100,8 +94,7 @@ def test_sanity(safe_mode, name, setup_dataframe):
     data = pd.concat([train, test.iloc[:half]]).drop(columns=['Survived'])
 
     j = Jai(safe_mode=safe_mode)
-    j.url = URL
-    j.header = HEADER_TEST
+
     for n in j.names:
         if n.startswith(name):
             j.delete_database(n)
@@ -138,8 +131,7 @@ def test_match(safe_mode, name):
     data_right = pd.Series(B)
 
     j = Jai(safe_mode=safe_mode)
-    j.url = URL
-    j.header = HEADER_TEST
+
     if j.is_valid(name):
         j.delete_database(name)
     ok = j.match(name,
@@ -174,8 +166,7 @@ def test_resolution(safe_mode, name):
     data = pd.Series(data)
 
     j = Jai(safe_mode=safe_mode)
-    j.url = URL
-    j.header = HEADER_TEST
+
     if j.is_valid(name):
         j.delete_database(name)
     ok = j.resolution(name, data, top_k=20, threshold=.4, original_data=True)
