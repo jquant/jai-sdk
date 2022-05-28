@@ -15,6 +15,27 @@ def check_response(model,
                    list_of: bool = False,
                    as_list: bool = False,
                    as_dict: bool = False):
+    """
+    Checks if response from API follows the expected structure.
+
+    Args:
+        model (_type_): expected structure for the response.
+        obj (_type_): the response from API.
+        list_of (bool, optional): If the obj follows the structure of 
+        a list of model defined in `model`. Defaults to False.
+        as_list (bool, optional): If the obj follows the structure of 
+        a list. Defaults to False.
+        as_dict (bool, optional): If the obj follows the structure of 
+        a dict. Defaults to False.
+
+    Raises:
+        ValueError: if more than one of `list_of`, `as_list` and `as_dict` 
+        parameters are are set to true.
+        ValueError: If the response does not correspond to the expected structure 
+
+    Returns:
+        The response values as expected.
+    """
     if sum([list_of, as_list, as_dict]) > 1:
         raise ValueError(
             "Can't use `list_of`, `as_list` and `as_dict` simultaneously.")
