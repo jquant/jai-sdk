@@ -1,12 +1,22 @@
 import json
-import os
 from copy import copy
+import concurrent
+import warnings
+from typing import Optional, List
+
+import psutil
+from tqdm import tqdm
+
+from ..core.utils_funcs import data2json
+from ..core.validations import check_response
 
 import requests
 
 from .authentication import get_authentication
 from .decorators import raise_status_error
 from ..types.generic import Mode
+
+from ..types.responses import InsertDataResponse
 
 __all__ = ["BaseJai"]
 
@@ -794,3 +804,128 @@ class BaseJai(object):
             self.url + f'linear/predict/{name}?predict_proba={predict_proba}',
             headers=self.header,
             json=data_dict)
+
+    def _insert_data(self,
+                     data,
+                     name,
+                     db_type,
+                     batch_size,
+                     overwrite: bool = False,
+                     max_insert_workers: Optional[int] = None,
+                     filter_name: str = None,
+                     predict: bool = False):
+        """
+        Insert raw data for training. This is a protected method.
+
+        Args
+        ----------
+        name : str
+            String with the name of a database in your JAI environment.
+        db_type : str
+            Database type (Supervised, SelSupervised, Text...)
+        batch_size : int
+            Size of batch to send the data.
+        predict : bool
+            Allows table type data to have only one column for predictions,
+            if False, then tables must have at least 2 columns. `Default is False`.
+
+        Return
+        ------
+        insert_responses : dict
+            Dictionary of responses for each batch. Each response contains
+            information of whether or not that particular batch was successfully inserted.
+        """
+        if max_insert_workers is None:
+            pcores = psutil.cpu_count(logical=False)
+        elif not isinstance(max_insert_workers, int):
+            raise TypeError(
+                f"Variable 'max_insert_workers' must be 'None' or 'int' instance, not {max_insert_workers.__class__.__name__}."
+            )
+        elif max_insert_workers > 0:
+            pcores = max_insert_workers
+        else:
+            pcores = 1
+
+        if self._check_ids_consistency(
+                name=name, data=data, handle_error="bool") and not overwrite:
+            return {0: "Data was already inserted. No operation was executed."}
+        else:
+            self.delete_raw_data(name)
+
+        dict_futures = {}
+        with concurrent.futures.ThreadPoolExecutor(
+                max_workers=pcores) as executor:
+
+            for i, b in enumerate(range(0, len(data), batch_size)):
+                _batch = data.iloc[b:b + batch_size]
+                data_json = data2json(_batch,
+                                      dtype=db_type,
+                                      filter_name=filter_name,
+                                      predict=predict)
+                task = executor.submit(self._insert_json, name, data_json,
+                                       filter_name)
+                dict_futures[task] = i
+
+            with tqdm(total=len(dict_futures), desc="Insert Data") as pbar:
+                insert_responses = {}
+                for future in concurrent.futures.as_completed(dict_futures):
+                    arg = dict_futures[future]
+                    insert_res = future.result()
+                    if self.safe_mode:
+                        insert_res = check_response(InsertDataResponse,
+                                                    insert_res)
+                    insert_responses[arg] = insert_res
+                    pbar.update(1)
+
+        # check if we inserted everything we were supposed to
+        self._check_ids_consistency(name=name, data=data)
+
+        return insert_responses
+
+    def _check_ids_consistency(self, name, data, handle_error="raise"):
+        """
+        Check if inserted data is consistent with what we expect.
+        This is mainly to assert that all data was properly inserted.
+
+        Args
+        ----
+        name : str
+            Database name.
+        data : pandas.DataFrame or pandas.Series
+            Inserted data.
+        handle_error : 'raise' or 'bool'
+            If data is inconsistent:
+            - `raise`: delete data and raise an error.
+            - `bool`: returns False.
+
+        Return
+        ------
+        bool or Exception
+            If an inconsistency is found, an error is raised. If no inconsistency is found, returns True.
+        """
+        handle_error = handle_error.lower()
+        if handle_error not in ['raise', 'bool']:
+            warnings.warn(
+                f"handle_error must be `raise` or `bool`, found: `{handle_error}`. Using `raise`."
+            )
+            handle_error = 'raise'
+
+        # using mode='simple' to reduce the volume of data transit.
+        try:
+            inserted_ids = self._temp_ids(name, "simple")
+            if self.safe_mode:
+                inserted_ids = check_response(List[str], inserted_ids)
+        except ValueError as error:
+            if handle_error == "raise":
+                raise error
+            return False
+
+        if len(data) != int(inserted_ids[0].split()[0]):
+            if handle_error == "raise":
+                print(f"Found invalid ids: {inserted_ids[0]}")
+                print(self.delete_raw_data(name))
+                raise Exception(
+                    "Something went wrong on data insertion. Please try again."
+                )
+            return False
+        return True

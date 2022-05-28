@@ -1,8 +1,6 @@
-import concurrent
 import json
 import secrets
 import time
-import warnings
 from fnmatch import fnmatch
 from io import BytesIO
 from typing import Optional
@@ -10,7 +8,6 @@ from typing import Optional
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import psutil
 import requests
 from pandas.api.types import is_integer_dtype, is_numeric_dtype
 from sklearn.model_selection import StratifiedShuffleSplit
@@ -25,13 +22,13 @@ from .validations import (check_response, check_dtype_and_clean,
 from ..types.generic import Mode, PossibleDtypes
 from ..types.responses import (
     EnvironmentsResponse, UserResponse, Report1Response, Report2Response,
-    AddDataResponse, StatusResponse, InfoSizeResponse, InsertDataResponse,
-    SetupResponse, SimilarNestedResponse, PredictResponse, ValidResponse,
+    AddDataResponse, StatusResponse, InfoSizeResponse, SetupResponse,
+    SimilarNestedResponse, PredictResponse, ValidResponse,
     InsertVectorResponse, RecNestedResponse, FlatResponse)
 
 from pydantic import HttpUrl
 
-from typing import Any, Optional, Dict, List, Union
+from typing import Any, Optional, Dict, List
 import sys
 
 if sys.version < '3.8':
@@ -54,7 +51,7 @@ class Jai(BaseJai):
 
     def __init__(self,
                  environment: str = "default",
-                 var_env: str = "JAI_AUTH",
+                 env_var: str = "JAI_AUTH",
                  safe_mode: bool = False):
         """
         Initialize the Jai class.
@@ -71,7 +68,7 @@ class Jai(BaseJai):
             None
 
         """
-        super(Jai, self).__init__(environment, var_env)
+        super(Jai, self).__init__(environment, env_var)
         self.safe_mode = safe_mode
 
     @property
@@ -117,16 +114,16 @@ class Jai(BaseJai):
         if self.safe_mode:
             info = check_response(InfoSizeResponse, info, list_of=True)
 
-        df = pd.DataFrame(info).rename(
+        df_info = pd.DataFrame(info).rename(
             columns={
                 "db_name": "name",
                 "db_type": "type",
                 "db_version": "last modified",
                 "db_parents": "dependencies",
             })
-        if len(df) == 0:
-            return df
-        return df.sort_values(by="name")
+        if len(df_info) == 0:
+            return df_info
+        return df_info.sort_values(by="name")
 
     # TODO: this property should be removed in the future
     @property
@@ -405,7 +402,7 @@ class Jai(BaseJai):
         """
         filters = self._filters(name)
         if self.safe_mode:
-            return check_response(List[str], filters)  
+            return check_response(List[str], filters)
         return filters
 
     def similar(self,
@@ -926,83 +923,6 @@ class Jai(BaseJai):
                              frequency_seconds=frequency_seconds,
                              filter_name=filter_name)
 
-    def _insert_data(self,
-                     data,
-                     name,
-                     db_type,
-                     batch_size,
-                     overwrite: bool = False,
-                     max_insert_workers: Optional[int] = None,
-                     filter_name: str = None,
-                     predict: bool = False):
-        """
-        Insert raw data for training. This is a protected method.
-
-        Args
-        ----------
-        name : str
-            String with the name of a database in your JAI environment.
-        db_type : str
-            Database type (Supervised, SelSupervised, Text...)
-        batch_size : int
-            Size of batch to send the data.
-        predict : bool
-            Allows table type data to have only one column for predictions,
-            if False, then tables must have at least 2 columns. `Default is False`.
-
-        Return
-        ------
-        insert_responses : dict
-            Dictionary of responses for each batch. Each response contains
-            information of whether or not that particular batch was successfully inserted.
-        """
-        if max_insert_workers is None:
-            pcores = psutil.cpu_count(logical=False)
-        elif not isinstance(max_insert_workers, int):
-            raise TypeError(
-                f"Variable 'max_insert_workers' must be 'None' or 'int' instance, not {max_insert_workers.__class__.__name__}."
-            )
-        elif max_insert_workers > 0:
-            pcores = max_insert_workers
-        else:
-            pcores = 1
-
-        if self._check_ids_consistency(
-                name=name, data=data, handle_error="bool") and not overwrite:
-            return {0: "Data was already inserted. No operation was executed."}
-        else:
-            self.delete_raw_data(name)
-
-        dict_futures = {}
-        with concurrent.futures.ThreadPoolExecutor(
-                max_workers=pcores) as executor:
-
-            for i, b in enumerate(range(0, len(data), batch_size)):
-                _batch = data.iloc[b:b + batch_size]
-                data_json = data2json(_batch,
-                                      dtype=db_type,
-                                      filter_name=filter_name,
-                                      predict=predict)
-                task = executor.submit(self._insert_json, name, data_json,
-                                       filter_name)
-                dict_futures[task] = i
-
-            with tqdm(total=len(dict_futures), desc="Insert Data") as pbar:
-                insert_responses = {}
-                for future in concurrent.futures.as_completed(dict_futures):
-                    arg = dict_futures[future]
-                    insert_res = future.result()
-                    if self.safe_mode:
-                        insert_res = check_response(InsertDataResponse,
-                                                    insert_res)
-                    insert_responses[arg] = insert_res
-                    pbar.update(1)
-
-        # check if we inserted everything we were supposed to
-        self._check_ids_consistency(name=name, data=data)
-
-        return insert_responses
-
     def report(self, name, verbose: int = 2, return_report: bool = False):
         """
         Get a report about the training model.
@@ -1061,54 +981,6 @@ class Jai(BaseJai):
         print()
         print(result["Loading from checkpoint"].split("\n")
               [1]) if 'Loading from checkpoint' in result.keys() else None
-
-    def _check_ids_consistency(self, name, data, handle_error="raise"):
-        """
-        Check if inserted data is consistent with what we expect.
-        This is mainly to assert that all data was properly inserted.
-
-        Args
-        ----
-        name : str
-            Database name.
-        data : pandas.DataFrame or pandas.Series
-            Inserted data.
-        handle_error : 'raise' or 'bool'
-            If data is inconsistent:
-            - `raise`: delete data and raise an error.
-            - `bool`: returns False.
-
-        Return
-        ------
-        bool or Exception
-            If an inconsistency is found, an error is raised. If no inconsistency is found, returns True.
-        """
-        handle_error = handle_error.lower()
-        if handle_error not in ['raise', 'bool']:
-            warnings.warn(
-                f"handle_error must be `raise` or `bool`, found: `{handle_error}`. Using `raise`."
-            )
-            handle_error = 'raise'
-
-        # using mode='simple' to reduce the volume of data transit.
-        try:
-            inserted_ids = self._temp_ids(name, "simple")
-            if self.safe_mode:
-                inserted_ids = check_response(List[str], inserted_ids)
-        except ValueError as error:
-            if handle_error == "raise":
-                raise error
-            return False
-
-        if len(data) != int(inserted_ids[0].split()[0]):
-            if handle_error == "raise":
-                print(f"Found invalid ids: {inserted_ids[0]}")
-                print(self.delete_raw_data(name))
-                raise Exception(
-                    "Something went wrong on data insertion. Please try again."
-                )
-            return False
-        return True
 
     def wait_setup(self, name: str, frequency_seconds: int = 1):
         """
