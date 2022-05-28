@@ -2,6 +2,6 @@
 --- ___init___.py ---
 """
 
-from jai.setup.trainer import Setup
+from jai.setup.trainer import Trainer
 
-__all__ = ["Setup"]
+__all__ = ["Trainer"]
