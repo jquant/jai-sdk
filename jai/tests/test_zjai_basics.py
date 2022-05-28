@@ -11,7 +11,7 @@ import os
 from copy import deepcopy
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='function')
 def clean_environ():
     # Remove JAI_URL from environment variables
     old_environ = deepcopy(os.environ)
@@ -39,7 +39,7 @@ def test_url(clean_environ):
     assert j.url == "https://mycelia.azure-api.net"
 
 
-def test_custom_url(clean_environ):
+def test_custom_url():
     j = Jai()
     j.url = "http://localhost:8001/"
     assert j.url == "http://localhost:8001"

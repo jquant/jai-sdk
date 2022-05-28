@@ -13,7 +13,7 @@ from jai import Jai
 from jai.core.validations import check_dtype_and_clean, check_name_lengths
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='function')
 def bad_url_environ():
     # Remove JAI_URL from environment variables
     old_environ = deepcopy(os.environ)
