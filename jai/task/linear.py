@@ -1,19 +1,7 @@
 import pandas as pd
 
 from .base import TaskBase
-from ..core.validations import check_response
-from ..types.responses import UserResponse, InfoResponse
 from ..types.linear import LinearHyperparams
-
-from pydantic import parse_obj_as
-
-from typing import List
-import sys
-
-if sys.version < '3.8':
-    from typing_extensions import Literal
-else:
-    from typing import Literal
 
 __all__ = ["LinearModel"]
 
@@ -50,7 +38,7 @@ class LinearModel(TaskBase):
         super(LinearModel, self).__init__(name=name,
                                           environment=environment,
                                           env_var=env_var,
-                                      verbose=verbose,
+                                          verbose=verbose,
                                           safe_mode=safe_mode)
         self._setup_params = None
 

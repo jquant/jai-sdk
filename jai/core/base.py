@@ -17,7 +17,7 @@ from .decorators import raise_status_error
 from ..types.generic import Mode
 
 from ..types.responses import InsertDataResponse
-from decouple import config, UndefinedValueError
+from decouple import config
 
 __all__ = ["BaseJai"]
 

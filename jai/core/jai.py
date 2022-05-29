@@ -125,9 +125,7 @@ class Jai(BaseJai):
             return df_info
         return df_info.sort_values(by="name")
 
-    # TODO: this property should be removed in the future
-    @property
-    def status(self, max_tries=5, patience=25):
+    def status(self, max_tries=5, patience=5):
         """
         Get the status of your JAI environment when training.
 
@@ -138,7 +136,7 @@ class Jai(BaseJai):
 
         Example
         -------
-        >>> j.status
+        >>> j.status()
         {
             "Task": "Training",
             "Status": "Completed",
@@ -154,7 +152,7 @@ class Jai(BaseJai):
                                           as_dict=True)
                 return status
             except BaseException:
-                time.sleep(patience // max_tries)
+                time.sleep(patience)
         status = self._status()
         if self.safe_mode:
             return check_response(Dict[str, StatusResponse],
@@ -350,10 +348,7 @@ class Jai(BaseJai):
             The name of the type of the database.
 
         """
-        info = self.info
-        if name in info["name"].to_numpy():
-            return info.loc[info["name"] == name, "type"].values[0]
-        raise ValueError(f"{name} is not a valid name.")
+        return self.describe(name)['dtype']
 
     def download_vectors(self, name: str):
         """
@@ -1005,7 +1000,7 @@ class Jai(BaseJai):
                 "Iteration: ")[1].strip().split(" / ")
             return int(curr_step), int(max_iterations)
 
-        status = self.status[name]
+        status = self.status()[name]
         starts_at, max_steps = status["CurrentStep"], status["TotalSteps"]
 
         step = starts_at
@@ -1036,7 +1031,7 @@ class Jai(BaseJai):
                                 else:
                                     sleep_time += frequency_seconds
                                 time.sleep(sleep_time)
-                                status = self.status[name]
+                                status = self.status()[name]
                             # training might stop early, so we make the progress bar appear
                             # full when early stopping is reached -- peace of mind
                             iteration_bar.update(max_iterations -
@@ -1050,7 +1045,7 @@ class Jai(BaseJai):
 
                     step = status["CurrentStep"]
                     time.sleep(frequency_seconds)
-                    status = self.status[name]
+                    status = self.status()[name]
                     aux += 1
 
                 if (starts_at != max_steps) and aux != 0:

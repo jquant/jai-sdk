@@ -3,20 +3,19 @@ from fnmatch import fnmatch
 
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-import pandas as pd
 
 from .base import TaskBase
+from .query import Query
 from ..core.utils_funcs import print_args
 from ..core.validations import check_response, check_dtype_and_clean
 
 from ..types.generic import PossibleDtypes
 from ..types.hyperparams import InsertParams
 
-from ..types.responses import (UserResponse, Report1Response, Report2Response,
-                               AddDataResponse, StatusResponse, InfoResponse)
+from ..types.responses import (Report1Response, Report2Response,
+                               AddDataResponse, StatusResponse)
 
 from typing import Dict
-import sys
 
 __all__ = ["Trainer"]
 
@@ -25,7 +24,7 @@ def get_numbers(status):
     if fnmatch(status["Description"], "*Iteration:*"):
         curr_step, max_iterations = status["Description"].split(
             "Iteration: ")[1].strip().split(" / ")
-        return int(curr_step), int(max_iterations)
+        return True, int(curr_step), int(max_iterations)
     return False, 0, 0
 
 
@@ -70,7 +69,7 @@ class Trainer(TaskBase):
         self._insert_params = {
             "batch_size": 16384,
             "filter_name": None,
-            "overwrite": True,
+            "overwrite": False,
             "max_insert_workers": None
         }
 
@@ -80,7 +79,7 @@ class Trainer(TaskBase):
 
     @insert_params.setter
     def insert_params(self, value):
-        self._insert_params = InsertParams(value).dict()
+        self._insert_params = InsertParams(**value).dict()
 
     @property
     def setup_params(self):
@@ -121,15 +120,13 @@ class Trainer(TaskBase):
             label=label,
             split=split)
 
-        print(self.setup_params)
-        print(kwargs)
-        print_args(kwargs, self.setup_params)
+        print_args(self.setup_params, kwargs)
 
-    def setup(self,
-              data,
-              *,
-              overwrite: bool = False,
-              frequency_seconds: int = 1):
+    def fit(self,
+            data,
+            *,
+            overwrite: bool = False,
+            frequency_seconds: int = 1):
 
         if self.is_valid():
             if overwrite:
@@ -138,7 +135,7 @@ class Trainer(TaskBase):
                 raise KeyError(
                     f"Database '{self.name}' already exists in your environment.\
                         Set overwrite=True to overwrite it.")
-        params = self.setup_params
+
         # make sure our data has the correct type and is free of NAs
         data = check_dtype_and_clean(data=data, db_type=self.db_type)
 
@@ -154,9 +151,9 @@ class Trainer(TaskBase):
             predict=False)
 
         # train model
-        setup_response = self._setup(self.name, params, overwrite)
+        setup_response = self._setup(self.name, self.setup_params, overwrite)
 
-        print_args(params, setup_response['kwargs'])
+        print_args(setup_response['kwargs'], self.setup_params)
 
         if frequency_seconds >= 1:
             self.wait_setup(frequency_seconds=frequency_seconds)
@@ -453,3 +450,6 @@ class Trainer(TaskBase):
         if self.safe_mode:
             return check_response(str, response)
         return response
+
+    def get_query(self):
+        return Query(self.name)

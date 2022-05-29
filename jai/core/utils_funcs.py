@@ -139,11 +139,11 @@ def data2json(data,
     raise ValueError(f"dtype {dtype} not recognized.")
 
 
-def print_args(kwargs, params):
+def print_args(response_kwargs, input_kwargs):
     warn_list = []
     print("\nRecognized setup args:")
-    for key, value in kwargs.items():
-        input = params.get(key, None)
+    for key, value in response_kwargs.items():
+        input = input_kwargs.get(key, None)
         if isinstance(input, dict) and isinstance(value, dict):
             if not input.items() <= value.items():
                 warn_list.append(
@@ -165,4 +165,5 @@ def print_args(kwargs, params):
     if len(warn_list):
         warn_str = "\n".join(warn_list)
         warnings.warn("Values from input and from API response differ.\n" +
-                      warn_str)
+                      warn_str,
+                      stacklevel=3)

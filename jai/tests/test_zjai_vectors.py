@@ -20,7 +20,7 @@ def setup_dataframe():
     return train, test
 
 
-@pytest.mark.parametrize("safe_mode", [False, True])
+@pytest.mark.parametrize("safe_mode", [True])
 @pytest.mark.parametrize("name", [('test_insert_vector')])
 def test_insert_vectors(safe_mode, name, setup_dataframe):
 
@@ -69,7 +69,7 @@ def test_insert_vectors(safe_mode, name, setup_dataframe):
             "Set overwrite=True to overwrite it."
 
 
-@pytest.mark.parametrize("safe_mode", [False, True])
+@pytest.mark.parametrize("safe_mode", [True])
 @pytest.mark.parametrize("name", [('test_insert_vector')])
 def test_append_vectors(safe_mode, name, setup_dataframe):
 
@@ -95,7 +95,7 @@ def test_append_vectors(safe_mode, name, setup_dataframe):
     assert length == 200
 
 
-@pytest.mark.parametrize("safe_mode", [False, True])
+@pytest.mark.parametrize("safe_mode", [True])
 @pytest.mark.parametrize("name, pretrained",
                          [('test_insert_vector_ss', 'test_insert_vector')])
 def test_pretrained_with_vectors(safe_mode, name, pretrained, setup_dataframe):

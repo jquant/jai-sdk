@@ -25,7 +25,7 @@ def setup_dataframe():
 # =============================================================================
 # Test Text
 # =============================================================================
-@pytest.mark.parametrize("safe_mode", [False, True])
+@pytest.mark.parametrize("safe_mode", [True])
 @pytest.mark.parametrize("name,dtype", [("test_nlp", "Text"),
                                         ("test_fasttext", "FastText"),
                                         ("test_edittext", "TextEdit")])
@@ -61,7 +61,7 @@ def test_text(safe_mode, name, dtype, setup_dataframe):
     assert not j.is_valid(name), "valid name after delete failed"
 
 
-@pytest.mark.parametrize("safe_mode", [False, True])
+@pytest.mark.parametrize("safe_mode", [True])
 @pytest.mark.parametrize("name,dtype", [("test_filter_nlp", "Text")])
 def test_filter_text(safe_mode, name, dtype, setup_dataframe):
     train, _ = setup_dataframe
@@ -118,7 +118,7 @@ def test_filter_text(safe_mode, name, dtype, setup_dataframe):
 # =============================================================================
 # Test Self-supervised
 # =============================================================================
-@pytest.mark.parametrize("safe_mode", [False, True])
+@pytest.mark.parametrize("safe_mode", [True])
 def test_selfsupervised(setup_dataframe, safe_mode):
     name = 'test_selfsupervised'
 
@@ -174,7 +174,7 @@ def test_selfsupervised(setup_dataframe, safe_mode):
 # =============================================================================
 # Test Supervised
 # =============================================================================
-@pytest.mark.parametrize("safe_mode", [False, True])
+@pytest.mark.parametrize("safe_mode", [True])
 def test_supervised(setup_dataframe, safe_mode):
     name = 'test_supervised'
 

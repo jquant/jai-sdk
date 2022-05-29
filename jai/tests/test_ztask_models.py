@@ -1,15 +1,11 @@
-import json
-
 import numpy as np
 import pandas as pd
 import pytest
 
 from jai.task.trainer import Trainer
-from jai.task.query import Query
-
-MAX_SIZE = 50
 
 np.random.seed(42)
+MAX_SIZE = 50
 
 
 @pytest.fixture(scope="session")
@@ -25,222 +21,221 @@ def setup_dataframe():
 # =============================================================================
 # Test Text
 # =============================================================================
-# @pytest.mark.parametrize("safe_mode", [False, True])
-# @pytest.mark.parametrize("name,dtype", [("test_nlp", "Text"),
-#                                         ("test_fasttext", "FastText"),
-#                                         ("test_edittext", "TextEdit")])
 @pytest.mark.parametrize("safe_mode", [True])
-@pytest.mark.parametrize("name,dtype", [("test_nlp", "Text")])
+@pytest.mark.parametrize("name,dtype", [("test_nlp", "Text"),
+                                        ("test_fasttext", "FastText"),
+                                        ("test_edittext", "TextEdit")])
 def test_text(safe_mode, name, dtype, setup_dataframe):
     train, _ = setup_dataframe
     train = train.rename(columns={
         "PassengerId": "id"
     }).set_index("id")['Name'].iloc[:MAX_SIZE]
     ids = train.index.tolist()
-    query = train.loc[np.random.choice(ids, 10, replace=False)]
+    sample = train.loc[np.random.choice(ids, 10, replace=False)]
 
-    t = Trainer(name=name, safe_mode=safe_mode)
-    t.set_params(db_type=dtype)
+    trainer = Trainer(name=name, safe_mode=safe_mode)
+    trainer.set_params(db_type=dtype)
 
-    t.setup(train, overwrite=True)
+    trainer.fit(train, overwrite=True)
 
-    assert t.ids('simple') == [
+    assert trainer.ids('simple') == [
         f"{len(ids)} items from {min(ids)} to {max(ids)}"
     ], 'ids simple failed'
-    assert sorted(t.ids('complete')) == ids, "ids complete failed"
-    assert t.is_valid(), f"valid name {name} after setup failed"
+    assert sorted(trainer.ids('complete')) == ids, "ids complete failed"
+    assert trainer.is_valid(), f"valid name {name} after fit failed"
 
     # try to use the fields method on a text database
     # this will raise an exception
     with pytest.raises(ValueError):
-        t.fields()
+        trainer.fields()
 
-    q = Query(name=name, safe_mode=safe_mode)
-    result = q.similar(query)
+    query = trainer.get_query()
+    result = query.similar(sample)
     assert isinstance(result, list), "similar data result failed"
 
-    t.delete_database()
-    assert not t.is_valid(), "valid name after delete failed"
+    trainer.delete_database()
+    assert not trainer.is_valid(), "valid name after delete failed"
 
 
-# @pytest.mark.parametrize("safe_mode", [False, True])
-# @pytest.mark.parametrize("name,dtype", [("test_filter_nlp", "Text")])
-# def test_filter_text(safe_mode, name, dtype, setup_dataframe):
-#     train, _ = setup_dataframe
-#     train = train.rename(columns={
-#         "PassengerId": "id"
-#     }).set_index("id")[['Name', 'Embarked']].iloc[:MAX_SIZE]
-#     ids = train.index.tolist()
-#     query = train.loc[np.random.choice(ids, 10, replace=False), 'Name']
+@pytest.mark.parametrize("safe_mode", [True])
+@pytest.mark.parametrize("name,dtype", [("test_filter_nlp", "Text")])
+def test_filter_text(safe_mode, name, dtype, setup_dataframe):
+    train, _ = setup_dataframe
+    train = train.rename(columns={
+        "PassengerId": "id"
+    }).set_index("id")[['Name', 'Embarked']].iloc[:MAX_SIZE]
+    ids = train.index.tolist()
+    sample = train.loc[np.random.choice(ids, 10, replace=False), 'Name']
 
-#     j = Jai(safe_mode=safe_mode)
-#     j.url = URL
-#     j.header = HEADER_TEST
-#     if j.is_valid(name):
-#         j.delete_database(name)
+    trainer = Trainer(name=name, safe_mode=safe_mode)
+    trainer.set_params(db_type=dtype)
+    trainer.insert_params = {"filter_name": "Embarked"}
 
-#     j.setup(name, train, filter_name="Embarked", db_type=dtype, overwrite=True)
-#     assert j.is_valid(name), f"valid name {name} after setup failed"
+    if trainer.is_valid():
+        trainer.delete_database()
 
-#     assert j.filters(name) == ['_default', 'S', 'C', 'Q'], 'filters failed'
+    trainer.fit(train, overwrite=True)
+    assert trainer.is_valid(), f"valid name {name} after fit failed"
 
-#     assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"
-#                            ], 'ids simple failed'
-#     assert sorted(j.ids(name, 'complete')) == ids, "ids complete failed"
+    assert trainer.filters() == ['_default', 'S', 'C', 'Q'], 'filters failed'
 
-#     result = j.similar(name, query)
-#     assert isinstance(result, list), "similar data result failed"
+    assert trainer.ids('simple') == [
+        f"{len(ids)} items from {min(ids)} to {max(ids)}"
+    ], 'ids simple failed'
+    assert sorted(trainer.ids('complete')) == ids, "ids complete failed"
 
-#     result = j.similar(name, query, filters="Q")
-#     assert isinstance(result, list), "similar data result failed"
+    query = trainer.get_query()
+    result = query.similar(sample)
+    assert isinstance(result, list), "similar data result failed"
 
-#     result = j.similar(name, query, orient="flat")
-#     assert isinstance(result, list), "similar data result failed"
+    result = query.similar(sample, filters="Q")
+    assert isinstance(result, list), "similar data result failed"
 
-#     result = j.similar(name, pd.Series(query.index))
-#     assert isinstance(result, list), "similar id series result failed"
+    result = query.similar(sample, orient="flat")
+    assert isinstance(result, list), "similar data result failed"
 
-#     result = j.similar(name, query.index)
-#     assert isinstance(result, list), "similar id index result failed"
+    result = query.similar(pd.Series(sample.index))
+    assert isinstance(result, list), "similar id series result failed"
 
-#     result = j.similar(name, query.index.tolist())
-#     assert isinstance(result, list), "similar id list result failed"
+    result = query.similar(sample.index)
+    assert isinstance(result, list), "similar id index result failed"
 
-#     result = j.similar(name, query.index.values)
-#     assert isinstance(result, list), "similar id array result failed"
+    result = query.similar(sample.index.tolist())
+    assert isinstance(result, list), "similar id list result failed"
 
-#     # try to use the fields method on a text database
-#     # this will raise an exception
-#     with pytest.raises(ValueError):
-#         j.fields(name)
+    result = query.similar(sample.index.values)
+    assert isinstance(result, list), "similar id array result failed"
 
-#     j.delete_database(name)
-#     assert not j.is_valid(name), "valid name after delete failed"
+    # try to use the fields method on a text database
+    # this will raise an exception
+    with pytest.raises(ValueError):
+        trainer.fields()
 
-# # =============================================================================
-# # Test Self-supervised
-# # =============================================================================
-# @pytest.mark.parametrize("safe_mode", [False, True])
-# def test_selfsupervised(setup_dataframe, safe_mode):
-#     name = 'test_selfsupervised'
+    trainer.delete_database()
+    assert not trainer.is_valid(), "valid name after delete failed"
 
-#     train, _ = setup_dataframe
-#     train = train.drop(columns=["PassengerId"]).iloc[:MAX_SIZE]
-#     query = train.loc[np.random.choice(len(train), 10, replace=False)]
 
-#     j = Jai(safe_mode=safe_mode)
-#     j.url = URL
-#     j.header = HEADER_TEST
-#     if j.is_valid(name):
-#         j.delete_database(name)
+# =============================================================================
+# Test Self-supervised
+# =============================================================================
+@pytest.mark.parametrize("safe_mode", [True])
+def test_selfsupervised(setup_dataframe, safe_mode):
+    name = 'test_selfsupervised'
 
-#     j.setup(name,
-#             train,
-#             db_type="SelfSupervised",
-#             hyperparams={"max_epochs": 3},
-#             overwrite=True,
-#             max_insert_workers=1)
+    train, _ = setup_dataframe
+    train = train.drop(columns=["PassengerId"]).iloc[:MAX_SIZE]
+    sample = train.loc[np.random.choice(len(train), 10, replace=False)]
 
-#     assert j.is_valid(name), f"valid name {name} after setup failed"
+    trainer = Trainer(name=name, safe_mode=safe_mode)
+    trainer.set_params(
+        db_type="SelfSupervised",
+        hyperparams={"max_epochs": 3},
+    )
 
-#     ids = train.index.tolist()
-#     assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"
-#                            ], 'ids simple failed'
-#     assert j.ids(name, 'complete') == ids, "ids complete failed"
+    if trainer.is_valid():
+        trainer.delete_database()
 
-#     for k, from_api in j.fields(name).items():
-#         if k == 'id':
-#             continue
-#         original = str(train[k].dtype)
-#         if original == 'object':
-#             original = 'string'
-#         assert original == from_api, "dtype from api {from_api} differ from data {original}"
+    trainer.fit(train, overwrite=True)
 
-#     result = j.similar(name, query)
+    assert trainer.is_valid(), f"valid name {name} after fit failed"
 
-#     # try to use j.predict on a self-supervised database
-#     # this will raise an exception
-#     with pytest.raises(ValueError):
-#         j.predict(name, dict())
+    ids = train.index.tolist()
+    assert trainer.ids("simple") == [
+        f"{len(ids)} items from {min(ids)} to {max(ids)}"
+    ], 'ids simple failed'
+    assert trainer.ids('complete') == ids, "ids complete failed"
 
-#     assert isinstance(result, list), "similar result failed"
+    for k, from_api in trainer.fields().items():
+        if k == 'id':
+            continue
+        original = str(train[k].dtype)
+        if original == 'object':
+            original = 'string'
+        assert original == from_api, "dtype from api {from_api} differ from data {original}"
 
-#     # try to set up the same database again
-#     # without overwriting it
-#     with pytest.raises(KeyError):
-#         j.setup(name, train, db_type="SelfSupervised")
+    query = trainer.get_query()
+    result = query.similar(sample)
 
-#     j.delete_database(name)
-#     assert not j.is_valid(name), "valid name after delete failed"
+    # try to use j.predict on a self-supervised database
+    # this will raise an exception
+    with pytest.raises(ValueError):
+        query.predict(dict())
 
-# # =============================================================================
-# # Test Supervised
-# # =============================================================================
-# @pytest.mark.parametrize("safe_mode", [False, True])
-# def test_supervised(setup_dataframe, safe_mode):
-#     name = 'test_supervised'
+    assert isinstance(result, list), "similar result failed"
 
-#     train, test = setup_dataframe
-#     train = train.rename(columns={"PassengerId": "id"}).iloc[:MAX_SIZE]
-#     test = test.rename(columns={"PassengerId": "id"}).iloc[:MAX_SIZE]
-#     query = test.loc[np.random.choice(len(test), 10, replace=False)]
+    # try to set up the same database again
+    # without overwriting it
+    with pytest.raises(KeyError):
+        trainer.fit(train)
 
-#     j = Jai(safe_mode=safe_mode)
-#     j.url = URL
-#     j.header = HEADER_TEST
-#     if j.is_valid(name):
-#         j.delete_database(name)
+    trainer.delete_database()
+    assert not trainer.is_valid(), "valid name after delete failed"
 
-#     j.fit(name,
-#           train,
-#           db_type="Supervised",
-#           overwrite=True,
-#           max_insert_workers=0,
-#           hyperparams={"max_epochs": 3},
-#           label={
-#               "task": "metric_classification",
-#               "label_name": "Survived"
-#           },
-#           split={
-#               "type": 'stratified',
-#               "split_column": "Survived",
-#               "test_size": .2
-#           })
 
-#     assert j.is_valid(name), f"valid name {name} after setup failed"
+# =============================================================================
+# Test Supervised
+# =============================================================================
+@pytest.mark.parametrize("safe_mode", [True])
+def test_supervised(setup_dataframe, safe_mode):
+    name = 'test_supervised'
 
-#     ids = train['id'].tolist()
-#     assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"
-#                            ], 'ids simple failed'
-#     assert j.ids(name, 'complete') == ids, "ids complete failed"
+    train, test = setup_dataframe
+    train = train.rename(columns={"PassengerId": "id"}).iloc[:MAX_SIZE]
+    test = test.rename(columns={"PassengerId": "id"}).iloc[:MAX_SIZE]
+    sample = test.loc[np.random.choice(len(test), 10, replace=False)]
 
-#     for k, from_api in j.fields(name).items():
-#         if k == 'Survived':
-#             continue
-#         original = str(train[k].dtype)
-#         if original == 'object':
-#             original = 'string'
-#         assert original == from_api, "dtype from api {from_api} differ from data {original}"
+    trainer = Trainer(name=name, safe_mode=safe_mode)
+    trainer.set_params(db_type="Supervised",
+                       hyperparams={"max_epochs": 3},
+                       label={
+                           "task": "metric_classification",
+                           "label_name": "Survived"
+                       },
+                       split={
+                           "type": 'stratified',
+                           "split_column": "Survived",
+                           "test_size": .2
+                       })
+    if trainer.is_valid():
+        trainer.delete_database()
 
-#     result = j.similar(name, query)
-#     assert isinstance(result, list), "similar result failed"
+    trainer.fit(train, overwrite=True)
 
-#     result = j.predict(name, query)
+    assert trainer.is_valid(), f"valid name {name} after fit failed"
 
-#     # since we have a supervised database already inplace
-#     # we test one of its exceptions
-#     with pytest.raises(ValueError):
-#         j.predict(name, dict())
+    ids = train['id'].tolist()
+    assert trainer.ids("simple") == [
+        f"{len(ids)} items from {min(ids)} to {max(ids)}"
+    ], 'ids simple failed'
+    assert trainer.ids('complete') == ids, "ids complete failed"
 
-#     assert isinstance(result, list), "predict result failed"
+    for k, from_api in trainer.fields().items():
+        if k == 'Survived':
+            continue
+        original = str(train[k].dtype)
+        if original == 'object':
+            original = 'string'
+        assert original == from_api, "dtype from api {from_api} differ from data {original}"
 
-#     j.append(name, test)
+    query = trainer.get_query()
+    result = query.similar(sample)
+    assert isinstance(result, list), "similar result failed"
 
-#     ids = train['id'].tolist() + test['id'].tolist()
-#     assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"
-#                            ], 'ids simple failed'
-#     assert j.ids(name, 'complete') == ids, "ids complete failed"
+    result = query.predict(sample)
+    assert isinstance(result, list), "predict result failed"
 
-#     # test _delete_tree method here
-#     j._delete_tree(name)
-#     assert not j.is_valid(name), "valid name after delete failed"
+    # since we have a supervised database already inplace
+    # we test one of its exceptions
+    with pytest.raises(ValueError):
+        query.predict(dict())
+
+    trainer.append(test)
+
+    ids = train['id'].tolist() + test['id'].tolist()
+    assert trainer.ids("simple") == [
+        f"{len(ids)} items from {min(ids)} to {max(ids)}"
+    ], 'ids simple failed'
+    assert trainer.ids('complete') == ids, "ids complete failed"
+
+    trainer.delete_database()
+    assert not trainer.is_valid(), "valid name after delete failed"

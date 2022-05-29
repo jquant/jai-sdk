@@ -1,33 +1,15 @@
-import json
-import secrets
-import time
-from fnmatch import fnmatch
-from io import BytesIO
-from typing import Optional
-
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import requests
-from pandas.api.types import is_integer_dtype, is_numeric_dtype
-from sklearn.model_selection import StratifiedShuffleSplit
-from tqdm import tqdm, trange
+from pandas.api.types import is_integer_dtype
+from tqdm import trange
 
-from jai.utilities import (filter_resolution, filter_similar, predict2df)
+from jai.utilities import predict2df
 
 from .base import TaskBase
-from ..core.utils_funcs import build_name, data2json, resolve_db_type
-from ..core.validations import (check_response, check_dtype_and_clean,
-                                check_name_lengths, kwargs_validation)
-from ..types.generic import Mode, PossibleDtypes
-from ..types.responses import (
-    EnvironmentsResponse, UserResponse, Report1Response, Report2Response,
-    AddDataResponse, StatusResponse, InfoResponse, SetupResponse,
-    SimilarNestedResponse, PredictResponse, ValidResponse,
-    InsertVectorResponse, RecNestedResponse, FlatResponse)
-
-from pydantic import HttpUrl
-
+from ..core.utils_funcs import data2json
+from ..core.validations import check_response
+from ..types.responses import (SimilarNestedResponse, PredictResponse,
+                               RecNestedResponse, FlatResponse)
 from typing import Any, Optional, Dict, List
 import sys
 
@@ -72,7 +54,7 @@ class Query(TaskBase):
         super(Query, self).__init__(name=name,
                                     environment=environment,
                                     env_var=env_var,
-                                      verbose=verbose,
+                                    verbose=verbose,
                                     safe_mode=safe_mode)
 
         self.batch_size = batch_size

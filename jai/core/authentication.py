@@ -32,6 +32,7 @@ def get_auth_key(email: str, firstName: str, lastName: str, company: str = ""):
         "company": company
     }
     response = requests.put(url + "/auth", json=body)
+    print(response.json())
     return response
 
 

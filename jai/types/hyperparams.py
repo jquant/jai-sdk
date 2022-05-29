@@ -10,10 +10,10 @@ else:
 
 
 class InsertParams(BaseModel):
-    batch_size: int
-    filter_name: Optional[str]
-    overwrite: bool = False
-    max_insert_workers: Optional[int]
+    batch_size: int= 16384
+    filter_name: Optional[str] = None
+    overwrite: bool = False 
+    max_insert_workers: Optional[int]=None
 
 
 class VisionModes(Enum):

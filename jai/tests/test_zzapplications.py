@@ -23,7 +23,7 @@ def setup_dataframe():
 # =============================================================================
 # Test Embedding
 # =============================================================================
-@pytest.mark.parametrize("safe_mode", [False, True])
+@pytest.mark.parametrize("safe_mode", [True])
 @pytest.mark.parametrize("name", ["test_embedding"])
 def test_embedding(safe_mode, name, setup_dataframe):
 
@@ -53,7 +53,7 @@ def test_embedding(safe_mode, name, setup_dataframe):
 # =============================================================================
 # Test Fill
 # =============================================================================
-@pytest.mark.parametrize("safe_mode", [False, True])
+@pytest.mark.parametrize("safe_mode", [True])
 @pytest.mark.parametrize("name", ["test_fill"])
 def test_fill(safe_mode, name, setup_dataframe):
 
@@ -83,7 +83,7 @@ def test_fill(safe_mode, name, setup_dataframe):
 # =============================================================================
 # Test Sanity
 # =============================================================================
-@pytest.mark.parametrize("safe_mode", [False, True])
+@pytest.mark.parametrize("safe_mode", [True])
 @pytest.mark.parametrize("name", ["test_sanity"])
 def test_sanity(safe_mode, name, setup_dataframe):
 
@@ -111,7 +111,7 @@ def test_sanity(safe_mode, name, setup_dataframe):
 # =============================================================================
 # Test Match Application
 # =============================================================================
-@pytest.mark.parametrize("safe_mode", [False, True])
+@pytest.mark.parametrize("safe_mode", [True])
 @pytest.mark.parametrize("name", ["test_match"])
 def test_match(safe_mode, name):
 
@@ -148,7 +148,7 @@ def test_match(safe_mode, name):
 # =============================================================================
 # Test Resolution Application
 # =============================================================================
-@pytest.mark.parametrize("safe_mode", [False, True])
+@pytest.mark.parametrize("safe_mode", [True])
 @pytest.mark.parametrize("name", ["test_resolution"])
 def test_resolution(safe_mode, name):
 

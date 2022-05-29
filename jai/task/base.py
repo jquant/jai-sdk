@@ -1,22 +1,11 @@
-import time
-from fnmatch import fnmatch
-
-import matplotlib.pyplot as plt
-from pydantic.types import NoneStrBytes
-from tqdm import tqdm
 import numpy as np
-import pandas as pd
 from io import BytesIO
 from ..core.base import BaseJai
-from ..core.utils_funcs import print_args
-from ..core.validations import check_response, check_dtype_and_clean
+from ..core.validations import check_response
 import requests
-from ..types.generic import PossibleDtypes, Mode
-from ..types.hyperparams import InsertParams
+from ..types.generic import Mode
 
-from ..types.responses import (UserResponse, ValidResponse, Report1Response,
-                               Report2Response, AddDataResponse,
-                               StatusResponse, InfoResponse)
+from ..types.responses import (UserResponse, ValidResponse)
 
 from typing import Dict, List, Any
 from pydantic import HttpUrl
@@ -60,7 +49,6 @@ class TaskBase(BaseJai):
         """
         super(TaskBase, self).__init__(environment, env_var)
         self.safe_mode = safe_mode
-        self._type = NoneStrBytes
 
         if self.safe_mode:
             user = self._user()
@@ -79,13 +67,13 @@ class TaskBase(BaseJai):
 
     @property
     def db_type(self):
-        return self._type
+        if self.is_valid():
+            return self.describe()['dtype']
+        return None
 
     @name.setter
     def name(self, value):
         self._name = value
-        if self.is_valid():
-            self._type = self.describe()['dtype']
 
     def is_valid(self):
         """
@@ -189,6 +177,20 @@ class TaskBase(BaseJai):
             url = check_response(HttpUrl, url)
         r = requests.get(url)
         return np.load(BytesIO(r.content))
+
+    def filters(self):
+        """
+        Gets the valid values of filters.
+
+        Return
+        ------
+        response : list of strings
+            List of valid filter values.
+        """
+        filters = self._filters(self.name)
+        if self.safe_mode:
+            return check_response(List[str], filters)
+        return filters
 
     def ids(self, mode: Mode = "complete"):
         """
