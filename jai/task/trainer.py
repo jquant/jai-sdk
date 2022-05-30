@@ -287,12 +287,13 @@ class Trainer(TaskBase):
 
         Parameters
         ----------
-        name : str
-            String with the name of a database in your JAI environment.
         verbose : int, optional
             Level of description. The default is 2.
             Use verbose 2 to get the loss graph, verbose 1 to get only the
             metrics result.
+        return_report : bool, optional
+            Returns the report dictionary and does not print or plot anything. The default is False.
+
 
         Returns
         -------
@@ -347,8 +348,6 @@ class Trainer(TaskBase):
 
         Args
         ----
-        name : str
-            String with the name of a database in your JAI environment.
         frequency_seconds : int, optional
             Number of seconds apart from each status check. `Default is 5`.
 
@@ -432,7 +431,6 @@ class Trainer(TaskBase):
 
         Args
         ----
-
         ids : list
             List of ids to be removed from database.
 
@@ -495,6 +493,16 @@ class Trainer(TaskBase):
         return response
 
     def get_query(self, name: str = None):
+        """
+        The function returns a new `Query` object with the same initial values as the current `Trainer`
+        object
+        
+        Args:
+          name (str): The name of the query. Defaults to the same name as the current `Trainer` object.
+        
+        Returns:
+          A Query object with the name and init values.
+        """
         if name is None:
             return Query(name=self.name, **self._init_values)
         return Query(name=name, **self._init_values)

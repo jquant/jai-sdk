@@ -9,12 +9,23 @@ def test_get_authentication():
 
 
 def test_set_authentication():
+    auth_key = get_authentication()
+    assert auth_key == ""
+
     set_authentication("auth")
 
     auth_key = get_authentication()
     assert auth_key == "auth"
 
+    set_authentication("other_value")
+
+    auth_key = get_authentication()
+    assert auth_key == "other_value"
+
     os.environ.pop("JAI_AUTH", None)
+
+    auth_key = get_authentication()
+    assert auth_key == ""
 
 
 def test_error_authentication():

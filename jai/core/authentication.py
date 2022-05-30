@@ -39,7 +39,8 @@ def get_auth_key(email: str, firstName: str, lastName: str, company: str = ""):
 def set_authentication(auth_key: str, env_var: str = "JAI_AUTH"):
 
     if env_var in os.environ:
-        warnings.warn("Overwriting environment variable `{env_var}`.")
+        warnings.warn(f"Overwriting environment variable `{env_var}`.",
+                      stacklevel=2)
 
     os.environ[env_var] = auth_key
 
