@@ -139,28 +139,134 @@ def data2json(data,
     raise ValueError(f"dtype {dtype} not recognized.")
 
 
-def print_args(response_kwargs, input_kwargs):
+def common_items(d1, d2):
+    """
+    It recursively compares the values of two dictionaries, and returns a new dictionary containing only
+    the keys and values that are common to both dictionaries
+     
+    https://stackoverflow.com/a/38506628/10168941
+
+    Args:
+      d1: The first dictionary to compare.
+      d2: The dictionary to compare against.
+    
+    Returns:
+      A dictionary with the common keys and values.
+    """
+    result = {}
+    for k in d1.keys() & d2.keys():
+        v1 = d1[k]
+        v2 = d2[k]
+        if isinstance(v1, dict) and isinstance(v2, dict):
+            result[k] = common_items(v1, v2)
+        elif v1 == v2:
+            result[k] = v1
+        else:
+            raise ValueError("values for common keys don't match")
+    return result
+
+
+def common_elements(l1, l2):
+    """
+    It takes two lists of dictionaries, and returns a list of dictionaries that have the same keys and
+    values
+    
+    Args:
+      l1: the list of dictionaries to be compared
+      l2: the list of dictionaries that we want to compare against
+    
+    Returns:
+      A list of dictionaries that have the same keys and values.
+    """
+    result = []
+    for e1 in l1:
+        match = False
+        for e2 in l2:
+            if e1.items() <= e2.items():
+                match = True
+                break
+
+        if match:
+            result.append(e1)
+        else:
+            raise ValueError("values for common keys don't match")
+    return result
+
+
+def print_args(response_kwargs, input_kwargs, verbose: int = 1):
+    """
+    It takes two dictionaries,
+    one from the API response and one from the user input, and prints out the
+    arguments that were recognized
+    
+    Args:
+      response_kwargs: the parameters that are returned from the API
+      input_kwargs: the parameters that you passed to the function
+      verbose (int): If 1, prints out the recognised parameters, if 2,
+      prints out everything that is used. Defaults to 1.
+    """
     warn_list = []
     print("\nRecognized setup args:")
     for key, value in response_kwargs.items():
         input = input_kwargs.get(key, None)
         if isinstance(input, dict) and isinstance(value, dict):
-            if not input.items() <= value.items():
+
+            intersection = common_items(input, value)
+            if not input.keys() == intersection.keys():
                 warn_list.append(
                     f"argument: `{key}`; values: ({input} != {value})")
 
-            intersection = input.keys() & value.keys()
-            m = max([len(s) for s in intersection] + [0])
-            value = "".join(
-                [f"\n  * {k:{m}s}: {value[k]}" for k in intersection])
+            if verbose <= 1:
+                to_write = input
+            else:
+                to_write = value
+
+            m = max([len(s) for s in to_write] + [0])
+
+            to_join = []
+            for k, v in to_write.items():
+                if isinstance(v, dict):
+                    to_join.append(f"  * {k:{m}s}:\n")
+                    for _k, _v in v.items():
+                        to_join.append(f"    - {_k}: {_v}\n")
+                else:
+                    to_join.append(f"  * {k:{m}s}: {v}\n")
+            value = "\n" + "".join(to_join)
+
+        elif isinstance(input, list) and isinstance(value, list):
+            intersection = common_elements(input, value)
+            if input != intersection:
+                warn_list.append(
+                    f"argument: `{key}`; values: ({input} != {value})")
+
+            if verbose <= 1:
+                to_write = input
+            else:
+                to_write = value
+
+            to_join = []
+            for v in to_write:
+                if isinstance(v, dict):
+                    first = True
+                    for _k, _v in v.items():
+                        if first:
+                            to_join.append(f"  * {_k}: {_v}\n")
+                            first = False
+                        else:
+                            to_join.append(f"    {_k}: {_v}\n")
+                else:
+                    to_join.append(f"  * {v}\n")
+
+            value = "\n" + "".join(to_join)
 
         else:
             if input != value:
                 warn_list.append(
                     f"argument: `{key}`; values: ({input} != {value})")
+            value = f"{value}\n"
 
         if value is not None:
-            print(f"- {key}: {value}")
+            print(f"- {key}: {value}", end="")
 
     if len(warn_list):
         warn_str = "\n".join(warn_list)

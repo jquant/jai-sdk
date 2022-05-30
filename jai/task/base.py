@@ -47,6 +47,12 @@ class TaskBase(BaseJai):
             None
 
         """
+        self._init_values = {
+            "environment": environment,
+            "env_var": env_var,
+            "verbose": verbose,
+            "safe_mode": safe_mode
+        }
         super(TaskBase, self).__init__(environment, env_var)
         self.safe_mode = safe_mode
 

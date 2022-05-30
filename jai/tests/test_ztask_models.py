@@ -36,7 +36,7 @@ def test_text(safe_mode, name, dtype, setup_dataframe):
     trainer = Trainer(name=name, safe_mode=safe_mode)
     trainer.set_params(db_type=dtype)
 
-    trainer.fit(train, overwrite=True)
+    query = trainer.fit(train, overwrite=True)
 
     assert trainer.ids('simple') == [
         f"{len(ids)} items from {min(ids)} to {max(ids)}"
@@ -49,7 +49,6 @@ def test_text(safe_mode, name, dtype, setup_dataframe):
     with pytest.raises(ValueError):
         trainer.fields()
 
-    query = trainer.get_query()
     result = query.similar(sample)
     assert isinstance(result, list), "similar data result failed"
 
@@ -74,7 +73,7 @@ def test_filter_text(safe_mode, name, dtype, setup_dataframe):
     if trainer.is_valid():
         trainer.delete_database()
 
-    trainer.fit(train, overwrite=True)
+    query = trainer.fit(train, overwrite=True)
     assert trainer.is_valid(), f"valid name {name} after fit failed"
 
     assert trainer.filters() == ['_default', 'S', 'C', 'Q'], 'filters failed'
@@ -84,7 +83,6 @@ def test_filter_text(safe_mode, name, dtype, setup_dataframe):
     ], 'ids simple failed'
     assert sorted(trainer.ids('complete')) == ids, "ids complete failed"
 
-    query = trainer.get_query()
     result = query.similar(sample)
     assert isinstance(result, list), "similar data result failed"
 
@@ -135,7 +133,7 @@ def test_selfsupervised(setup_dataframe, safe_mode):
     if trainer.is_valid():
         trainer.delete_database()
 
-    trainer.fit(train, overwrite=True)
+    query = trainer.fit(train, overwrite=True)
 
     assert trainer.is_valid(), f"valid name {name} after fit failed"
 
@@ -153,7 +151,6 @@ def test_selfsupervised(setup_dataframe, safe_mode):
             original = 'string'
         assert original == from_api, "dtype from api {from_api} differ from data {original}"
 
-    query = trainer.get_query()
     result = query.similar(sample)
 
     # try to use j.predict on a self-supervised database
@@ -199,7 +196,7 @@ def test_supervised(setup_dataframe, safe_mode):
     if trainer.is_valid():
         trainer.delete_database()
 
-    trainer.fit(train, overwrite=True)
+    query = trainer.fit(train, overwrite=True)
 
     assert trainer.is_valid(), f"valid name {name} after fit failed"
 
@@ -217,7 +214,6 @@ def test_supervised(setup_dataframe, safe_mode):
             original = 'string'
         assert original == from_api, "dtype from api {from_api} differ from data {original}"
 
-    query = trainer.get_query()
     result = query.similar(sample)
     assert isinstance(result, list), "similar result failed"
 

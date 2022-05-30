@@ -80,6 +80,7 @@ def check_dtype_and_clean(data, db_type):
     data : pandas.DataFrame or pandas.Series
         Data without NAs
     """
+    # TODO: improve this function
     if not isinstance(data, (list, np.ndarray, pd.Series, pd.DataFrame)):
         raise TypeError(
             f"Inserted data is of type `{data.__class__.__name__}`," \

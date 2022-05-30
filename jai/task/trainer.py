@@ -16,6 +16,8 @@ from ..types.responses import (Report1Response, Report2Response,
                                AddDataResponse, StatusResponse)
 
 from typing import Dict
+import pandas as pd
+import json
 
 __all__ = ["Trainer"]
 
@@ -99,15 +101,15 @@ class Trainer(TaskBase):
                    label: dict = None,
                    split: dict = None):
 
-        kwargs = dict(db_type=db_type,
-                      hyperparams=hyperparams,
-                      features=features,
-                      num_process=num_process,
-                      cat_process=cat_process,
-                      datetime_process=datetime_process,
-                      pretrained_bases=pretrained_bases,
-                      label=label,
-                      split=split)
+        self._input_kwargs = dict(db_type=db_type,
+                                  hyperparams=hyperparams,
+                                  features=features,
+                                  num_process=num_process,
+                                  cat_process=cat_process,
+                                  datetime_process=datetime_process,
+                                  pretrained_bases=pretrained_bases,
+                                  label=label,
+                                  split=split)
 
         self._setup_params = self._check_params(
             db_type=db_type,
@@ -120,7 +122,9 @@ class Trainer(TaskBase):
             label=label,
             split=split)
 
-        print_args(self.setup_params, kwargs)
+        print_args(self.setup_params,
+                   self._input_kwargs,
+                   verbose=self._verbose)
 
     def fit(self,
             data,
@@ -136,30 +140,69 @@ class Trainer(TaskBase):
                     f"Database '{self.name}' already exists in your environment.\
                         Set overwrite=True to overwrite it.")
 
-        # make sure our data has the correct type and is free of NAs
-        data = check_dtype_and_clean(data=data, db_type=self.db_type)
+        if isinstance(data, (pd.Series, pd.DataFrame)):
+            # make sure our data has the correct type and is free of NAs
+            data = check_dtype_and_clean(data=data, db_type=self.db_type)
 
-        # insert data
-        insert_responses = self._insert_data(
-            data=data,
-            name=self.name,
-            db_type=self.setup_params['db_type'],
-            batch_size=self.insert_params['batch_size'],
-            overwrite=self.insert_params['overwrite'],
-            max_insert_workers=self.insert_params['max_insert_workers'],
-            filter_name=self.insert_params['filter_name'],
-            predict=False)
+            # insert data
+            insert_responses = self._insert_data(
+                data=data,
+                name=self.name,
+                db_type=self.setup_params['db_type'],
+                batch_size=self.insert_params['batch_size'],
+                overwrite=self.insert_params['overwrite'],
+                max_insert_workers=self.insert_params['max_insert_workers'],
+                filter_name=self.insert_params['filter_name'],
+                predict=False)
+
+        elif isinstance(data, dict):
+            # TODO: check keys
+
+            # loop insert
+            for key, value in data.items():
+
+                # make sure our data has the correct type and is free of NAs
+                value = check_dtype_and_clean(data=value, db_type=self.db_type)
+
+                # TODO: filter_name fix
+                if key == self.name or key == "main":
+                    name = self.name
+                    filter_name = None
+                else:
+                    filter_name = self.insert_params['filter_name']
+
+                # insert data
+                insert_responses = self._insert_data(
+                    data=value,
+                    name=name,
+                    db_type=self.setup_params['db_type'],
+                    batch_size=self.insert_params['batch_size'],
+                    overwrite=self.insert_params['overwrite'],
+                    max_insert_workers=self.
+                    insert_params['max_insert_workers'],
+                    filter_name=filter_name,
+                    predict=False)
+        else:
+            ValueError("Generic Data Error Message")  # TODO: change message
 
         # train model
-        setup_response = self._setup(self.name, self.setup_params, overwrite)
+        setup_response = self._setup(self.name,
+                                     self.setup_params,
+                                     overwrite=overwrite)
 
-        print_args(setup_response['kwargs'], self.setup_params)
+        print_args(
+            {k: json.loads(v)
+             for k, v in setup_response['kwargs'].items()},
+            self._input_kwargs,
+            verbose=self._verbose)
 
-        if frequency_seconds >= 1:
-            self.wait_setup(frequency_seconds=frequency_seconds)
-            self.report(self._verbose)
+        if frequency_seconds < 1:
+            return insert_responses, setup_response
 
-        return insert_responses, setup_response
+        self.wait_setup(frequency_seconds=frequency_seconds)
+        self.report(self._verbose)
+
+        return self.get_query()  # TODO: maybe fix this for recommendation
 
     def append(self, data, *, frequency_seconds: int = 1):
         """
@@ -451,5 +494,7 @@ class Trainer(TaskBase):
             return check_response(str, response)
         return response
 
-    def get_query(self):
-        return Query(self.name)
+    def get_query(self, name: str = None):
+        if name is None:
+            return Query(name=self.name, **self._init_values)
+        return Query(name=name, **self._init_values)

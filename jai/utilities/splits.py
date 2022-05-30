@@ -1,6 +1,7 @@
 import warnings
 
 import pandas as pd
+from typing import Union, Dict, List
 
 __all__ = ["split", "split_recommendation"]
 
@@ -71,8 +72,9 @@ def split(dataframe, columns, sort: bool = False, prefix: str = "id_"):
 
 
 def split_recommendation(dataframe,
-                         split_config: dict,
+                         split_config: Dict[str, List[str]],
                          columns: str,
+                         as_index: Union[bool, Dict[str, str]] = False,
                          sort: bool = False,
                          prefix: str = "id_"):
     """
@@ -84,18 +86,25 @@ def split_recommendation(dataframe,
     ----------
     dataframe : pd.DataFrame
         Dataframe to be factored.
-    split_config : dict
-        Dictionary with id names (prefix param will be added to those names)
-        as keys and list of columns of those datasets as values. Must have
-        length 2 and no common values.
+    split_config : Dict[str, List[str]]
+        Dictionary with **length 2**.
+        - keys: db_names for each of the child Recommendation databases created 
+        on Recommendation System's setup.
+        - values: list of columns of those databases. 
     columns : str, list of str or dict
         Column to be separated from dataset.
         If column has multiple data, use a dict with the format column name as
         key and separator as value. Use `None` if no separator is needed.
+    as_index : False or Dict[str, str]
+        Dictionary with **length 2**:
+        - keys: database name.
+        - values: column name to be used as id for that database
     sort : bool
-        sort values of the split data.
+        sort values of the split data. See `split` function.
     prefix : str
-        prefix added to the splitted column names.
+        Prefix added to the splitted column names. See `split` function.
+        Also used as prefix for de id columns of the child Recommendation databases.
+        
 
     Returns
     -------
@@ -107,7 +116,7 @@ def split_recommendation(dataframe,
         list of dataframes with each base extracted.
     """
 
-    pretrained_bases, df_merge = split(dataframe,
+    pretrained_bases, df_split = split(dataframe,
                                        columns,
                                        sort=sort,
                                        prefix=prefix)
@@ -117,12 +126,17 @@ def split_recommendation(dataframe,
         split_cols = [
             prefix + col if col in columns else col for col in split_cols
         ]
-        df_out = df_merge.loc[:, split_cols].drop_duplicates().reset_index(
-        ).rename(columns={'index': prefix + name})
-        df_merge = df_merge.merge(df_out,
+        df_out = df_split.loc[:, split_cols].drop_duplicates()
+        if not as_index:
+            df_out = df_out.reset_index().rename(
+                columns={'index': prefix + name})
+        else:
+            df_out[prefix + name] = df_out[as_index[name]].copy()
+        df_split = df_split.merge(df_out,
                                   left_on=split_cols,
                                   right_on=split_cols).drop(columns=split_cols)
+
         main_bases[name] = df_out.set_index(prefix + name)
 
-    main_bases["main"] = df_merge
+    main_bases["main"] = df_split
     return main_bases, pretrained_bases
