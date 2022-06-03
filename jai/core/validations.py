@@ -297,7 +297,10 @@ def kwargs_validation(db_type: str, **kwargs):
     if 'label' not in body_keys and db_type == PossibleDtypes.supervised:
         raise ParamError(f'Missing the required arguments: `label`. {doc_msg}')
 
-    body = {"db_type": db_type}
+    body = {
+        "db_type": db_type,
+        "callback_url": kwargs.get("callback_url", None)
+    }
     for key in correct_used_keys:
         if key == "mycelia_bases":
             raise DeprecatedError(
