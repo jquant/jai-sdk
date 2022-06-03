@@ -76,7 +76,13 @@ def test_filter_text(safe_mode, name, dtype, setup_dataframe):
     if j.is_valid(name):
         j.delete_database(name)
 
-    j.setup(name, train, filter_name="Embarked", db_type=dtype, overwrite=True)
+    j.setup(name,
+            train,
+            features={'Embarked': {
+                "dtype": "filter"
+            }},
+            db_type=dtype,
+            overwrite=True)
     assert j.is_valid(name), f"valid name {name} after setup failed"
 
     assert j.filters(name) == ['_default', 'S', 'C', 'Q'], 'filters failed'

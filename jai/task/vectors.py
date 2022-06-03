@@ -171,7 +171,6 @@ class Vectors(TaskBase):
             _batch = data.iloc[b:b + batch_size]
             data_json = data2json(_batch,
                                   dtype=PossibleDtypes.vector,
-                                  filter_name=None,
                                   predict=False)
             if i == 0 and create_new_collection is True:
                 response = self._insert_vectors_json(self.name,

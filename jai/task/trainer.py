@@ -13,7 +13,7 @@ from ..types.generic import PossibleDtypes
 from ..types.hyperparams import InsertParams
 
 from ..types.responses import (Report1Response, Report2Response,
-                               AddDataResponse, StatusResponse)
+                               AddDataResponse, SetupResponse, StatusResponse)
 
 from typing import Dict
 import pandas as pd
@@ -68,12 +68,7 @@ class Trainer(TaskBase):
         self._verbose = verbose
         self._setup_params = None
 
-        self._insert_params = {
-            "batch_size": 16384,
-            "filter_name": None,
-            "overwrite": False,
-            "max_insert_workers": None
-        }
+        self._insert_params = {"batch_size": 16384, "max_insert_workers": None}
 
     @property
     def insert_params(self):
@@ -111,6 +106,8 @@ class Trainer(TaskBase):
                                   label=label,
                                   split=split)
 
+        # I figure we don't need a safe_mode validation here
+        # because this is already a validation method.
         self._setup_params = self._check_params(
             db_type=db_type,
             hyperparams=hyperparams,
@@ -145,42 +142,45 @@ class Trainer(TaskBase):
             data = check_dtype_and_clean(data=data, db_type=self.db_type)
 
             # insert data
+            self._delete_raw_data(self.name)
             insert_responses = self._insert_data(
                 data=data,
                 name=self.name,
                 db_type=self.setup_params['db_type'],
                 batch_size=self.insert_params['batch_size'],
-                overwrite=self.insert_params['overwrite'],
+                has_filter=any([
+                    feat['dtype'] == "filter"
+                    for feat in self.setup_params.get("features", {}).values()
+                ]),
                 max_insert_workers=self.insert_params['max_insert_workers'],
-                filter_name=self.insert_params['filter_name'],
                 predict=False)
 
         elif isinstance(data, dict):
             # TODO: check keys
 
             # loop insert
-            for key, value in data.items():
+            for name, value in data.items():
 
                 # make sure our data has the correct type and is free of NAs
                 value = check_dtype_and_clean(data=value, db_type=self.db_type)
 
                 # TODO: filter_name fix
-                if key == self.name or key == "main":
+                if name == "main":
                     name = self.name
-                    filter_name = None
-                else:
-                    filter_name = self.insert_params['filter_name']
 
                 # insert data
+                self._delete_raw_data(self.name)
                 insert_responses = self._insert_data(
                     data=value,
                     name=name,
                     db_type=self.setup_params['db_type'],
                     batch_size=self.insert_params['batch_size'],
-                    overwrite=self.insert_params['overwrite'],
+                    has_filter=any([
+                        feat['dtype'] == "filter" for feat in
+                        self.setup_params.get("features", {}).values()
+                    ]),
                     max_insert_workers=self.
                     insert_params['max_insert_workers'],
-                    filter_name=filter_name,
                     predict=False)
         else:
             ValueError("Generic Data Error Message")  # TODO: change message
@@ -189,6 +189,9 @@ class Trainer(TaskBase):
         setup_response = self._setup(self.name,
                                      self.setup_params,
                                      overwrite=overwrite)
+        if self.safe_mode:
+            setup_response = check_response(SetupResponse,
+                                            setup_response).dict()
 
         print_args(
             {k: json.loads(v)
@@ -237,14 +240,14 @@ class Trainer(TaskBase):
         data = check_dtype_and_clean(data=data, db_type=self.db_type)
 
         # insert data
+        self._delete_raw_data(self.name)
         insert_responses = self._insert_data(
             data=data,
             name=self.name,
             db_type=self.db_type,
             batch_size=self.insert_params['batch_size'],
-            overwrite=self.insert_params['overwrite'],
+            has_filter=self.describe()['has_filter'],
             max_insert_workers=self.insert_params['max_insert_workers'],
-            filter_name=self.insert_params['filter_name'],
             predict=True)
 
         # add data per se
@@ -392,6 +395,7 @@ class Trainer(TaskBase):
                                     sleep_time += frequency_seconds
                                 time.sleep(sleep_time)
                                 status = self.status()
+
                             # training might stop early, so we make the progress bar appear
                             # full when early stopping is reached -- peace of mind
                             iteration_bar.update(max_iterations -

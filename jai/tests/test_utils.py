@@ -100,14 +100,12 @@ def test_data2json_filters(setup_dataframe, col_name, filter_name, db_type):
 
     gab = data.reset_index().to_json(orient='records')
 
-    assert data2json(data, db_type,
-                     filter_name=filter_name) == gab, 'df2json failed.'
+    assert data2json(data, db_type, has_filter=True) == gab, 'df2json failed.'
 
     data = train.loc[:, ['id', col_name, filter_name]]
     gab = data.to_json(orient='records')
 
-    assert data2json(data, db_type,
-                     filter_name=filter_name) == gab, 'df2json failed.'
+    assert data2json(data, db_type, has_filter=True) == gab, 'df2json failed.'
 
 
 def test_data2json_exceptions(setup_dataframe):

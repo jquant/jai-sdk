@@ -67,8 +67,13 @@ def test_filter_text(safe_mode, name, dtype, setup_dataframe):
     sample = train.loc[np.random.choice(ids, 10, replace=False), 'Name']
 
     trainer = Trainer(name=name, safe_mode=safe_mode)
-    trainer.set_params(db_type=dtype)
-    trainer.insert_params = {"filter_name": "Embarked"}
+    with pytest.raises(ValueError):
+        trainer.setup_params
+
+    trainer.set_params(db_type=dtype,
+                       features={'Embarked': {
+                           "dtype": "filter"
+                       }})
 
     if trainer.is_valid():
         trainer.delete_database()

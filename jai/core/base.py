@@ -53,6 +53,7 @@ class BaseJai(object):
             self.headers = {"Auth": auth_key, "environment": environment}
         else:
             self.headers = json.loads(config("JAI_HEADERS"))
+            self.headers["environment"] = environment
 
         self.__url = config(url_var, default="https://mycelia.azure-api.net")
 
@@ -434,7 +435,7 @@ class BaseJai(object):
         return requests.patch(self.url + f"/data/{name}", headers=self.headers)
 
     @raise_status_error(200)
-    def _insert_json(self, name: str, data_json, filter_name: str = None):
+    def _insert_json(self, name: str, data_json):
         """
         Insert data in JSON format. This is a protected method.
 
@@ -450,12 +451,11 @@ class BaseJai(object):
         response : dict
             Dictionary with the API response.
         """
-        filtering = "" if filter_name is None else f"?filter_name={filter_name}"
-        url = self.url + f"/data/{name}" + filtering
-
         header = copy(self.headers)
         header["Content-Type"] = "application/json"
-        return requests.post(url, headers=header, data=data_json)
+        return requests.post(self.url + f"/data/{name}",
+                             headers=header,
+                             data=data_json)
 
     @raise_status_error(200)
     def _check_params(self,
@@ -717,13 +717,12 @@ class BaseJai(object):
                              headers=header,
                              data=data_json)
 
-    @raise_status_error(201)
+    @raise_status_error(200)
     def _linear_train(self,
                       name: str,
                       data_dict,
                       y,
                       task,
-                      metric,
                       learning_rate: float = None,
                       l2: float = 0.1,
                       model_params: dict = None,
@@ -748,14 +747,13 @@ class BaseJai(object):
             pretrained_bases = []
 
         return requests.post(
-            self.url + f'linear/batch/{name}?overwrite={overwrite}',
+            self.url + f'/linear/batch/{name}?overwrite={overwrite}',
             headers=self.headers,
             json={
                 "X": data_dict,
                 "y": y,
                 "hyperparams": {
                     "task": task,
-                    "metric": metric,
                     "learning_rate": learning_rate,
                     "l2": l2,
                     "model": model_params
@@ -764,7 +762,7 @@ class BaseJai(object):
             },
         )
 
-    @raise_status_error(201)
+    @raise_status_error(200)
     def _linear_learn(self, name: str, data_dict, y: list):
         """
         Insert data in JSON format. This is a protected method.
@@ -779,14 +777,14 @@ class BaseJai(object):
         response : dict
             Dictionary with the API response.
         """
-        return requests.post(self.url + f'linear/learn/{name}',
+        return requests.post(self.url + f'/linear/learn/{name}',
                              headers=self.headers,
                              json={
                                  "X": data_dict,
                                  "y": y
                              })
 
-    @raise_status_error(201)
+    @raise_status_error(200)
     def _linear_predict(self,
                         name: str,
                         data_dict: list,
@@ -808,8 +806,8 @@ class BaseJai(object):
             Dictionary with the API response.
         """
 
-        return requests.post(
-            self.url + f'linear/predict/{name}?predict_proba={predict_proba}',
+        return requests.put(
+            self.url + f'/linear/predict/{name}?predict_proba={predict_proba}',
             headers=self.headers,
             json=data_dict)
 
@@ -818,9 +816,8 @@ class BaseJai(object):
                      name,
                      db_type,
                      batch_size,
-                     overwrite: bool = False,
                      max_insert_workers: Optional[int] = None,
-                     filter_name: str = None,
+                     has_filter: bool = False,
                      predict: bool = False):
         """
         Insert raw data for training. This is a protected method.
@@ -854,12 +851,6 @@ class BaseJai(object):
         else:
             pcores = 1
 
-        if self._check_ids_consistency(
-                name=name, data=data, handle_error="bool") and not overwrite:
-            return {0: "Data was already inserted. No operation was executed."}
-        else:
-            self._delete_raw_data(name)
-
         dict_futures = {}
         with concurrent.futures.ThreadPoolExecutor(
                 max_workers=pcores) as executor:
@@ -868,10 +859,9 @@ class BaseJai(object):
                 _batch = data.iloc[b:b + batch_size]
                 data_json = data2json(_batch,
                                       dtype=db_type,
-                                      filter_name=filter_name,
+                                      has_filter=has_filter,
                                       predict=predict)
-                task = executor.submit(self._insert_json, name, data_json,
-                                       filter_name)
+                task = executor.submit(self._insert_json, name, data_json)
                 dict_futures[task] = i
 
             with tqdm(total=len(dict_futures), desc="Insert Data") as pbar:

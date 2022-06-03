@@ -51,7 +51,7 @@ def test_names(safe_mode):
     assert j.names == [
         'test_insert_vector', 'test_match', 'test_resolution',
         'titanic_ssupervised'
-    ]
+    ], f"Failed names {j.names}"
 
 
 @pytest.mark.parametrize("safe_mode", [False, True])
@@ -64,7 +64,7 @@ def test_info(safe_mode):
 @pytest.mark.parametrize("safe_mode", [False, True])
 def test_status(safe_mode):
     j = Jai(safe_mode=safe_mode)
-    assert isinstance(j.status, dict)
+    assert isinstance(j.status(), dict)
 
 
 @pytest.mark.parametrize("length", [10, 15])
@@ -157,11 +157,13 @@ def test_rename(safe_mode):
         'test_insert_vector', 'test_match', 'test_resolution',
         'titanic_ssupervised'
     ]
+
     j.rename(original_name='test_match', new_name='test_match_new')
     assert j.names == [
         'test_insert_vector', 'test_match_new', 'test_resolution',
         'titanic_ssupervised'
     ]
+
     j.rename(original_name='test_match_new', new_name='test_match')
     assert j.names == [
         'test_insert_vector', 'test_match', 'test_resolution',
@@ -173,10 +175,17 @@ def test_rename(safe_mode):
 @pytest.mark.parametrize('db_name', ['test_match'])
 def test_transfer(safe_mode, db_name):
     j = Jai(safe_mode=safe_mode)
+    assert j.names == [
+        'test_insert_vector', 'test_match', 'test_resolution',
+        'titanic_ssupervised'
+    ]
 
     j_prod = Jai(safe_mode=safe_mode, environment='prod')
+    assert j_prod.headers['environment'] == 'prod'
+    
     if db_name in j_prod.names:
         j_prod.delete_database(db_name)
+    assert j_prod.names == ['titanic_ssupervised']
 
     j.transfer(original_name=db_name,
                to_environment='prod',

@@ -140,3 +140,20 @@ class InsertVectorResponse(BaseModel):
     vector_length: int = Field(..., alias="Vector Length")
     vector_dimension: int = Field(..., alias="Vector Dimension")
     message: str = Field(..., alias="Message")
+
+
+class LinearFitResponse(BaseModel):
+    id_train: List[Any] = Field(..., alias="Train Ids")
+    id_test: List[Any] = Field(..., alias="Evaluation Ids")
+    metrics: Dict[str, Union[float, str]] = Field(..., alias="Metrics")
+
+
+class LinearLearnResponse(BaseModel):
+    before: Dict[str, Union[float, str]]
+    after: Dict[str, Union[float, str]]
+    change: bool
+
+
+class LinearPredictResponse(BaseModel):
+    id: Any
+    predict: Union[float, str]

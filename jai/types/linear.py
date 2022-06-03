@@ -1,34 +1,39 @@
-from typing import Dict, List, Literal, Union
+from typing import Optional, Dict, List, Union
 
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 from enum import Enum
 
+import sys
+if sys.version < '3.8':
+    from typing_extensions import Literal
+else:
+    from typing import Literal
 
-class RegressionTasks(Enum):
+
+class RegressionTasks(str, Enum):
     sgd_regression = "sgd_regression"
     regression = "regression"
 
 
-class ClassificationTasks(Enum):
+class ClassificationTasks(str, Enum):
     sgd_classification = "sgd_classification"
     classification = "classification"
 
 
-class RegressionMetrics(Enum):
+class RegressionMetrics(str, Enum):
     mae = "MAE"
     mse = "MSE"
     mape = "MAPE"
     r2_score = "R2_Score"
 
 
-class ClassificationMetrics(Enum):
+class ClassificationMetrics(str, Enum):
     report = "Report"
 
 
 class LinearRegressionParams(BaseModel):
     fit_intercept: bool = True
-    normalize: bool = False
     copy_X: bool = True
     n_jobs: Union[int, None] = None
     positive: bool = False
@@ -105,37 +110,26 @@ class SGDClassifierParams(BaseModel):
 
 
 class LinearBase(BaseModel):
-    learning_rate: float
+    learning_rate: Optional[float]
     l2: float
 
 
 class RegressionHyperparams(LinearBase):
     task: Literal[RegressionTasks.regression]
-    metric: RegressionMetrics = RegressionMetrics.mse
-    model: LinearRegressionParams = LinearRegressionParams()
+    model_params: Optional[LinearRegressionParams] = LinearRegressionParams()
 
 
 class SGDRegressionHyperparams(LinearBase):
     task: Literal[RegressionTasks.sgd_regression]
-    metric: RegressionMetrics = RegressionMetrics.mse
-    model: SGDRegressorParams = SGDRegressorParams()
+    model_params: Optional[SGDRegressorParams] = SGDRegressorParams()
 
 
 class ClassificationHyperparams(LinearBase):
     task: Literal[ClassificationTasks.classification]
-    metric: ClassificationMetrics = ClassificationMetrics.report
-    model: LogisticRegressionParams = LogisticRegressionParams()
+    model_params: Optional[
+        LogisticRegressionParams] = LogisticRegressionParams()
 
 
 class SGDClassificationHyperparams(LinearBase):
     task: Literal[ClassificationTasks.sgd_classification]
-    metric: ClassificationMetrics = ClassificationMetrics.report
-    model: SGDClassifierParams = SGDClassifierParams()
-
-
-LinearHyperparams = Annotated[Union[RegressionHyperparams,
-                                    SGDRegressionHyperparams,
-                                    ClassificationHyperparams,
-                                    SGDClassificationHyperparams],
-                              Field(discriminator='task')  # noqa: F821
-                              ]
+    model_params: Optional[SGDClassifierParams] = SGDClassifierParams()

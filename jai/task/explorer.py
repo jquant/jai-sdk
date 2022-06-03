@@ -2,23 +2,11 @@ import pandas as pd
 
 from ..core.base import BaseJai
 from ..core.validations import check_response
-from ..types.responses import UserResponse, InfoResponse
-from ..types.linear import LinearHyperparams
-from ..types.responses import (
-    EnvironmentsResponse, UserResponse, Report1Response, Report2Response,
-    AddDataResponse, StatusResponse, InfoSizeResponse, SetupResponse,
-    SimilarNestedResponse, PredictResponse, ValidResponse,
-    InsertVectorResponse, RecNestedResponse, FlatResponse)
-
-from pydantic import parse_obj_as
+from ..types.responses import UserResponse
+from ..types.responses import (EnvironmentsResponse, UserResponse,
+                               InfoSizeResponse)
 
 from typing import List
-import sys
-
-if sys.version < '3.8':
-    from typing_extensions import Literal
-else:
-    from typing import Literal
 
 __all__ = ["LinearModel"]
 
@@ -73,7 +61,7 @@ class Explorer(BaseJai):
             names = check_response(List[str], names)
         return sorted(names)
 
-    def info(self):
+    def info(self, mode="complete", get_size=True):
         """
         Get name and type of each database in your environment.
 
@@ -91,7 +79,7 @@ class Explorer(BaseJai):
         1            jai_selfsupervised    SelfSupervised
         2                jai_supervised        Supervised
         """
-        info = self._info()
+        info = self._info(mode=mode, get_size=get_size)
         if self.safe_mode:
             info = check_response(InfoSizeResponse, info, list_of=True)
 

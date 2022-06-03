@@ -16,7 +16,7 @@ from tqdm import tqdm, trange
 from jai.utilities import (filter_resolution, filter_similar, predict2df)
 
 from .base import BaseJai
-from .utils_funcs import build_name, data2json, resolve_db_type
+from .utils_funcs import (build_name, data2json, resolve_db_type, print_args)
 from .validations import (check_response, check_dtype_and_clean,
                           check_name_lengths, kwargs_validation)
 from ..types.generic import Mode, PossibleDtypes
@@ -699,7 +699,6 @@ class Jai(BaseJai):
               batch_size: int = 16384,
               max_insert_workers: Optional[int] = None,
               frequency_seconds: int = 1,
-              filter_name: str = None,
               verbose: int = 1,
               **kwargs):
         """
@@ -767,13 +766,16 @@ class Jai(BaseJai):
         data = check_dtype_and_clean(data=data, db_type=db_type)
 
         # insert data
+        self._delete_raw_data(name)
         insert_responses = self._insert_data(
             data=data,
             name=name,
             db_type=db_type,
             batch_size=batch_size,
-            overwrite=overwrite,
-            filter_name=filter_name,
+            has_filter=any([
+                feat['dtype'] == "filter"
+                for feat in kwargs.get("features", {}).values()
+            ]),
             max_insert_workers=max_insert_workers)
 
         # train model
@@ -782,18 +784,11 @@ class Jai(BaseJai):
         if self.safe_mode:
             setup_response = check_response(SetupResponse,
                                             setup_response).dict()
-
-        if "kwargs" in setup_response:
-            print("\nRecognized setup args:")
-            for key, value in setup_response["kwargs"].items():
-                kwarg_input = kwargs.get(key, None)
-                if isinstance(kwarg_input, dict):
-                    value = json.loads(value)
-                    intersection = kwarg_input.keys() & value.keys()
-                    m = max([len(s) for s in intersection] + [0])
-                    value = "".join(
-                        [f"\n  * {k:{m}s}: {value[k]}" for k in intersection])
-                print(f"- {key}: {value}")
+        print_args(
+            {k: json.loads(v)
+             for k, v in setup_response['kwargs'].items()},
+            dict(db_type=db_type, **kwargs),
+            verbose=verbose)
 
         if frequency_seconds >= 1:
             self.wait_setup(name=name, frequency_seconds=frequency_seconds)
@@ -848,8 +843,7 @@ class Jai(BaseJai):
                  name: str,
                  data,
                  batch_size: int = 16384,
-                 frequency_seconds: int = 1,
-                 filter_name: str = None):
+                 frequency_seconds: int = 1):
         """
         Insert raw data and extract their latent representation.
 
@@ -878,18 +872,19 @@ class Jai(BaseJai):
         self.delete_raw_data(name)
 
         # get the db_type
-        db_type = self.get_dtype(name)
+        describe = self.describe(name)
+        db_type = describe['dtype']
 
         # make sure our data has the correct type and is free of NAs
         data = check_dtype_and_clean(data=data, db_type=db_type)
 
         # insert data
+        self._delete_raw_data(name)
         insert_responses = self._insert_data(data=data,
                                              name=name,
                                              db_type=db_type,
                                              batch_size=batch_size,
-                                             overwrite=True,
-                                             filter_name=filter_name,
+                                             has_filter=describe['has_filter'],
                                              predict=True)
 
         # add data per se
@@ -907,16 +902,14 @@ class Jai(BaseJai):
                name: str,
                data,
                batch_size: int = 16384,
-               frequency_seconds: int = 1,
-               filter_name: str = None):
+               frequency_seconds: int = 1):
         """
         Another name for add_data
         """
         return self.add_data(name=name,
                              data=data,
                              batch_size=batch_size,
-                             frequency_seconds=frequency_seconds,
-                             filter_name=filter_name)
+                             frequency_seconds=frequency_seconds)
 
     def report(self, name, verbose: int = 2, return_report: bool = False):
         """
@@ -1835,7 +1828,6 @@ class Jai(BaseJai):
             _batch = data.iloc[b:b + batch_size]
             data_json = data2json(_batch,
                                   dtype=PossibleDtypes.vector,
-                                  filter_name=None,
                                   predict=False)
             if i == 0 and create_new_collection is True:
                 response = self._insert_vectors_json(name,

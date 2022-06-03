@@ -209,13 +209,13 @@ def datetime_process_validation(dtype: str):
 
 def features_process_validation(dtype: str):
     possible = []
-    must = []
+    must = ['dtype']
     if dtype in [
             PossibleDtypes.selfsupervised, PossibleDtypes.supervised,
             PossibleDtypes.recommendation_system
     ]:
         possible.extend(['embedding_dim', 'fill_value', 'min_freq'])
-        must.extend(['dtype', 'scaler'])
+        must.extend(['scaler'])
     return (possible, must)
 
 
@@ -309,6 +309,12 @@ def kwargs_validation(db_type: str, **kwargs):
                     "'pretrained_bases' parameter must be a list of dictonaries."
                 )
             pb_keys = [list(x.keys()) for x in kwargs[key]]
+            used_subkeys = set().union(*pb_keys)
+        elif key == 'features':
+            if not isinstance(kwargs[key], dict):
+                raise TypeError(
+                    "'features' parameter must be a dictonary of dictonaries.")
+            pb_keys = [list(x.keys()) for x in kwargs[key].values()]
             used_subkeys = set().union(*pb_keys)
         else:
             used_subkeys = set(kwargs[key])

@@ -53,14 +53,14 @@ def df2json(dataframe):
 
 def data2json(data,
               dtype: PossibleDtypes,
-              filter_name: str = None,
+              has_filter: bool = False,
               predict: bool = False):
     one_column = f"Data formats accepted for dtype {dtype} are:\n"\
         "- pd.Series\n"\
         "- pd.DataFrame with 1 column\n"\
         "- pd.DataFrame with 2 columns, one must be named `id`\n"\
-        "- pd.DataFrame with 2 columns, one must be named `{filter_name}`\n"\
-        "- pd.DataFrame with 3 columns, two of them must be named `id` and `{filter_name}`"
+        "- pd.DataFrame with 2 columns, one must be the filter column`\n"\
+        "- pd.DataFrame with 3 columns, two of them must be named `id` andthe filter column"
 
     if dtype in [
             PossibleDtypes.edit, PossibleDtypes.text, PossibleDtypes.fasttext,
@@ -82,10 +82,10 @@ def data2json(data,
                     data = data.set_index('id')
                     c = data.columns[0]
                     return series2json(data[c])
-                elif filter_name in data.columns:
+                elif has_filter:
                     return df2json(data)
             elif data.shape[1] == 3:
-                if 'id' in data.columns and filter_name in data.columns:
+                if 'id' in data.columns and has_filter:
                     return df2json(data.set_index('id'))
             raise ValueError(one_column)
         raise NotImplementedError(
@@ -205,6 +205,9 @@ def print_args(response_kwargs, input_kwargs, verbose: int = 1):
       verbose (int): If 1, prints out the recognised parameters, if 2,
       prints out everything that is used. Defaults to 1.
     """
+    if verbose == 0:
+        return
+
     warn_list = []
     print("\nRecognized setup args:")
     for key, value in response_kwargs.items():
@@ -216,11 +219,7 @@ def print_args(response_kwargs, input_kwargs, verbose: int = 1):
                 warn_list.append(
                     f"argument: `{key}`; values: ({input} != {value})")
 
-            if verbose <= 1:
-                to_write = input
-            else:
-                to_write = value
-
+            to_write = input if verbose == 1 else value
             m = max([len(s) for s in to_write] + [0])
 
             to_join = []
@@ -239,10 +238,7 @@ def print_args(response_kwargs, input_kwargs, verbose: int = 1):
                 warn_list.append(
                     f"argument: `{key}`; values: ({input} != {value})")
 
-            if verbose <= 1:
-                to_write = input
-            else:
-                to_write = value
+            to_write = input if verbose == 1 else value
 
             to_join = []
             for v in to_write:

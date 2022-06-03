@@ -69,7 +69,7 @@ def read_image(folder: Union[Path, List[Path]],
         file_loop = chain(*[Path(f).iterdir() for f in folder])
 
     if handle_errors not in ['raise', 'warn', 'ignore']:
-        raise ValueError("handle_errors must be 'raise', 'warn' or 'ignore'")
+        raise ValueError("handle_errors must be `raise`, `warn` or `ignore`")
 
     encoded_images = []
     corrupted_files = []

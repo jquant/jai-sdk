@@ -2,14 +2,11 @@ import pytest
 
 from jai.core.exceptions import DeprecatedError
 from jai.types.generic import PossibleDtypes
-from jai.core.validations import (cat_process_validation,
-                                  datetime_process_validation,
-                                  features_process_validation,
-                                  hyperparams_validation, kwargs_possibilities,
-                                  kwargs_validation, label_process_validation,
-                                  num_process_validation,
-                                  pretrained_bases_process_validation,
-                                  split_process_validation)
+from jai.core.validations import (
+    cat_process_validation, datetime_process_validation,
+    features_process_validation, hyperparams_validation, kwargs_possibilities,
+    kwargs_validation, label_process_validation, num_process_validation,
+    pretrained_bases_process_validation, split_process_validation)
 
 
 @pytest.mark.parametrize('dtype, results', [
@@ -90,8 +87,10 @@ def test_datetime_process_validation(dtype, results):
       (['embedding_dim', 'fill_value', 'min_freq'], ['dtype', 'scaler'])),
      (PossibleDtypes.supervised,
       (['embedding_dim', 'fill_value', 'min_freq'], ['dtype', 'scaler'])),
-     (PossibleDtypes.image, ([], [])), (PossibleDtypes.text, ([], [])),
-     (PossibleDtypes.fasttext, ([], [])), (PossibleDtypes.edit, ([], []))])
+     (PossibleDtypes.image, ([], ['dtype'])),
+     (PossibleDtypes.text, ([], ['dtype'])),
+     (PossibleDtypes.fasttext, ([], ['dtype'])),
+     (PossibleDtypes.edit, ([], ['dtype']))])
 def test_features_process_validation(dtype, results):
     assert features_process_validation(dtype) == results
 
@@ -141,10 +140,10 @@ def test_label_process_validation(dtype, results):
      (PossibleDtypes.supervised, [
          'hyperparams', 'num_process', 'cat_process', 'datetime_process',
          'pretrained_bases', 'mycelia_bases', 'features', 'label', 'split'
-     ]), (PossibleDtypes.image, ['hyperparams']),
-     (PossibleDtypes.text, ['hyperparams']),
-     (PossibleDtypes.fasttext, ['hyperparams']),
-     (PossibleDtypes.edit, ['hyperparams'])])
+     ]), (PossibleDtypes.image, ['hyperparams', 'features']),
+     (PossibleDtypes.text, ['hyperparams', 'features']),
+     (PossibleDtypes.fasttext, ['hyperparams', 'features']),
+     (PossibleDtypes.edit, ['hyperparams', 'features'])])
 def test_kwargs_possibilities(dtype, keys):
     params = kwargs_possibilities(dtype)
     assert list(params.keys()) == keys
