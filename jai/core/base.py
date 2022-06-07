@@ -27,10 +27,12 @@ class BaseJai(object):
     Base class for requests with the Mycelia API.
     """
 
-    def __init__(self,
-                 environment: str = "default",
-                 env_var: str = "JAI_AUTH",
-                 url_var: str = "JAI_URL"):
+    def __init__(
+        self,
+        environment: str = "default",
+        env_var: str = "JAI_AUTH",
+        url_var: str = "JAI_URL",
+    ):
         """
         Initialize the Jai class.
 
@@ -83,8 +85,7 @@ class BaseJai(object):
         """
         Get name of environments available.
         """
-        return requests.get(url=self.url + f"/environments",
-                            headers=self.headers)
+        return requests.get(url=self.url + f"/environments", headers=self.headers)
 
     @raise_status_error(200)
     def _info(self, mode="complete", get_size=True):
@@ -92,9 +93,10 @@ class BaseJai(object):
         Get name and type of each database in your environment.
         """
         get_size = json.dumps(get_size)
-        return requests.get(url=self.url +
-                            f"/info?mode={mode}&get_size={get_size}",
-                            headers=self.headers)
+        return requests.get(
+            url=self.url + f"/info?mode={mode}&get_size={get_size}",
+            headers=self.headers,
+        )
 
     @raise_status_error(200)
     def _status(self):
@@ -108,8 +110,9 @@ class BaseJai(object):
         """
         Remove database from status. Used when processing ended.
         """
-        return requests.delete(self.url + f"/status?db_name={name}",
-                               headers=self.headers)
+        return requests.delete(
+            self.url + f"/status?db_name={name}", headers=self.headers
+        )
 
     @raise_status_error(200)
     def _download_vectors(self, name: str):
@@ -133,16 +136,17 @@ class BaseJai(object):
         name : str
             String with the name of a database in your JAI environment.
         """
-        return requests.get(self.url + f"/filters/{name}",
-                            headers=self.headers)
+        return requests.get(self.url + f"/filters/{name}", headers=self.headers)
 
     @raise_status_error(200)
-    def _similar_id(self,
-                    name: str,
-                    id_item: list,
-                    top_k: int = 5,
-                    orient: str = "nested",
-                    filters=None):
+    def _similar_id(
+        self,
+        name: str,
+        id_item: list,
+        top_k: int = 5,
+        orient: str = "nested",
+        filters=None,
+    ):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given an id.
         This is a protected method.
@@ -160,7 +164,7 @@ class BaseJai(object):
 
         orient : "nested" or "flat"
             Changes the output format. `Default is "nested"`.
-            
+
         Return
         ------
         response : dict
@@ -172,8 +176,9 @@ class BaseJai(object):
                 f"id_item param must be int or list, `{id_item.__class__.__name__}` found."
             )
 
-        filtering = "" if filters is None else "".join(
-            ["&filters=" + s for s in filters])
+        filtering = (
+            "" if filters is None else "".join(["&filters=" + s for s in filters])
+        )
         url = self.url + f"/similar/id/{name}?top_k={top_k}&orient={orient}" + filtering
         return requests.put(
             url,
@@ -182,12 +187,9 @@ class BaseJai(object):
         )
 
     @raise_status_error(200)
-    def _similar_json(self,
-                      name: str,
-                      data_json,
-                      top_k: int = 5,
-                      orient: str = "nested",
-                      filters=None):
+    def _similar_json(
+        self, name: str, data_json, top_k: int = 5, orient: str = "nested", filters=None
+    ):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given a JSON data entry.
         This is a protected method
@@ -213,20 +215,25 @@ class BaseJai(object):
             Dictionary with the index and distance of `the k most similar
             items`.
         """
-        filtering = "" if filters is None else "".join(
-            ["&filters=" + s for s in filters])
-        url = self.url + f"/similar/data/{name}?top_k={top_k}&orient={orient}" + filtering
+        filtering = (
+            "" if filters is None else "".join(["&filters=" + s for s in filters])
+        )
+        url = (
+            self.url + f"/similar/data/{name}?top_k={top_k}&orient={orient}" + filtering
+        )
         header = copy(self.headers)
         header["Content-Type"] = "application/json"
         return requests.put(url, headers=header, data=data_json)
 
     @raise_status_error(200)
-    def _recommendation_id(self,
-                           name: str,
-                           id_item: list,
-                           top_k: int = 5,
-                           orient: str = "nested",
-                           filters=None):
+    def _recommendation_id(
+        self,
+        name: str,
+        id_item: list,
+        top_k: int = 5,
+        orient: str = "nested",
+        filters=None,
+    ):
         """
         Creates a list of dicts, with the index and distance of the k items
         most similars given an id. This is a protected method.
@@ -253,12 +260,19 @@ class BaseJai(object):
         """
 
         if not isinstance(id_item, list):
-            raise TypeError(f"id_item param must be int or list, \
-                    `{id_item.__class__.__name__}` found.")
+            raise TypeError(
+                f"id_item param must be int or list, \
+                    `{id_item.__class__.__name__}` found."
+            )
 
-        filtering = "" if filters is None else "".join(
-            ["&filters=" + s for s in filters])
-        url = self.url + f"/recommendation/id/{name}?top_k={top_k}&orient={orient}" + filtering
+        filtering = (
+            "" if filters is None else "".join(["&filters=" + s for s in filters])
+        )
+        url = (
+            self.url
+            + f"/recommendation/id/{name}?top_k={top_k}&orient={orient}"
+            + filtering
+        )
         return requests.put(
             url,
             headers=self.headers,
@@ -266,12 +280,9 @@ class BaseJai(object):
         )
 
     @raise_status_error(200)
-    def _recommendation_json(self,
-                             name: str,
-                             data_json,
-                             top_k: int = 5,
-                             orient: str = "nested",
-                             filters=None):
+    def _recommendation_json(
+        self, name: str, data_json, top_k: int = 5, orient: str = "nested", filters=None
+    ):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given a JSON data entry.
         This is a protected method
@@ -296,9 +307,14 @@ class BaseJai(object):
         response : dict
             Dictionary with the index and distance of `the k most similar items`.
         """
-        filtering = "" if filters is None else "".join(
-            ["&filters=" + s for s in filters])
-        url = self.url + f"/recommendation/data/{name}?top_k={top_k}&orient={orient}" + filtering
+        filtering = (
+            "" if filters is None else "".join(["&filters=" + s for s in filters])
+        )
+        url = (
+            self.url
+            + f"/recommendation/data/{name}?top_k={top_k}&orient={orient}"
+            + filtering
+        )
         header = copy(self.headers)
         header["Content-Type"] = "application/json"
         return requests.put(url, headers=header, data=data_json)
@@ -351,8 +367,7 @@ class BaseJai(object):
         >>> print(ids)
         ['891 items from 0 to 890']
         """
-        return requests.get(self.url + f"/id/{name}?mode={mode}",
-                            headers=self.headers)
+        return requests.get(self.url + f"/id/{name}?mode={mode}", headers=self.headers)
 
     @raise_status_error(200)
     def _is_valid(self, name: str):
@@ -369,8 +384,7 @@ class BaseJai(object):
         response: bool
             True if name is in your environment. False, otherwise.
         """
-        return requests.get(self.url + f"/validation/{name}",
-                            headers=self.headers)
+        return requests.get(self.url + f"/validation/{name}", headers=self.headers)
 
     @raise_status_error(200)
     def _rename(self, original_name: str, new_name: str):
@@ -378,16 +392,16 @@ class BaseJai(object):
         Get name and type of each database in your environment.
         """
         body = {"original_name": original_name, "new_name": new_name}
-        return requests.post(url=self.url + f"/rename",
-                             headers=self.headers,
-                             json=body)
+        return requests.post(url=self.url + f"/rename", headers=self.headers, json=body)
 
     @raise_status_error(200)
-    def _transfer(self,
-                  original_name: str,
-                  to_environment: str,
-                  new_name: str = None,
-                  from_environment: str = "default"):
+    def _transfer(
+        self,
+        original_name: str,
+        to_environment: str,
+        new_name: str = None,
+        from_environment: str = "default",
+    ):
         """
         Get name and type of each database in your environment.
         """
@@ -397,24 +411,27 @@ class BaseJai(object):
             "original_name": original_name,
             "new_name": new_name,
         }
-        return requests.post(url=self.url + f"/transfer",
-                             headers=self.headers,
-                             json=body)
+        return requests.post(
+            url=self.url + f"/transfer", headers=self.headers, json=body
+        )
 
     @raise_status_error(200)
-    def _import_database(self,
-                         database_name: str,
-                         owner_id: str,
-                         owner_email: str,
-                         import_name: str = None):
+    def _import_database(
+        self,
+        database_name: str,
+        owner_id: str,
+        owner_email: str,
+        import_name: str = None,
+    ):
         """
         Get name and type of each database in your environment.
         """
         body = {"database_name": database_name, "import_name": import_name}
-        return requests.post(url=self.url +
-                             f"/import?userId={owner_id}&email={owner_email}",
-                             headers=self.headers,
-                             json=body)
+        return requests.post(
+            url=self.url + f"/import?userId={owner_id}&email={owner_email}",
+            headers=self.headers,
+            json=body,
+        )
 
     @raise_status_error(202)
     def _append(self, name: str):
@@ -453,21 +470,21 @@ class BaseJai(object):
         """
         header = copy(self.headers)
         header["Content-Type"] = "application/json"
-        return requests.post(self.url + f"/data/{name}",
-                             headers=header,
-                             data=data_json)
+        return requests.post(self.url + f"/data/{name}", headers=header, data=data_json)
 
     @raise_status_error(200)
-    def _check_params(self,
-                      db_type: str,
-                      hyperparams=None,
-                      features=None,
-                      num_process: dict = None,
-                      cat_process: dict = None,
-                      datetime_process: dict = None,
-                      pretrained_bases: list = None,
-                      label: dict = None,
-                      split: dict = None):
+    def _check_params(
+        self,
+        db_type: str,
+        hyperparams=None,
+        features=None,
+        num_process: dict = None,
+        cat_process: dict = None,
+        datetime_process: dict = None,
+        pretrained_bases: list = None,
+        label: dict = None,
+        split: dict = None,
+    ):
         body = {
             "db_type": db_type,
             "hyperparams": hyperparams,
@@ -477,11 +494,9 @@ class BaseJai(object):
             "datetime_process": datetime_process,
             "pretrained_bases": pretrained_bases,
             "label": label,
-            "split": split
+            "split": split,
         }
-        return requests.put(self.url + "/parameters",
-                            headers=self.headers,
-                            json=body)
+        return requests.put(self.url + "/parameters", headers=self.headers, json=body)
 
     @raise_status_error(201)
     def _setup(self, name: str, body, overwrite=False):
@@ -533,8 +548,9 @@ class BaseJai(object):
             Dictionary with the information.
 
         """
-        return requests.get(self.url + f"/report/{name}?verbose={verbose}",
-                            headers=self.headers)
+        return requests.get(
+            self.url + f"/report/{name}?verbose={verbose}", headers=self.headers
+        )
 
     @raise_status_error(200)
     def _temp_ids(self, name: str, mode: Mode = "complete"):
@@ -554,8 +570,9 @@ class BaseJai(object):
             List with the actual ids (mode: 'complete') or a summary of ids
             ('simple'/'summarized') of the given database.
         """
-        return requests.get(self.url + f"/setup/ids/{name}?mode={mode}",
-                            headers=self.headers)
+        return requests.get(
+            self.url + f"/setup/ids/{name}?mode={mode}", headers=self.headers
+        )
 
     @raise_status_error(200)
     def _fields(self, name: str):
@@ -589,8 +606,7 @@ class BaseJai(object):
         response : dict
             Dictionary with database description.
         """
-        return requests.get(self.url + f"/describe/{name}",
-                            headers=self.headers)
+        return requests.get(self.url + f"/describe/{name}", headers=self.headers)
 
     @raise_status_error(200)
     def _cancel_setup(self, name: str):
@@ -610,8 +626,7 @@ class BaseJai(object):
         ------
         None.
         """
-        return requests.post(self.url + f"/cancel/{name}",
-                             headers=self.headers)
+        return requests.post(self.url + f"/cancel/{name}", headers=self.headers)
 
     @raise_status_error(200)
     def _delete_ids(self, name, ids):
@@ -638,9 +653,9 @@ class BaseJai(object):
         >>> j.delete_raw_data(name=name)
         'All raw data from database 'chosen_name' was deleted!'
         """
-        return requests.delete(self.url + f"/entity/{name}",
-                               headers=self.headers,
-                               json=ids)
+        return requests.delete(
+            self.url + f"/entity/{name}", headers=self.headers, json=ids
+        )
 
     @raise_status_error(200)
     def _delete_raw_data(self, name: str):
@@ -664,8 +679,7 @@ class BaseJai(object):
         >>> j.delete_raw_data(name=name)
         'All raw data from database 'chosen_name' was deleted!'
         """
-        return requests.delete(self.url + f"/data/{name}",
-                               headers=self.headers)
+        return requests.delete(self.url + f"/data/{name}", headers=self.headers)
 
     @raise_status_error(200)
     def _delete_database(self, name: str):
@@ -689,14 +703,10 @@ class BaseJai(object):
         >>> j.delete_database(name=name)
         'Bombs away! We nuked database chosen_name!'
         """
-        return requests.delete(self.url + f"/database/{name}",
-                               headers=self.headers)
+        return requests.delete(self.url + f"/database/{name}", headers=self.headers)
 
     @raise_status_error(201)
-    def _insert_vectors_json(self,
-                             name: str,
-                             data_json,
-                             overwrite: bool = False):
+    def _insert_vectors_json(self, name: str, data_json, overwrite: bool = False):
         """
         Insert data in JSON format. This is a protected method.
         Args
@@ -712,22 +722,25 @@ class BaseJai(object):
         """
         header = copy(self.headers)
         header["Content-Type"] = "application/json"
-        return requests.post(self.url +
-                             f"/vector/{name}?overwrite={overwrite}",
-                             headers=header,
-                             data=data_json)
+        return requests.post(
+            self.url + f"/vector/{name}?overwrite={overwrite}",
+            headers=header,
+            data=data_json,
+        )
 
     @raise_status_error(200)
-    def _linear_train(self,
-                      name: str,
-                      data_dict,
-                      y,
-                      task,
-                      learning_rate: float = None,
-                      l2: float = 0.1,
-                      model_params: dict = None,
-                      pretrained_bases: list = None,
-                      overwrite: bool = False):
+    def _linear_train(
+        self,
+        name: str,
+        data_dict,
+        y,
+        task,
+        learning_rate: float = None,
+        l2: float = 0.1,
+        model_params: dict = None,
+        pretrained_bases: list = None,
+        overwrite: bool = False,
+    ):
         """
         Insert data in JSON format. This is a protected method.
         Args
@@ -747,7 +760,7 @@ class BaseJai(object):
             pretrained_bases = []
 
         return requests.post(
-            self.url + f'/linear/batch/{name}?overwrite={overwrite}',
+            self.url + f"/linear/batch/{name}?overwrite={overwrite}",
             headers=self.headers,
             json={
                 "X": data_dict,
@@ -756,9 +769,9 @@ class BaseJai(object):
                     "task": task,
                     "learning_rate": learning_rate,
                     "l2": l2,
-                    "model": model_params
+                    "model": model_params,
                 },
-                "pretrained_bases": pretrained_bases
+                "pretrained_bases": pretrained_bases,
             },
         )
 
@@ -777,18 +790,14 @@ class BaseJai(object):
         response : dict
             Dictionary with the API response.
         """
-        return requests.post(self.url + f'/linear/learn/{name}',
-                             headers=self.headers,
-                             json={
-                                 "X": data_dict,
-                                 "y": y
-                             })
+        return requests.post(
+            self.url + f"/linear/learn/{name}",
+            headers=self.headers,
+            json={"X": data_dict, "y": y},
+        )
 
     @raise_status_error(200)
-    def _linear_predict(self,
-                        name: str,
-                        data_dict: list,
-                        predict_proba: bool = False):
+    def _linear_predict(self, name: str, data_dict: list, predict_proba: bool = False):
         """
         Insert data in JSON format. This is a protected method.
         Args
@@ -807,18 +816,21 @@ class BaseJai(object):
         """
 
         return requests.put(
-            self.url + f'/linear/predict/{name}?predict_proba={predict_proba}',
+            self.url + f"/linear/predict/{name}?predict_proba={predict_proba}",
             headers=self.headers,
-            json=data_dict)
+            json=data_dict,
+        )
 
-    def _insert_data(self,
-                     data,
-                     name,
-                     db_type,
-                     batch_size,
-                     max_insert_workers: Optional[int] = None,
-                     has_filter: bool = False,
-                     predict: bool = False):
+    def _insert_data(
+        self,
+        data,
+        name,
+        db_type,
+        batch_size,
+        max_insert_workers: Optional[int] = None,
+        has_filter: bool = False,
+        predict: bool = False,
+    ):
         """
         Insert raw data for training. This is a protected method.
 
@@ -852,15 +864,13 @@ class BaseJai(object):
             pcores = 1
 
         dict_futures = {}
-        with concurrent.futures.ThreadPoolExecutor(
-                max_workers=pcores) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
 
             for i, b in enumerate(range(0, len(data), batch_size)):
-                _batch = data.iloc[b:b + batch_size]
-                data_json = data2json(_batch,
-                                      dtype=db_type,
-                                      has_filter=has_filter,
-                                      predict=predict)
+                _batch = data.iloc[b : b + batch_size]
+                data_json = data2json(
+                    _batch, dtype=db_type, has_filter=has_filter, predict=predict
+                )
                 task = executor.submit(self._insert_json, name, data_json)
                 dict_futures[task] = i
 
@@ -870,8 +880,7 @@ class BaseJai(object):
                     arg = dict_futures[future]
                     insert_res = future.result()
                     if self.safe_mode:
-                        insert_res = check_response(InsertDataResponse,
-                                                    insert_res)
+                        insert_res = check_response(InsertDataResponse, insert_res)
                     insert_responses[arg] = insert_res
                     pbar.update(1)
 
@@ -902,11 +911,11 @@ class BaseJai(object):
             If an inconsistency is found, an error is raised. If no inconsistency is found, returns True.
         """
         handle_error = handle_error.lower()
-        if handle_error not in ['raise', 'bool']:
+        if handle_error not in ["raise", "bool"]:
             warnings.warn(
                 f"handle_error must be `raise` or `bool`, found: `{handle_error}`. Using `raise`."
             )
-            handle_error = 'raise'
+            handle_error = "raise"
 
         # using mode='simple' to reduce the volume of data transit.
         try:

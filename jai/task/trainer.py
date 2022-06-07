@@ -3,31 +3,52 @@ from fnmatch import fnmatch
 
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from typing import Dict, List, Any
 
 from .base import TaskBase
 from .query import Query
-from ..core.utils_funcs import print_args
-from ..core.validations import check_response, check_dtype_and_clean
+from ..core.utils_funcs import check_filters, print_args
+from ..core.validations import (
+    check_response,
+    check_dtype_and_clean,
+    pretrained_bases_process_validation,
+)
 
 from ..types.generic import PossibleDtypes
 from ..types.hyperparams import InsertParams
 
-from ..types.responses import (Report1Response, Report2Response,
-                               AddDataResponse, SetupResponse, StatusResponse)
+from ..types.responses import (
+    Report1Response,
+    Report2Response,
+    AddDataResponse,
+    SetupResponse,
+    StatusResponse,
+)
 
 from typing import Dict
 import pandas as pd
+import numpy as np
 import json
+from collections.abc import Iterable
 
 __all__ = ["Trainer"]
 
 
 def get_numbers(status):
     if fnmatch(status["Description"], "*Iteration:*"):
-        curr_step, max_iterations = status["Description"].split(
-            "Iteration: ")[1].strip().split(" / ")
+        curr_step, max_iterations = (
+            status["Description"].split("Iteration: ")[1].strip().split(" / ")
+        )
         return True, int(curr_step), int(max_iterations)
     return False, 0, 0
+
+
+def flatten_sample(sample):
+    for el in sample:
+        if isinstance(el, Iterable) and not isinstance(el, (str, bytes)):
+            yield from flatten_sample(el)
+        else:
+            yield el
 
 
 class Trainer(TaskBase):
@@ -40,30 +61,36 @@ class Trainer(TaskBase):
 
     """
 
-    def __init__(self,
-                 name: str,
-                 environment: str = "default",
-                 env_var: str = "JAI_AUTH",
-                 verbose: int = 1,
-                 safe_mode: bool = False):
+    def __init__(
+        self,
+        name: str,
+        environment: str = "default",
+        env_var: str = "JAI_AUTH",
+        verbose: int = 1,
+        safe_mode: bool = False,
+    ):
         """
-        Initialize the Jai class.
+        Initialize the Jai Trainer class.
 
-        An authorization key is needed to use the Mycelia API.
+        An authorization key is needed to use the Jai API.
 
         Parameters
         ----------
-
-        Returns
-        -------
-            None
+            name (str): The name of the database.
+            environment (str): The environment to use. Defaults to `default`.
+            env_var (str): The environment variable that contains the JAI authentication token. Defaults to
+            JAI_AUTH
+            verbose (int): The level of verbosity. Defaults to 1
+            safe_mode (bool): If True, the trainer will not send any data to the server. Defaults to False
 
         """
-        super(Trainer, self).__init__(name=name,
-                                      environment=environment,
-                                      env_var=env_var,
-                                      verbose=verbose,
-                                      safe_mode=safe_mode)
+        super(Trainer, self).__init__(
+            name=name,
+            environment=environment,
+            env_var=env_var,
+            verbose=verbose,
+            safe_mode=safe_mode,
+        )
 
         self._verbose = verbose
         self._setup_params = None
@@ -72,39 +99,68 @@ class Trainer(TaskBase):
 
     @property
     def insert_params(self):
+        """
+        Parameters used for insert data.
+        """
         return self._insert_params
 
     @insert_params.setter
-    def insert_params(self, value):
+    def insert_params(self, value: InsertParams):
+        """
+        The method takes a dictionary of parameters
+
+        Returns:
+          A dictionary of the InsertParams class.
+        """
         self._insert_params = InsertParams(**value).dict()
 
     @property
     def setup_params(self):
         if self._setup_params is None:
             raise ValueError(
-                "Generic error message.")  #TODO: run set_params first message.
+                "Generic error message."
+            )  # TODO: run set_params first message.
         return self._setup_params
 
-    def set_params(self,
-                   db_type: str,
-                   hyperparams=None,
-                   features=None,
-                   num_process: dict = None,
-                   cat_process: dict = None,
-                   datetime_process: dict = None,
-                   pretrained_bases: list = None,
-                   label: dict = None,
-                   split: dict = None):
+    def set_params(
+        self,
+        db_type: str,
+        hyperparams=None,
+        features=None,
+        num_process: dict = None,
+        cat_process: dict = None,
+        datetime_process: dict = None,
+        pretrained_bases: list = None,
+        label: dict = None,
+        split: dict = None,
+    ):
+        """
+        It checks the input parameters and sets the `setup_params` attribute for setup.
 
-        self._input_kwargs = dict(db_type=db_type,
-                                  hyperparams=hyperparams,
-                                  features=features,
-                                  num_process=num_process,
-                                  cat_process=cat_process,
-                                  datetime_process=datetime_process,
-                                  pretrained_bases=pretrained_bases,
-                                  label=label,
-                                  split=split)
+        TODO: complete args
+        Args:
+        db_type (str): str
+        hyperparams: dict
+        features: list of dictionary features to use
+        num_process (dict): dict = None,
+        cat_process (dict): dict = None,
+        datetime_process (dict): dict = None,
+        pretrained_bases (list): list = None,
+        label (dict): dict = None,
+        split (dict): dict = None,
+        """
+
+        self._input_kwargs = dict(
+            db_type=db_type,
+            hyperparams=hyperparams,
+            features=features,
+            num_process=num_process,
+            cat_process=cat_process,
+            datetime_process=datetime_process,
+            pretrained_bases=pretrained_bases,
+            label=label,
+            split=split,
+        )
 
         # I figure we don't need a safe_mode validation here
         # because this is already a validation method.
@@ -117,25 +173,81 @@ class Trainer(TaskBase):
             datetime_process=datetime_process,
             pretrained_bases=pretrained_bases,
             label=label,
-            split=split)
+            split=split,
+        )
 
-        print_args(self.setup_params,
-                   self._input_kwargs,
-                   verbose=self._verbose)
+        print_args(self.setup_params, self._input_kwargs, verbose=self._verbose)
 
-    def fit(self,
-            data,
-            *,
-            overwrite: bool = False,
-            frequency_seconds: int = 1):
+    def _check_pretrained_bases(self, data, pretrained_bases):
+        for base in pretrained_bases:
+            parent_name = base["db_parent"]
+            column = base["id_name"]
 
+            if isinstance(data, pd.DataFrame):
+                flat_ids = np.unique(list(flatten_sample(data[column])))
+
+                ids = self._ids(parent_name, mode="complete")
+                if self.safe_mode:
+                    return check_response(List[Any], ids)
+            else:
+                for key, df in data.items():
+                    if column in df.columns:
+                        flat_ids = np.unique(list(flatten_sample(df[column])))
+
+                        if key != "main":
+                            ids = self._ids(parent_name, mode="complete")
+                            if self.safe_mode:
+                                return check_response(List[Any], ids)
+
+                        else:
+                            ids = data[parent_name].index
+
+            inverted_in = np.isin(flat_ids, ids, invert=True)
+            if inverted_in.sum() > 0:
+                missing = flat_ids[inverted_in].tolist()
+                raise KeyError(
+                    f"Id values on column `{column}` must belong to the set of Ids from database {parent_name}.\nMissing: {missing}"
+                )
+            print(f"YES: {column}->{parent_name}")
+
+    def fit(self, data, *, overwrite: bool = False, frequency_seconds: int = 1):
+        """
+        Takes in a dataframe or dictionary of dataframes, and inserts the data into the database.
+
+        It then calls the `_setup` function to train the model.
+
+
+
+        Otherwise, it calls the `wait_setup` function to wait for the model to finish training, and then
+        calls the `report` function to print out the model's performance metrics.
+
+        Finally, it returns the `get_query` function, which returns the model's predictions.
+
+        Let's take a look at the `_setup` function.
+
+        Args:
+            data: The data to be inserted into the database. Can be an pandas.Dataframe or dictionary of pandas.DataFrame.
+            overwrite (bool): If overwrite is True, then deletes previous database with the same name if
+            exists. Defaults to False.
+            frequency_seconds (int): How often to check the status of the model. If `frequency_seconds` is
+            less than 1, it returns the `insert_responses` and `setup_response` and it won't wait for
+            training to finish, allowing to perform other actions, but could cause errors on some scripts
+            if the model is expected to be ready for consuming. Defaults to 1.
+
+        Returns:
+        The return value is a tuple of two elements. The first element is a list of responses from the
+        insert_data function. The second element is a dictionary of the response from the setup function.
+        """
         if self.is_valid():
             if overwrite:
                 self.delete_database()
             else:
                 raise KeyError(
                     f"Database '{self.name}' already exists in your environment.\
-                        Set overwrite=True to overwrite it.")
+                        Set overwrite=True to overwrite it."
+                )
+
+        self._check_pretrained_bases(data, self.setup_params["pretrained_bases"])
 
         if isinstance(data, (pd.Series, pd.DataFrame)):
             # make sure our data has the correct type and is free of NAs
@@ -146,14 +258,12 @@ class Trainer(TaskBase):
             insert_responses = self._insert_data(
                 data=data,
                 name=self.name,
-                db_type=self.setup_params['db_type'],
-                batch_size=self.insert_params['batch_size'],
-                has_filter=any([
-                    feat['dtype'] == "filter"
-                    for feat in self.setup_params.get("features", {}).values()
-                ]),
-                max_insert_workers=self.insert_params['max_insert_workers'],
-                predict=False)
+                db_type=self.setup_params["db_type"],
+                batch_size=self.insert_params["batch_size"],
+                has_filter=check_filters(data, self.setup_params.get("features", {})),
+                max_insert_workers=self.insert_params["max_insert_workers"],
+                predict=False,
+            )
 
         elif isinstance(data, dict):
             # TODO: check keys
@@ -173,31 +283,27 @@ class Trainer(TaskBase):
                 insert_responses = self._insert_data(
                     data=value,
                     name=name,
-                    db_type=self.setup_params['db_type'],
-                    batch_size=self.insert_params['batch_size'],
-                    has_filter=any([
-                        feat['dtype'] == "filter" for feat in
-                        self.setup_params.get("features", {}).values()
-                    ]),
-                    max_insert_workers=self.
-                    insert_params['max_insert_workers'],
-                    predict=False)
+                    db_type=self.setup_params["db_type"],
+                    batch_size=self.insert_params["batch_size"],
+                    has_filter=check_filters(
+                        value, self.setup_params.get("features", {})
+                    ),
+                    max_insert_workers=self.insert_params["max_insert_workers"],
+                    predict=False,
+                )
         else:
             ValueError("Generic Data Error Message")  # TODO: change message
 
         # train model
-        setup_response = self._setup(self.name,
-                                     self.setup_params,
-                                     overwrite=overwrite)
+        setup_response = self._setup(self.name, self.setup_params, overwrite=overwrite)
         if self.safe_mode:
-            setup_response = check_response(SetupResponse,
-                                            setup_response).dict()
+            setup_response = check_response(SetupResponse, setup_response).dict()
 
         print_args(
-            {k: json.loads(v)
-             for k, v in setup_response['kwargs'].items()},
+            {k: json.loads(v) for k, v in setup_response["kwargs"].items()},
             self._input_kwargs,
-            verbose=self._verbose)
+            verbose=self._verbose,
+        )
 
         if frequency_seconds < 1:
             return insert_responses, setup_response
@@ -211,16 +317,18 @@ class Trainer(TaskBase):
         """
         Insert raw data and extract their latent representation.
 
-        This method should be used when we already setup up a database using `setup()`
+        This method should be used when we already setup up a database using `fit()`
         and want to create the vector representations of new data
         using the model we already trained for the given database.
 
         Args
         ----
-        data : pandas.DataFrame or pandas.Series
+        data : pandas.DataFrame
             Data to be inserted and used for training.
         frequency_seconds : int
-            Time in between each check of status. `Default is 10`.
+            Time in between each check of status. If less than 1, it won't wait for setup
+            to finish, allowing to perform other actions, but could cause errors on some
+            scripts. `Default is 1`.
 
         Return
         -------
@@ -231,7 +339,8 @@ class Trainer(TaskBase):
         if not self.is_valid():
             raise KeyError(
                 f"Database '{self.name}' does not exist in your environment.\n"
-                "Run a `setup` set your database up first.")
+                "Run a `setup` set your database up first."
+            )
 
         # delete data reamains
         self.delete_raw_data()
@@ -245,16 +354,16 @@ class Trainer(TaskBase):
             data=data,
             name=self.name,
             db_type=self.db_type,
-            batch_size=self.insert_params['batch_size'],
-            has_filter=self.describe()['has_filter'],
-            max_insert_workers=self.insert_params['max_insert_workers'],
-            predict=True)
+            batch_size=self.insert_params["batch_size"],
+            has_filter=self.describe()["has_filter"],
+            max_insert_workers=self.insert_params["max_insert_workers"],
+            predict=True,
+        )
 
         # add data per se
         add_data_response = self._append(name=self.name)
         if self.safe_mode:
-            add_data_response = check_response(AddDataResponse,
-                                               add_data_response)
+            add_data_response = check_response(AddDataResponse, add_data_response)
 
         if frequency_seconds >= 1:
             self.wait_setup(frequency_seconds=frequency_seconds)
@@ -305,8 +414,9 @@ class Trainer(TaskBase):
 
         """
         if self.db_type not in [
-                PossibleDtypes.selfsupervised, PossibleDtypes.supervised,
-                PossibleDtypes.recommendation_system
+            PossibleDtypes.selfsupervised,
+            PossibleDtypes.supervised,
+            PossibleDtypes.recommendation_system,
         ]:
             return None
 
@@ -314,40 +424,37 @@ class Trainer(TaskBase):
 
         if self.safe_mode:
             if verbose >= 2:
-                report = check_response(Report2Response,
-                                        report).dict(by_alias=True)
+                report = check_response(Report2Response, report).dict(by_alias=True)
             elif verbose == 1:
-                report = check_response(Report1Response,
-                                        report).dict(by_alias=True)
+                report = check_response(Report1Response, report).dict(by_alias=True)
             else:
-                report = check_response(Report1Response,
-                                        report).dict(by_alias=True)
+                report = check_response(Report1Response, report).dict(by_alias=True)
 
         if return_report:
             return report
 
-        if 'Model Training' in report.keys():
-            plots = report['Model Training']
+        if "Model Training" in report.keys():
+            plots = report["Model Training"]
 
-            plt.plot(*plots['train'], label="train loss")
-            plt.plot(*plots['val'], label="val loss")
+            plt.plot(*plots["train"], label="train loss")
+            plt.plot(*plots["val"], label="val loss")
             plt.title("Training Losses")
             plt.legend()
             plt.xlabel("epoch")
             plt.show()
 
         print("\nSetup Report:")
-        print(report['Model Evaluation']) if 'Model Evaluation' in report.keys(
-        ) else None
+        print(
+            report["Model Evaluation"]
+        ) if "Model Evaluation" in report.keys() else None
         print()
-        print(report["Loading from checkpoint"].split("\n")
-              [1]) if 'Loading from checkpoint' in report.keys() else None
+        print(
+            report["Loading from checkpoint"].split("\n")[1]
+        ) if "Loading from checkpoint" in report.keys() else None
 
     def wait_setup(self, frequency_seconds: int = 1):
         """
         Wait for the setup (model training) to finish
-
-        Placeholder method for scripts.
 
         Args
         ----
@@ -359,11 +466,8 @@ class Trainer(TaskBase):
         None.
         """
 
-        if frequency_seconds < 1:
-            return
-
-        end_message = 'Task ended successfully.'
-        error_message = 'Something went wrong.'
+        end_message = "Task ended successfully."
+        error_message = "Something went wrong."
 
         status = self.status()
         current, max_steps = status["CurrentStep"], status["TotalSteps"]
@@ -372,19 +476,22 @@ class Trainer(TaskBase):
         is_init = True
         sleep_time = frequency_seconds
         try:
-            with tqdm(total=max_steps,
-                      desc="JAI is working",
-                      bar_format='{l_bar}{bar}|{n_fmt}/{total_fmt} [{elapsed}]'
-                      ) as pbar:
-                while status['Status'] != end_message:
-                    if status['Status'] == error_message:
-                        raise BaseException(status['Description'])
+            with tqdm(
+                total=max_steps,
+                desc="JAI is working",
+                bar_format="{l_bar}{bar}|{n_fmt}/{total_fmt} [{elapsed}]",
+            ) as pbar:
+                while status["Status"] != end_message:
+                    if status["Status"] == error_message:
+                        raise BaseException(status["Description"])
 
                     iteration, _, max_iterations = get_numbers(status)
                     if iteration:
-                        with tqdm(total=max_iterations,
-                                  desc=f"[{self.name}] Training",
-                                  leave=False) as iteration_bar:
+                        with tqdm(
+                            total=max_iterations,
+                            desc=f"[{self.name}] Training",
+                            leave=False,
+                        ) as iteration_bar:
                             while iteration:
                                 iteration, curr_step, _ = get_numbers(status)
                                 step_update = curr_step - iteration_bar.n
@@ -398,8 +505,7 @@ class Trainer(TaskBase):
 
                             # training might stop early, so we make the progress bar appear
                             # full when early stopping is reached -- peace of mind
-                            iteration_bar.update(max_iterations -
-                                                 iteration_bar.n)
+                            iteration_bar.update(max_iterations - iteration_bar.n)
 
                     if (step == current) and is_init:
                         pbar.update(current)
@@ -500,10 +606,10 @@ class Trainer(TaskBase):
         """
         The function returns a new `Query` object with the same initial values as the current `Trainer`
         object
-        
+
         Args:
           name (str): The name of the query. Defaults to the same name as the current `Trainer` object.
-        
+
         Returns:
           A Query object with the name and init values.
         """

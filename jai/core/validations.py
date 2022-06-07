@@ -10,41 +10,39 @@ from pydantic import ValidationError, parse_obj_as
 from typing import List
 
 
-def check_response(model,
-                   obj,
-                   list_of: bool = False,
-                   as_list: bool = False,
-                   as_dict: bool = False):
+def check_response(
+    model, obj, list_of: bool = False, as_list: bool = False, as_dict: bool = False
+):
     """
     Checks if response from API follows the expected structure.
 
     Args:
         model (_type_): expected structure for the response.
         obj (_type_): the response from API.
-        list_of (bool, optional): If the obj follows the structure of 
+        list_of (bool, optional): If the obj follows the structure of
         a list of model defined in `model`. Defaults to False.
-        as_list (bool, optional): If the obj follows the structure of 
+        as_list (bool, optional): If the obj follows the structure of
         a list. Defaults to False.
-        as_dict (bool, optional): If the obj follows the structure of 
+        as_dict (bool, optional): If the obj follows the structure of
         a dict. Defaults to False.
 
     Raises:
-        ValueError: if more than one of `list_of`, `as_list` and `as_dict` 
+        ValueError: if more than one of `list_of`, `as_list` and `as_dict`
         parameters are are set to true.
-        ValueError: If the response does not correspond to the expected structure 
+        ValueError: If the response does not correspond to the expected structure
 
     Returns:
         The response values as expected.
     """
     if sum([list_of, as_list, as_dict]) > 1:
-        raise ValueError(
-            "Can't use `list_of`, `as_list` and `as_dict` simultaneously.")
+        raise ValueError("Can't use `list_of`, `as_list` and `as_dict` simultaneously.")
 
     if model is None:
         print(obj)  # TODO: Remove
         warnings.warn(
             "No check is available for this method when `safe_mode` is on.",
-            stacklevel=3)
+            stacklevel=3,
+        )
         return obj
 
     try:
@@ -58,8 +56,7 @@ def check_response(model,
     except ValidationError:
         print(obj)  # TODO: Remove
         print(type(obj))  # TODO: Remove
-        raise ValueError(
-            "Wrong value generic message.")  # TODO: Change message
+        raise ValueError("Wrong value generic message.")  # TODO: Change message
 
 
 def check_dtype_and_clean(data, db_type):
@@ -80,31 +77,23 @@ def check_dtype_and_clean(data, db_type):
     data : pandas.DataFrame or pandas.Series
         Data without NAs
     """
-    # TODO: improve this function
-    if not isinstance(data, (list, np.ndarray, pd.Series, pd.DataFrame)):
+    if not isinstance(data, (pd.Series, pd.DataFrame)):
         raise TypeError(
-            f"Inserted data is of type `{data.__class__.__name__}`," \
-                f"but supported types are list, np.ndarray, pandas.Series or pandas.DataFrame")
+            f"Inserted data is of type `{data.__class__.__name__}`,"
+            f"but supported types are pandas.Series or pandas.DataFrame"
+        )
 
-    if isinstance(data, np.ndarray):
-        if not data.any():
-            raise ValueError(f"Inserted data is empty.")
-        elif data.ndim == 1:
-            data = pd.Series(data)
-        elif data.ndim == 2:
-            data = pd.DataFrame(data)
-        else:
-            raise ValueError(
-                f"Inserted 'np.ndarray' data has many dimensions ({data.ndim}). JAI only accepts up to 2-d inputs."
-            )
-    elif isinstance(data, list):
-        data = pd.Series(data)
-
-    if db_type in [
-            PossibleDtypes.text, PossibleDtypes.fasttext, PossibleDtypes.edit,
-            PossibleDtypes.vector
-    ] and data.isna().to_numpy().any():
-        warnings.warn(f"Droping NA values.")
+    if (
+        db_type
+        in [
+            PossibleDtypes.text,
+            PossibleDtypes.fasttext,
+            PossibleDtypes.edit,
+            PossibleDtypes.vector,
+        ]
+        and data.isna().to_numpy().any()
+    ):
+        warnings.warn(f"Dropping NA values.")
         data = data.dropna()
     return data
 
@@ -128,48 +117,122 @@ def hyperparams_validation(dtype: str):
     possible = []
     must = []
     if dtype == PossibleDtypes.selfsupervised:
-        possible.extend([
-            'batch_size', 'learning_rate', 'encoder_layer', 'decoder_layer',
-            'hidden_latent_dim', 'dropout_rate', 'momentum',
-            'pretraining_ratio', 'noise_level', 'check_val_every_n_epoch',
-            'gradient_clip_val', 'gradient_clip_algorithm', 'min_epochs',
-            'max_epochs', 'patience', 'min_delta', 'random_seed',
-            'swa_parameters', 'pruning_method', 'pruning_amount',
-            'training_type'
-        ])
+        possible.extend(
+            [
+                "batch_size",
+                "learning_rate",
+                "encoder_layer",
+                "decoder_layer",
+                "hidden_latent_dim",
+                "dropout_rate",
+                "momentum",
+                "pretraining_ratio",
+                "noise_level",
+                "check_val_every_n_epoch",
+                "gradient_clip_val",
+                "gradient_clip_algorithm",
+                "min_epochs",
+                "max_epochs",
+                "patience",
+                "min_delta",
+                "random_seed",
+                "swa_parameters",
+                "pruning_method",
+                "pruning_amount",
+                "training_type",
+            ]
+        )
     elif dtype == PossibleDtypes.supervised:
-        possible.extend([
-            'batch_size', 'learning_rate', 'encoder_layer', 'decoder_layer',
-            'hidden_latent_dim', 'dropout_rate', 'momentum',
-            'pretraining_ratio', 'noise_level', 'check_val_every_n_epoch',
-            'gradient_clip_val', 'gradient_clip_algorithm', 'min_epochs',
-            'max_epochs', 'patience', 'min_delta', 'random_seed',
-            'swa_parameters', 'pruning_method', 'pruning_amount'
-        ])
+        possible.extend(
+            [
+                "batch_size",
+                "learning_rate",
+                "encoder_layer",
+                "decoder_layer",
+                "hidden_latent_dim",
+                "dropout_rate",
+                "momentum",
+                "pretraining_ratio",
+                "noise_level",
+                "check_val_every_n_epoch",
+                "gradient_clip_val",
+                "gradient_clip_algorithm",
+                "min_epochs",
+                "max_epochs",
+                "patience",
+                "min_delta",
+                "random_seed",
+                "swa_parameters",
+                "pruning_method",
+                "pruning_amount",
+            ]
+        )
     elif dtype == PossibleDtypes.recommendation_system:
-        possible.extend([
-            'batch_size', 'learning_rate', 'encoder_layer', 'decoder_layer',
-            'hidden_latent_dim', 'dropout_rate', 'momentum',
-            'pretraining_ratio', 'noise_level', 'check_val_every_n_epoch',
-            'gradient_clip_val', 'gradient_clip_algorithm', 'min_epochs',
-            'max_epochs', 'patience', 'min_delta', 'random_seed',
-            'swa_parameters', 'pruning_method', 'pruning_amount'
-        ])
+        possible.extend(
+            [
+                "batch_size",
+                "learning_rate",
+                "encoder_layer",
+                "decoder_layer",
+                "hidden_latent_dim",
+                "dropout_rate",
+                "momentum",
+                "pretraining_ratio",
+                "noise_level",
+                "check_val_every_n_epoch",
+                "gradient_clip_val",
+                "gradient_clip_algorithm",
+                "min_epochs",
+                "max_epochs",
+                "patience",
+                "min_delta",
+                "random_seed",
+                "swa_parameters",
+                "pruning_method",
+                "pruning_amount",
+            ]
+        )
     elif dtype == PossibleDtypes.image:
-        possible.extend(['model_name', 'mode', 'resize_H', 'resize_W'])
+        possible.extend(["model_name", "mode", "resize_H", "resize_W"])
     elif dtype == PossibleDtypes.text:
-        possible.extend(['nlp_model', 'max_length'])
+        possible.extend(["nlp_model", "max_length"])
     elif dtype == PossibleDtypes.fasttext:
-        possible.extend([
-            'minn', 'maxn', 'dim', 'epoch', 'model', 'lr', 'ws', 'minCount',
-            'neg', 'wordNgrams', 'loss', 'bucket', 'lrUpdateRate', 't'
-        ])
+        possible.extend(
+            [
+                "minn",
+                "maxn",
+                "dim",
+                "epoch",
+                "model",
+                "lr",
+                "ws",
+                "minCount",
+                "neg",
+                "wordNgrams",
+                "loss",
+                "bucket",
+                "lrUpdateRate",
+                "t",
+            ]
+        )
     elif dtype == PossibleDtypes.edit:
-        possible.extend([
-            'nt', 'nr', 'nb', 'k', 'epochs', 'shuffle_seed', 'batch_size',
-            'test_batch_size', 'channel', 'embed_dim', 'random_train',
-            'random_append_train', 'maxl'
-        ])
+        possible.extend(
+            [
+                "nt",
+                "nr",
+                "nb",
+                "k",
+                "epochs",
+                "shuffle_seed",
+                "batch_size",
+                "test_batch_size",
+                "channel",
+                "embed_dim",
+                "random_train",
+                "random_append_train",
+                "maxl",
+            ]
+        )
 
     return (possible, must)
 
@@ -178,10 +241,11 @@ def num_process_validation(dtype: str):
     possible = []
     must = []
     if dtype in [
-            PossibleDtypes.selfsupervised, PossibleDtypes.supervised,
-            PossibleDtypes.recommendation_system
+        PossibleDtypes.selfsupervised,
+        PossibleDtypes.supervised,
+        PossibleDtypes.recommendation_system,
     ]:
-        possible.extend(['embedding_dim', 'scaler', 'fill_value'])
+        possible.extend(["embedding_dim", "scaler", "fill_value"])
     return (possible, must)
 
 
@@ -189,10 +253,11 @@ def cat_process_validation(dtype: str):
     possible = []
     must = []
     if dtype in [
-            PossibleDtypes.selfsupervised, PossibleDtypes.supervised,
-            PossibleDtypes.recommendation_system
+        PossibleDtypes.selfsupervised,
+        PossibleDtypes.supervised,
+        PossibleDtypes.recommendation_system,
     ]:
-        possible.extend(['embedding_dim', 'fill_value', 'min_freq'])
+        possible.extend(["embedding_dim", "fill_value", "min_freq"])
     return (possible, must)
 
 
@@ -200,22 +265,24 @@ def datetime_process_validation(dtype: str):
     possible = []
     must = []
     if dtype in [
-            PossibleDtypes.selfsupervised, PossibleDtypes.supervised,
-            PossibleDtypes.recommendation_system
+        PossibleDtypes.selfsupervised,
+        PossibleDtypes.supervised,
+        PossibleDtypes.recommendation_system,
     ]:
-        possible.extend(['embedding_dim'])
+        possible.extend(["embedding_dim"])
     return (possible, must)
 
 
 def features_process_validation(dtype: str):
     possible = []
-    must = ['dtype']
+    must = ["dtype"]
     if dtype in [
-            PossibleDtypes.selfsupervised, PossibleDtypes.supervised,
-            PossibleDtypes.recommendation_system
+        PossibleDtypes.selfsupervised,
+        PossibleDtypes.supervised,
+        PossibleDtypes.recommendation_system,
     ]:
-        possible.extend(['embedding_dim', 'fill_value', 'min_freq'])
-        must.extend(['scaler'])
+        possible.extend(["embedding_dim", "fill_value", "min_freq"])
+        must.extend(["scaler"])
     return (possible, must)
 
 
@@ -223,11 +290,12 @@ def pretrained_bases_process_validation(dtype: str):
     possible = []
     must = []
     if dtype in [
-            PossibleDtypes.selfsupervised, PossibleDtypes.supervised,
-            PossibleDtypes.recommendation_system
+        PossibleDtypes.selfsupervised,
+        PossibleDtypes.supervised,
+        PossibleDtypes.recommendation_system,
     ]:
-        possible.extend(['embedding_dim', 'aggregation_method'])
-        must.extend(['db_parent', 'id_name'])
+        possible.extend(["embedding_dim", "aggregation_method"])
+        must.extend(["db_parent", "id_name"])
     return (possible, must)
 
 
@@ -235,10 +303,11 @@ def split_process_validation(dtype: str):
     possible = []
     must = []
     if dtype in [
-            PossibleDtypes.selfsupervised, PossibleDtypes.supervised,
-            PossibleDtypes.recommendation_system
+        PossibleDtypes.selfsupervised,
+        PossibleDtypes.supervised,
+        PossibleDtypes.recommendation_system,
     ]:
-        possible.extend(['type', 'split_column', 'test_size', 'gap'])
+        possible.extend(["type", "split_column", "test_size", "gap"])
     return (possible, must)
 
 
@@ -246,22 +315,22 @@ def label_process_validation(dtype: str):
     possible = []
     must = []
     if dtype == PossibleDtypes.supervised:
-        possible.extend(['regression_scaler', 'quantiles'])
-        must.extend(['task', 'label_name'])
+        possible.extend(["regression_scaler", "quantiles"])
+        must.extend(["task", "label_name"])
     return (possible, must)
 
 
 def kwargs_possibilities(dtype: str):
     params = {
-        'hyperparams': hyperparams_validation(dtype),
-        'num_process': num_process_validation(dtype),
-        'cat_process': cat_process_validation(dtype),
-        'datetime_process': datetime_process_validation(dtype),
-        'pretrained_bases': pretrained_bases_process_validation(dtype),
-        'mycelia_bases': pretrained_bases_process_validation(dtype),
-        'features': features_process_validation(dtype),
-        'label': label_process_validation(dtype),
-        'split': split_process_validation(dtype)
+        "hyperparams": hyperparams_validation(dtype),
+        "num_process": num_process_validation(dtype),
+        "cat_process": cat_process_validation(dtype),
+        "datetime_process": datetime_process_validation(dtype),
+        "pretrained_bases": pretrained_bases_process_validation(dtype),
+        "mycelia_bases": pretrained_bases_process_validation(dtype),
+        "features": features_process_validation(dtype),
+        "label": label_process_validation(dtype),
+        "split": split_process_validation(dtype),
     }
 
     to_delete = []
@@ -282,7 +351,7 @@ def plurality(list_keys):
 
 
 def kwargs_validation(db_type: str, **kwargs):
-    doc_msg = 'Please check the documentation and try again.'
+    doc_msg = "Please check the documentation and try again."
     params = kwargs_possibilities(db_type)
     params_keys = set(params.keys())
     body_keys = set(kwargs.keys()) - set(["callback_url", "overwrite"])
@@ -294,29 +363,27 @@ def kwargs_validation(db_type: str, **kwargs):
             f'Inserted {plurality(incorrect_used_keys)} not a valid one for dtype="{db_type}". {doc_msg}'
         )
 
-    if 'label' not in body_keys and db_type == PossibleDtypes.supervised:
-        raise ParamError(f'Missing the required arguments: `label`. {doc_msg}')
+    if "label" not in body_keys and db_type == PossibleDtypes.supervised:
+        raise ParamError(f"Missing the required arguments: `label`. {doc_msg}")
 
-    body = {
-        "db_type": db_type,
-        "callback_url": kwargs.get("callback_url", None)
-    }
+    body = {"db_type": db_type, "callback_url": kwargs.get("callback_url", None)}
     for key in correct_used_keys:
         if key == "mycelia_bases":
             raise DeprecatedError(
                 "`mycelia_bases` has been deprecated, please use `pretrained_bases` instead."
             )
-        elif key == 'pretrained_bases':
+        elif key == "pretrained_bases":
             if not isinstance(kwargs[key], list):
                 raise TypeError(
                     "'pretrained_bases' parameter must be a list of dictonaries."
                 )
             pb_keys = [list(x.keys()) for x in kwargs[key]]
             used_subkeys = set().union(*pb_keys)
-        elif key == 'features':
+        elif key == "features":
             if not isinstance(kwargs[key], dict):
                 raise TypeError(
-                    "'features' parameter must be a dictonary of dictonaries.")
+                    "'features' parameter must be a dictonary of dictonaries."
+                )
             pb_keys = [list(x.keys()) for x in kwargs[key].values()]
             used_subkeys = set().union(*pb_keys)
         else:
@@ -337,6 +404,6 @@ def kwargs_validation(db_type: str, **kwargs):
             )
         body[key] = kwargs[key]
 
-    if body.get('hyperparams', {}).get('patience', 10) > 0:
+    if body.get("hyperparams", {}).get("patience", 10) > 0:
         print("Training might finish early due to early stopping criteria.")
     return body
