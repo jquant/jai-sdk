@@ -77,11 +77,24 @@ def check_dtype_and_clean(data, db_type):
     data : pandas.DataFrame or pandas.Series
         Data without NAs
     """
-    if not isinstance(data, (pd.Series, pd.DataFrame)):
+    # TODO: improve this function
+    if not isinstance(data, (np.ndarray, pd.Series, pd.DataFrame)):
         raise TypeError(
             f"Inserted data is of type `{data.__class__.__name__}`,"
-            f"but supported types are pandas.Series or pandas.DataFrame"
+            f"but supported types are np.ndarray, pandas.Series or pandas.DataFrame"
         )
+
+    if isinstance(data, np.ndarray):
+        if not data.any():
+            raise ValueError(f"Inserted data is empty.")
+        elif data.ndim == 1:
+            data = pd.Series(data)
+        elif data.ndim == 2:
+            data = pd.DataFrame(data)
+        else:
+            raise ValueError(
+                f"Inserted 'np.ndarray' data has many dimensions ({data.ndim}). JAI only accepts up to 2-d inputs."
+            )
 
     if (
         db_type
@@ -93,7 +106,7 @@ def check_dtype_and_clean(data, db_type):
         ]
         and data.isna().to_numpy().any()
     ):
-        warnings.warn(f"Dropping NA values.")
+        warnings.warn(f"Droping NA values.")
         data = data.dropna()
     return data
 

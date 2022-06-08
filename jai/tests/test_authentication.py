@@ -4,13 +4,12 @@ import os
 
 
 def test_get_authentication():
-    auth_key = get_authentication()
+    auth_key = get_authentication(env_var="EMPTY_AUTH")
     assert auth_key == ""
 
 
 def test_set_authentication():
-    auth_key = get_authentication()
-    assert auth_key == ""
+    initial_key = get_authentication()
 
     set_authentication("auth")
 
@@ -25,7 +24,7 @@ def test_set_authentication():
     os.environ.pop("JAI_AUTH", None)
 
     auth_key = get_authentication()
-    assert auth_key == ""
+    assert auth_key == initial_key
 
 
 def test_error_authentication():

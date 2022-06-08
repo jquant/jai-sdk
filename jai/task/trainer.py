@@ -11,7 +11,6 @@ from ..core.utils_funcs import check_filters, print_args
 from ..core.validations import (
     check_response,
     check_dtype_and_clean,
-    pretrained_bases_process_validation,
 )
 
 from ..types.generic import PossibleDtypes
@@ -246,8 +245,9 @@ class Trainer(TaskBase):
                     f"Database '{self.name}' already exists in your environment.\
                         Set overwrite=True to overwrite it."
                 )
-
-        self._check_pretrained_bases(data, self.setup_params["pretrained_bases"])
+        self._check_pretrained_bases(
+            data, self.setup_params.get("pretrained_bases", [])
+        )
 
         if isinstance(data, (pd.Series, pd.DataFrame)):
             # make sure our data has the correct type and is free of NAs

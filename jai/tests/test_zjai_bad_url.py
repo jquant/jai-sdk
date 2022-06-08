@@ -13,11 +13,11 @@ from jai import Jai
 from jai.core.validations import check_dtype_and_clean, check_name_lengths
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def bad_url_environ():
     # Remove JAI_URL from environment variables
     old_environ = deepcopy(os.environ)
-    os.environ["JAI_URL"] = 'http://google.com'
+    os.environ["JAI_URL"] = "http://google.com"
     yield
     # restore initial values
     os.environ = old_environ
@@ -134,8 +134,10 @@ def test_check_dtype_and_clean_exception(bad_url_environ):
     db = np.array([[[1]]])
     with pytest.raises(ValueError) as e:
         check_dtype_and_clean(data=db, db_type="SelfSupervised")
-    assert e.value.args[
-        0] == f"Inserted 'np.ndarray' data has many dimensions ({db.ndim}). JAI only accepts up to 2-d inputs."
+    assert (
+        e.value.args[0]
+        == f"Inserted 'np.ndarray' data has many dimensions ({db.ndim}). JAI only accepts up to 2-d inputs."
+    )
 
 
 def test_predict_exception(bad_url_environ):
