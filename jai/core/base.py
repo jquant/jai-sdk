@@ -51,11 +51,7 @@ class BaseJai(object):
 
         """
         auth_key = get_authentication(env_var)
-        if auth_key != "":
-            self.headers = {"Auth": auth_key, "environment": environment}
-        else:
-            self.headers = json.loads(config("JAI_HEADERS"))
-            self.headers["environment"] = environment
+        self.headers = {"Auth": auth_key, "environment": environment}
 
         self.__url = config(url_var, default="https://mycelia.azure-api.net")
 
