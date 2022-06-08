@@ -48,12 +48,7 @@ def test_custom_url():
 @pytest.mark.parametrize("safe_mode", [False, True])
 def test_names(safe_mode):
     j = Jai(safe_mode=safe_mode)
-    assert j.names == [
-        "test_insert_vector",
-        "test_match",
-        "test_resolution",
-        "titanic_ssupervised",
-    ], f"Failed names {j.names}"
+    assert j.names == [], f"Failed names {j.names}"
 
 
 @pytest.mark.parametrize("safe_mode", [False, True])
@@ -104,8 +99,8 @@ def test_user(safe_mode):
 def test_environments(safe_mode):
     j = Jai(safe_mode=safe_mode)
     assert j.environments() == [
-        {"key": "default", "id": "sdk/test", "name": "sdk_test"},
-        {"id": "sdk/prod", "name": "sdk_prod"},
+        {"key": "default", "id": "testsdk/test", "name": "testsdk_test"},
+        {"id": "testsdk/prod", "name": "testsdk_prod"},
     ]
 
 

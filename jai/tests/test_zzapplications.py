@@ -12,8 +12,12 @@ np.random.seed(42)
 
 @pytest.fixture(scope="session")
 def setup_dataframe():
-    TITANIC_TRAIN = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/train.csv"
-    TITANIC_TEST = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/test.csv"
+    TITANIC_TRAIN = (
+        "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/train.csv"
+    )
+    TITANIC_TEST = (
+        "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/test.csv"
+    )
 
     train = pd.read_csv(TITANIC_TRAIN)
     test = pd.read_csv(TITANIC_TEST)
@@ -28,12 +32,10 @@ def setup_dataframe():
 def test_embedding(safe_mode, name, setup_dataframe):
 
     train, test = setup_dataframe
-    train = train.rename(columns={
-        "PassengerId": "id"
-    }).set_index("id")['Name'].iloc[:10]
-    test = test.rename(columns={
-        "PassengerId": "id"
-    }).set_index("id")['Name'].iloc[:10]
+    train = (
+        train.rename(columns={"PassengerId": "id"}).set_index("id")["Name"].iloc[:10]
+    )
+    test = test.rename(columns={"PassengerId": "id"}).set_index("id")["Name"].iloc[:10]
 
     j = Jai(safe_mode=safe_mode)
 
@@ -71,11 +73,11 @@ def test_fill(safe_mode, name, setup_dataframe):
 
     x = j.fill(name, data, column="Survived")
     assert j.is_valid(name), f"valid name {name} after train fill"
-    assert j.ids(name) == ['15 items from 1 to 896'], 'wrong ids values sanity'
+    assert j.ids(name) == ["15 items from 1 to 896"], "wrong ids values sanity"
 
     v = j.fill(name, test.iloc[half:], column="Survived")
 
-    assert j.ids(name) == ['20 items from 1 to 901'], 'wrong ids values sanity'
+    assert j.ids(name) == ["20 items from 1 to 901"], "wrong ids values sanity"
     j.delete_database(name)
     assert not j.is_valid(name), "valid name after delete failed"
 
@@ -91,7 +93,7 @@ def test_sanity(safe_mode, name, setup_dataframe):
     train = train.set_index("PassengerId").iloc[:50]
     test = test.set_index("PassengerId").iloc[:50]
     half = test.shape[0] // 2
-    data = pd.concat([train, test.iloc[:half]]).drop(columns=['Survived'])
+    data = pd.concat([train, test.iloc[:half]]).drop(columns=["Survived"])
 
     j = Jai(safe_mode=safe_mode)
 
@@ -116,14 +118,24 @@ def test_sanity(safe_mode, name, setup_dataframe):
 def test_match(safe_mode, name):
 
     A = [
-        "Apple", "Watermelon", "Orange", "Nectarine", "Grape", "Lemon",
-        "Blueberry", "Pomegranate", "Banana", "Papaya", "Pineapple",
-        "Grapefruit", "Coconut", "Avocado", "Peach"
+        "Apple",
+        "Watermelon",
+        "Orange",
+        "Nectarine",
+        "Grape",
+        "Lemon",
+        "Blueberry",
+        "Pomegranate",
+        "Banana",
+        "Papaya",
+        "Pineapple",
+        "Grapefruit",
+        "Coconut",
+        "Avocado",
+        "Peach",
     ]
 
-    B = [
-        'Coconit', 'Pdach', 'Appld', 'Piheapplr', 'Banxna', 'Avocado', 'Grwpe'
-    ]
+    B = ["Coconit", "Pdach", "Appld", "Piheapplr", "Banxna", "Avocado", "Grwpe"]
 
     expected = [12, 14, 0, 10, 8, 13, 4]
 
@@ -134,15 +146,20 @@ def test_match(safe_mode, name):
 
     if j.is_valid(name):
         j.delete_database(name)
-    ok = j.match(name,
-                 data_left,
-                 data_right,
-                 top_k=15,
-                 threshold=0.5,
-                 original_data=True,
-                 overwrite=True)
+    ok = j.match(
+        name,
+        data_left,
+        data_right,
+        top_k=15,
+        threshold=0.5,
+        original_data=True,
+        overwrite=True,
+    )
 
-    assert ok['id_left'].tolist() == expected, "match failed"
+    assert ok["id_left"].tolist() == expected, "match failed"
+
+    j.delete_database(name)
+    assert not j.is_valid(name), "valid name after delete failed"
 
 
 # =============================================================================
@@ -153,14 +170,49 @@ def test_match(safe_mode, name):
 def test_resolution(safe_mode, name):
 
     data = [
-        "Apple", "Watermelon", "Orange", "Strawberry", "Nectarine", "Grape",
-        "Blueberry", "Pomegranate", "Banana", "Raspberry", "Papaya",
-        "Pineapple", "Lemon", "Grapefruit", "Coconut", "Avocado", "Peach",
-        'Coconit', 'Pdach', 'Appld', 'Piheapplr', 'Banxna', 'Avocado', 'Grwpe',
-        'Grapw', 'Bluebeffy', 'Banwna', 'Strzwherry', 'Gdapefruir',
-        'Aatermelon', 'Piheaplle', 'Grzpe', 'Watermelon', 'Kemon', 'Bqnana',
-        'Bljwberry', 'Rsspherry', 'Bahana', 'Watrrmeloh', 'Pezch', 'Blusberrt',
-        'Grapegruit', 'Avocaeo'
+        "Apple",
+        "Watermelon",
+        "Orange",
+        "Strawberry",
+        "Nectarine",
+        "Grape",
+        "Blueberry",
+        "Pomegranate",
+        "Banana",
+        "Raspberry",
+        "Papaya",
+        "Pineapple",
+        "Lemon",
+        "Grapefruit",
+        "Coconut",
+        "Avocado",
+        "Peach",
+        "Coconit",
+        "Pdach",
+        "Appld",
+        "Piheapplr",
+        "Banxna",
+        "Avocado",
+        "Grwpe",
+        "Grapw",
+        "Bluebeffy",
+        "Banwna",
+        "Strzwherry",
+        "Gdapefruir",
+        "Aatermelon",
+        "Piheaplle",
+        "Grzpe",
+        "Watermelon",
+        "Kemon",
+        "Bqnana",
+        "Bljwberry",
+        "Rsspherry",
+        "Bahana",
+        "Watrrmeloh",
+        "Pezch",
+        "Blusberrt",
+        "Grapegruit",
+        "Avocaeo",
     ]
     expected = np.arange(19)
     data = pd.Series(data)
@@ -169,5 +221,5 @@ def test_resolution(safe_mode, name):
 
     if j.is_valid(name):
         j.delete_database(name)
-    ok = j.resolution(name, data, top_k=20, threshold=.4, original_data=True)
-    assert ok['resolution_id'].isin(expected).all(), "resolution failed"
+    ok = j.resolution(name, data, top_k=20, threshold=0.4, original_data=True)
+    assert ok["resolution_id"].isin(expected).all(), "resolution failed"

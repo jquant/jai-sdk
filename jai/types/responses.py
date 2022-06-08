@@ -120,8 +120,8 @@ class Report1Response(BaseModel):
 
 
 class Report2Response(BaseModel):
-    train_ids: List[Any] = Field(..., alias="Train Ids")
-    val_ids: List[Any] = Field(..., alias="Validation Ids")
+    train_ids: Optional[List[Any]] = Field(..., alias="Train Ids")
+    val_ids: Optional[List[Any]] = Field(..., alias="Validation Ids")
     test_ids: Optional[List[Any]] = Field(None, alias="Evaluation Ids")
     auth_batch_size: Optional[str] = Field(None, alias="Auto scale batch size")
     auth_lr_finder: Optional[str] = Field(None, alias="Auto lr finder")
