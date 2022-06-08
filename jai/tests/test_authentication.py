@@ -3,28 +3,21 @@ import pytest
 import os
 
 
-def test_get_authentication():
-    auth_key = get_authentication(env_var="EMPTY_AUTH")
-    assert auth_key == ""
-
-
 def test_set_authentication():
-    initial_key = get_authentication()
+    set_authentication("auth", "TEST_AUTH")
 
-    set_authentication("auth")
-
-    auth_key = get_authentication()
+    auth_key = get_authentication(env_var="TEST_AUTH")
     assert auth_key == "auth"
 
-    set_authentication("other_value")
+    set_authentication("other_value", "TEST_AUTH")
 
-    auth_key = get_authentication()
+    auth_key = get_authentication(env_var="TEST_AUTH")
     assert auth_key == "other_value"
 
-    os.environ.pop("JAI_AUTH", None)
+    os.environ.pop("TEST_AUTH", None)
 
-    auth_key = get_authentication()
-    assert auth_key == initial_key
+    with pytest.raises(ValueError):
+        auth_key = get_authentication("TEST_AUTH")
 
 
 def test_error_authentication():
