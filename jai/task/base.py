@@ -5,17 +5,18 @@ from ..core.validations import check_response
 import requests
 from ..types.generic import Mode
 
-from ..types.responses import (UserResponse, ValidResponse)
+from ..types.responses import UserResponse, ValidResponse
 
 from typing import Dict, List, Any
 from pydantic import HttpUrl
 import sys
-if sys.version < '3.8':
+
+if sys.version < "3.8":
     from typing_extensions import Literal
 else:
     from typing import Literal
 
-__all__ = ["Trainer"]
+__all__ = ["TaskBase"]
 
 
 class TaskBase(BaseJai):
@@ -28,12 +29,14 @@ class TaskBase(BaseJai):
 
     """
 
-    def __init__(self,
-                 name: str,
-                 environment: str = "default",
-                 env_var: str = "JAI_AUTH",
-                 verbose: int = 1,
-                 safe_mode: bool = False):
+    def __init__(
+        self,
+        name: str,
+        environment: str = "default",
+        env_var: str = "JAI_AUTH",
+        verbose: int = 1,
+        safe_mode: bool = False,
+    ):
         """
         Initialize the Jai class.
 
@@ -51,7 +54,7 @@ class TaskBase(BaseJai):
             "environment": environment,
             "env_var": env_var,
             "verbose": verbose,
-            "safe_mode": safe_mode
+            "safe_mode": safe_mode,
         }
         super(TaskBase, self).__init__(environment, env_var)
         self.safe_mode = safe_mode
@@ -61,9 +64,10 @@ class TaskBase(BaseJai):
             user = check_response(UserResponse, user).dict()
 
             if verbose:
-                user_print = '\n'.join(
-                    [f"- {k}: {v}" for k, v in user.items()])
-                print(f"Connection established.\n{user_print}")
+                print(
+                    "Connection established.\n"
+                    f"Welcome {user['firstName']} {user['lastName']}"
+                )
 
         self.name = name
 
@@ -74,7 +78,7 @@ class TaskBase(BaseJai):
     @property
     def db_type(self):
         if self.is_valid():
-            return self.describe()['dtype']
+            return self.describe()["dtype"]
         return None
 
     @name.setter
@@ -148,9 +152,21 @@ class TaskBase(BaseJai):
         fields = self._fields(self.name)
         if self.safe_mode:
             return check_response(
-                Dict[str, Literal["int32", "int64", "float32", "float64",
-                                  "string", "embedding", "label", "datetime"]],
-                fields)
+                Dict[
+                    str,
+                    Literal[
+                        "int32",
+                        "int64",
+                        "float32",
+                        "float64",
+                        "string",
+                        "embedding",
+                        "label",
+                        "datetime",
+                    ],
+                ],
+                fields,
+            )
         return fields
 
     def download_vectors(self):

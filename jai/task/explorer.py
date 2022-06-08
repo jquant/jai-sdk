@@ -3,12 +3,11 @@ import pandas as pd
 from ..core.base import BaseJai
 from ..core.validations import check_response
 from ..types.responses import UserResponse
-from ..types.responses import (EnvironmentsResponse, UserResponse,
-                               InfoSizeResponse)
+from ..types.responses import EnvironmentsResponse, UserResponse, InfoSizeResponse
 
 from typing import List
 
-__all__ = ["LinearModel"]
+__all__ = ["Explorer"]
 
 
 class Explorer(BaseJai):
@@ -21,10 +20,12 @@ class Explorer(BaseJai):
 
     """
 
-    def __init__(self,
-                 environment: str = "default",
-                 env_var: str = "JAI_AUTH",
-                 safe_mode: bool = False):
+    def __init__(
+        self,
+        environment: str = "default",
+        env_var: str = "JAI_AUTH",
+        safe_mode: bool = False,
+    ):
         """
         Initialize the Jai class.
 
@@ -89,7 +90,8 @@ class Explorer(BaseJai):
                 "db_type": "type",
                 "db_version": "last modified",
                 "db_parents": "dependencies",
-            })
+            }
+        )
         if len(df_info) == 0:
             return df_info
         return df_info.sort_values(by="name")
@@ -121,8 +123,8 @@ class Explorer(BaseJai):
             # TODO: I'm not sure how to handle the missing `key`, maybe change API side
             environments = []
             for v in check_response(EnvironmentsResponse, envs, list_of=True):
-                if v['key'] is None:
-                    v.pop('key')
+                if v["key"] is None:
+                    v.pop("key")
                 environments.append(v)
             return environments
         return envs
@@ -152,28 +154,36 @@ class Explorer(BaseJai):
             return check_response(str, response)
         return response
 
-    def transfer(self,
-                 original_name: str,
-                 to_environment: str,
-                 new_name: str = None,
-                 from_environment: str = "default"):
-        response = self._transfer(original_name=original_name,
-                                  to_environment=to_environment,
-                                  new_name=new_name,
-                                  from_environment=from_environment)
+    def transfer(
+        self,
+        original_name: str,
+        to_environment: str,
+        new_name: str = None,
+        from_environment: str = "default",
+    ):
+        response = self._transfer(
+            original_name=original_name,
+            to_environment=to_environment,
+            new_name=new_name,
+            from_environment=from_environment,
+        )
         if self.safe_mode:
             return check_response(str, response)
         return response
 
-    def import_database(self,
-                        database_name: str,
-                        owner_id: str,
-                        owner_email: str,
-                        import_name: str = None):
-        response = self._import_database(database_name=database_name,
-                                         owner_id=owner_id,
-                                         owner_email=owner_email,
-                                         import_name=import_name)
+    def import_database(
+        self,
+        database_name: str,
+        owner_id: str,
+        owner_email: str,
+        import_name: str = None,
+    ):
+        response = self._import_database(
+            database_name=database_name,
+            owner_id=owner_id,
+            owner_email=owner_email,
+            import_name=import_name,
+        )
         if self.safe_mode:
             return check_response(str, response)
         return response

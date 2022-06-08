@@ -15,13 +15,14 @@ from ..types.hyperparams import InsertParams
 from ..types.responses import InsertVectorResponse
 from typing import Dict
 
-__all__ = ["Trainer"]
+__all__ = ["Vectors"]
 
 
 def get_numbers(status):
     if fnmatch(status["Description"], "*Iteration:*"):
-        curr_step, max_iterations = status["Description"].split(
-            "Iteration: ")[1].strip().split(" / ")
+        curr_step, max_iterations = (
+            status["Description"].split("Iteration: ")[1].strip().split(" / ")
+        )
         return int(curr_step), int(max_iterations)
     return False, 0, 0
 
@@ -36,12 +37,14 @@ class Vectors(TaskBase):
 
     """
 
-    def __init__(self,
-                 name: str,
-                 environment: str = "default",
-                 env_var: str = "JAI_AUTH",
-                 verbose: int = 1,
-                 safe_mode: bool = False):
+    def __init__(
+        self,
+        name: str,
+        environment: str = "default",
+        env_var: str = "JAI_AUTH",
+        verbose: int = 1,
+        safe_mode: bool = False,
+    ):
         """
         Initialize the Jai class.
 
@@ -55,11 +58,13 @@ class Vectors(TaskBase):
             None
 
         """
-        super(Vectors, self).__init__(name=name,
-                                      environment=environment,
-                                      env_var=env_var,
-                                      verbose=verbose,
-                                      safe_mode=safe_mode)
+        super(Vectors, self).__init__(
+            name=name,
+            environment=environment,
+            env_var=env_var,
+            verbose=verbose,
+            safe_mode=safe_mode,
+        )
 
     def delete_raw_data(self):
         """
@@ -109,11 +114,13 @@ class Vectors(TaskBase):
             return check_response(str, response)
         return response
 
-    def insert_vectors(self,
-                       data,
-                       batch_size: int = 10000,
-                       overwrite: bool = False,
-                       append: bool = False):
+    def insert_vectors(
+        self,
+        data,
+        batch_size: int = 10000,
+        overwrite: bool = False,
+        append: bool = False,
+    ):
         """
         Insert raw vectors database directly into JAI without any need of fit.
 
@@ -166,20 +173,17 @@ class Vectors(TaskBase):
             )
 
         insert_responses = {}
-        for i, b in enumerate(
-                trange(0, len(data), batch_size, desc="Insert Vectors")):
-            _batch = data.iloc[b:b + batch_size]
-            data_json = data2json(_batch,
-                                  dtype=PossibleDtypes.vector,
-                                  predict=False)
+        for i, b in enumerate(trange(0, len(data), batch_size, desc="Insert Vectors")):
+            _batch = data.iloc[b : b + batch_size]
+            data_json = data2json(_batch, dtype=PossibleDtypes.vector, predict=False)
             if i == 0 and create_new_collection is True:
-                response = self._insert_vectors_json(self.name,
-                                                     data_json,
-                                                     overwrite=True)
+                response = self._insert_vectors_json(
+                    self.name, data_json, overwrite=True
+                )
             else:
-                response = self._insert_vectors_json(self.name,
-                                                     data_json,
-                                                     overwrite=False)
+                response = self._insert_vectors_json(
+                    self.name, data_json, overwrite=False
+                )
 
             if self.safe_mode:
                 response = check_response(InsertVectorResponse, response)
