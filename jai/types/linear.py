@@ -5,7 +5,8 @@ from typing_extensions import Annotated
 from enum import Enum
 
 import sys
-if sys.version < '3.8':
+
+if sys.version < "3.8":
     from typing_extensions import Literal
 else:
     from typing import Literal
@@ -40,9 +41,10 @@ class LinearRegressionParams(BaseModel):
 
 
 class SGDRegressorParams(BaseModel):
-    loss: Literal["squared_error", "huber", "epsilon_insensitive",
-                  "squared_epsilon_insensitive"] = "squared_error"
-    penalty: Literal['l2', 'l1', 'elasticnet'] = 'l2'
+    loss: Literal[
+        "squared_error", "huber", "epsilon_insensitive", "squared_epsilon_insensitive"
+    ] = "squared_error"
+    penalty: Literal["l2", "l1", "elasticnet"] = "l2"
     alpha: float = 0.0001
     l1_ratio: float = 0.15
     fit_intercept: bool = True
@@ -52,8 +54,7 @@ class SGDRegressorParams(BaseModel):
     # verbose: int = 0
     epsilon: float = 0.1
     random_state: Union[int, None] = None
-    learning_rate: Literal["constant", "optimal", "invscaling",
-                           "adaptive"] = 'optimal'
+    learning_rate: Literal["constant", "optimal", "invscaling", "adaptive"] = "optimal"
     eta0: float = 0.01
     power_t: float = 0.5
     early_stopping: bool = False
@@ -64,7 +65,7 @@ class SGDRegressorParams(BaseModel):
 
 
 class LogisticRegressionParams(BaseModel):
-    penalty: Literal['none', 'l2', 'l1', 'elasticnet'] = 'l2'
+    penalty: Literal["none", "l2", "l1", "elasticnet"] = "l2"
     dual: bool = False
     tol: float = 1e-4
     C: float = 1
@@ -72,9 +73,9 @@ class LogisticRegressionParams(BaseModel):
     intercept_scaling: float = 1
     # class_weight: Union[Dict, Literal['balanced']]= None
     random_state: Union[int, None] = None
-    solver: Literal['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'] = "lbfgs"
+    solver: Literal["newton-cg", "lbfgs", "liblinear", "sag", "saga"] = "lbfgs"
     max_iter: int = 100
-    multi_class: Literal['auto', 'ovr', 'mutinomial'] = 'auto'
+    multi_class: Literal["auto", "ovr", "mutinomial"] = "auto"
     # verbose: int = 0
     # warm_start: bool = False
     n_jobs: Union[int, None] = None
@@ -82,11 +83,19 @@ class LogisticRegressionParams(BaseModel):
 
 
 class SGDClassifierParams(BaseModel):
-    loss: Literal["hinge", "log_loss", "log", "modified_huber",
-                  "squared_hinge", "perceptron", "squared_error", "huber",
-                  "epsilon_insensitive",
-                  "squared_epsilon_insensitive"] = "hinge"
-    penalty: Literal['l2', 'l1', 'elasticnet'] = 'l2'
+    loss: Literal[
+        "hinge",
+        "log_loss",
+        "log",
+        "modified_huber",
+        "squared_hinge",
+        "perceptron",
+        "squared_error",
+        "huber",
+        "epsilon_insensitive",
+        "squared_epsilon_insensitive",
+    ] = "hinge"
+    penalty: Literal["l2", "l1", "elasticnet"] = "l2"
     alpha: float = 0.0001
     l1_ratio: float = 0.15
     fit_intercept: bool = True
@@ -97,8 +106,7 @@ class SGDClassifierParams(BaseModel):
     epsilon: float = 0.1
     n_jobs: Union[int, None] = None
     random_state: Union[int, None] = None
-    learning_rate: Literal["constant", "optimal", "invscaling",
-                           "adaptive"] = 'optimal'
+    learning_rate: Literal["constant", "optimal", "invscaling", "adaptive"] = "optimal"
     eta0: float = 0.0
     power_t: float = 0.5
     early_stopping: bool = False
@@ -126,8 +134,7 @@ class SGDRegressionHyperparams(LinearBase):
 
 class ClassificationHyperparams(LinearBase):
     task: Literal[ClassificationTasks.classification]
-    model_params: Optional[
-        LogisticRegressionParams] = LogisticRegressionParams()
+    model_params: Optional[LogisticRegressionParams] = LogisticRegressionParams()
 
 
 class SGDClassificationHyperparams(LinearBase):
