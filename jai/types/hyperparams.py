@@ -3,7 +3,7 @@ from typing import Any, Optional, Dict, List, Union
 from enum import Enum
 import sys
 
-if sys.version < '3.8':
+if sys.version < "3.8":
     from typing_extensions import Literal
 else:
     from typing import Literal
@@ -41,5 +41,5 @@ class VisionModels(Enum):
 class VisionHyperparams(BaseModel):
     model_name: VisionModels = "resnet50"
     mode: Union[int, VisionModes] = "classifier"
-    resize_H: int = Field(224, desciption='height of image resizing', ge=224)
-    resize_W: int = Field(224, desciption='width of image resizing', ge=224)
+    resize_H: int = Field(224, desciption="height of image resizing", ge=224)
+    resize_W: int = Field(224, desciption="width of image resizing", ge=224)
