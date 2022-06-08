@@ -41,13 +41,13 @@ def test_insert_vectors(safe_mode, name, setup_dataframe):
 
     df0 = data[:400]
     overwrite = False
-    if name in set(j.info["name"]):
+    if name in j.names:
         j.delete_database(name)
 
     batch_size = 200
     j.insert_vectors(name=name, data=df0, batch_size=batch_size, overwrite=overwrite)
     j_info = j.info
-    assert name in set(j_info["name"])
+    assert name in j.names
     assert "Vector" == j_info[j_info["name"] == name]["type"].unique()
 
     n_ids = len(j.ids(name, mode="complete"))
@@ -122,9 +122,7 @@ def test_pretrained_with_vectors(safe_mode, name, pretrained, setup_dataframe):
     assert dep == [pretrained]
 
     j.delete_database(name)
-    j_info = j.info
-    assert name not in j_info["name"].values
+    assert name not in j.names
 
     j.delete_database(pretrained)
-    j_info = j.info
-    assert pretrained not in j_info["name"].values
+    assert pretrained not in j.names

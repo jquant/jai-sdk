@@ -158,9 +158,6 @@ def test_match(safe_mode, name):
 
     assert ok["id_left"].tolist() == expected, "match failed"
 
-    j.delete_database(name)
-    assert not j.is_valid(name), "valid name after delete failed"
-
 
 # =============================================================================
 # Test Resolution Application
@@ -221,5 +218,6 @@ def test_resolution(safe_mode, name):
 
     if j.is_valid(name):
         j.delete_database(name)
+
     ok = j.resolution(name, data, top_k=20, threshold=0.4, original_data=True)
     assert ok["resolution_id"].isin(expected).all(), "resolution failed"

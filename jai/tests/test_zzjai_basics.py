@@ -27,13 +27,6 @@ def clean_environ():
     config.config.repository.data = old_data
 
 
-@pytest.fixture(scope="session")
-def setup_npy_file():
-    NPY_FILE = Path("jai/test_data/sdk_test_titanic_ssupervised.npy")
-    img_file = np.load(NPY_FILE)
-    return img_file
-
-
 def test_url(clean_environ):
     j = Jai()
     assert j.url == "https://mycelia.azure-api.net"
@@ -48,7 +41,7 @@ def test_custom_url():
 @pytest.mark.parametrize("safe_mode", [False, True])
 def test_names(safe_mode):
     j = Jai(safe_mode=safe_mode)
-    assert j.names == [], f"Failed names {j.names}"
+    assert j.names == ["test_match", "test_resolution"], f"Failed names {j.names}"
 
 
 @pytest.mark.parametrize("safe_mode", [False, True])
@@ -77,14 +70,6 @@ def test_generate_name(length, prefix, suffix):
 
     if suffix != "":
         assert name.endswith(suffix), "suffix not in generated name."
-
-
-@pytest.mark.parametrize("safe_mode", [False, True])
-@pytest.mark.parametrize("name", ["titanic_ssupervised"])
-def test_download_vectors(safe_mode, setup_npy_file, name):
-    npy_file = setup_npy_file
-    j = Jai(safe_mode=safe_mode)
-    np.testing.assert_array_equal(npy_file, j.download_vectors(name=name))
 
 
 @pytest.mark.parametrize("safe_mode", [False, True])
@@ -136,29 +121,30 @@ def test_describe(safe_mode, name):
 
 
 @pytest.mark.parametrize("safe_mode", [False, True])
+@pytest.mark.parametrize("name", ["test_resolution"])
+def test_download_vectors(safe_mode, name):
+    j = Jai(safe_mode=safe_mode)
+    assert j.download_vectors(name=name).shape == (43, 128)
+
+
+@pytest.mark.parametrize("safe_mode", [False, True])
 def test_rename(safe_mode):
     j = Jai(safe_mode=safe_mode)
     assert j.names == [
-        "test_insert_vector",
         "test_match",
         "test_resolution",
-        "titanic_ssupervised",
     ]
 
     j.rename(original_name="test_match", new_name="test_match_new")
     assert j.names == [
-        "test_insert_vector",
         "test_match_new",
         "test_resolution",
-        "titanic_ssupervised",
     ]
 
     j.rename(original_name="test_match_new", new_name="test_match")
     assert j.names == [
-        "test_insert_vector",
         "test_match",
         "test_resolution",
-        "titanic_ssupervised",
     ]
 
 
@@ -167,10 +153,8 @@ def test_rename(safe_mode):
 def test_transfer(safe_mode, db_name):
     j = Jai(safe_mode=safe_mode)
     assert j.names == [
-        "test_insert_vector",
         "test_match",
         "test_resolution",
-        "titanic_ssupervised",
     ]
 
     j_prod = Jai(safe_mode=safe_mode, environment="prod")
@@ -178,11 +162,27 @@ def test_transfer(safe_mode, db_name):
 
     if db_name in j_prod.names:
         j_prod.delete_database(db_name)
-    assert j_prod.names == ["titanic_ssupervised"]
+    assert j_prod.names == []
 
     j.transfer(original_name=db_name, to_environment="prod", from_environment="default")
 
-    assert j_prod.names == [db_name, "titanic_ssupervised"]
+    assert j_prod.names == [db_name]
 
     j_prod.delete_database(db_name)
-    assert j_prod.names == ["titanic_ssupervised"]
+    assert j_prod.names == []
+
+
+def test_delete_databases():
+    j = Jai(safe_mode=True)
+
+    for name in j.names:
+        j.delete_database(name)
+
+    assert len(j.names) == 0, "valid name after delete failed"
+
+    j_prod = Jai(safe_mode=True, environment="prod")
+
+    for name in j_prod.names:
+        j_prod.delete_database(name)
+
+    assert len(j_prod.names) == 0, "valid name after delete failed"
