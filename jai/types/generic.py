@@ -1,6 +1,6 @@
 from enum import Enum
 
-__all__ = ['Mode', 'PossibleDtypes']
+__all__ = ["Mode", "PossibleDtypes"]
 
 
 class PossibleDtypes(str, Enum):
