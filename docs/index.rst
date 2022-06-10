@@ -36,6 +36,7 @@ What is JAI-SDK?
    source/3-inference/similarity.rst
    source/3-inference/predict.rst
 
+
 .. toctree::
    :hidden:
    :maxdepth: -1
@@ -43,6 +44,11 @@ What is JAI-SDK?
    
    source/4-task/task_intro.rst
    source/4-task/explorer.rst
+   source/4-task/trainer.rst
+   source/4-task/query.rst
+   source/4-task/vectors.rst
+   source/4-task/linear.rst
+
 
 .. toctree::
    :hidden:
