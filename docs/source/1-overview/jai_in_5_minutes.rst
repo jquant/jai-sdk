@@ -8,5 +8,6 @@ making inferences using JAI-SDK and directly using the JAI REST API.
 .. toctree::
    :maxdepth: -1
 
+   set_authentication
    classification_with_iris
    fraud_detection

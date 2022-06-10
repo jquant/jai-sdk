@@ -22,12 +22,8 @@ Start JAI
 Firstly, you'll need to install the JAI package and generate your auth key, as explained in the 
 :ref:`Getting Started <source/1-overview/getting_started:Getting Started>` section. 
 
-With your authentication key, start authenticating in your JAI account:
-
-.. code-block:: python
-
-    >>> AUTH_KEY = "insert_your_auth_key_here"
-    >>> j = Jai(AUTH_KEY) 
+With your authentication key, you'll need to configure your auth key.
+Please check the section :ref:`How to configure your auth key <source/1-overview/set_authentication:How to configure your auth key>` for more information.
 
 *******************
 Dataset quick look
@@ -71,6 +67,7 @@ previously shown.
   
 .. code-block:: python
     
+    >>> from jai import Jai
     >>> from sklearn.model_selection import train_test_split
     ...
     >>> # Splitting the dataset to demonstrate j.predict
@@ -84,6 +81,7 @@ previously shown.
     >>> train = pd.concat([X_train,y_train],axis=1)
     ...
     >>> # Training the classification model
+    >>> j = Jai()
     >>> j.fit(
     ...     # JAI collection name    
     ...     name="iris_supervised",  

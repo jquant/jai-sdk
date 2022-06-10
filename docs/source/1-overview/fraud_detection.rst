@@ -19,13 +19,8 @@ Start JAI
 Firstly, you'll need to install the JAI package and generate your auth key, as explained in the 
 :ref:`Getting Started <source/1-overview/getting_started:Getting Started>` section. 
 
-With your authentication key, start authentication in your JAI account:
-
-.. code-block:: python
-
-    >>> AUTH_KEY = "insert_your_auth_key_here"
-    >>> j = Jai(AUTH_KEY) 
-
+With your authentication key, you'll need to configure your auth key.
+Please check the section :ref:`How to configure your auth key <source/1-overview/set_authentication:How to configure your auth key>` for more information.
 
 *******************
 Dataset quick look
@@ -80,6 +75,7 @@ Since we only have data of two days, we don't have to worry about data leakage w
   
 .. code-block:: python
 
+    >>> from jai import Jai
     >>> from sklearn.model_selection import train_test_split
     ...
     >>> # In this case, we will take part of our dataset to demonstrate the prediction further in this tutorial
@@ -91,6 +87,7 @@ Since we only have data of two days, we don't have to worry about data leakage w
     >>> train = pd.concat([X_train,y_train],axis=1)
     ...
     >>> # Training the classification model
+    >>> j = Jai()
     >>> j.fit(
     ...     # JAI collection name    
     ...     name="cc_fraud_supervised", 

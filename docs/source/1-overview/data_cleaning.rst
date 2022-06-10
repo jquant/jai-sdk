@@ -14,12 +14,11 @@ Match two datasets with their possible equal values. This method matches similar
 You can find a complete `match example here <https://github.com/jquant/jai-sdk/blob/main/examples/match_example.ipynb>`_.
 
 
-
 .. code-block:: python
 
     >>> data1, data2 = dataframe1['name'], dataframe2['name']
     >>>
-    >>> j = Jai(AUTH_KEY)
+    >>> j = Jai()
     >>> match = j.match(name, data1, data2)
     >>> match
     
@@ -41,7 +40,7 @@ You can find a complete `resoultion example here <https://github.com/jquant/jai-
 .. code-block:: python
 
     >>> data = dataframe['name']
-    >>> j = Jai(AUTH_KEY)
+    >>> j = Jai()
     >>> results = j.resolution(name, data)
     >>> results
       id  resolution_id
@@ -65,7 +64,7 @@ You can find a complete `fill example here <https://github.com/jquant/jai-sdk/bl
     >>> import pandas as pd
     >>> from jai.processing import predict2df
     ...
-    >>> j = Jai(AUTH_KEY)
+    >>> j = Jai()
     >>> results = j.fill(name, data, COL_TO_FILL)
     >>> processed = predict2df(results)
     >>> pd.DataFrame(processed).sort_values('id')
@@ -87,7 +86,7 @@ You can find a complete `sanity example here <https://github.com/jquant/jai-sdk/
     >>> import pandas as pd
     >>> from jai.processing import predict2df
     ...
-    >>> j = Jai(AUTH_KEY)
+    >>> j = Jai()
     >>> results = j.sanity(name, data)
     >>> processed = predict2df(results)
     >>> pd.DataFrame(processed).sort_values('id')
