@@ -40,7 +40,7 @@ def test_linear_classification(name, dtype):
     if model.is_valid():
         model._delete_database(model.name)
 
-    print(model.model_params)
+    print(model.model_parameters)
     model.fit(X_train, y_train)
 
     y_pred = model.predict(X_test)
@@ -82,7 +82,7 @@ def test_linear_regression(name, dtype):
     if model.is_valid():
         model._delete_database(model.name)
 
-    print(model.model_params)
+    print(model.model_parameters)
     print(model.fit(X_train, y_train))
 
     y_pred = model.predict(X_test)

@@ -53,7 +53,7 @@ class BaseJai(object):
         auth_key = get_authentication(env_var)
         self.headers = {"Auth": auth_key, "environment": environment}
 
-        self.__url = config(url_var, default="https://mycelia.azure-api.net")
+        self.url = config(url_var, default="https://mycelia.azure-api.net")
 
     @property
     def url(self):
@@ -176,11 +176,7 @@ class BaseJai(object):
             "" if filters is None else "".join(["&filters=" + s for s in filters])
         )
         url = self.url + f"/similar/id/{name}?top_k={top_k}&orient={orient}" + filtering
-        return requests.put(
-            url,
-            headers=self.headers,
-            json=id_item,
-        )
+        return requests.put(url, headers=self.headers, json=id_item)
 
     @raise_status_error(200)
     def _similar_json(
@@ -269,11 +265,7 @@ class BaseJai(object):
             + f"/recommendation/id/{name}?top_k={top_k}&orient={orient}"
             + filtering
         )
-        return requests.put(
-            url,
-            headers=self.headers,
-            json=id_item,
-        )
+        return requests.put(url, headers=self.headers, json=id_item)
 
     @raise_status_error(200)
     def _recommendation_json(
@@ -469,7 +461,7 @@ class BaseJai(object):
         return requests.post(self.url + f"/data/{name}", headers=header, data=data_json)
 
     @raise_status_error(200)
-    def _check_params(
+    def _check_parameters(
         self,
         db_type: str,
         hyperparams=None,
@@ -733,7 +725,7 @@ class BaseJai(object):
         task,
         learning_rate: float = None,
         l2: float = 0.1,
-        model_params: dict = None,
+        model_parameters: dict = None,
         pretrained_bases: list = None,
         overwrite: bool = False,
     ):
@@ -750,8 +742,8 @@ class BaseJai(object):
         response : dict
             Dictionary with the API response.
         """
-        if model_params is None:
-            model_params = {}
+        if model_parameters is None:
+            model_parameters = {}
         if pretrained_bases is None:
             pretrained_bases = []
 
@@ -765,7 +757,7 @@ class BaseJai(object):
                     "task": task,
                     "learning_rate": learning_rate,
                     "l2": l2,
-                    "model": model_params,
+                    "model": model_parameters,
                 },
                 "pretrained_bases": pretrained_bases,
             },

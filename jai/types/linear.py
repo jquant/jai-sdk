@@ -124,19 +124,19 @@ class LinearBase(BaseModel):
 
 class RegressionHyperparams(LinearBase):
     task: Literal[RegressionTasks.regression]
-    model_params: Optional[LinearRegressionParams] = LinearRegressionParams()
+    model_parameters: Optional[LinearRegressionParams] = LinearRegressionParams()
 
 
 class SGDRegressionHyperparams(LinearBase):
     task: Literal[RegressionTasks.sgd_regression]
-    model_params: Optional[SGDRegressorParams] = SGDRegressorParams()
+    model_parameters: Optional[SGDRegressorParams] = SGDRegressorParams()
 
 
 class ClassificationHyperparams(LinearBase):
     task: Literal[ClassificationTasks.classification]
-    model_params: Optional[LogisticRegressionParams] = LogisticRegressionParams()
+    model_parameters: Optional[LogisticRegressionParams] = LogisticRegressionParams()
 
 
 class SGDClassificationHyperparams(LinearBase):
     task: Literal[ClassificationTasks.sgd_classification]
-    model_params: Optional[SGDClassifierParams] = SGDClassifierParams()
+    model_parameters: Optional[SGDClassifierParams] = SGDClassifierParams()

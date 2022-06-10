@@ -92,36 +92,36 @@ class Trainer(TaskBase):
         )
 
         self._verbose = verbose
-        self._setup_params = None
+        self._setup_parameters = None
 
-        self._insert_params = {"batch_size": 16384, "max_insert_workers": None}
+        self._insert_parameters = {"batch_size": 16384, "max_insert_workers": None}
 
     @property
-    def insert_params(self):
+    def insert_parameters(self):
         """
         Parameters used for insert data.
         """
-        return self._insert_params
+        return self._insert_parameters
 
-    @insert_params.setter
-    def insert_params(self, value: InsertParams):
+    @insert_parameters.setter
+    def insert_parameters(self, value: InsertParams):
         """
         The method takes a dictionary of parameters
 
         Returns:
           A dictionary of the InsertParams class.
         """
-        self._insert_params = InsertParams(**value).dict()
+        self._insert_parameters = InsertParams(**value).dict()
 
     @property
-    def setup_params(self):
-        if self._setup_params is None:
+    def setup_parameters(self):
+        if self._setup_parameters is None:
             raise ValueError(
                 "Generic error message."
-            )  # TODO: run set_params first message.
-        return self._setup_params
+            )  # TODO: run set_parameters first message.
+        return self._setup_parameters
 
-    def set_params(
+    def set_parameters(
         self,
         db_type: str,
         hyperparams=None,
@@ -134,7 +134,7 @@ class Trainer(TaskBase):
         split: dict = None,
     ):
         """
-        It checks the input parameters and sets the `setup_params` attribute for setup.
+        It checks the input parameters and sets the `setup_parameters` attribute for setup.
 
         TODO: complete args
         Args:
@@ -163,7 +163,7 @@ class Trainer(TaskBase):
 
         # I figure we don't need a safe_mode validation here
         # because this is already a validation method.
-        self._setup_params = self._check_params(
+        self._setup_parameters = self._check_parameters(
             db_type=db_type,
             hyperparams=hyperparams,
             features=features,
@@ -175,7 +175,7 @@ class Trainer(TaskBase):
             split=split,
         )
 
-        print_args(self.setup_params, self._input_kwargs, verbose=self._verbose)
+        print_args(self.setup_parameters, self._input_kwargs, verbose=self._verbose)
 
     def _check_pretrained_bases(self, data, pretrained_bases):
         for base in pretrained_bases:
@@ -246,7 +246,7 @@ class Trainer(TaskBase):
                         Set overwrite=True to overwrite it."
                 )
         self._check_pretrained_bases(
-            data, self.setup_params.get("pretrained_bases", [])
+            data, self.setup_parameters.get("pretrained_bases", [])
         )
 
         if isinstance(data, (pd.Series, pd.DataFrame)):
@@ -258,10 +258,12 @@ class Trainer(TaskBase):
             insert_responses = self._insert_data(
                 data=data,
                 name=self.name,
-                db_type=self.setup_params["db_type"],
-                batch_size=self.insert_params["batch_size"],
-                has_filter=check_filters(data, self.setup_params.get("features", {})),
-                max_insert_workers=self.insert_params["max_insert_workers"],
+                db_type=self.setup_parameters["db_type"],
+                batch_size=self.insert_parameters["batch_size"],
+                has_filter=check_filters(
+                    data, self.setup_parameters.get("features", {})
+                ),
+                max_insert_workers=self.insert_parameters["max_insert_workers"],
                 predict=False,
             )
 
@@ -283,19 +285,21 @@ class Trainer(TaskBase):
                 insert_responses = self._insert_data(
                     data=value,
                     name=name,
-                    db_type=self.setup_params["db_type"],
-                    batch_size=self.insert_params["batch_size"],
+                    db_type=self.setup_parameters["db_type"],
+                    batch_size=self.insert_parameters["batch_size"],
                     has_filter=check_filters(
-                        value, self.setup_params.get("features", {})
+                        value, self.setup_parameters.get("features", {})
                     ),
-                    max_insert_workers=self.insert_params["max_insert_workers"],
+                    max_insert_workers=self.insert_parameters["max_insert_workers"],
                     predict=False,
                 )
         else:
             ValueError("Generic Data Error Message")  # TODO: change message
 
         # train model
-        setup_response = self._setup(self.name, self.setup_params, overwrite=overwrite)
+        setup_response = self._setup(
+            self.name, self.setup_parameters, overwrite=overwrite
+        )
         if self.safe_mode:
             setup_response = check_response(SetupResponse, setup_response).dict()
 
@@ -354,9 +358,9 @@ class Trainer(TaskBase):
             data=data,
             name=self.name,
             db_type=self.db_type,
-            batch_size=self.insert_params["batch_size"],
+            batch_size=self.insert_parameters["batch_size"],
             has_filter=self.describe()["has_filter"],
-            max_insert_workers=self.insert_params["max_insert_workers"],
+            max_insert_workers=self.insert_parameters["max_insert_workers"],
             predict=True,
         )
 
