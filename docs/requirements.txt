@@ -11,3 +11,4 @@ scikit-learn>=0.24.2
 sphinx>=1.8
 sphinx-book-theme==0.1.9
 sphinx-copybutton
+sphinxemoji
