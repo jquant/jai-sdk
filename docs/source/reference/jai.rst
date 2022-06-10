@@ -6,7 +6,7 @@ JAI Python API
 JAI Class
 *********
 
-.. automodule:: jai.jai
+.. automodule:: jai.core.jai
    :members:
    :undoc-members:
    :show-inheritance:
