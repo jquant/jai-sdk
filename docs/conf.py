@@ -35,8 +35,9 @@ release = version
 # ones.
 extensions = [
     "sphinx.ext.napoleon",
-    "sphinx_copybutton",
+    "sphinx.ext.autodoc",
     "sphinx.ext.autosectionlabel",
+    "sphinx_copybutton",
     "sphinxemoji.sphinxemoji",
 ]
 
