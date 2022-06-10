@@ -1,7 +1,7 @@
 
-#########################
-Introducion - Task Module
-#########################
+###########
+Introducion
+###########
 
 The task module was designed to give a new experience to consuming the Jai API.
 As our API grew in complexity, the original Jai class also grew full of methods to achieve various possible goals. 

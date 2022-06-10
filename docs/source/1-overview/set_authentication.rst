@@ -11,7 +11,7 @@ There are several ways to configure your auth key.
 ------------------------------
 
 The first one is setting an environment variable on your system.
-Simply set an new environment variable with the name :code:`JAI_AUTH`
+Simply set an new environment variable with the name :code:`JAI_AUTH`.
 
 .. note:: 
     Every Jai class that requires the usage of the auth key has a :code:`env_var` parameter in case you need to use a different environment variable.
@@ -31,8 +31,12 @@ It's also possible to set the environment variable directly to :code:`os.environ
 .. note:: 
     For more details on how to use :code:`os.environ` check its `documentation <os_environ>`_ .
 
+.. warning:: 
+    We recommend not writing your auth key on your scripts, specially if you share them. 
+    Changes to Jai's backend are definitive. 
+    Keep your auth key safe. |:lock:|
 
-3. Set a config file
+1. Set a config file
 --------------------
 
 Since setting an environment variable could be a little tricky, specially on shared environments.
