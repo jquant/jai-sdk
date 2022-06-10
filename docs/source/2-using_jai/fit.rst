@@ -30,7 +30,7 @@ Here is the list of models that JAI supports:
 - **Image data:** JAI works with all torchvision image models.
 
 The sections below show more information about using these models in JAI. For the complete reference of the fit method, 
-look at :ref:`API reference <source/reference/jai:Jai Module>`.
+look at :ref:`API reference <source/reference/fit_kwargs:fit kwargs>`.
 
 .. important:: 
     
@@ -105,7 +105,7 @@ There are some important parameters in :code:`j.fit` that can improve your model
 - :code:`'hyperparameters'`: It describes the hyperparameters of the chosen model training.
 - :code:`'label'` (*Supervised*): Parameter used to define the label column of your supervised data and what type of task it will perform.
 
-You can check a complete reference of these parameters in :ref:`API reference <source/reference/jai:Jai Module>`.
+You can check a complete reference of these parameters in :ref:`API reference <source/reference/fit_kwargs:fit kwargs>`.
 
 A complete exampĺe of fitting tabular data is shown below:
 
@@ -184,7 +184,7 @@ Some of the most notable hyperparameters for tabular training are the following:
 - :code:`'decoder_layer'`: Chooses the decoder layer type of the NN. It's recommended to use :code:`'2L_BN'` 
   (Two linear batch normalization layers) for supervised regression training.
 
-To obtain all information about hyperparameters, check :ref:`Fit Kwargs <source/reference/jai:SelfSupervised>`.
+To obtain all information about hyperparameters, check :ref:`Fit Kwargs <source/reference/fit_kwargs:supervised parameters>`.
 
 Supervised Tasks
 ................
@@ -322,7 +322,7 @@ besides minimising the probability of crashing your fitting.
 
 For fitting Image data, just define db_type='Image' when using 'j.fit'. JAI permits using some of Torchvision pre-trained models 
 to fit your data. The default image model in JAI is :code:`'vgg16'`. To get the list of acceptable models, check 
-:ref:`API reference <source/reference/jai:Image>`.
+:ref:`API reference <source/reference/fit_kwargs:image parameters>`.
 
 .. code-block:: python
 

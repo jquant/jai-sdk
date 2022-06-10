@@ -117,7 +117,7 @@ previously shown.
     Best model at epoch: 69 val_loss: 0.07
 
 For more information about the :code:`j.fit` args you can access 
-:ref:`the reference part <source/reference/jai:jai python api>` of our documentation.
+:ref:`the reference part <source/reference/fit_kwargs:fit kwargs>` of our documentation.
 
 ***************
 Model Inference

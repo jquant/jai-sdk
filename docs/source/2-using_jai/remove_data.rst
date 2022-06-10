@@ -24,4 +24,4 @@ On the other hand, if you just need to remove some ids from your collection, you
 
     >>> j.delete_ids(name='your_collection_name', ids=[1, 2, 3, 4, 5])
 
-See the :ref:`package reference <source/reference/jai:jai module>` for more information.
+See the :ref:`package reference <source/reference/jai:JAI Python Class>` for more information.
