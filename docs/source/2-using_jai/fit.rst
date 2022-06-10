@@ -114,10 +114,8 @@ A complete exampĺe of fitting tabular data is shown below:
     >>> import pandas as pd
     >>> from sklearn.datasets import fetch_california_housing
     ... 
-    >>> AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
-    ... 
-    >>> # Authorization
-    >>> j = Jai(AUTH_KEY)
+    >>> # Jai class initialization
+    >>> j = Jai()
     ... 
     >>> # Load test dataset.
     >>> data, labels = fetch_california_housing(as_frame=True, return_X_y=True)
@@ -223,10 +221,8 @@ Therefore, this method captures the meaning of shorter words, besides understand
 
     >>> from jai import Jai
     ... 
-    >>> AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
-    ... 
-    >>> # Authorization
-    >>> j = Jai(AUTH_KEY)
+    >>> # Jai class initialization
+    >>> j = Jai()
     ... 
     >>> # Generating a list of words
     >>> data = [
@@ -250,10 +246,8 @@ consider visiting the `Hugging Face <https://huggingface.co/transformers/>`_ pag
 
     >>> from jai import Jai
     ... 
-    >>> AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
-    ... 
-    >>> # Authorization
-    >>> j = Jai(AUTH_KEY)
+    >>> # Jai class initialization
+    >>> j = Jai()
     ... 
     >>> # Generating a list of words
     >>> data = [
@@ -261,7 +255,7 @@ consider visiting the `Hugging Face <https://huggingface.co/transformers/>`_ pag
     ...     'rocket', 'formation', 'athlete', 'suitcase', 'sword'
     ...     ]
     ... 
-    >>> # Fitting with fastText
+    >>> # Fitting with Transformers
     >>> name = 'BERT_example'
     >>> j.fit(name, data, db_type='Text')
 
@@ -284,10 +278,8 @@ You can use this by defining :code:`db_type=TextEdit` in your :code:`j.fit` as b
 
     >>> from jai import Jai
     ... 
-    >>> AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
-    ... 
-    >>> # Authorization
-    >>> j = Jai(AUTH_KEY)
+    >>> # Jai class initialization
+    >>> j = Jai()
     ... 
     >>> # Generating a list of words
     >>> data = [
@@ -295,7 +287,7 @@ You can use this by defining :code:`db_type=TextEdit` in your :code:`j.fit` as b
     ...     'rocket', 'formation', 'athlete', 'suitcase', 'sword'
     ...     ]
     ... 
-    >>> # Fitting with fastText
+    >>> # Fitting with text edit
     >>> name = 'TextEdit_example'
     >>> j.fit(name, data, db_type='TextEdit')
 
@@ -340,11 +332,10 @@ to fit your data. The default image model in JAI is :code:`'vgg16'`. To get the 
     >>> from jai.image import read_image_folder
     >>> from jai.image import resize_image_folder
     ... 
-    >>> AUTH_KEY = 'xXxxxXXxXXxXXxXXxXXxXXxXXxxx'
     >>> IMAGE_FOLDER = 'your_local_image_folder_path'
     ... 
-    >>> # Authorization
-    >>> j = Jai(AUTH_KEY)
+    >>> # Jai class initialization
+    >>> j = Jai()
     ... 
     >>> # Resizing images
     >>> resize_image_folder(IMAGE_FOLDER)

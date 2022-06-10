@@ -39,6 +39,14 @@ What is JAI-SDK?
 .. toctree::
    :hidden:
    :maxdepth: -1
+   :caption: Task Module
+   
+   source/4-task/task_intro.rst
+   source/4-task/explorer.rst
+
+.. toctree::
+   :hidden:
+   :maxdepth: -1
    :caption: Examples (Google Colab)
 
    Smartphone - Similarity Search <https://colab.research.google.com/drive/1NOVqCdnaizptTf42kZmeeWZ3dfvdIr1U?usp=sharing>

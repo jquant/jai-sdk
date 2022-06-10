@@ -5,11 +5,9 @@ How to configure your auth key
 
 There are several ways to configure your auth key.
 
-1. `Set an Environment variable`_
-2. `Using os.environ`_
-3. `Set a config file`_
+.. contents:: :local: 
 
-4. Set an Environment variable
+1. Set an Environment variable
 ------------------------------
 
 The first one is setting an environment variable on your system.
@@ -59,7 +57,7 @@ Bellow an example of the content of the :file:`.env` file:
     `Decouple <decouple_order>`_ always searches for Options in this order:
 
     1. Environment variables;
-    2. Repository: ini or .env file;
+    2. Repository: :file:`.ini` or :file:`.env` file;
 
     This means that config files won't be considered when there's already a value set on environment variables
 

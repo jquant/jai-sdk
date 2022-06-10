@@ -41,7 +41,6 @@ All content below is available only when :code:`return_report=True`
 
 All content below is available only on Supervised models.
 
-* **Validation Ids/Evaluation Ids**: List the ids chosen for the validation set and evaluation/test set
 * **Metrics Train/Metrics Validation**: The same metrics calculated on **Model Evaluation** but on the training set and 
   validation set respectively.
 * **Baseline Model**: The same metrics of "Model Evaluation" on the test set, but using a Baseline Model (please check 
