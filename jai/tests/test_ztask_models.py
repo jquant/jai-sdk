@@ -130,10 +130,8 @@ def test_selfsupervised(setup_dataframe, safe_mode):
     sample = train.loc[np.random.choice(len(train), 10, replace=False)]
 
     trainer = Trainer(name=name, safe_mode=safe_mode)
-    trainer.set_params(
-        db_type="SelfSupervised",
-        hyperparams={"max_epochs": 3},
-    )
+    trainer.set_params(db_type="SelfSupervised",
+                       hyperparams={"max_epochs": 3})
 
     if trainer.is_valid():
         trainer.delete_database()
