@@ -68,6 +68,7 @@ What is JAI-SDK?
    Movielens(100k) - Recommendation <https://drive.google.com/file/d/1LuMp_niA8iG2Hdbditk-94enqlMN6yC-/view?usp=sharing>
 
 .. toctree::
+   :hidden:
    :caption: API and Package Reference
    
    source/reference/jai_class.rst

@@ -33,10 +33,11 @@ JAI accomplishes this mission by:
   - Model performance is robust to real-world data​
   - Deploying AI into production is literally just one line of code away
 
-Check :ref:`Getting Started <getting started>` to get an overview of how to work with JAI and, also, see :ref:`JAI in 5 Minutes <jai_in_5_min>` to obtain more information about using some of JAI's features.
+Check :ref:`Getting Started <getting_started>` to get an overview of how to work with JAI and, also, see :ref:`JAI in 5 Minutes <jai_in_5_min>` to obtain more information about using some of JAI's features.
 
 Community
 ---------
+
 JAI is more than a framework to build AI-based solutions but also an active community of developers,
 researchers, and folks that love machine learning. Here's a list of tips for getting involved with the JAI community:
 
@@ -48,6 +49,7 @@ researchers, and folks that love machine learning. Here's a list of tips for get
 
 Videos
 ------
+
 Check our `Youtube`_ videos
 
 .. _`Slack community`: https://join.slack.com/t/jaicommunity/shared_invite/zt-sfkm3tpg-oJuvdziWgtaFEaIUUKWUVA
@@ -57,3 +59,11 @@ Check our `Youtube`_ videos
 .. _`Twitter`: https://twitter.com/getjaiofficial
 .. _`Meetup Group`: https://www.meetup.com/group-get-jai-official/
 .. _`Youtube`: https://www.youtube.com/channel/UCrNTucu56jwzKJfUqsloSXQ
+
+
+API and Package Reference
+-------------------------
+
+* :ref:`Jai Class <source/reference/jai_class:JAI Python Class>`
+* :ref:`Fit Kwargs <source/reference/fit_kwargs:Fit kwargs>`
+* :ref:`Auxiliar Functions <source/reference/auxiliar:Auxiliar Functions>`
