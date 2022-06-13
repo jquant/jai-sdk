@@ -1,4 +1,4 @@
-.. _getting started:
+.. _getting_started:
 
 ===============
 Getting Started
@@ -83,12 +83,12 @@ In this example, you could train a supervised model with the California housing 
 
 JAI supports many other training models, like self-supervised model training. 
 Besides, it also can train on different data types, like text and images. 
-You can find a complete list of the model types supported by JAI on :ref:`The Fit Method <the fit method>`.
+You can find a complete list of the model types supported by JAI on :ref:`The Fit Method <the_fit_method>`.
 
 
 What to do next?
 ----------------
 
-Visit :ref:`Jai in 5 Minutes <jai in 5 min>` to get a more complex and detailed example of how to use JAI correctly. 
+Visit :ref:`Jai in 5 Minutes <jai_in_5_min>` to get a more complex and detailed example of how to use JAI correctly. 
 
-Read about :ref:`The Fit Method <the fit method>` if you want a complete overview of what models JAI can train and what you can do to get your better model.
+Read about :ref:`The Fit Method <the_fit_method>` if you want a complete overview of what models JAI can train and what you can do to get your better model.

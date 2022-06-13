@@ -52,18 +52,25 @@ def flatten_sample(sample):
 
 class Trainer(TaskBase):
     """
-    Initialize the Jai Trainer class.
+    Trainer task class.
 
     An authorization key is needed to use the Jai API.
 
     Parameters
     ----------
-        name (str): The name of the database.
-        environment (str): The environment to use. Defaults to `default`.
-        env_var (str): The environment variable that contains the JAI authentication token. Defaults to
-        JAI_AUTH
-        verbose (int): The level of verbosity. Defaults to 1
-        safe_mode (bool): If True, the trainer will not send any data to the server. Defaults to False
+    name : str
+        String with the name of a database in your JAI environment.
+    environment : str
+        Jai environment id or name to use. Defaults to "default"
+    env_var : str
+        The environment variable that contains the JAI authentication token. 
+        Defaults to "JAI_AUTH".
+    verbose : int
+        The level of verbosity. Defaults to 1
+    safe_mode : bool    
+        When safe_mode is True, responses from Jai API are validated.
+        If the validation fails, the current version you are using is probably incompatible with the current API version. 
+        We advise updating it to a newer version. If the problem persists and you are on the latest SDK version, please open an issue so we can work on a fix. 
 
     """
 

@@ -41,10 +41,10 @@ class Vectors(TaskBase):
     environment : str
         Jai environment id or name to use. Defaults to "default"
     env_var : str
-        Name of the Environment Variable to get the value of your auth key. 
+        The environment variable that contains the JAI authentication token. 
         Defaults to "JAI_AUTH".
     verbose : int
-        Level of information to retrieve to the user. `Default is 1`.
+        The level of verbosity. Defaults to 1
     safe_mode : bool    
         When safe_mode is True, responses from Jai API are validated.
         If the validation fails, the current version you are using is probably incompatible with the current API version. 

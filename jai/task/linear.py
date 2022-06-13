@@ -21,12 +21,28 @@ __all__ = ["LinearModel"]
 
 class LinearModel(TaskBase):
     """
-    Base class for communication with the Mycelia API.
+    Linear Model class.
 
-    Used as foundation for more complex applications for data validation such
-    as matching tables, resolution of duplicated values, filling missing values
-    and more.
+    An authorization key is needed to use the Jai API.
 
+    Parameters
+    ----------
+    name : str
+        String with the name of a database in your JAI environment.
+    task : str
+        Task of the linear model. One of {`regression`, `sgd_regression`, `classification`, `sgd_classification`}.
+    environment : str
+        Jai environment id or name to use. Defaults to "default"
+    env_var : str
+        The environment variable that contains the JAI authentication token. 
+        Defaults to "JAI_AUTH".
+    verbose : int
+        The level of verbosity. Defaults to 1
+    safe_mode : bool    
+        When safe_mode is True, responses from Jai API are validated.
+        If the validation fails, the current version you are using is probably incompatible with the current API version. 
+        We advise updating it to a newer version. If the problem persists and you are on the latest SDK version, please open an issue so we can work on a fix. 
+   
     """
 
     def __init__(

@@ -49,6 +49,12 @@ What is JAI-SDK?
    source/4-task/vectors.rst
    source/4-task/linear.rst
 
+.. toctree::
+   :hidden:
+   :maxdepth: -1
+   :caption: Advanced User Guide
+   
+   source/advanced/filters.rst
 
 .. toctree::
    :hidden:

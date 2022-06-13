@@ -1,3 +1,6 @@
+.. _jai_in_5_min:
+
+
 JAI in 5 minutes
 ################
 
@@ -9,7 +12,7 @@ making inferences using JAI-SDK and directly using the JAI REST API.
    Make sure sure you have already installed :code:`jai-sdk` package on your python environment 
    and have an auth key before running the example codes on this section.
 
-   If you haven't yet, please check :ref:`Getting Started <getting started>` section. |:smile:|
+   If you haven't yet, please check :ref:`Getting Started <getting_started>` section. |:smile:|
 
 .. toctree::
    :maxdepth: -1

@@ -8,12 +8,16 @@ from jai.utilities import predict2df
 from .base import TaskBase
 from ..core.utils_funcs import data2json
 from ..core.validations import check_response
-from ..types.responses import (SimilarNestedResponse, PredictResponse,
-                               RecNestedResponse, FlatResponse)
+from ..types.responses import (
+    SimilarNestedResponse,
+    PredictResponse,
+    RecNestedResponse,
+    FlatResponse,
+)
 from typing import Any, Optional, Dict, List
 import sys
 
-if sys.version < '3.8':
+if sys.version < "3.8":
     from typing_extensions import Literal
 else:
     from typing import Literal
@@ -23,67 +27,73 @@ __all__ = ["Query"]
 
 class Query(TaskBase):
     """
-    Base class for communication with the Mycelia API.
+    Query task class.
 
-    Used as foundation for more complex applications for data validation such
-    as matching tables, resolution of duplicated values, filling missing values
-    and more.
+    An authorization key is needed to use the Jai API.
+
+    Parameters
+    ----------
+    name : str
+        String with the name of a database in your JAI environment.
+    environment : str
+        Jai environment id or name to use. Defaults to "default"
+    env_var : str
+        The environment variable that contains the JAI authentication token. 
+        Defaults to "JAI_AUTH".
+    verbose : int
+        The level of verbosity. Defaults to 1
+    safe_mode : bool    
+        When safe_mode is True, responses from Jai API are validated.
+        If the validation fails, the current version you are using is probably incompatible with the current API version. 
+        We advise updating it to a newer version. If the problem persists and you are on the latest SDK version, please open an issue so we can work on a fix. 
+    batch_size : int
+        Size of the batch to split data sent to the API. It won't change results, 
+        but a value too small could increase the total process time and a value too large could 
+        exceed the data limit of the request. Defaults to 16384.
 
     """
 
-    def __init__(self,
-                 name: str,
-                 environment: str = "default",
-                 env_var: str = "JAI_AUTH",
-                 safe_mode: bool = False,
-                 verbose: int = 1,
-                 batch_size: int = 16384):
-        """
-        Initialize the Jai class.
-
-        An authorization key is needed to use the Mycelia API.
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-            None
-
-        """
-        super(Query, self).__init__(name=name,
-                                    environment=environment,
-                                    env_var=env_var,
-                                    verbose=verbose,
-                                    safe_mode=safe_mode)
+    def __init__(
+        self,
+        name: str,
+        environment: str = "default",
+        env_var: str = "JAI_AUTH",
+        verbose: int = 1,
+        safe_mode: bool = False,
+        batch_size: int = 16384,
+    ):
+        super(Query, self).__init__(
+            name=name,
+            environment=environment,
+            env_var=env_var,
+            verbose=verbose,
+            safe_mode=safe_mode,
+        )
 
         self.batch_size = batch_size
         if not self.is_valid():
             raise ValueError(
-                "Generic Error Message")  # TODO: Database not does not exist
+                "Generic Error Message"
+            )  # TODO: Database not does not exist
 
     def _generate_batch(self, data, is_id: bool = False, desc: str = None):
 
         for i in trange(0, len(data), self.batch_size, desc=desc):
             if is_id:
                 if isinstance(data, pd.Series):
-                    yield data.iloc[i:i + self.batch_size].tolist()
+                    yield data.iloc[i : i + self.batch_size].tolist()
                 elif isinstance(data, pd.Index):
-                    yield data[i:i + self.batch_size].tolist()
+                    yield data[i : i + self.batch_size].tolist()
                 else:
-                    yield data[i:i + self.batch_size].tolist()
+                    yield data[i : i + self.batch_size].tolist()
             else:
                 if isinstance(data, (pd.Series, pd.DataFrame)):
-                    _batch = data.iloc[i:i + self.batch_size]
+                    _batch = data.iloc[i : i + self.batch_size]
                 else:
-                    _batch = data[i:i + self.batch_size]
+                    _batch = data[i : i + self.batch_size]
                 yield data2json(_batch, dtype=self.db_type, predict=True)
 
-    def similar(self,
-                data,
-                top_k: int = 5,
-                orient: str = "nested",
-                filters=None):
+    def similar(self, data, top_k: int = 5, orient: str = "nested", filters=None):
         """
         Query a database in search for the `top_k` most similar entries for each
         input data passed as argument.
@@ -126,17 +136,13 @@ class Query(TaskBase):
         results = []
         for _batch in self._generate_batch(data, is_id=is_id, desc="Similar"):
             if is_id:
-                res = self._similar_id(self.name,
-                                       _batch,
-                                       top_k=top_k,
-                                       orient=orient,
-                                       filters=filters)
+                res = self._similar_id(
+                    self.name, _batch, top_k=top_k, orient=orient, filters=filters
+                )
             else:
-                res = self._similar_json(self.name,
-                                         _batch,
-                                         top_k=top_k,
-                                         orient=orient,
-                                         filters=filters)
+                res = self._similar_json(
+                    self.name, _batch, top_k=top_k, orient=orient, filters=filters
+                )
             if orient == "flat":
                 if self.safe_mode:
                     res = check_response(FlatResponse, res, list_of=True)
@@ -147,11 +153,9 @@ class Query(TaskBase):
                 results.extend(res["similarity"])
         return results
 
-    def recommendation(self,
-                       data,
-                       top_k: int = 5,
-                       orient: str = "nested",
-                       filters=None):
+    def recommendation(
+        self, data, top_k: int = 5, orient: str = "nested", filters=None
+    ):
         """
         Query a database in search for the `top_k` most recommended entries for each
         input data passed as argument.
@@ -193,21 +197,15 @@ class Query(TaskBase):
         is_id = is_integer_dtype(data)
 
         results = []
-        for _batch in self._generate_batch(data,
-                                           is_id=is_id,
-                                           desc="Recommendation"):
+        for _batch in self._generate_batch(data, is_id=is_id, desc="Recommendation"):
             if is_id:
-                res = self._recommendation_id(self.name,
-                                              _batch,
-                                              top_k=top_k,
-                                              orient=orient,
-                                              filters=filters)
+                res = self._recommendation_id(
+                    self.name, _batch, top_k=top_k, orient=orient, filters=filters
+                )
             else:
-                res = self._recommendation_json(self.name,
-                                                _batch,
-                                                top_k=top_k,
-                                                orient=orient,
-                                                filters=filters)
+                res = self._recommendation_json(
+                    self.name, _batch, top_k=top_k, orient=orient, filters=filters
+                )
             if orient == "flat":
                 if self.safe_mode:
                     res = check_response(FlatResponse, res, list_of=True)
@@ -218,10 +216,7 @@ class Query(TaskBase):
                 results.extend(res["recommendation"])
         return results
 
-    def predict(self,
-                data,
-                predict_proba: bool = False,
-                as_frame: bool = False):
+    def predict(self, data, predict_proba: bool = False, as_frame: bool = False):
         """
         Predict the output of new data for a given database.
 
