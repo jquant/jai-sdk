@@ -6,5 +6,6 @@ Trainer Module
 
 .. automodule:: jai.task.trainer
    :members:
-   :undoc-members:
-   :show-inheritance:
+   :undoc-members:   
+   :special-members: __init__
+

@@ -63,7 +63,7 @@ What is JAI-SDK?
 .. toctree::
    :caption: API and Package Reference
    
-   source/reference/jai.rst
+   source/reference/jai_class.rst
    source/reference/fit_kwargs.rst
    source/reference/auxiliar.rst
 

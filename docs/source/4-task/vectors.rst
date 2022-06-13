@@ -6,5 +6,6 @@ Vectors Module
 
 .. automodule:: jai.task.vectors
    :members:
-   :undoc-members:
-   :show-inheritance:
+   :undoc-members:   
+   :special-members: __init__
+

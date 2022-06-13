@@ -10,7 +10,7 @@ There are several ways to configure your auth key.
 1. Set an Environment variable
 ------------------------------
 
-The first one is setting an environment variable on your system.
+The first way to configure your auth key is setting an environment variable on your system.
 Simply set an new environment variable with the name :code:`JAI_AUTH`.
 
 .. note:: 
@@ -36,11 +36,11 @@ It's also possible to set the environment variable directly to :code:`os.environ
     Changes to Jai's backend are definitive. 
     Keep your auth key safe. |:lock:|
 
-1. Set a config file
+3. Set a config file
 --------------------
 
 Since setting an environment variable could be a little tricky, specially on shared environments.
-We decided to use `python-decouple <decouple>`_ package to allow you to set the auth value using a :file:`.env` file or a :file:`.ini` file.
+We decided to use `python-decouple <decouple_github>`_ package to allow you to set the auth value using a :file:`.env` file or a :file:`.ini` file.
 
 Bellow an example of the content of the :file:`settings.ini` file:
 
@@ -66,6 +66,6 @@ Bellow an example of the content of the :file:`.env` file:
     This means that config files won't be considered when there's already a value set on environment variables
 
 
-.. _decouple: https://github.com/henriquebastos/python-decouple
+.. _decouple_github: https://github.com/henriquebastos/python-decouple
 .. _decouple_order: https://github.com/henriquebastos/python-decouple#how-does-it-work
 .. _os_environ: https://docs.python.org/3/library/os.html#os.environ

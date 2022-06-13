@@ -1,5 +1,3 @@
-.. _flower classification:
-
 =======================================
 Flower classification with Iris dataset
 =======================================
@@ -38,15 +36,13 @@ Let's have a quick glance on come columns of this dataset below:
 .. code-block:: python
 
     >>> # Importing other necessary libs
-    >>> import numpy as np
-    >>> import pandas as pd
     >>> from tabulate import tabulate
     >>> from sklearn.datasets import load_iris
     ...
     >>> # Loading dataframe
-    >>> df = pd.DataFrame(load_iris(as_frame=True).data)
+    >>> df = load_iris(as_frame=True).data
     >>> target = load_iris(as_frame=True).target
-    >>> print(tabulate(df[['Time', 'V1', 'V2','V28', 'Amount','Class']].head(), headers='keys', tablefmt='rst'))
+    >>> print(tabulate(df.head(), headers="keys", tablefmt="rst"))
 
     ====  ===================  ==================  ===================  ==================
       ..    sepal length (cm)    sepal width (cm)    petal length (cm)    petal width (cm)
@@ -67,6 +63,8 @@ previously shown.
   
 .. code-block:: python
     
+    >>> import pandas as pd
+    ...
     >>> from jai import Jai
     >>> from sklearn.model_selection import train_test_split
     ...
@@ -159,6 +157,7 @@ Now let's put y_test alongside the predicted classes. Be careful when doing this
       12          0         0
     ====  =========  ========
 
+    >>> from sklearn.metrics import classification_report
     >>> print(metrics.classification_report( ans["y_true"],ans["predict"],target_names=['0','1','2']))
     
                   precision    recall  f1-score   support
@@ -204,8 +203,9 @@ If you wish to define your threshold or use the predicted probabilities to rank 
       12  0.977361  0.0108368  0.0118019          0             97.74         0
     ====  ========  =========  =========  =========  ================  =======
     
+    >>> from sklearn.metrics import roc_auc_score
     >>> # Calculating AUC Score
-    >>> roc_auc_score(ans["y_true"], np.array(ans[["0","1","2"]]), multi_class='ovr')
+    >>> roc_auc_score(ans["y_true"], ans[["0","1","2"]], multi_class='ovr')
      
     1.0
     

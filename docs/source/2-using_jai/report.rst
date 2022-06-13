@@ -1,5 +1,5 @@
 ###################
-Setting Fit Reports
+Getting Fit Reports
 ###################
 
 After :code:`SelfSupervised` or :code:`Supervised` fits are done, we display details about the fit process through 

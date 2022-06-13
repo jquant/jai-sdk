@@ -12,11 +12,23 @@ __all__ = ["Explorer"]
 
 class Explorer(BaseJai):
     """
-    Base class for communication with the Mycelia API.
+    Explorer task class.
 
-    Used as foundation for more complex applications for data validation such
-    as matching tables, resolution of duplicated values, filling missing values
-    and more.
+    This is a general class for managing databases on Jai API.
+
+    An authorization key is needed to use the Jai API.
+
+    Parameters
+    ----------
+    environment : str
+        Jai environment id or name to use. Defaults to "default"
+    env_var : str
+        Name of the Environment Variable to get the value of your auth key. 
+        Defaults to "JAI_AUTH".
+    safe_mode : bool    
+        When safe_mode is True, responses from Jai API are validated.
+        If the validation fails, the current version you are using is probably incompatible with the current API version. 
+        We advise updating it to a newer version. If the problem persists and you are on the latest SDK version, please open an issue so we can work on a fix. 
 
     """
 
@@ -26,19 +38,6 @@ class Explorer(BaseJai):
         env_var: str = "JAI_AUTH",
         safe_mode: bool = False,
     ):
-        """
-        Initialize the Jai class.
-
-        An authorization key is needed to use the Mycelia API.
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-            None
-
-        """
         super(Explorer, self).__init__(environment, env_var)
         self.safe_mode = safe_mode
 
@@ -102,12 +101,12 @@ class Explorer(BaseJai):
 
         Returns:
             dict:
-            - userId: str
-            - email: str
-            - firstName: str
-            - lastName: str
-            - memberRole: str
-            - namespace: srt
+            - userId: string
+            - email: string
+            - firstName: string
+            - lastName: string
+            - memberRole: string
+            - namespace: string
         """
         user = self._user()
         if self.safe_mode:

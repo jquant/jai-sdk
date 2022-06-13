@@ -29,11 +29,26 @@ def get_numbers(status):
 
 class Vectors(TaskBase):
     """
-    Base class for communication with the Mycelia API.
+    Vectors task class.
 
-    Used as foundation for more complex applications for data validation such
-    as matching tables, resolution of duplicated values, filling missing values
-    and more.
+
+    An authorization key is needed to use the Jai API.
+
+    Parameters
+    ----------
+    name : str
+        String with the name of a database in your JAI environment.
+    environment : str
+        Jai environment id or name to use. Defaults to "default"
+    env_var : str
+        Name of the Environment Variable to get the value of your auth key. 
+        Defaults to "JAI_AUTH".
+    verbose : int
+        Level of information to retrieve to the user. `Default is 1`.
+    safe_mode : bool    
+        When safe_mode is True, responses from Jai API are validated.
+        If the validation fails, the current version you are using is probably incompatible with the current API version. 
+        We advise updating it to a newer version. If the problem persists and you are on the latest SDK version, please open an issue so we can work on a fix. 
 
     """
 
@@ -45,19 +60,6 @@ class Vectors(TaskBase):
         verbose: int = 1,
         safe_mode: bool = False,
     ):
-        """
-        Initialize the Jai class.
-
-        An authorization key is needed to use the Mycelia API.
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-            None
-
-        """
         super(Vectors, self).__init__(
             name=name,
             environment=environment,

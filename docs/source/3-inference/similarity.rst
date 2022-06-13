@@ -78,3 +78,62 @@ and the :code:`'distance'` between :code:`'query_id'` and :code:`'id'`.
     The method :code:`similar` has a default :code:`batch_size=16384`, which will result in 
     :code:`ceil(n_samples/batch_size) + 2` requests. We **DON'T** recommend changing the default value 
     as it could reduce the performance of the API.
+
+Output formating
+================
+
+There are two possible output formats for the similarity search.
+You can change which format you wish to use by changing the parameter :code:`orient`.
+
+  orient: "nested" or "flat"
+            Changes the output format. `Default is "nested"`.
+
+Here are some examples for each of the possible formats bellow:
+
+- :code:`nested`:
+  
+.. code-block:: bash
+
+    [
+        {
+            'query_id': 0,
+            'results':
+            [
+            {'id': 0, 'distance': 0.0},
+            {'id': 3836, 'distance': 2.298321008682251},
+            {'id': 9193, 'distance': 2.545339584350586},
+            {'id': 832, 'distance': 2.5819168090820312},
+            {'id': 6162, 'distance': 2.638622283935547},
+            ...
+            ]
+        },
+        ...,
+        {
+            'query_id': 9,
+            'results':
+            [
+            {'id': 9, 'distance': 0.0},
+            {'id': 54, 'distance': 5.262974262237549},
+            {'id': 101, 'distance': 5.634262561798096},
+            ...
+            ]
+        },
+        ...
+    ]
+
+- :code:`flat`:
+  
+.. code-block:: bash
+
+    [
+        {'query_id': 0, 'id': 0, 'distance': 0.0},
+        {'query_id': 0, 'id': 3836, 'distance': 2.298321008682251},
+        {'query_id': 0, 'id': 9193, 'distance': 2.545339584350586},
+        {'query_id': 0, 'id': 832, 'distance': 2.5819168090820312},
+        {'query_id': 0, 'id': 6162, 'distance': 2.638622283935547},
+        ...
+        {'query_id': 9, 'id': 9, 'distance': 0.0},
+        {'query_id': 9, 'id': 54, 'distance': 5.262974262237549},
+        {'query_id': 9, 'id': 101, 'distance': 5.634262561798096},
+        ...
+    ]

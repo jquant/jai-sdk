@@ -56,11 +56,27 @@ __all__ = ["Jai"]
 
 class Jai(BaseJai):
     """
-    Base class for communication with the Mycelia API.
+    General class for communication with the Jai API.
 
     Used as foundation for more complex applications for data validation such
     as matching tables, resolution of duplicated values, filling missing values
     and more.
+
+    An authorization key is needed to use the Jai API.
+
+    Contains the implementation of most functionalities from the API. 
+
+    Parameters
+    ----------
+    environment : str
+        Jai environment id or name to use. Defaults to "default"
+    env_var : str
+        Name of the Environment Variable to get the value of your auth key. 
+        Defaults to "JAI_AUTH".
+    safe_mode : bool    
+        When safe_mode is True, responses from Jai API are validated.
+        If the validation fails, the current version you are using is probably incompatible with the current API version. 
+        We advise updating it to a newer version. If the problem persists and you are on the latest SDK version, please open an issue so we can work on a fix. 
 
     """
 
@@ -70,21 +86,7 @@ class Jai(BaseJai):
         env_var: str = "JAI_AUTH",
         safe_mode: bool = False,
     ):
-        """
-        Initialize the Jai class.
 
-        An authorization key is needed to use the Mycelia API.
-
-        Parameters
-        ----------
-        auth_key : str
-            Authorization key for the use of the API.
-
-        Returns
-        -------
-            None
-
-        """
         super(Jai, self).__init__(environment, env_var)
         self.safe_mode = safe_mode
 
@@ -744,8 +746,12 @@ class Jai(BaseJai):
             FastText, TextEdit, Image}
         batch_size : int
             Size of batch to insert the data.`Default is 16384 (2**14)`.
+        max_insert_workers : int
+            Number of workers to use in the insert data process. `Default is None`.
         frequency_seconds : int
             Time in between each check of status. `Default is 10`.
+        verbose : int
+            Level of information to retrieve to the user. `Default is 1`.
         **kwargs
             Parameters that should be passed as a dictionary in compliance
             with the API methods. In other words, every kwarg argument

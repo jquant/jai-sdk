@@ -52,11 +52,18 @@ def flatten_sample(sample):
 
 class Trainer(TaskBase):
     """
-    Base class for communication with the Mycelia API.
+    Initialize the Jai Trainer class.
 
-    Used as foundation for more complex applications for data validation such
-    as matching tables, resolution of duplicated values, filling missing values
-    and more.
+    An authorization key is needed to use the Jai API.
+
+    Parameters
+    ----------
+        name (str): The name of the database.
+        environment (str): The environment to use. Defaults to `default`.
+        env_var (str): The environment variable that contains the JAI authentication token. Defaults to
+        JAI_AUTH
+        verbose (int): The level of verbosity. Defaults to 1
+        safe_mode (bool): If True, the trainer will not send any data to the server. Defaults to False
 
     """
 
@@ -68,21 +75,7 @@ class Trainer(TaskBase):
         verbose: int = 1,
         safe_mode: bool = False,
     ):
-        """
-        Initialize the Jai Trainer class.
 
-        An authorization key is needed to use the Jai API.
-
-        Parameters
-        ----------
-            name (str): The name of the database.
-            environment (str): The environment to use. Defaults to `default`.
-            env_var (str): The environment variable that contains the JAI authentication token. Defaults to
-            JAI_AUTH
-            verbose (int): The level of verbosity. Defaults to 1
-            safe_mode (bool): If True, the trainer will not send any data to the server. Defaults to False
-
-        """
         super(Trainer, self).__init__(
             name=name,
             environment=environment,

@@ -115,4 +115,4 @@ If you need to remember how many ids your collection have, use :code:`j.ids`.
 
     ['20640 items from 0 to 20639']
 
-For more information about how to work with your environment, check :ref:`JAI Python Class <source/reference/jai:JAI Python Class>`
+For more information about how to work with your environment, check :ref:`JAI Python Class <source/reference/jai_class:JAI Python Class>`

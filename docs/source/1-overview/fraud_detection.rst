@@ -39,10 +39,6 @@ Let's first load the dataset of interest:
 
     >>> # Importing other necessary libraries
     >>> import pandas as pd
-    >>> from sklearn import metrics
-    >>> from tabulate import tabulate
-    >>> from sklearn.metrics import roc_auc_score
-    >>> from sklearn.model_selection import train_test_split
     ...
     >>> # Loading dataframes
     >>> DATASET_PATH = "creditcard.csv"
@@ -52,6 +48,7 @@ Let's have a glance at some columns of this dataset below:
 
 .. code-block:: python
     
+    >>> from tabulate import tabulate
     >>> print(tabulate(df[['Time', 'V1', 'V2','V28', 'Amount','Class']].head(), headers='keys', tablefmt='rst'))
     
     ====  ======  =========  ==========  ==========  ========  =======
@@ -80,11 +77,12 @@ Since we only have data of two days, we don't have to worry about data leakage w
     ...
     >>> # In this case, we will take part of our dataset to demonstrate the prediction further in this tutorial
     >>> # The j.fit already takes care of the train and validation split on its backend, so in a normal situation this is not necessary
-    >>> X_train, X_prediction, y_train, y_prediction = train_test_split( df.drop(["Class"],axis=1), 
-    ...                                                    df["Class"], test_size=0.3, random_state=42)
+    >>> X_train, X_test, y_train, y_test = train_test_split( 
+    ...     df.drop(["Class"],axis=1), df["Class"], test_size=0.3, random_state=42
+    ... )
     ...
     >>> # For the supervised model we have to pass the dataframe with the label to JAI
-    >>> train = pd.concat([X_train,y_train],axis=1)
+    >>> train = pd.concat([X_train, y_train],axis=1)
     ...
     >>> # Training the classification model
     >>> j = Jai()
@@ -163,7 +161,8 @@ Now let's put y_test alongside the predicted classes. Be careful when doing this
       41          0         0
     ====  =========  ========
 
-    >>> print(metrics.classification_report( ans["y_true"],ans["predict"],target_names=['0','1']))
+    >>> from sklearn.metrics import classification_report
+    >>> print(classification_report( ans["y_true"],ans["predict"],target_names=['0','1']))
     
                   precision    recall  f1-score   support
 
@@ -208,6 +207,7 @@ If you wish to define your threshold or use the predicted probabilities to rank 
     ====  ========  ==========  =========  ================  ========
     
     >>> # Calculating AUC Score using the predictions of examples being 1
+    >>> from sklearn.metrics import roc_auc_score
     >>> roc_auc_score(ans["y_true"], ans["1"])
     
     0.9621445967815895

@@ -8,5 +8,6 @@ JAI Class
 
 .. automodule:: jai.core.jai
    :members:
-   :undoc-members:
-   :show-inheritance:
+   :undoc-members:   
+   :special-members: __init__
+
