@@ -4,6 +4,9 @@
 The Fit Method
 ##############
 
+Introduction
+------------
+
 .. image:: /source/images/j_fit.png
    :scale: 15
    :align: center
@@ -41,6 +44,7 @@ look at :ref:`API reference <source/reference/fit_kwargs:fit kwargs>`.
 
 Basics
 ------
+
 The :code:`j.fit` method has three main parameters: :code:`name`, :code:`data` and :code:`db_type`:
 
 .. code-block:: python
@@ -56,13 +60,13 @@ The :code:`j.fit` method has three main parameters: :code:`name`, :code:`data` a
 
 - :code:`data` is the data that you want to fit. It must be a :code:`pandas.DataFrame` or a :code:`pandas.Series`. 
   For using image data, the images first have to be encoded to, after, being inserted to fit, as shown in 
-  :ref:`Fitting Image data <source/fit:fitting-image-data>`.
+  :ref:`Fitting Image data <source/fit:fitting image data>`.
 
 - :code:`db_type` is the parameter that defines what type of training will be realized by the fit method. 
   The possible values are :code:`'Supervised'`, :code:`'SelfSupervised'`, :code:`'Text'`, :code:`'FastText'`, :code:`'TextEdit'` 
   and :code:`'Image'`. Each of these has its own set of parameters and hyperparameters. 
   For more information about them, check :ref:`Fitting Tabular data <source/fit:fitting tabular data>`, 
-  :ref:`Fitting Text data <source/fit:fitting-text-data-nlp>`, and :ref:`Fitting Image data <source/fit:fitting-image-data>`.
+  :ref:`Fitting Text data <source/fit:fitting text data (nlp)>`, and :ref:`Fitting Image data <source/fit:fitting image data>`.
 
 - :code:`overwrite` is used when you want to overwrite an already existent collection in your JAI environment. 
   Default value is :code:`False`.
@@ -210,7 +214,7 @@ For any uses of text-type data, data can be a :code:`list of strings`, :code:`pa
 
 - If data is a list, then the ids of your collection will be set with :code:`range(len(data_list))`.
 - If data is a :code:`pandas.Series` or :code:`pandas.DataFrame`, the ids will be defined as explained in 
-  :ref:`Basics <source/fit:basics>`.
+  :ref:`Basics <basics>`.
 
 Using FastText
 ..............

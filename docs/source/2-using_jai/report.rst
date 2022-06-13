@@ -24,9 +24,10 @@ Always printed when report method is used.
 
 * **Loading from checkpoint**: Specifies which epoch the model had the best performance and is used as the final 
   model for inference.
-* **Model Evaluation** [*Supervised only*]: Metrics on the test set. MSE and MAE for regression, :code:`'quantile'=0.5` is 
-  used when :code:`label={task: 'quantile_regression'}`. Scikit-learn's `classification_report`_ 
-  (*precision*, *recall* and *f1*) when :code:`label={task: 'classification'}` or :code:`label={task: 'metric_classification'}`.
+* **Model Evaluation** [*Supervised only*]: Metrics on the test set.
+  
+  * MSE and MAE for regression, :code:`'quantile'=0.5` is used when :code:`label={task: 'quantile_regression'}`. 
+  * Scikit-learn's `classification_report`_ (*precision*, *recall* and *f1*) when :code:`label={task: 'classification'}` or :code:`label={task: 'metric_classification'}`.
 
 verbose = 2 
 ===========

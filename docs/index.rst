@@ -55,6 +55,7 @@ What is JAI-SDK?
    :caption: Advanced User Guide
    
    source/advanced/filters.rst
+   source/advanced/environments.rst
 
 .. toctree::
    :hidden:
