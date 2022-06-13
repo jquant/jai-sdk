@@ -26,11 +26,11 @@ JAI accomplishes this mission by:
   
   JAI simplifies ML-based solution lifecycle these tasks so that you can focus on building problem-solving strategies.
 
-  - Developers can get started quicky (<1 min) and for free​
-  - JAI automates data conversion into machine format​
+  - Developers can get started quicky (<1 min) and for free
+  -   - JAI automates data conversion into machine format
   - Building new AI features leverages previous ones, leading to a much smaller time-to-production
-  - JAI results are traceable and easier to debug​
-  - Model performance is robust to real-world data​
+  - JAI results are traceable and easier to debug
+  - Model performance is robust to real-world data
   - Deploying AI into production is literally just one line of code away
 
 Check :ref:`Getting Started <getting_started>` to get an overview of how to work with JAI and, also, see :ref:`JAI in 5 Minutes <jai_in_5_min>` to obtain more information about using some of JAI's features.
@@ -60,10 +60,3 @@ Check our `Youtube`_ videos
 .. _`Meetup Group`: https://www.meetup.com/group-get-jai-official/
 .. _`Youtube`: https://www.youtube.com/channel/UCrNTucu56jwzKJfUqsloSXQ
 
-
-API and Package Reference
--------------------------
-
-* :ref:`Jai Class <source/reference/jai_class:JAI Python Class>`
-* :ref:`Fit Kwargs <source/reference/fit_kwargs:Fit kwargs>`
-* :ref:`Auxiliar Functions <source/reference/auxiliar:Auxiliar Functions>`

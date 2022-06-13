@@ -19,8 +19,8 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 
 project = "jai-sdk"
-copyright = "2022, JQuant"
-author = "JQuant"
+copyright = "2022, Jai"
+author = "Jai Dev Team"
 
 from jai import __version__ as version
 

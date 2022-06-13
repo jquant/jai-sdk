@@ -39,7 +39,6 @@ What is JAI-SDK?
 
 .. toctree::
    :hidden:
-   :maxdepth: -1
    :caption: Task Module
    
    source/4-task/task_intro.rst
@@ -67,8 +66,11 @@ What is JAI-SDK?
    US Census - Classification <https://colab.research.google.com/drive/1oxfdVklVp_-Fu8TIBT53_CnDOmGNpDAV?usp=sharing>
    Movielens(100k) - Recommendation <https://drive.google.com/file/d/1LuMp_niA8iG2Hdbditk-94enqlMN6yC-/view?usp=sharing>
 
+
+API and Package Reference
+-------------------------
+
 .. toctree::
-   :hidden:
    :caption: API and Package Reference
    
    source/reference/jai_class.rst
