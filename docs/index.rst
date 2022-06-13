@@ -39,6 +39,7 @@ What is JAI-SDK?
 
 .. toctree::
    :hidden:
+   :maxdepth: 0
    :caption: Task Module
    
    source/4-task/task_intro.rst

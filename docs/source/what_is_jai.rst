@@ -27,7 +27,7 @@ JAI accomplishes this mission by:
   JAI simplifies ML-based solution lifecycle these tasks so that you can focus on building problem-solving strategies.
 
   - Developers can get started quicky (<1 min) and for free
-  -   - JAI automates data conversion into machine format
+  - JAI automates data conversion into machine format
   - Building new AI features leverages previous ones, leading to a much smaller time-to-production
   - JAI results are traceable and easier to debug
   - Model performance is robust to real-world data

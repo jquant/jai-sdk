@@ -10,12 +10,12 @@ Because of that, the experience for a new user got very overwhelming.
 We divided the many possible tasks into their own individual classes aiming to shorten the learning curve. 
 Now, the user can focus on learning one task at a time without the noise of the methods of the other tasks.
 
-.. toctree::
-   :hidden:
-   :caption: Task Module
-   
-   source/4-task/explorer.rst
-   source/4-task/trainer.rst
-   source/4-task/query.rst
-   source/4-task/vectors.rst
-   source/4-task/linear.rst
+
+Task Module
+-----------
+
+- :ref:`Explorer Module <source/4-task/explorer:explorer module>`
+- :ref:`Trainer Module <source/4-task/trainer:trainer module>`
+- :ref:`Query Module <source/4-task/query:query module>`
+- :ref:`Vectors Module <source/4-task/vectors:vectors module>`
+- :ref:`Linear Models Module <source/4-task/linear:linear module>`
