@@ -1,4 +1,3 @@
-from aiohttp_cors import custom_cors
 from jai.core.authentication import get_auth_key, get_authentication, set_authentication
 import pytest
 import os
