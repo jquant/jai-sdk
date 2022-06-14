@@ -11,9 +11,6 @@ We divided the many possible tasks into their own individual classes aiming to s
 Now, the user can focus on learning one task at a time without the noise of the methods of the other tasks.
 
 
-Task Module
------------
-
 - :ref:`Explorer Module <source/4-task/explorer:explorer module>`
 - :ref:`Trainer Module <source/4-task/trainer:trainer module>`
 - :ref:`Query Module <source/4-task/query:query module>`

@@ -3,7 +3,12 @@ import pandas as pd
 from ..core.base import BaseJai
 from ..core.validations import check_response
 from ..types.responses import UserResponse
-from ..types.responses import EnvironmentsResponse, UserResponse, InfoSizeResponse
+from ..types.responses import (
+    EnvironmentsResponse,
+    UserResponse,
+    InfoResponse,
+    InfoSizeResponse,
+)
 
 from typing import List
 
@@ -61,7 +66,7 @@ class Explorer(BaseJai):
             names = check_response(List[str], names)
         return sorted(names)
 
-    def info(self, mode="complete", get_size=True):
+    def info(self, get_size=True):
         """
         Get name and type of each database in your environment.
 
@@ -79,9 +84,12 @@ class Explorer(BaseJai):
         1            jai_selfsupervised    SelfSupervised
         2                jai_supervised        Supervised
         """
-        info = self._info(mode=mode, get_size=get_size)
+        info = self._info(mode="complete", get_size=get_size)
         if self.safe_mode:
-            info = check_response(InfoSizeResponse, info, list_of=True)
+            if get_size:
+                info = check_response(InfoResponse, info, list_of=True)
+            else:
+                info = check_response(InfoSizeResponse, info, list_of=True)
 
         df_info = pd.DataFrame(info).rename(
             columns={

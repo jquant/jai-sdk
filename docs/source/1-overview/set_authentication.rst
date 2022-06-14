@@ -1,9 +1,28 @@
 .. _set_authentication:
 
+******************************
 How to configure your auth key
-==============================
+******************************
 
-There are several ways to configure your auth key.
+Getting your auth key
+=====================
+
+JAI requires an auth key to organize and secure collections. 
+You can quickly generate your free-forever auth-key by running the command below:
+
+.. code:: python
+
+    >>> from jai import get_auth_key
+    >>> get_auth_key(email='email@mail.com', firstName='Jai', lastName='Z')
+    
+
+
+Configuring your auth key for jai-sdk (python)
+==============================================
+
+The access to the Jai API is restricted to requests with a valid auth key.
+We'll talk about the several ways to set your auth key to authenticate your jai-sdk requests bellow.
+
 
 .. contents:: :local: 
 

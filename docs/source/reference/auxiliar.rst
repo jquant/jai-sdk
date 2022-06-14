@@ -1,10 +1,7 @@
-##################
-Auxiliar Functions
-##################
 
-**************
+##############
 Authentication
-**************
+##############
 
 Here are some functions to help the manipulation of image data.
 
@@ -13,9 +10,9 @@ Here are some functions to help the manipulation of image data.
    :undoc-members:
    :show-inheritance:
 
-***************
+###############
 Image Functions
-***************
+###############
 
 Here are some functions to help the manipulation of image data.
 
@@ -24,20 +21,20 @@ Here are some functions to help the manipulation of image data.
    :undoc-members:
    :show-inheritance:
 
-******************
-Preprocessing Data
-******************
+##############
+Splitting Data
+##############
 
-Here are auxiliar functions used internally on applications methods of Jai to process outputs.
+Here are auxiliar functions used to split data before sending it to process on API.
 
 .. automodule:: jai.utilities.splits
    :members:
    :undoc-members:
    :show-inheritance:
 
-******************
+##################
 Processing Results
-******************
+##################
 
 Here are auxiliar functions used internally on applications methods of Jai to process outputs.
 

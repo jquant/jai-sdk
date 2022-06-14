@@ -39,7 +39,7 @@ What is JAI-SDK?
 
 .. toctree::
    :hidden:
-   :maxdepth: 0
+   :maxdepth: -1
    :caption: Task Module
    
    source/4-task/task_intro.rst
@@ -77,6 +77,11 @@ API and Package Reference
    source/reference/jai_class.rst
    source/reference/fit_kwargs.rst
    source/reference/auxiliar.rst
+   source/reference/explorer.rst
+   source/reference/trainer.rst
+   source/reference/query.rst
+   source/reference/vectors.rst
+   source/reference/linear.rst
 
 .. ##################
 .. Indices and tables
