@@ -247,3 +247,21 @@ def test_supervised(setup_dataframe, safe_mode):
     # test _delete_tree method here
     j._delete_tree(name)
     assert not j.is_valid(name), "valid name after delete failed"
+
+
+# @pytest.mark.parametrize("name,safe_mode", [("test_recommendation", True)])
+# def test_recommendation(name, safe_mode):
+#     mock_db = pd.DataFrame({
+#         "User": [1, 2, 3, 1, 2, 3, 2, 2, 1, 3],
+#         "Item": [2, 3, 1, 1, 1, 2, 3, 3, 2, 1]
+#     })
+
+#     mock_users = pd.DataFrame({"User": [1, 2, 3]})
+#     mock_items = pd.DataFrame({
+#         "Item": [2, 3, 1, 1, 1, 2, 3, 3, 2, 1],
+#         "Colour": ['black', 'white', 'green', 'yellow', 'yellow', 'blue', 'pink', 'green', 'white', 'orange']
+#     })
+#     data = {'users': mock_users, 'items': mock_items, 'main': mock_db}
+
+#     j = Jai(safe_mode=safe_mode)
+#     j.fit(name=name, data=data, db_type="RecommendationSystem", hyperparams=)
