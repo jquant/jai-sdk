@@ -35,7 +35,7 @@ Here is the list of models that JAI supports:
 - **Image data:** JAI works with all torchvision image models.
 
 The sections below show more information about using these models in JAI. For the complete reference of the fit method, 
-look at :ref:`API reference <source/reference/fit_kwargs:fit kwargs>`.
+look at :ref:`API reference <source/reference/fit_kwargs:fit kwargs (keyword arguments)>`.
 
 .. important:: 
     
@@ -111,7 +111,7 @@ There are some important parameters in :code:`j.fit` that can improve your model
 - :code:`'hyperparameters'`: It describes the hyperparameters of the chosen model training.
 - :code:`'label'` (*Supervised*): Parameter used to define the label column of your supervised data and what type of task it will perform.
 
-You can check a complete reference of these parameters in :ref:`API reference <source/reference/fit_kwargs:fit kwargs>`.
+You can check a complete reference of these parameters in :ref:`API reference <source/reference/fit_kwargs:fit kwargs (keyword arguments)>`.
 
 A complete exampĺe of fitting tabular data is shown below:
 

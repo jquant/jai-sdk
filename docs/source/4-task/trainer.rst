@@ -19,25 +19,49 @@ For more information, see the full :ref:`Trainer class reference <source/referen
 :code:`Trainer`
 ===============
 
+Bellow, a simple example to instanciate the Trainer class.
+
+You'll need a name value as identifier for the database to be created.
+This value should be unique (unless you wish to overwrite an existing database).
+Here are the requirements for the name value:
+- name length between 2 and 32.
+- start with a lowercase letter (a-z).
+- contain only lowercase letters (a-z), numbers (0-9) or `_`.
+- end with a lowercase letter (a-z) or a number (0-9)
+
 .. code-block:: python
 
    >>> from jai import Trainer
    ...
-   >>> trainer = Trainer()
+   >>> trainer = Trainer(name = "database")
 
 
 :code:`set_parameters`
 ----------------------
 
+First step to create a new collection is to define its parameters.
+
+This method will check if the parameters are valid, warning you in case any of the parameters is not recognized by the API.
+The only required parameter is :code:`db_type` to define the type of the collection you wish to create.
+If none of the other parameters is given, then the default values are used.
+
+For the complete reference of the possible parameters look at :ref:`fit kwargs <source/reference/fit_kwargs:fit kwargs (keyword arguments)>`.
+
+
 .. code-block:: python
 
    >>> from jai import Trainer
    ...
    >>> trainer = Trainer()
-   >>> trainer.set_parameters()
+   >>> trainer.set_parameters(db_type="Text")  # example to create a Text type collection
+
+If you wish to check all parameters 
+
 
 :code:`fit`
 -----------
+
+TODO 
 
 .. code-block:: python
 
@@ -49,6 +73,8 @@ For more information, see the full :ref:`Trainer class reference <source/referen
 :code:`append`
 --------------
 
+TODO 
+
 .. code-block:: python
 
    >>> from jai import Trainer
@@ -58,6 +84,8 @@ For more information, see the full :ref:`Trainer class reference <source/referen
 
 :code:`report`
 --------------
+
+TODO 
 
 .. code-block:: python
 
@@ -69,6 +97,8 @@ For more information, see the full :ref:`Trainer class reference <source/referen
 :code:`delete_ids`
 ------------------
 
+TODO 
+
 .. code-block:: python
 
    >>> from jai import Trainer
@@ -78,6 +108,8 @@ For more information, see the full :ref:`Trainer class reference <source/referen
 
 :code:`delete_raw_data`
 -----------------------
+
+TODO 
 
 .. code-block:: python
 
@@ -89,6 +121,8 @@ For more information, see the full :ref:`Trainer class reference <source/referen
 :code:`delete_database`
 -----------------------
 
+TODO 
+
 .. code-block:: python
 
    >>> from jai import Trainer
@@ -98,6 +132,8 @@ For more information, see the full :ref:`Trainer class reference <source/referen
 
 :code:`get_query`
 -----------------
+
+TODO 
 
 .. code-block:: python
 
@@ -112,6 +148,8 @@ Inherited from :code:`TaskBase`
 :code:`name`
 -----------------
 
+TODO 
+
 .. code-block:: python
 
    >>> from jai import Trainer
@@ -121,6 +159,8 @@ Inherited from :code:`TaskBase`
 
 :code:`db_type`
 -----------------
+
+TODO 
 
 .. code-block:: python
 
@@ -132,6 +172,8 @@ Inherited from :code:`TaskBase`
 :code:`is_valid`
 -----------------
 
+TODO 
+
 .. code-block:: python
 
    >>> from jai import Trainer
@@ -141,6 +183,8 @@ Inherited from :code:`TaskBase`
 
 :code:`describe`
 -----------------
+
+TODO 
 
 .. code-block:: python
 
@@ -152,6 +196,8 @@ Inherited from :code:`TaskBase`
    
 :code:`fields`
 -----------------
+
+TODO 
 
 .. code-block:: python
 
@@ -165,6 +211,8 @@ Inherited from :code:`TaskBase`
 :code:`download_vectors`
 ------------------------
 
+TODO 
+
 .. code-block:: python
 
    >>> from jai import Trainer
@@ -176,6 +224,8 @@ Inherited from :code:`TaskBase`
 :code:`filters`
 -----------------
 
+TODO 
+
 .. code-block:: python
 
    >>> from jai import Trainer
@@ -186,6 +236,8 @@ Inherited from :code:`TaskBase`
 
 :code:`ids`
 -----------------
+
+TODO 
 
 .. code-block:: python
 

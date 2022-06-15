@@ -136,7 +136,7 @@ class Trainer(TaskBase):
         """
         It checks the input parameters and sets the `setup_parameters` attribute for setup.
 
-        TODO: complete args
+        TODO: documentate args
         Args:
         db_type (str): str
         hyperparams: dict
@@ -188,6 +188,7 @@ class Trainer(TaskBase):
                 ids = self._ids(parent_name, mode="complete")
                 if self.safe_mode:
                     return check_response(List[Any], ids)
+
             else:
                 for key, df in data.items():
                     if column in df.columns:
@@ -281,7 +282,7 @@ class Trainer(TaskBase):
                     name = self.name
 
                 # insert data
-                self._delete_raw_data(self.name)
+                self._delete_raw_data(name)
                 insert_responses = self._insert_data(
                     data=value,
                     name=name,

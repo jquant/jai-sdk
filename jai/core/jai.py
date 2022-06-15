@@ -757,7 +757,7 @@ class Jai(BaseJai):
             with the API methods. In other words, every kwarg argument
             should be passed as if it were in the body of a POST method.
             **To check all possible kwargs in Jai.setup method,
-            you can check the** :ref:`Fit Kwargs <source/reference/fit_kwargs:fit kwargs>` **section**.
+            you can check the** :ref:`Fit Kwargs <source/reference/fit_kwargs:fit kwargs (keyword arguments)>` **section**.
 
         Return
         ------

@@ -15,6 +15,7 @@ For more information, see the full :ref:`Explorer class reference <source/refere
 :code:`Explorer`
 ================
 
+Bellow, a simple example to instanciate the Explorer class:
 
 .. code-block:: python
 
@@ -22,9 +23,39 @@ For more information, see the full :ref:`Explorer class reference <source/refere
    ...
    >>> explorer = Explorer()
 
+:code:`user`
+------------
+
+You can check the user information with :code:`user` method.
+
+.. note:: 
+   We recommend the usage of this method if you wish to check if the authentication key if valid.
+
+.. code-block:: python
+
+   >>> from jai import Explorer
+   ...
+   >>> explorer = Explorer()
+   >>> explorer.user()
+
+:code:`environments`
+--------------------
+
+This method returns the list of available environments.
+
+Check the section :ref:`Working with environments <source/advanced/environments:working with environments>` for more information.
+
+.. code-block:: python
+
+   >>> from jai import Explorer
+   ...
+   >>> explorer = Explorer()
+   >>> explorer.environments()
 
 :code:`names`
 -------------
+
+You can use the property :code:`names` to get the names of all databases on the current environment.
 
 .. code-block:: python
 
@@ -36,6 +67,10 @@ For more information, see the full :ref:`Explorer class reference <source/refere
 :code:`info`
 ------------
 
+You can use the property :code:`info` to get more info about all databases on the curent environment.
+
+The information current version returns are the name, type, date of creation, databases parents, size and dimension of the vectors.
+
 .. code-block:: python
 
    >>> from jai import Explorer
@@ -43,6 +78,8 @@ For more information, see the full :ref:`Explorer class reference <source/refere
    >>> explorer = Explorer()
    >>> explorer.info()
 
+It's possible to trim the information returned with the parameter :code:`get_size=False`. 
+It will remove the size and dimension information from the response.
 
 .. code-block:: python
 
@@ -51,26 +88,11 @@ For more information, see the full :ref:`Explorer class reference <source/refere
    >>> explorer = Explorer()
    >>> explorer.info(get_size=False)
 
-:code:`user`
-------------
-.. code-block:: python
-
-   >>> from jai import Explorer
-   ...
-   >>> explorer = Explorer()
-   >>> explorer.user()
-
-:code:`environments`
---------------------
-.. code-block:: python
-
-   >>> from jai import Explorer
-   ...
-   >>> explorer = Explorer()
-   >>> explorer.environments()
 
 :code:`describe`
 ----------------
+
+TODO 
 
 .. code-block:: python
 
@@ -81,6 +103,9 @@ For more information, see the full :ref:`Explorer class reference <source/refere
 
 :code:`rename`
 --------------
+
+TODO 
+
 .. code-block:: python
 
    >>> from jai import Explorer
@@ -91,6 +116,8 @@ For more information, see the full :ref:`Explorer class reference <source/refere
 :code:`transfer`
 ----------------
 
+TODO 
+
 .. code-block:: python
 
    >>> from jai import Explorer
@@ -100,6 +127,8 @@ For more information, see the full :ref:`Explorer class reference <source/refere
 
 :code:`import_database`
 -----------------------
+
+TODO 
 
 .. code-block:: python
 

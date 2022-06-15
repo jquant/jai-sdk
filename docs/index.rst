@@ -8,6 +8,7 @@ What is JAI-SDK?
 
 .. include:: source/what_is_jai.rst
 
+
 .. toctree::
    :hidden:
    :maxdepth: -1
@@ -49,29 +50,31 @@ What is JAI-SDK?
    source/4-task/vectors.rst
    source/4-task/linear.rst
 
-.. toctree::
-   :hidden:
-   :maxdepth: -1
-   :caption: Advanced User Guide
+.. .. toctree::
+..    :hidden:
+..    :maxdepth: -1
+..    :caption: Advanced User Guide
    
-   source/advanced/filters.rst
-   source/advanced/environments.rst
+..    source/advanced/filters.rst
+..    source/advanced/environments.rst
+..    source/advanced/multimodal.rst
+..    source/advanced/hierarchical.rst
 
 .. toctree::
    :hidden:
+   :glob:
    :maxdepth: -1
-   :caption: Examples (Google Colab)
+   :caption: Examples 
 
-   Smartphone - Similarity Search <https://colab.research.google.com/drive/1NOVqCdnaizptTf42kZmeeWZ3dfvdIr1U?usp=sharing>
-   Boston Housing -  Quantile Regression <https://colab.research.google.com/drive/1gIDjWSt8M0JXFHpypx6l-s2_Ypoy0-IE?usp=sharing>
-   US Census - Classification <https://colab.research.google.com/drive/1oxfdVklVp_-Fu8TIBT53_CnDOmGNpDAV?usp=sharing>
-   Movielens(100k) - Recommendation <https://drive.google.com/file/d/1LuMp_niA8iG2Hdbditk-94enqlMN6yC-/view?usp=sharing>
+   examples/Smartphone_Demo
+   S <examples/Smartphone_Demo>
 
 
 API and Package Reference
 -------------------------
 
 .. toctree::
+   :maxdepth: 3
    :caption: API and Package Reference
    
    source/reference/jai_class.rst

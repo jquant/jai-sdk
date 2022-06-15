@@ -1,7 +1,7 @@
 
-**********
-Fit kwargs
-**********
+******************************
+Fit kwargs (keyword arguments)
+******************************
 
 Parameters that should be passed as a dictionary in compliance with the
 API methods. In other words, every keyword argument should be passed as if
