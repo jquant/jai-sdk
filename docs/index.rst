@@ -66,8 +66,7 @@ What is JAI-SDK?
    :maxdepth: -1
    :caption: Examples 
 
-   examples/Smartphone_Demo
-   S <examples/Smartphone_Demo>
+   Smartphone Demo <source/examples/Smartphone_Demo>
 
 
 API and Package Reference

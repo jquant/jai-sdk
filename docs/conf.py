@@ -34,6 +34,7 @@ release = version
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "nbsphinx",
     "sphinx.ext.napoleon",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosectionlabel",
@@ -56,6 +57,7 @@ exclude_patterns = [
     "setup.py",
 ]
 
+source_suffix = [".rst", ".md"]
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
