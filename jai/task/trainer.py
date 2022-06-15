@@ -186,19 +186,20 @@ class Trainer(TaskBase):
 
                 ids = self._ids(parent_name, mode="complete")
                 if self.safe_mode:
-                    return check_response(List[Any], ids)
+                    ids = check_response(List[Any], ids)
+            elif parent_name in data.keys():
+                data_parent = data[parent_name]
+                df = data.get(self.name, data["main"])
+                flat_ids = np.unique(list(flatten_sample(df[column])))
+                ids = (data_parent["id"]
+                       if "id" in data_parent.columns else data_parent.index)
             else:
-                for key, df in data.items():
+                for df in data.values():
                     if column in df.columns:
                         flat_ids = np.unique(list(flatten_sample(df[column])))
-
-                        if key != "main":
-                            ids = self._ids(parent_name, mode="complete")
-                            if self.safe_mode:
-                                return check_response(List[Any], ids)
-
-                        else:
-                            ids = data[parent_name].index
+                        ids = self._ids(parent_name, mode="complete")
+                        if self.safe_mode:
+                            ids = check_response(List[Any], ids)
 
             inverted_in = np.isin(flat_ids, ids, invert=True)
             if inverted_in.sum() > 0:
@@ -282,7 +283,7 @@ class Trainer(TaskBase):
                     name = self.name
 
                 # insert data
-                self._delete_raw_data(self.name)
+                self._delete_raw_data(name)
                 insert_responses = self._insert_data(
                     data=value,
                     name=name,
