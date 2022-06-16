@@ -66,7 +66,10 @@ What is JAI-SDK?
    :maxdepth: -1
    :caption: Examples 
 
-   Smartphone Demo <source/examples/Smartphone_Demo>
+   Smartphone - Similarity Search <source/examples/Smartphone_Demo>
+   California Housing - Quantile Regression <source/examples/California_Regression>
+   US Census - Classification <source/examples/US_Census>
+   .. Movielens (100k) - Recommendation <source/examples/Smartphone_Demo>
 
 
 API and Package Reference
