@@ -55,7 +55,11 @@ For the complete reference of the possible parameters look at :ref:`fit kwargs <
    >>> trainer = Trainer()
    >>> trainer.set_parameters(db_type="Text")  # example to create a Text type collection
 
-If you wish to check all parameters 
+If you wish to check all parameters, after using the :code:`set_parameters`, you can use the property :code:`setup_parameters`.
+
+.. code-block:: python
+
+   >>> trainer.setup_parameters
 
 
 :code:`fit`
