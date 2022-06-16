@@ -42,7 +42,7 @@ def test__check_pretrained_bases(setup_dataframe, safe_mode, pname, pdb_type,
     data, _ = setup_dataframe
     cols = ['Name', 'Age', 'Sex']
 
-    df_name = data[cols]
+    df_name = data[cols].set_index(data['PassengerId'])
     parent_trainer = Trainer(name=pname, safe_mode=safe_mode)
     parent_trainer.set_params(db_type=pdb_type)
     parent_trainer.fit(df_name, overwrite=True)
@@ -50,12 +50,10 @@ def test__check_pretrained_bases(setup_dataframe, safe_mode, pname, pdb_type,
     df_titanic = data.drop(columns=cols)
     trainer = Trainer(name=name, safe_mode=safe_mode)
     pretrained_bases = [{'db_parent': pname, 'id_name': 'PassengerId'}]
-    res = trainer._check_pretrained_bases(df_titanic, pretrained_bases)
-    assert res == list(range(df_titanic.shape[0]))
+    trainer._check_pretrained_bases(df_titanic, pretrained_bases)
 
     df_dict = {'data': df_titanic}
-    res = trainer._check_pretrained_bases(df_dict, pretrained_bases)
-    assert res == list(range(df_titanic.shape[0]))
+    trainer._check_pretrained_bases(df_dict, pretrained_bases)
 
     parent_trainer.delete_database()
 
@@ -109,32 +107,6 @@ def test_dict_data(setup_dataframe, monkeypatch, name, safe_mode):
         'Description': 'Insertion completed.',
         'Interrupted': False
     }
-
-
-@pytest.mark.parametrize("name,safe_mode", [("test_recommendation", True)])
-def test_recommendation(name, safe_mode):
-    mock_db = pd.DataFrame({
-        "User": [0, 1, 2, 0, 1, 2, 1, 1, 0, 2],
-        "Item": [2, 3, 1, 5, 1, 2, 4, 3, 2, 1]
-    })
-
-    mock_users = pd.DataFrame({"User": [1, 2, 3], "id": [0, 1, 2]})
-    mock_items = pd.DataFrame({
-        "id": [2, 3, 1, 4, 5],
-        "Colour": ['black', 'white', 'green', 'yellow', 'blue']
-    })
-    data = {'users': mock_users, 'items': mock_items, 'main': mock_db}
-
-    trainer = Trainer(name=name, safe_mode=safe_mode)
-    trainer.set_params(db_type="RecommendationSystem",
-                       pretrained_bases=[{
-                           "id_name": "User",
-                           "db_parent": "users"
-                       }, {
-                           "id_name": "Item",
-                           "db_parent": "items"
-                       }])
-    trainer.fit(data=data, overwrite=True)
 
 
 def test_wrong_data_insertion():
