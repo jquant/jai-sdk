@@ -280,8 +280,16 @@ def test_recommendation(name, safe_mode):
     ], 'ids simple failed'
     assert items_trainer.ids('complete') == items_ids, "ids complete failed"
 
+    result = query['users'].recommendation(mock_items, top_k=2)
+    assert isinstance(result, list), "recommendation result failed"
+    assert list(result[0].keys()) == ['query_id', 'results']
+
+    result = query['items'].recommendation(mock_users.index,
+                                           top_k=2,
+                                           orient="flat")
+    assert isinstance(result, list), "recommendation result failed"
+    assert list(result[0].keys()) == ['query_id', 'id', 'distance']
+
     trainer.delete_database()
     users_trainer.delete_database()
     items_trainer.delete_database()
-    # result = query.recommendation(mock_db.index)
-    # assert isinstance(result, list), "similar result failed"

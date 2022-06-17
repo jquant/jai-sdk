@@ -320,6 +320,14 @@ class Trainer(TaskBase):
         self.wait_setup(frequency_seconds=frequency_seconds)
         self.report(self._verbose)
 
+        if self.setup_params[
+                "db_type"] == PossibleDtypes.recommendation_system:
+            towers = list(data.keys())
+            return {
+                towers[0]: self.get_query(name=towers[0]),
+                towers[1]: self.get_query(name=towers[1])
+            }
+
         return self.get_query()  # TODO: maybe fix this for recommendation
 
     def append(self, data, *, frequency_seconds: int = 1):
