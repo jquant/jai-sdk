@@ -37,6 +37,16 @@ What is JAI-SDK?
    source/3-inference/similarity.rst
    source/3-inference/predict.rst
 
+.. toctree::
+   :hidden:
+   :glob:
+   :maxdepth: -1
+   :caption: Examples 
+
+   Smartphone - Similarity Search <source/examples/Smartphone_Demo>
+   California Housing - Quantile Regression <source/examples/California_Regression>
+   US Census - Classification <source/examples/US_Census>
+..   Movielens (100k) - Recommendation <source/examples/Smartphone_Demo>
 
 .. toctree::
    :hidden:
@@ -50,6 +60,7 @@ What is JAI-SDK?
    source/4-task/vectors.rst
    source/4-task/linear.rst
 
+
 .. .. toctree::
 ..    :hidden:
 ..    :maxdepth: -1
@@ -59,17 +70,6 @@ What is JAI-SDK?
 ..    source/advanced/environments.rst
 ..    source/advanced/multimodal.rst
 ..    source/advanced/hierarchical.rst
-
-.. toctree::
-   :hidden:
-   :glob:
-   :maxdepth: -1
-   :caption: Examples 
-
-   Smartphone - Similarity Search <source/examples/Smartphone_Demo>
-   California Housing - Quantile Regression <source/examples/California_Regression>
-   US Census - Classification <source/examples/US_Census>
-..   Movielens (100k) - Recommendation <source/examples/Smartphone_Demo>
 
 
 API and Package Reference

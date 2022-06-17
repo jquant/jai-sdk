@@ -4,8 +4,9 @@ Vectors Module
 ##############
 
 .. note::
-   If you haven't yet, please check the section :ref:`How to configure your auth key <source/1-overview/set_authentication:How to configure your auth key>` 
-   for more information.
+   If you haven't yet, please check the section 
+   :ref:`How to configure your auth key <source/1-overview/set_authentication:How to configure your auth key>` 
+   before running the code snippets in this page.
 
 The Vectors module is built to setup collections without models internally and making it possible to consume them in your Jai environment.
 

@@ -4,13 +4,14 @@ Trainer Module
 ##############
 
 .. note::
-   If you haven't yet, please check the section :ref:`How to configure your auth key <source/1-overview/set_authentication:How to configure your auth key>` 
-   for more information.
+   If you haven't yet, please check the section 
+   :ref:`How to configure your auth key <source/1-overview/set_authentication:How to configure your auth key>` 
+   before running the code snippets in this page.
 
 
 The Trainer module is built to setup new collections on your Jai environment.
 
-The methods chosen for this module are exclusively to help you train and setup a vector collection in Jai.
+The methods of this module are exclusively to help you train and setup a vector collection in Jai.
 After the setup process, use the :ref:`Query Module <source/4-task/query:query module>` to consume the model.
 
 For more information, see the full :ref:`Trainer class reference <source/reference/trainer:trainer class>`.
@@ -24,6 +25,7 @@ Bellow, a simple example to instanciate the Trainer class.
 You'll need a name value as identifier for the database to be created.
 This value should be unique (unless you wish to overwrite an existing database).
 Here are the requirements for the name value:
+
 - name length between 2 and 32.
 - start with a lowercase letter (a-z).
 - contain only lowercase letters (a-z), numbers (0-9) or `_`.
@@ -72,7 +74,7 @@ TODO
    >>> from jai import Trainer
    ...
    >>> trainer = Trainer()
-   >>> trainer.fit()
+   >>> trainer.fit(data)
 
 :code:`append`
 --------------
@@ -84,7 +86,7 @@ TODO
    >>> from jai import Trainer
    ...
    >>> trainer = Trainer()
-   >>> trainer.append()
+   >>> trainer.append(data)
 
 :code:`report`
 --------------

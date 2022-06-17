@@ -4,12 +4,14 @@ Linear Module
 #############
 
 .. note::
-   If you haven't yet, please check the section :ref:`How to configure your auth key <source/1-overview/set_authentication:How to configure your auth key>` 
-   for more information.
+   If you haven't yet, please check the section 
+   :ref:`How to configure your auth key <source/1-overview/set_authentication:How to configure your auth key>` 
+   before running the code snippets in this page.
+
 
 The Linear Models module is built to train and consume linear models your Jai environment.
 
-The methods chosen for this module are exclusively to help you train and consume your linear models in Jai.
+The methods of this module are exclusively to help you train and consume your linear models in Jai.
 
 For more information, see the full :ref:`Linear Model class reference <source/reference/linear:linear model class>`.
 
