@@ -281,18 +281,19 @@ def test_recommendation(name, safe_mode):
     assert j.is_valid('items'), f"valid name items after setup failed"
 
     users_ids = list(mock_users.index)
-    users_trainer = j(name="users", safe_mode=safe_mode)
-    assert users_trainer.ids("simple") == [
+    j_users = Jai(safe_mode=safe_mode)
+    assert j_users.ids("users") == [
         f"{len(users_ids)} items from {min(users_ids)} to {max(users_ids)}"
     ], 'ids simple failed'
-    assert users_trainer.ids('complete') == users_ids, "ids complete failed"
+    assert j_users.ids("users", 'complete') == users_ids, "ids complete failed"
 
     items_ids = list(mock_items['id'])
-    items_trainer = j(name="items", safe_mode=safe_mode)
-    assert items_trainer.ids("simple") == [
+    j_trainer = Jai(safe_mode=safe_mode)
+    assert j_trainer.ids("items") == [
         f"{len(items_ids)} items from {min(items_ids)} to {max(items_ids)}"
     ], 'ids simple failed'
-    assert items_trainer.ids('complete') == items_ids, "ids complete failed"
+    assert j_trainer.ids("items",
+                         'complete') == items_ids, "ids complete failed"
 
     result = j.recommendation(name="users", data=mock_items, top_k=2)
     assert isinstance(result, list), "recommendation result failed"
