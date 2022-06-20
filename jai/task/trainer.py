@@ -117,8 +117,8 @@ class Trainer(TaskBase):
     def setup_parameters(self):
         if self._setup_parameters is None:
             raise ValueError(
-                "Generic error message."
-            )  # TODO: run set_parameters first message.
+                "No parameter was set, please use `set_parameters` method first."
+            ) 
         return self._setup_parameters
 
     def set_parameters(
@@ -295,7 +295,7 @@ class Trainer(TaskBase):
                     predict=False,
                 )
         else:
-            ValueError("Generic Data Error Message")  # TODO: change message
+            ValueError("Data must be a pd.Series, pd.Dataframe or a dictionary of pd.DataFrames.")
 
         # train model
         setup_response = self._setup(

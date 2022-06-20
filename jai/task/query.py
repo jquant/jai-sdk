@@ -73,8 +73,8 @@ class Query(TaskBase):
         self.batch_size = batch_size
         if not self.is_valid():
             raise ValueError(
-                "Generic Error Message"
-            )  # TODO: Database not does not exist
+                f"Unable to instantiate Query object because collection with name `{name}` does not exist."
+            ) 
 
     def _generate_batch(self, data, is_id: bool = False, desc: str = None):
 

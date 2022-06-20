@@ -38,7 +38,6 @@ def check_response(
         raise ValueError("Can't use `list_of`, `as_list` and `as_dict` simultaneously.")
 
     if model is None:
-        print(obj)  # TODO: Remove
         warnings.warn(
             "No check is available for this method when `safe_mode` is on.",
             stacklevel=3,
@@ -53,10 +52,11 @@ def check_response(
         elif as_dict:
             return {k: v.dict() for k, v in parse_obj_as(model, obj).items()}
         return parse_obj_as(model, obj)
+        
     except ValidationError:
-        print(obj)  # TODO: Remove
-        print(type(obj))  # TODO: Remove
-        raise ValueError("Wrong value generic message.")  # TODO: Change message
+        raise ValueError(
+            "Validation Failed. Please try updating your version of jai-sdk."
+         "If the error persists, please report the error on an issue so we can work on a fix.")
 
 
 def check_dtype_and_clean(data, db_type):

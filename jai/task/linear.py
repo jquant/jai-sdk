@@ -74,16 +74,22 @@ class LinearModel(TaskBase):
             verbose=verbose,
             safe_mode=safe_mode,
         )
-
-        self.task = task
+        possible_tasks = [t.value for t in RegressionTasks] +  [t.value for t in ClassificationTasks]
+        if task in possible_tasks:
+            self.task = task
+        else:
+            str_possible = "`, `".join(possible_tasks)
+            raise ValueError(
+                f"Task `{self.task}` does not exist. Try one of `{str_possible}`."
+            ) 
         self.set_parameters()
 
     @property
     def model_parameters(self):
         if self._model_parameters is None:
             raise ValueError(
-                "Generic error message."
-            )  # TODO: run set_parameters first message.
+                "No parameter was set, please use `set_parameters` method first."
+            ) 
         return self._model_parameters
 
     @model_parameters.setter
@@ -124,10 +130,6 @@ class LinearModel(TaskBase):
                 l2=l2,
                 model_parameters=model_parameters,
             )
-        else:
-            raise ValueError(
-                "This task does not exist message."
-            )  # TODO: rewrite message
 
         self._model_parameters = p.dict()
 
