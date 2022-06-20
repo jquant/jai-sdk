@@ -44,7 +44,7 @@ def test__check_pretrained_bases(setup_dataframe, safe_mode, pname, pdb_type,
 
     df_name = data[cols].set_index(data['PassengerId'])
     parent_trainer = Trainer(name=pname, safe_mode=safe_mode)
-    parent_trainer.set_params(db_type=pdb_type)
+    parent_trainer.set_parameters(db_type=pdb_type)
     parent_trainer.fit(df_name, overwrite=True)
 
     df_titanic = data.drop(columns=cols)
@@ -63,7 +63,7 @@ def test_report(monkeypatch, setup_dataframe, name, safe_mode):
     data, _ = setup_dataframe
 
     trainer = Trainer(name, safe_mode=safe_mode)
-    trainer.set_params('SelfSupervised')
+    trainer.set_parameters('SelfSupervised')
     trainer.fit(data, overwrite=True)
 
     monkeypatch.setattr(plt, "show", lambda: None)
@@ -86,7 +86,7 @@ def test_dict_data(setup_dataframe, monkeypatch, name, safe_mode):
     data = {'data': data}
 
     trainer = Trainer(name, safe_mode=safe_mode)
-    trainer.set_params(db_type='SelfSupervised')
+    trainer.set_parameters(db_type='SelfSupervised')
 
     def mock__setup(*args, **kwargs):
         return MockResponse._setup()
@@ -113,6 +113,6 @@ def test_wrong_data_insertion():
     data = [1, 2, 3]
 
     trainer = Trainer(name='wrong_data')
-    trainer.set_params(db_type='Text')
+    trainer.set_parameters(db_type='Text')
     with pytest.raises(ValueError):
         trainer.fit(data)

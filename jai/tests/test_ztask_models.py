@@ -265,7 +265,7 @@ def test_recommendation(name, safe_mode):
     data = {'users': mock_users, 'items': mock_items, 'main': mock_db}
 
     trainer = Trainer(name=name, safe_mode=safe_mode)
-    trainer.set_params(db_type="RecommendationSystem",
+    trainer.set_parameters(db_type="RecommendationSystem",
                        pretrained_bases=[{
                            "id_name": "User",
                            "db_parent": "users"
