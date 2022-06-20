@@ -21,8 +21,7 @@ __all__ = ["Vectors"]
 def get_numbers(status):
     if fnmatch(status["Description"], "*Iteration:*"):
         curr_step, max_iterations = (
-            status["Description"].split("Iteration: ")[1].strip().split(" / ")
-        )
+            status["Description"].split("Iteration: ")[1].strip().split(" / "))
         return int(curr_step), int(max_iterations)
     return False, 0, 0
 
@@ -51,7 +50,6 @@ class Vectors(TaskBase):
         We advise updating it to a newer version. If the problem persists and you are on the latest SDK version, please open an issue so we can work on a fix. 
 
     """
-
     def __init__(
         self,
         name: str,
@@ -146,7 +144,7 @@ class Vectors(TaskBase):
             information of whether or not that particular batch was successfully inserted.
         """
 
-        if self.is_valid:
+        if self.is_valid():
             if overwrite:
                 create_new_collection = True
                 self.delete_database()
@@ -175,17 +173,20 @@ class Vectors(TaskBase):
             )
 
         insert_responses = {}
-        for i, b in enumerate(trange(0, len(data), batch_size, desc="Insert Vectors")):
-            _batch = data.iloc[b : b + batch_size]
-            data_json = data2json(_batch, dtype=PossibleDtypes.vector, predict=False)
+        for i, b in enumerate(
+                trange(0, len(data), batch_size, desc="Insert Vectors")):
+            _batch = data.iloc[b:b + batch_size]
+            data_json = data2json(_batch,
+                                  dtype=PossibleDtypes.vector,
+                                  predict=False)
             if i == 0 and create_new_collection is True:
-                response = self._insert_vectors_json(
-                    self.name, data_json, overwrite=True
-                )
+                response = self._insert_vectors_json(self.name,
+                                                     data_json,
+                                                     overwrite=True)
             else:
-                response = self._insert_vectors_json(
-                    self.name, data_json, overwrite=False
-                )
+                response = self._insert_vectors_json(self.name,
+                                                     data_json,
+                                                     overwrite=False)
 
             if self.safe_mode:
                 response = check_response(InsertVectorResponse, response)

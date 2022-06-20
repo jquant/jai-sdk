@@ -4,7 +4,6 @@ from .exceptions import DeprecatedError, ParamError, ValidationError
 
 
 def deprecated(func):
-
     @functools.wraps(func)
     def inner(*args, **kwargs):
         error_str = "Function {} has been deprecated".format(func.__name__)
@@ -23,9 +22,7 @@ def raise_status_error(code):
         Expected Code.
 
     """
-
     def decorator(function):
-
         @functools.wraps(function)
         def new_function(*args, **kwargs):
             response = function(*args, **kwargs)
