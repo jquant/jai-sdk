@@ -5,7 +5,8 @@ import numpy as np
 import pandas as pd
 import pytest
 from decouple import config
-from pandas._testing import assert_frame_equal
+from pandas._testing import assert_frame_equal, assert_series_equal
+from pyspark.sql import SparkSession
 
 from jai import Jai
 from jai.core.utils_funcs import resolve_db_type
@@ -90,9 +91,23 @@ def test_check_dtype_and_clean():
         "number": [i for i in range(r)]
     })
 
+    # Send mock data to Pyspark
+    spark = SparkSession.builder.getOrCreate()
+    psdata = spark.createDataFrame(data)
+    assert_frame_equal(check_dtype_and_clean(psdata, "Supervised"), data)
+
+    # Send np.ndarray
+    nparray = np.array([10, 20, 30, 40, 50])
+    assert_series_equal(check_dtype_and_clean(nparray, "Supervised"),
+                        pd.Series(nparray))
+
     # make a few lines on 'category' column NaN
     data.loc[1050:, "category"] = np.nan
     assert_frame_equal(check_dtype_and_clean(data, "Supervised"), data)
+
+    # Try text data
+    text = pd.Series(['a', 'b', 'c', np.nan, 'd', 'e', np.nan])
+    assert_series_equal(check_dtype_and_clean(text, "Text"), text.dropna())
 
 
 @pytest.mark.parametrize("db_type, col, ans", [({

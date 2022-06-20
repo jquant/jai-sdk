@@ -69,6 +69,9 @@ def test_text(name, dtype, setup_dataframe):
     result = j.similar(name, query.index.values)
     assert isinstance(result, list), "similar id array result failed"
 
+    result = j.report(name)
+    assert result == None
+
     # try to use the fields method on a text database
     # this will raise an exception
     with pytest.raises(ValueError):
