@@ -130,10 +130,7 @@ def test_selfsupervised(setup_dataframe, safe_mode):
     sample = train.loc[np.random.choice(len(train), 10, replace=False)]
 
     trainer = Trainer(name=name, safe_mode=safe_mode)
-    trainer.set_params(
-        db_type="SelfSupervised",
-        hyperparams={"max_epochs": 3},
-    )
+    trainer.set_params(db_type="SelfSupervised", hyperparams={"max_epochs": 3})
 
     if trainer.is_valid():
         trainer.delete_database()
@@ -240,3 +237,59 @@ def test_supervised(setup_dataframe, safe_mode):
 
     trainer.delete_database()
     assert not trainer.is_valid(), "valid name after delete failed"
+
+
+@pytest.mark.parametrize("name,safe_mode", [("test_recommendation", True)])
+def test_recommendation(name, safe_mode):
+    mock_db = pd.DataFrame({
+        "User": [0, 1, 2, 0, 1, 2, 1, 1, 0, 2],
+        "Item": [2, 3, 1, 5, 1, 2, 4, 3, 2, 1]
+    })
+
+    mock_users = pd.DataFrame({"User": [1, 2, 3], "id": [0, 1, 2]})
+    mock_items = pd.DataFrame({
+        "id": [1, 2, 3, 4, 5],
+        "Colour": ['black', 'white', 'green', 'yellow', 'blue']
+    })
+    data = {'users': mock_users, 'items': mock_items, 'main': mock_db}
+
+    trainer = Trainer(name=name, safe_mode=safe_mode)
+    trainer.set_params(db_type="RecommendationSystem",
+                       pretrained_bases=[{
+                           "id_name": "User",
+                           "db_parent": "users"
+                       }, {
+                           "id_name": "Item",
+                           "db_parent": "items"
+                       }])
+    query = trainer.fit(data=data, overwrite=True)
+
+    assert trainer.is_valid(), f"valid name {name} after fit failed"
+
+    users_ids = list(mock_users.index)
+    users_trainer = Trainer(name="users", safe_mode=safe_mode)
+    assert users_trainer.ids("simple") == [
+        f"{len(users_ids)} items from {min(users_ids)} to {max(users_ids)}"
+    ], 'ids simple failed'
+    assert users_trainer.ids('complete') == users_ids, "ids complete failed"
+
+    items_ids = list(mock_items['id'])
+    items_trainer = Trainer(name="items", safe_mode=safe_mode)
+    assert items_trainer.ids("simple") == [
+        f"{len(items_ids)} items from {min(items_ids)} to {max(items_ids)}"
+    ], 'ids simple failed'
+    assert items_trainer.ids('complete') == items_ids, "ids complete failed"
+
+    result = query['users'].recommendation(mock_items, top_k=2)
+    assert isinstance(result, list), "recommendation result failed"
+    assert list(result[0].keys()) == ['query_id', 'results']
+
+    result = query['items'].recommendation(mock_users.index,
+                                           top_k=2,
+                                           orient="flat")
+    assert isinstance(result, list), "recommendation result failed"
+    assert list(result[0].keys()) == ['query_id', 'id', 'distance']
+
+    trainer.delete_database()
+    users_trainer.delete_database()
+    items_trainer.delete_database()

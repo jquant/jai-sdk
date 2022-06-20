@@ -117,22 +117,23 @@ class Report1Response(BaseModel):
     thresholds: Optional[Dict[Any, float]] = Field(None,
                                                    alias="Optimal Thresholds")
     baseline_models: Optional[str] = Field(None, alias="Baseline Model")
+    loading_from_checkpoint: Optional[str] = Field(
+        None, alias="Loading from checkpoint")
 
 
 class Report2Response(BaseModel):
-    train_ids: Optional[List[Any]] = Field(..., alias="Train Ids")
-    val_ids: Optional[List[Any]] = Field(..., alias="Validation Ids")
-    test_ids: Optional[List[Any]] = Field(None, alias="Evaluation Ids")
     auth_batch_size: Optional[str] = Field(None, alias="Auto scale batch size")
     auth_lr_finder: Optional[str] = Field(None, alias="Auto lr finder")
     model_training: Dict[str, List[List[Any]]] = Field(...,
                                                        alias="Model Training")
     metrics_train: Optional[str] = Field(None, alias="Metrics Train")
-    metrics_val: Optional[str] = Field(..., alias="Metrics Validation")
+    metrics_val: Optional[str] = Field(None, alias="Metrics Validation")
     metrics_test: Optional[str] = Field(None, alias="Model Evaluation")
     thresholds: Optional[Dict[Any, float]] = Field(None,
                                                    alias="Optimal Thresholds")
     baseline_models: Optional[str] = Field(None, alias="Baseline Model")
+    loading_from_checkpoint: Optional[str] = Field(
+        None, alias="Loading from checkpoint")
 
 
 class InsertVectorResponse(BaseModel):
