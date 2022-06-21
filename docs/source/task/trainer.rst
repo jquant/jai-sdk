@@ -139,7 +139,8 @@ TODO
 :code:`get_query`
 -----------------
 
-TODO 
+This method returns a new :ref:`Query <source/task/query:query module>` object with the same initial values as the current `Trainer`
+object.
 
 .. code-block:: python
 
@@ -154,7 +155,7 @@ Inherited from :code:`TaskBase`
 :code:`name`
 -----------------
 
-TODO 
+This attribute contains the value of the database's name.
 
 .. code-block:: python
 
@@ -166,7 +167,7 @@ TODO
 :code:`db_type`
 -----------------
 
-TODO 
+This attribute returns the type of the database.
 
 .. code-block:: python
 
@@ -178,7 +179,7 @@ TODO
 :code:`is_valid`
 -----------------
 
-TODO 
+This method returns a boolean indicating if the database exists or not.
 
 .. code-block:: python
 
@@ -190,7 +191,7 @@ TODO
 :code:`describe`
 -----------------
 
-TODO 
+This method returns the full configuration information of the database.
 
 .. code-block:: python
 
@@ -200,54 +201,3 @@ TODO
    >>> trainer.describe()
 
    
-:code:`fields`
------------------
-
-TODO 
-
-.. code-block:: python
-
-   >>> from jai import Trainer
-   ...
-   >>> trainer = Trainer()
-   >>> trainer.fields()
-
-
-      
-:code:`download_vectors`
-------------------------
-
-TODO 
-
-.. code-block:: python
-
-   >>> from jai import Trainer
-   ...
-   >>> trainer = Trainer()
-   >>> trainer.download_vectors()
-
-         
-:code:`filters`
------------------
-
-TODO 
-
-.. code-block:: python
-
-   >>> from jai import Trainer
-   ...
-   >>> trainer = Trainer()
-   >>> trainer.filters()
-
-
-:code:`ids`
------------------
-
-TODO 
-
-.. code-block:: python
-
-   >>> from jai import Trainer
-   ...
-   >>> trainer = Trainer()
-   >>> trainer.ids()

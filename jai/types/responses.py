@@ -99,7 +99,7 @@ class SetupResponse(BaseModel):
     Task: str
     Status: str
     Description: str
-    kwargs: Dict
+    kwargs: Dict # TODO: future improvement
 
 
 class AddDataResponse(BaseModel):

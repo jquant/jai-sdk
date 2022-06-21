@@ -34,15 +34,15 @@ class LinearModel(TaskBase):
     environment : str
         Jai environment id or name to use. Defaults to "default"
     env_var : str
-        The environment variable that contains the JAI authentication token. 
+        The environment variable that contains the JAI authentication token.
         Defaults to "JAI_AUTH".
     verbose : int
         The level of verbosity. Defaults to 1
-    safe_mode : bool    
+    safe_mode : bool
         When safe_mode is True, responses from Jai API are validated.
-        If the validation fails, the current version you are using is probably incompatible with the current API version. 
-        We advise updating it to a newer version. If the problem persists and you are on the latest SDK version, please open an issue so we can work on a fix. 
-   
+        If the validation fails, the current version you are using is probably incompatible with the current API version.
+        We advise updating it to a newer version. If the problem persists and you are on the latest SDK version, please open an issue so we can work on a fix.
+
     """
 
     def __init__(
@@ -74,14 +74,16 @@ class LinearModel(TaskBase):
             verbose=verbose,
             safe_mode=safe_mode,
         )
-        possible_tasks = [t.value for t in RegressionTasks] +  [t.value for t in ClassificationTasks]
+        possible_tasks = [t.value for t in RegressionTasks] + [
+            t.value for t in ClassificationTasks
+        ]
         if task in possible_tasks:
             self.task = task
         else:
             str_possible = "`, `".join(possible_tasks)
             raise ValueError(
                 f"Task `{self.task}` does not exist. Try one of `{str_possible}`."
-            ) 
+            )
         self.set_parameters()
 
     @property
@@ -89,7 +91,7 @@ class LinearModel(TaskBase):
         if self._model_parameters is None:
             raise ValueError(
                 "No parameter was set, please use `set_parameters` method first."
-            ) 
+            )
         return self._model_parameters
 
     @model_parameters.setter

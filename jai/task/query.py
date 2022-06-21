@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from io import BytesIO
 from pandas.api.types import is_integer_dtype
 from tqdm import trange
 
@@ -8,13 +9,17 @@ from jai.utilities import predict2df
 from .base import TaskBase
 from ..core.utils_funcs import data2json
 from ..core.validations import check_response
+from ..types.generic import Mode
 from ..types.responses import (
     SimilarNestedResponse,
     PredictResponse,
     RecNestedResponse,
     FlatResponse,
 )
-from typing import Any, Optional, Dict, List
+from typing import Any, Dict, List
+import requests
+
+from pydantic import HttpUrl
 import sys
 
 if sys.version < "3.8":
@@ -38,17 +43,17 @@ class Query(TaskBase):
     environment : str
         Jai environment id or name to use. Defaults to "default"
     env_var : str
-        The environment variable that contains the JAI authentication token. 
+        The environment variable that contains the JAI authentication token.
         Defaults to "JAI_AUTH".
     verbose : int
         The level of verbosity. Defaults to 1
-    safe_mode : bool    
+    safe_mode : bool
         When safe_mode is True, responses from Jai API are validated.
-        If the validation fails, the current version you are using is probably incompatible with the current API version. 
-        We advise updating it to a newer version. If the problem persists and you are on the latest SDK version, please open an issue so we can work on a fix. 
+        If the validation fails, the current version you are using is probably incompatible with the current API version.
+        We advise updating it to a newer version. If the problem persists and you are on the latest SDK version, please open an issue so we can work on a fix.
     batch_size : int
-        Size of the batch to split data sent to the API. It won't change results, 
-        but a value too small could increase the total process time and a value too large could 
+        Size of the batch to split data sent to the API. It won't change results,
+        but a value too small could increase the total process time and a value too large could
         exceed the data limit of the request. Defaults to 16384.
 
     """
@@ -74,7 +79,7 @@ class Query(TaskBase):
         if not self.is_valid():
             raise ValueError(
                 f"Unable to instantiate Query object because collection with name `{name}` does not exist."
-            ) 
+            )
 
     def _generate_batch(self, data, is_id: bool = False, desc: str = None):
 
@@ -262,3 +267,116 @@ class Query(TaskBase):
             results.extend(res)
 
         return predict2df(results) if as_frame else results
+
+    def fields(self):
+        """
+        Get the table fields for a Supervised/SelfSupervised database.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Return
+        ------
+        response : dict
+            Dictionary with table fields.
+
+        Example
+        -------
+        >>> name = 'chosen_name'
+        >>> j = Jai(AUTH_KEY)
+        >>> fields = j.fields(name=name)
+        >>> print(fields)
+        {'id': 0, 'feature1': 0.01, 'feature2': 'string', 'feature3': 0}
+        """
+        fields = self._fields(self.name)
+        if self.safe_mode:
+            return check_response(
+                Dict[
+                    str,
+                    Literal[
+                        "int32",
+                        "int64",
+                        "float32",
+                        "float64",
+                        "string",
+                        "embedding",
+                        "label",
+                        "datetime",
+                    ],
+                ],
+                fields,
+            )
+        return fields
+
+    def download_vectors(self):
+        """
+        Download vectors from a particular database.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Return
+        ------
+        vector : np.array
+            Numpy array with all vectors.
+
+        Example
+        -------
+        >>> name = 'chosen_name'
+        >>> j = Jai(AUTH_KEY)
+        >>> vectors = j.download_vectors(name=name)
+        >>> print(vectors)
+        [[ 0.03121682  0.2101511  -0.48933393 ...  0.05550333  0.21190546  0.19986008]
+        [-0.03121682 -0.21015109  0.48933393 ...  0.2267401   0.11074653  0.15064166]
+        ...
+        [-0.03121682 -0.2101511   0.4893339  ...  0.00758727  0.15916921  0.1226602 ]]
+        """
+        url = self._download_vectors(self.name)
+        if self.safe_mode:
+            url = check_response(HttpUrl, url)
+        r = requests.get(url)
+        return np.load(BytesIO(r.content))
+
+    def filters(self):
+        """
+        Gets the valid values of filters.
+
+        Return
+        ------
+        response : list of strings
+            List of valid filter values.
+        """
+        filters = self._filters(self.name)
+        if self.safe_mode:
+            return check_response(List[str], filters)
+        return filters
+
+    def ids(self, mode: Mode = "complete"):
+        """
+        Get id information of a given database.
+
+        Args
+        mode : str, optional
+
+        Return
+        -------
+        response: list
+            List with the actual ids (mode: 'complete') or a summary of ids
+            ('simple') of the given database.
+
+        Example
+        ----------
+        >>> name = 'chosen_name'
+        >>> j = Jai(AUTH_KEY)
+        >>> ids = j.ids(name)
+        >>> print(ids)
+        ['891 items from 0 to 890']
+        """
+        ids = self._ids(self.name, mode)
+        if self.safe_mode:
+            return check_response(List[Any], ids)
+        return ids

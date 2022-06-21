@@ -18,6 +18,8 @@ For more information, see the full :ref:`Linear Model class reference <source/re
 :code:`LinearModel`
 ===================
 
+Bellow, a simple example to instanciate the LinearModel class:
+
 .. code-block:: python
 
    >>> from jai import LinearModel
@@ -27,6 +29,8 @@ For more information, see the full :ref:`Linear Model class reference <source/re
 
 :code:`set_parameters`
 ----------------------
+
+First step to train a new linear model is to define its parameters.
 
 .. code-block:: python
 
@@ -73,84 +77,49 @@ Inherited from :code:`TaskBase`
 :code:`name`
 -----------------
 
+This attribute contains the value of the database's name.
+
 .. code-block:: python
 
-   >>> from jai import Query
+   >>> from jai import LinearModel
    ...
-   >>> q = Query()
-   >>> q.name
+   >>> model = LinearModel()
+   >>> model.name
 
 :code:`db_type`
 -----------------
 
+This attribute returns the type of the database.
+
 .. code-block:: python
 
-   >>> from jai import Query
+   >>> from jai import LinearModel
    ...
-   >>> q = Query()
-   >>> q.db_type
+   >>> model = LinearModel()
+   >>> model.db_type
    
 :code:`is_valid`
 -----------------
 
+This method returns a boolean indicating if the database exists or not.
+
 .. code-block:: python
 
-   >>> from jai import Query
+   >>> from jai import LinearModel
    ...
-   >>> q = Query()
-   >>> q.is_valid()
+   >>> model = LinearModel()
+   >>> model.is_valid()
 
 :code:`describe`
 -----------------
 
+This method returns the full configuration information of the database.
+
 .. code-block:: python
 
-   >>> from jai import Query
+   >>> from jai import LinearModel
    ...
-   >>> q = Query()
-   >>> q.describe()
+   >>> model = LinearModel()
+   >>> model.describe()
 
    
-:code:`fields`
------------------
-
-.. code-block:: python
-
-   >>> from jai import Query
-   ...
-   >>> q = Query()
-   >>> q.fields()
-
-
-      
-:code:`download_vectors`
-------------------------
-
-.. code-block:: python
-
-   >>> from jai import Query
-   ...
-   >>> q = Query()
-   >>> q.download_vectors()
-
-         
-:code:`filters`
------------------
-
-.. code-block:: python
-
-   >>> from jai import Query
-   ...
-   >>> q = Query()
-   >>> q.filters()
-
-
-:code:`ids`
------------------
-
-.. code-block:: python
-
-   >>> from jai import Query
-   ...
-   >>> q = Query()
-   >>> q.ids()

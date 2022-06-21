@@ -42,6 +42,8 @@ Using the authentication key is expected to be on the "JAI_AUTH" environment var
 .. note::
     Use the parameter :code:`var_env` to change the environment variable name with the auth key value. 
 
+Please check the section :ref:`How to configure your auth key <source/overview/set_authentication:How to configure your auth key>` for more information.
+
 Safe mode
 ^^^^^^^^^
   
@@ -72,11 +74,13 @@ Reorganization of Jai class
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
   
 We split the Jai class methods into Task classes. 
+Please check the section :ref:`Task Module <source/basic_guide/task_intro:introduction>` for more information.
 
 Linear Models
 ^^^^^^^^^^^^^
   
 Added a new group of methods to train and consume linear models.
+Please check the section :ref:`Linear Model <source/task/linear:linear module>` for more information.
 
 Recommendation System setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

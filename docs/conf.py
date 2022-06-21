@@ -75,7 +75,7 @@ html_theme_options = {
     "use_edit_page_button": True,
     "path_to_docs": "docs",
     "home_page_in_toc": True,
-    "show_navbar_depth": 0,
+    "show_navbar_depth": 1,
 }
 # html_sidebars = {"**": ["sidebar-logo.html"]}
 # Add any paths that contain custom static files (such as style sheets) here,

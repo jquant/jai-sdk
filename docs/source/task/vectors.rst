@@ -15,6 +15,8 @@ For more information, see the full :ref:`Vectors class reference <source/referen
 :code:`Vectors`
 ===================
 
+Bellow, a simple example to instanciate the Vectors class:
+
 .. code-block:: python
 
    >>> from jai import Vectors
@@ -59,84 +61,47 @@ Inherited from :code:`TaskBase`
 :code:`name`
 -----------------
 
+This attribute contains the value of the database's name.
+
 .. code-block:: python
 
-   >>> from jai import Query
+   >>> from jai import Vectors
    ...
-   >>> q = Query()
-   >>> q.name
+   >>> vectors = Vectors()
+   >>> vectors.name
 
 :code:`db_type`
 -----------------
 
+This attribute returns the type of the database.
+
 .. code-block:: python
 
-   >>> from jai import Query
+   >>> from jai import Vectors
    ...
-   >>> q = Query()
-   >>> q.db_type
+   >>> vectors = Vectors()
+   >>> vectors.db_type
    
 :code:`is_valid`
 -----------------
 
+This method returns a boolean indicating if the database exists or not.
+
 .. code-block:: python
 
-   >>> from jai import Query
+   >>> from jai import Vectors
    ...
-   >>> q = Query()
-   >>> q.is_valid()
+   >>> vectors = Vectors()
+   >>> vectors.is_valid()
 
 :code:`describe`
 -----------------
 
-.. code-block:: python
-
-   >>> from jai import Query
-   ...
-   >>> q = Query()
-   >>> q.describe()
-
-   
-:code:`fields`
------------------
+This method returns the full configuration information of the database.
 
 .. code-block:: python
 
-   >>> from jai import Query
+   >>> from jai import Vectors
    ...
-   >>> q = Query()
-   >>> q.fields()
-
-
-      
-:code:`download_vectors`
-------------------------
-
-.. code-block:: python
-
-   >>> from jai import Query
-   ...
-   >>> q = Query()
-   >>> q.download_vectors()
-
-         
-:code:`filters`
------------------
-
-.. code-block:: python
-
-   >>> from jai import Query
-   ...
-   >>> q = Query()
-   >>> q.filters()
-
-
-:code:`ids`
------------------
-
-.. code-block:: python
-
-   >>> from jai import Query
-   ...
-   >>> q = Query()
-   >>> q.ids()
+   >>> vectors = Vectors()
+   >>> vectors.describe()

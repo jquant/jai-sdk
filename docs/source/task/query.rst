@@ -16,6 +16,8 @@ For more information, see the full :ref:`Query class reference <source/reference
 :code:`Query`
 ===============
 
+Bellow, a simple example to instanciate the Query class:
+
 .. code-block:: python
 
    >>> from jai import Query
@@ -53,49 +55,6 @@ For more information, see the full :ref:`Query class reference <source/reference
    >>> q = Query()
    >>> q.predict()
 
-
-Inherited from :code:`TaskBase`
-===============================
-
-:code:`name`
------------------
-
-.. code-block:: python
-
-   >>> from jai import Query
-   ...
-   >>> q = Query()
-   >>> q.name
-
-:code:`db_type`
------------------
-
-.. code-block:: python
-
-   >>> from jai import Query
-   ...
-   >>> q = Query()
-   >>> q.db_type
-   
-:code:`is_valid`
------------------
-
-.. code-block:: python
-
-   >>> from jai import Query
-   ...
-   >>> q = Query()
-   >>> q.is_valid()
-
-:code:`describe`
------------------
-
-.. code-block:: python
-
-   >>> from jai import Query
-   ...
-   >>> q = Query()
-   >>> q.describe()
 
    
 :code:`fields`
@@ -141,3 +100,54 @@ Inherited from :code:`TaskBase`
    ...
    >>> q = Query()
    >>> q.ids()
+
+Inherited from :code:`TaskBase`
+===============================
+
+:code:`name`
+-----------------
+
+This attribute contains the value of the database's name.
+
+.. code-block:: python
+
+   >>> from jai import Query
+   ...
+   >>> q = Query()
+   >>> q.name
+
+:code:`db_type`
+-----------------
+
+This attribute returns the type of the database.
+
+.. code-block:: python
+
+   >>> from jai import Query
+   ...
+   >>> q = Query()
+   >>> q.db_type
+   
+:code:`is_valid`
+-----------------
+
+This method returns a boolean indicating if the database exists or not.
+
+.. code-block:: python
+
+   >>> from jai import Query
+   ...
+   >>> q = Query()
+   >>> q.is_valid()
+
+:code:`describe`
+-----------------
+
+This method returns the full configuration information of the database.
+
+.. code-block:: python
+
+   >>> from jai import Query
+   ...
+   >>> q = Query()
+   >>> q.describe()
