@@ -3,7 +3,7 @@ from typing import Any, Optional, Dict, List, Union
 from enum import Enum
 import sys
 
-if sys.version < '3.8':
+if sys.version < "3.8":
     from typing_extensions import Literal
 else:
     from typing import Literal
@@ -50,9 +50,8 @@ class InfoSizeResponse(BaseModel):
 
 
 class FieldsResponse(BaseModel):
-    key: Optional[str]
-    id: str
     name: str
+    type: str
 
 
 class ResultItem(BaseModel):
@@ -114,26 +113,25 @@ class Report1Response(BaseModel):
     auth_batch_size: Optional[str] = Field(None, alias="Auto scale batch size")
     auth_lr_finder: Optional[str] = Field(None, alias="Auto lr finder")
     metrics_test: Optional[str] = Field(None, alias="Model Evaluation")
-    thresholds: Optional[Dict[Any, float]] = Field(None,
-                                                   alias="Optimal Thresholds")
+    thresholds: Optional[Dict[Any, float]] = Field(None, alias="Optimal Thresholds")
     baseline_models: Optional[str] = Field(None, alias="Baseline Model")
     loading_from_checkpoint: Optional[str] = Field(
-        None, alias="Loading from checkpoint")
+        None, alias="Loading from checkpoint"
+    )
 
 
 class Report2Response(BaseModel):
     auth_batch_size: Optional[str] = Field(None, alias="Auto scale batch size")
     auth_lr_finder: Optional[str] = Field(None, alias="Auto lr finder")
-    model_training: Dict[str, List[List[Any]]] = Field(...,
-                                                       alias="Model Training")
+    model_training: Dict[str, List[List[Any]]] = Field(..., alias="Model Training")
     metrics_train: Optional[str] = Field(None, alias="Metrics Train")
     metrics_val: Optional[str] = Field(None, alias="Metrics Validation")
     metrics_test: Optional[str] = Field(None, alias="Model Evaluation")
-    thresholds: Optional[Dict[Any, float]] = Field(None,
-                                                   alias="Optimal Thresholds")
+    thresholds: Optional[Dict[Any, float]] = Field(None, alias="Optimal Thresholds")
     baseline_models: Optional[str] = Field(None, alias="Baseline Model")
     loading_from_checkpoint: Optional[str] = Field(
-        None, alias="Loading from checkpoint")
+        None, alias="Loading from checkpoint"
+    )
 
 
 class InsertVectorResponse(BaseModel):

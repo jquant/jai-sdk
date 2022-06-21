@@ -37,7 +37,7 @@ How does it work?
 With JAI, you can train models in the cloud and run inference on your trained models. Besides, you can achieve all your models through a REST API endpoint. 
 
 First, you can set your auth key into an environment variable or use a :file:`.env` file or :file:`.ini` file.
-Please check the section :ref:`How to configure your auth key <source/1-overview/set_authentication:How to configure your auth key>` for more information.
+Please check the section :ref:`How to configure your auth key <source/overview/set_authentication:How to configure your auth key>` for more information.
 
 Bellow an example of the content of the :file:`.env` file:
 

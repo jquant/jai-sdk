@@ -4,14 +4,14 @@ Query Module
 
 .. note::
    If you haven't yet, please check the section 
-   :ref:`How to configure your auth key <source/1-overview/set_authentication:How to configure your auth key>` 
+   :ref:`How to configure your auth key <source/overview/set_authentication:How to configure your auth key>` 
    before running the code snippets in this page.
 
 The Query module is built to consume existing collections on your Jai environment.
 
 The methods of this module are exclusively to consume existing collections in Jai.
 
-For more information, see the full :ref:`Query class reference <source/reference/query:query class>`.
+For more information, see the full :ref:`Query class reference <source/reference/task_query:query class>`.
 
 :code:`Query`
 ===============

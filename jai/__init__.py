@@ -2,7 +2,7 @@
 --- ___init___.py ---
 """
 
-__version__ = "v1.0.0"
+__version__ = "v0.20.0"
 
 from jai.core.jai import Jai
 from jai.core.authentication import get_auth_key, get_authentication, set_authentication

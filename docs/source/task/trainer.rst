@@ -5,16 +5,16 @@ Trainer Module
 
 .. note::
    If you haven't yet, please check the section 
-   :ref:`How to configure your auth key <source/1-overview/set_authentication:How to configure your auth key>` 
+   :ref:`How to configure your auth key <source/overview/set_authentication:How to configure your auth key>` 
    before running the code snippets in this page.
 
 
 The Trainer module is built to setup new collections on your Jai environment.
 
 The methods of this module are exclusively to help you train and setup a vector collection in Jai.
-After the setup process, use the :ref:`Query Module <source/4-task/query:query module>` to consume the model.
+After the setup process, use the :ref:`Query Module <source/task/query:query module>` to consume the model.
 
-For more information, see the full :ref:`Trainer class reference <source/reference/trainer:trainer class>`.
+For more information, see the full :ref:`Trainer class reference <source/reference/task_trainer:trainer class>`.
 
 
 :code:`Trainer`

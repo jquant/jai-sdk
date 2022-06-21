@@ -60,13 +60,13 @@ The :code:`j.fit` method has three main parameters: :code:`name`, :code:`data` a
 
 - :code:`data` is the data that you want to fit. It must be a :code:`pandas.DataFrame` or a :code:`pandas.Series`. 
   For using image data, the images first have to be encoded to, after, being inserted to fit, as shown in 
-  :ref:`Fitting Image data <source/2-using_jai/fit:fitting image data>`.
+  :ref:`Fitting Image data <source/using_jai/fit:fitting image data>`.
 
 - :code:`db_type` is the parameter that defines what type of training will be realized by the fit method. 
   The possible values are :code:`'Supervised'`, :code:`'SelfSupervised'`, :code:`'Text'`, :code:`'FastText'`, :code:`'TextEdit'` 
   and :code:`'Image'`. Each of these has its own set of parameters and hyperparameters. 
-  For more information about them, check :ref:`Fitting Tabular data <source/2-using_jai/fit:fitting tabular data>`, 
-  :ref:`Fitting Text data <source/2-using_jai/fit:fitting text data (nlp)>`, and :ref:`Fitting Image data <source/2-using_jai/fit:fitting image data>`.
+  For more information about them, check :ref:`Fitting Tabular data <source/using_jai/fit:fitting tabular data>`, 
+  :ref:`Fitting Text data <source/using_jai/fit:fitting text data (nlp)>`, and :ref:`Fitting Image data <source/using_jai/fit:fitting image data>`.
 
 - :code:`overwrite` is used when you want to overwrite an already existent collection in your JAI environment. 
   Default value is :code:`False`.
@@ -117,7 +117,7 @@ A complete exampĺe of fitting tabular data is shown below:
 
 .. code-block:: python
 
-    >>> import pandas as pd
+    >>> from jai import Jai
     >>> from sklearn.datasets import fetch_california_housing
     ... 
     >>> # Jai class initialization
@@ -130,17 +130,11 @@ A complete exampĺe of fitting tabular data is shown below:
     >>> # The embeddings created by this fit will be used for training 
     >>> # a Supervised collection afterwards.
     >>> j.fit(
-    ...     name='california_selfsupervised',
+    ...     name="california_selfsupervised",
     ...     data=data,
-    ...     db_type='SelfSupervised'
-    ...    split={
-    ...         'type': random,
-    ...         'test_size': 0.2
-    ...     }
-    ...     hyperparams={
-    ...         'learning_rate': 3e-4,
-    ...         'pretraining_ratio':0.8
-    ...     }
+    ...     db_type="SelfSupervised",
+    ...     split={"type": "random", "test_size": 0.2},
+    ...     hyperparams={"learning_rate": 3e-4, "pretraining_ratio": 0.8},
     ... )
     ...
     >>> # Getting only the label column and renaming it.
@@ -150,20 +144,15 @@ A complete exampĺe of fitting tabular data is shown below:
     >>> # The 'pretrained_bases' merges the data_sup with the 'california_selfsupervised' by 
     >>> # the 'id_name' and uses the merged dataframe to create the supervised fit.
     >>> j.fit(
-    ...     name='california_regression',
-    ...     data=data_sup,
-    ...     db_type='Supervised',
-    ...     pretrained_bases=[
-    ...         {
-    ...         'db_parent':'california_selfsupervised',
-    ...         'id_name':'id_house'
-    ...         }
-    ...     ],
-    ...     label={
-    ...         'task':'regression',
-    ...         'label_name':'MedHouseVal'
-    ...     }
+    ... name="california_regression",
+    ... data=data_sup,
+    ... db_type="Supervised",
+    ... pretrained_bases=[
+    ...     {"db_parent": "california_selfsupervised", "id_name": "id_house"}
+    ... ],
+    ... label={"task": "regression", "label_name": "MedHouseVal"},
     ... )
+
 
 Hyperparameters
 ...............
@@ -214,7 +203,7 @@ For any uses of text-type data, data can be a :code:`list of strings`, :code:`pa
 
 - If data is a list, then the ids of your collection will be set with :code:`range(len(data_list))`.
 - If data is a :code:`pandas.Series` or :code:`pandas.DataFrame`, the ids will be defined as explained in 
-  :ref:`Basics <source/2-using_jai/fit:basics>`.
+  :ref:`Basics <source/using_jai/fit:basics>`.
 
 Using FastText
 ..............
@@ -232,9 +221,17 @@ Therefore, this method captures the meaning of shorter words, besides understand
     ... 
     >>> # Generating a list of words
     >>> data = [
-    ...     'flock', 'gene', 'background', 'reporter', 'notion', 
-    ...     'rocket', 'formation', 'athlete', 'suitcase', 'sword'
-    ...     ]
+    ...     "flock",
+    ...     "gene",
+    ...     "background",
+    ...     "reporter",
+    ...     "notion",
+    ...     "rocket",
+    ...     "formation",
+    ...     "athlete",
+    ...     "suitcase",
+    ...     "sword",
+    ... ]
     ... 
     >>> # Fitting with fastText
     >>> name = 'fastText_example'
@@ -257,9 +254,17 @@ consider visiting the `Hugging Face <https://huggingface.co/transformers/>`_ pag
     ... 
     >>> # Generating a list of words
     >>> data = [
-    ...     'flock', 'gene', 'background', 'reporter', 'notion', 
-    ...     'rocket', 'formation', 'athlete', 'suitcase', 'sword'
-    ...     ]
+    ...     "flock",
+    ...     "gene",
+    ...     "background",
+    ...     "reporter",
+    ...     "notion",
+    ...     "rocket",
+    ...     "formation",
+    ...     "athlete",
+    ...     "suitcase",
+    ...     "sword",
+    ... ]
     ... 
     >>> # Fitting with Transformers
     >>> name = 'BERT_example'
@@ -289,9 +294,17 @@ You can use this by defining :code:`db_type=TextEdit` in your :code:`j.fit` as b
     ... 
     >>> # Generating a list of words
     >>> data = [
-    ...     'flock', 'gene', 'background', 'reporter', 'notion', 
-    ...     'rocket', 'formation', 'athlete', 'suitcase', 'sword'
-    ...     ]
+    ...     "flock",
+    ...     "gene",
+    ...     "background",
+    ...     "reporter",
+    ...     "notion",
+    ...     "rocket",
+    ...     "formation",
+    ...     "athlete",
+    ...     "suitcase",
+    ...     "sword",
+    ... ]
     ... 
     >>> # Fitting with text edit
     >>> name = 'TextEdit_example'

@@ -5,14 +5,14 @@ Explorer Module
 
 .. note::
    If you haven't yet, please check the section 
-   :ref:`How to configure your auth key <source/1-overview/set_authentication:How to configure your auth key>` 
+   :ref:`How to configure your auth key <source/overview/set_authentication:How to configure your auth key>` 
    before running the code snippets in this page.
 
 The Explorer module is built to manage and explore (oh really) your Jai environment. 
 
 The methods of this module function to manage collections and get general information about your Jai environment.
 
-For more information, see the full :ref:`Explorer class reference <source/reference/explorer:explorer class>`.
+For more information, see the full :ref:`Explorer class reference <source/reference/task_explorer:explorer class>`.
 
 :code:`Explorer`
 ================

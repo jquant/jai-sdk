@@ -17,10 +17,10 @@ Start JAI
 *********
 
 Firstly, you'll need to install the JAI package and generate your auth key, as explained in the 
-:ref:`Getting Started <source/1-overview/getting_started:Getting Started>` section. 
+:ref:`Getting Started <source/overview/getting_started:Getting Started>` section. 
 
 With your authentication key, you'll need to configure your auth key.
-Please check the section :ref:`How to configure your auth key <source/1-overview/set_authentication:How to configure your auth key>` for more information.
+Please check the section :ref:`How to configure your auth key <source/overview/set_authentication:How to configure your auth key>` for more information.
 
 *******************
 Dataset quick look

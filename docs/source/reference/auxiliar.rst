@@ -4,7 +4,6 @@ Utilities Functions
 ###################
 
 .. toctree::
-   :maxdepth: 1
 
    util_auth.rst
    util_split.rst
