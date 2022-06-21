@@ -49,6 +49,17 @@ class InfoSizeResponse(BaseModel):
     embedding_dimension: int
 
 
+class DescribeResponse(BaseModel):
+    name: str
+    dtype: str
+    state: str
+    version: str
+    has_filter: bool
+    features: List[Dict]  # TODO: future improvement
+    model_hyperparams: Dict  # TODO: future improvement
+    trainer_hyperparams: Optional[Dict]  # TODO: future improvement
+
+
 class FieldsResponse(BaseModel):
     name: str
     type: str
@@ -99,7 +110,7 @@ class SetupResponse(BaseModel):
     Task: str
     Status: str
     Description: str
-    kwargs: Dict # TODO: future improvement
+    kwargs: Dict  # TODO: future improvement
 
 
 class AddDataResponse(BaseModel):

@@ -29,6 +29,7 @@ from ..types.responses import (
     UserResponse,
     Report1Response,
     Report2Response,
+    DescribeResponse,
     AddDataResponse,
     StatusResponse,
     InfoSizeResponse,
@@ -234,7 +235,6 @@ class Jai(BaseJai):
         """
         envs = self._environments()
         if self.safe_mode:
-            # TODO: I'm not sure how to handle the missing `key`, maybe change API side
             environments = []
             for v in check_response(EnvironmentsResponse, envs, list_of=True):
                 if v["key"] is None:
@@ -335,7 +335,7 @@ class Jai(BaseJai):
         """
         description = self._describe(name)
         if self.safe_mode:
-            return check_response(None, description)  # TODO Validator
+            return check_response(DescribeResponse, description)
         return description
 
     def get_dtype(self, name: str):
@@ -812,7 +812,6 @@ class Jai(BaseJai):
                 # make sure our data has the correct type and is free of NAs
                 value = check_dtype_and_clean(data=value, db_type=db_type)
 
-                # TODO: filter_name fix
                 if key == "main":
                     key = name
 
@@ -833,7 +832,9 @@ class Jai(BaseJai):
                     predict=False,
                 )
         else:
-            raise ValueError("Generic Data Error Message")  # TODO: change message
+            ValueError(
+                "Data must be a pd.Series, pd.Dataframe or a dictionary of pd.DataFrames."
+            )
 
         # train model
         body = kwargs_validation(db_type=db_type, **kwargs)

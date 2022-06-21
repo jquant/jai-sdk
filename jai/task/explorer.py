@@ -6,6 +6,7 @@ from ..types.responses import UserResponse
 from ..types.responses import (
     EnvironmentsResponse,
     UserResponse,
+    DescribeResponse,
     InfoResponse,
     InfoSizeResponse,
 )
@@ -28,12 +29,12 @@ class Explorer(BaseJai):
     environment : str
         Jai environment id or name to use. Defaults to "default"
     env_var : str
-        Name of the Environment Variable to get the value of your auth key. 
+        Name of the Environment Variable to get the value of your auth key.
         Defaults to "JAI_AUTH".
-    safe_mode : bool    
+    safe_mode : bool
         When safe_mode is True, responses from Jai API are validated.
-        If the validation fails, the current version you are using is probably incompatible with the current API version. 
-        We advise updating it to a newer version. If the problem persists and you are on the latest SDK version, please open an issue so we can work on a fix. 
+        If the validation fails, the current version you are using is probably incompatible with the current API version.
+        We advise updating it to a newer version. If the problem persists and you are on the latest SDK version, please open an issue so we can work on a fix.
 
     """
 
@@ -127,7 +128,6 @@ class Explorer(BaseJai):
         """
         envs = self._environments()
         if self.safe_mode:
-            # TODO: I'm not sure how to handle the missing `key`, maybe change API side
             environments = []
             for v in check_response(EnvironmentsResponse, envs, list_of=True):
                 if v["key"] is None:
@@ -152,7 +152,7 @@ class Explorer(BaseJai):
         """
         description = self._describe(name)
         if self.safe_mode:
-            return check_response(None, description)  # TODO Validator
+            return check_response(DescribeResponse, description)
         return description
 
     def rename(self, original_name: str, new_name: str):

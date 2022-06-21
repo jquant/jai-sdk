@@ -1,7 +1,7 @@
 from ..core.base import BaseJai
 from ..core.validations import check_response
 
-from ..types.responses import UserResponse, ValidResponse
+from ..types.responses import UserResponse, ValidResponse, DescribeResponse
 
 
 __all__ = ["TaskBase"]
@@ -112,5 +112,5 @@ class TaskBase(BaseJai):
         """
         description = self._describe(self.name)
         if self.safe_mode:
-            return check_response(None, description)  # TODO Validator
+            return check_response(DescribeResponse, description)
         return description
