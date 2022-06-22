@@ -285,8 +285,7 @@ def features_process_validation(dtype: str):
             PossibleDtypes.supervised,
             PossibleDtypes.recommendation_system,
     ]:
-        possible.extend(["embedding_dim", "fill_value", "min_freq"])
-        must.extend(["scaler"])
+        possible.extend(["scaler", "embedding_dim", "fill_value", "min_freq"])
     return (possible, must)
 
 
