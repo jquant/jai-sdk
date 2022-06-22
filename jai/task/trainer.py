@@ -3,7 +3,7 @@ from fnmatch import fnmatch
 
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-from typing import List, Any
+from typing import List, Any, Dict
 
 from .base import TaskBase
 from .query import Query
@@ -127,7 +127,7 @@ class Trainer(TaskBase):
         self,
         db_type: str,
         hyperparams=None,
-        features=None,
+        features: Dict[str, Dict] = None,
         num_process: dict = None,
         cat_process: dict = None,
         datetime_process: dict = None,

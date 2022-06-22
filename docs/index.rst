@@ -32,12 +32,12 @@ What is JAI-SDK?
    source/basic_guide/task_examples.rst
 
 
-.. .. toctree::
-..    :hidden:
-..    :maxdepth: -1
-..    :caption: Advanced User Guide
+.. toctree::
+   :hidden:
+   :maxdepth: -1
+   :caption: Advanced User Guide
    
-..    source/advanced/filters.rst
+   Creating a new collection with filters <source/advanced/filters>
 ..    source/advanced/environments.rst
 ..    source/advanced/multimodal.rst
 ..    source/advanced/hierarchical.rst
