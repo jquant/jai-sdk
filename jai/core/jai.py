@@ -335,7 +335,7 @@ class Jai(BaseJai):
         """
         description = self._describe(name)
         if self.safe_mode:
-            return check_response(DescribeResponse, description)
+            return check_response(DescribeResponse, description).dict()
         return description
 
     def get_dtype(self, name: str):

@@ -112,5 +112,5 @@ class TaskBase(BaseJai):
         """
         description = self._describe(self.name)
         if self.safe_mode:
-            return check_response(DescribeResponse, description)
+            return check_response(DescribeResponse, description).dict()
         return description
