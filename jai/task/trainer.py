@@ -179,8 +179,25 @@ class Trainer(TaskBase):
 
         print_args(self.setup_parameters, self._input_kwargs, verbose=self._verbose)
 
-    def _check_pretrained_bases(self, data, pretrained_bases):
+    def _check_pretrained_bases(self, data: pd.DataFrame, pretrained_bases: List):
+        """
+        Processes the following checks:
+        - If RecommendationSystem:
+          - checks if both tower names are in pretrained_bases.
+          - For each pretrained base:
+            - Checks if every id value on `data['main']` column is in the "towers'" ids.
+            - Checks if every id value on "tower" column is in the existing base ids.
+        - Else, for each pretrained base:
+            - Checks if every id value on `data` column is in the existing base ids.
 
+        Args:
+            data (pd.DataFrame): data
+            pretrained_bases (List of dicts): list of pretrained bases
+
+        Raises:
+            ValueError: On Recomendation System, if
+            KeyError: _description_
+        """
         if isinstance(data, dict):
             towers = set(data.keys()) - set([self.name, DEFAULT_NAME])
             pretrained_names = [b["db_parent"] for b in pretrained_bases]
@@ -216,6 +233,7 @@ class Trainer(TaskBase):
                         ids = self._ids(parent_name, mode="complete")
                         if self.safe_mode:
                             ids = check_response(List[Any], ids)
+                        break
 
             inverted_in = np.isin(flat_ids, ids, invert=True)
             if inverted_in.sum() > 0:
@@ -284,6 +302,10 @@ class Trainer(TaskBase):
             )
 
         elif isinstance(data, dict):
+            if self.setup_parameters["db_type"] != PossibleDtypes.recommendation_system:
+                raise ValueError(
+                    "Data as type `dict` is only used for RecommendationSystem databases."
+                )
 
             # loop insert data
             for name, value in data.items():
@@ -307,10 +329,10 @@ class Trainer(TaskBase):
                     max_insert_workers=self.insert_parameters["max_insert_workers"],
                     predict=False,
                 )
+        elif self.setup_parameters["db_type"] == PossibleDtypes.recommendation_system:
+            raise ValueError("Data must be a dictionary of pd.DataFrames.")
         else:
-            ValueError(
-                "Data must be a pd.Series, pd.Dataframe or a dictionary of pd.DataFrames."
-            )
+            raise ValueError("Data must be a pd.Series or pd.Dataframe.")
 
         # send request to start training
         setup_response = self._setup(

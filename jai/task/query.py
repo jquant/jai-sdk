@@ -11,12 +11,14 @@ from ..core.utils_funcs import data2json
 from ..core.validations import check_response
 from ..types.generic import Mode
 from ..types.responses import (
+    FieldsResponse,
     SimilarNestedResponse,
     PredictResponse,
     RecNestedResponse,
     FlatResponse,
+    DescribeResponse,
 )
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 import requests
 
 from pydantic import HttpUrl
@@ -81,32 +83,98 @@ class Query(TaskBase):
                 f"Unable to instantiate Query object because collection with name `{name}` does not exist."
             )
 
-    def _generate_batch(self, data, is_id: bool = False, desc: str = None):
+    def check_features(self, columns: List[str], name: str = None):
+        def _check_fields(
+            fields: Dict[str, FieldsResponse], columns: List[str], mapping: str = "id"
+        ):
+            not_found = []
+            for f in fields[mapping]["fields"]:
+                if f["name"] == "id" or f["dtype"] in ["filter", "label"]:
+                    pass
+                elif f["name"] not in columns and f["dtype"] == "embedding":
+                    if len(_check_fields(fields, columns=columns, mapping=f["name"])):
+                        not_found.append(f["name"])
+                elif f["name"] not in columns:
+                    not_found.append(f["name"])
+            return not_found
+
+        if name is None:
+            name = self.name
+
+        # column validation
+        # TODO: typing validation is very complex
+        fields = {v["mapping"]: v for v in self.fields()}
+        return _check_fields(fields, columns=columns)
+
+    def _generate_batch(
+        self,
+        data: Union[list, np.ndarray, pd.Index, pd.Series, pd.DataFrame],
+        desc: str = None,
+    ):
+        """
+        Breaks data into batches to avoid exceeding data transmission on requests.
+
+        Args:
+            data (list, np.ndarray, pd.Index, pd.Series or pd.DataFrame):
+               - Use list, np.ndarray or pd.Index for id.
+               - Use pd.Series or pd.Dataframe for raw data.
+            desc (str, optional): Label for the progress bar. Defaults to None.
+
+        Yields:
+            json: data in json format for request.
+        """
+        if isinstance(data, list):
+            data = np.array(data)
+
+        if isinstance(data, (np.ndarray, pd.Index)):
+            is_id = True
+            # index values
+            ids = self.ids(mode="complete")
+            inverted_in = np.isin(data, ids, invert=True)
+            if inverted_in.sum() > 0:
+                missing = data[inverted_in].tolist()
+                raise KeyError(
+                    f"Id values must belong to the set of Ids from database {self.name}.\n"
+                    f"Missing: {missing}"
+                )
+        elif isinstance(data, (pd.Series, pd.DataFrame)):
+            is_id = False
+
+            columns = data.columns if isinstance(data, pd.DataFrame) else [data.name]
+
+            not_found = self.check_features(self.name, columns)
+            if len(not_found):
+                raise ValueError("")
+
+        else:
+            raise ValueError(
+                "Data must be `list`, `np.array`, `pd.Index`, `pd.Series` or `pd.DataFrame`"
+            )
 
         for i in trange(0, len(data), self.batch_size, desc=desc):
             if is_id:
-                if isinstance(data, pd.Series):
-                    yield data.iloc[i : i + self.batch_size].tolist()
-                elif isinstance(data, pd.Index):
-                    yield data[i : i + self.batch_size].tolist()
-                else:
-                    yield data[i : i + self.batch_size].tolist()
+                yield is_id, data[i : i + self.batch_size].tolist()
             else:
-                if isinstance(data, (pd.Series, pd.DataFrame)):
-                    _batch = data.iloc[i : i + self.batch_size]
-                else:
-                    _batch = data[i : i + self.batch_size]
-                yield data2json(_batch, dtype=self.db_type, predict=True)
+                _batch = data.iloc[i : i + self.batch_size]
+                yield is_id, data2json(_batch, dtype=self.db_type, predict=True)
 
-    def similar(self, data, top_k: int = 5, orient: str = "nested", filters=None):
+    def similar(
+        self,
+        data: Union[list, np.ndarray, pd.Index, pd.Series, pd.DataFrame],
+        top_k: int = 5,
+        orient: str = "nested",
+        filters=None,
+    ):
         """
         Query a database in search for the `top_k` most similar entries for each
         input data passed as argument.
 
         Args
         ----
-        data : list, np.ndarray, pd.Series or pd.DataFrame
+        data : list, np.ndarray, pd.Index, pd.Series or pd.DataFrame
             Data to be queried for similar inputs in your database.
+            - Use list, np.ndarray or pd.Index for id.
+            - Use pd.Series or pd.Dataframe for raw data.
         top_k : int
             Number of k similar items that we want to return. `Default is 5`.
         orient : "nested" or "flat"
@@ -135,11 +203,8 @@ class Query(TaskBase):
          8382    7293.2
         """
 
-        if isinstance(data, list):
-            data = np.array(data)
-        is_id = is_integer_dtype(data)
         results = []
-        for _batch in self._generate_batch(data, is_id=is_id, desc="Similar"):
+        for is_id, _batch in self._generate_batch(data, desc="Similar"):
             if is_id:
                 res = self._similar_id(
                     self.name, _batch, top_k=top_k, orient=orient, filters=filters
@@ -159,7 +224,11 @@ class Query(TaskBase):
         return results
 
     def recommendation(
-        self, data, top_k: int = 5, orient: str = "nested", filters=None
+        self,
+        data: Union[list, np.ndarray, pd.Index, pd.Series, pd.DataFrame],
+        top_k: int = 5,
+        orient: str = "nested",
+        filters=None,
     ):
         """
         Query a database in search for the `top_k` most recommended entries for each
@@ -167,8 +236,10 @@ class Query(TaskBase):
 
         Args
         ----
-        data : list, np.ndarray, pd.Series or pd.DataFrame
+        data : list, np.ndarray, pd.Index, pd.Series or pd.DataFrame
             Data to be queried for recommendation in your database.
+            - Use list, np.ndarray or pd.Index for id.
+            - Use pd.Series or pd.Dataframe for raw data.
         top_k : int
             Number of k recommendations that we want to return. `Default is 5`.
         orient : "nested" or "flat"
@@ -196,13 +267,9 @@ class Query(TaskBase):
         45568    6995.6
          8382    7293.2
         """
-        if isinstance(data, list):
-            data = np.array(data)
-
-        is_id = is_integer_dtype(data)
 
         results = []
-        for _batch in self._generate_batch(data, is_id=is_id, desc="Recommendation"):
+        for is_id, _batch in self._generate_batch(data, desc="Recommendation"):
             if is_id:
                 res = self._recommendation_id(
                     self.name, _batch, top_k=top_k, orient=orient, filters=filters
@@ -221,7 +288,12 @@ class Query(TaskBase):
                 results.extend(res["recommendation"])
         return results
 
-    def predict(self, data, predict_proba: bool = False, as_frame: bool = False):
+    def predict(
+        self,
+        data: Union[pd.Series, pd.DataFrame],
+        predict_proba: bool = False,
+        as_frame: bool = False,
+    ):
         """
         Predict the output of new data for a given database.
 
@@ -260,7 +332,7 @@ class Query(TaskBase):
             )
 
         results = []
-        for _batch in self._generate_batch(data, desc="Predict"):
+        for _, _batch in self._generate_batch(data, desc="Predict"):
             res = self._predict(self.name, _batch, predict_proba=predict_proba)
             if self.safe_mode:
                 res = check_response(PredictResponse, res, list_of=True)

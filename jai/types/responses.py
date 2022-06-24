@@ -60,9 +60,15 @@ class DescribeResponse(BaseModel):
     trainer_hyperparams: Optional[Dict]  # TODO: future improvement
 
 
-class FieldsResponse(BaseModel):
+class FieldsDescription(BaseModel):
     name: str
-    type: str
+    dtype: str
+
+
+class FieldsResponse(BaseModel):
+    database: str
+    mapping: str
+    fields: List[FieldsDescription]
 
 
 class ResultItem(BaseModel):
