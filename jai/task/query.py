@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from io import BytesIO
-from pandas.api.types import is_integer_dtype
 from tqdm import trange
 
 from jai.utilities import predict2df
@@ -16,7 +15,6 @@ from ..types.responses import (
     PredictResponse,
     RecNestedResponse,
     FlatResponse,
-    DescribeResponse,
 )
 from typing import Any, Dict, List, Union
 import requests
@@ -89,9 +87,9 @@ class Query(TaskBase):
         ):
             not_found = []
             for f in fields[mapping]["fields"]:
-                if f["name"] == "id" or f["dtype"] in ["filter", "label"]:
+                if f["name"] == "id" or f["type"] in ["filter", "label"]:
                     pass
-                elif f["name"] not in columns and f["dtype"] == "embedding":
+                elif f["name"] not in columns and f["type"] == "embedding":
                     if len(_check_fields(fields, columns=columns, mapping=f["name"])):
                         not_found.append(f["name"])
                 elif f["name"] not in columns:
@@ -104,6 +102,7 @@ class Query(TaskBase):
         # column validation
         # TODO: typing validation is very complex
         fields = {v["mapping"]: v for v in self.fields()}
+        columns = [c.replace(".", "_") for c in columns]
         return _check_fields(fields, columns=columns)
 
     def _generate_batch(
@@ -142,9 +141,14 @@ class Query(TaskBase):
 
             columns = data.columns if isinstance(data, pd.DataFrame) else [data.name]
 
-            not_found = self.check_features(self.name, columns)
+            not_found = self.check_features(columns)
+
             if len(not_found):
-                raise ValueError("")
+                str_missing = "`, `".join(not_found)
+                raise ValueError(
+                    f"The following columns were not found in data:\n"
+                    f"- `{str_missing}`"
+                )
 
         else:
             raise ValueError(

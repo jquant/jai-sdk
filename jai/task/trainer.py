@@ -94,7 +94,7 @@ class Trainer(TaskBase):
         )
 
         self._verbose = verbose
-        self._setup_parameters = None
+        self._fit_parameters = None
 
         self._insert_parameters = {"batch_size": 16384, "max_insert_workers": None}
 
@@ -116,12 +116,12 @@ class Trainer(TaskBase):
         self._insert_parameters = InsertParams(**value).dict()
 
     @property
-    def setup_parameters(self):
-        if self._setup_parameters is None:
+    def fit_parameters(self):
+        if self._fit_parameters is None:
             raise ValueError(
                 "No parameter was set, please use `set_parameters` method first."
             )
-        return self._setup_parameters
+        return self._fit_parameters
 
     def set_parameters(
         self,
@@ -136,7 +136,7 @@ class Trainer(TaskBase):
         split: dict = None,
     ):
         """
-        It checks the input parameters and sets the `setup_parameters` attribute for setup.
+        It checks the input parameters and sets the `fit_parameters` attribute for setup.
 
         TODO: documentate args
         Args:
@@ -165,7 +165,7 @@ class Trainer(TaskBase):
 
         # I figure we don't need a safe_mode validation here
         # because this is already a validation method.
-        self._setup_parameters = self._check_parameters(
+        self._fit_parameters = self._check_parameters(
             db_type=db_type,
             hyperparams=hyperparams,
             features=features,
@@ -177,7 +177,7 @@ class Trainer(TaskBase):
             split=split,
         )
 
-        print_args(self.setup_parameters, self._input_kwargs, verbose=self._verbose)
+        print_args(self.fit_parameters, self._input_kwargs, verbose=self._verbose)
 
     def _check_pretrained_bases(self, data: pd.DataFrame, pretrained_bases: List):
         """
@@ -280,7 +280,7 @@ class Trainer(TaskBase):
                         Set overwrite=True to overwrite it."
                 )
         self._check_pretrained_bases(
-            data, self.setup_parameters.get("pretrained_bases", [])
+            data, self.fit_parameters.get("pretrained_bases", [])
         )
 
         if isinstance(data, (pd.Series, pd.DataFrame)):
@@ -292,17 +292,17 @@ class Trainer(TaskBase):
             insert_responses = self._insert_data(
                 data=data,
                 name=self.name,
-                db_type=self.setup_parameters["db_type"],
+                db_type=self.fit_parameters["db_type"],
                 batch_size=self.insert_parameters["batch_size"],
                 has_filter=check_filters(
-                    data, self.setup_parameters.get("features", {})
+                    data, self.fit_parameters.get("features", {})
                 ),
                 max_insert_workers=self.insert_parameters["max_insert_workers"],
                 predict=False,
             )
 
         elif isinstance(data, dict):
-            if self.setup_parameters["db_type"] != PossibleDtypes.recommendation_system:
+            if self.fit_parameters["db_type"] != PossibleDtypes.recommendation_system:
                 raise ValueError(
                     "Data as type `dict` is only used for RecommendationSystem databases."
                 )
@@ -321,22 +321,22 @@ class Trainer(TaskBase):
                 insert_responses = self._insert_data(
                     data=value,
                     name=name,
-                    db_type=self.setup_parameters["db_type"],
+                    db_type=self.fit_parameters["db_type"],
                     batch_size=self.insert_parameters["batch_size"],
                     has_filter=check_filters(
-                        value, self.setup_parameters.get("features", {})
+                        value, self.fit_parameters.get("features", {})
                     ),
                     max_insert_workers=self.insert_parameters["max_insert_workers"],
                     predict=False,
                 )
-        elif self.setup_parameters["db_type"] == PossibleDtypes.recommendation_system:
+        elif self.fit_parameters["db_type"] == PossibleDtypes.recommendation_system:
             raise ValueError("Data must be a dictionary of pd.DataFrames.")
         else:
             raise ValueError("Data must be a pd.Series or pd.Dataframe.")
 
         # send request to start training
         setup_response = self._setup(
-            self.name, self.setup_parameters, overwrite=overwrite
+            self.name, self.fit_parameters, overwrite=overwrite
         )
         if self.safe_mode:
             setup_response = check_response(SetupResponse, setup_response).dict()
@@ -353,7 +353,7 @@ class Trainer(TaskBase):
         self.wait_setup(frequency_seconds=frequency_seconds)
         self.report(self._verbose)
 
-        if self.setup_parameters["db_type"] == PossibleDtypes.recommendation_system:
+        if self.fit_parameters["db_type"] == PossibleDtypes.recommendation_system:
             towers = set(data.keys()) - set([self.name, DEFAULT_NAME])
             return {
                 towers[0]: self.get_query(name=towers[0]),

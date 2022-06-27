@@ -81,7 +81,7 @@ def test_filter_text(safe_mode, name, dtype, setup_dataframe):
 
     trainer = Trainer(name=name, safe_mode=safe_mode)
     with pytest.raises(ValueError):
-        trainer.setup_parameters
+        trainer.fit_parameters
 
     trainer.set_parameters(db_type=dtype, features={"Embarked": {"dtype": "filter"}})
 

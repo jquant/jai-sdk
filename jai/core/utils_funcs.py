@@ -210,17 +210,27 @@ def print_args(response_kwargs, input_kwargs, verbose: int = 1):
     if verbose == 0:
         return
 
+    all_args = verbose > 2
+
     warn_list = []
-    print("\nRecognized setup args:")
-    for key, value in response_kwargs.items():
+    print("\nRecognized fit arguments:")
+    for key in input_kwargs.keys():
+        value = response_kwargs.get(key, None)
         input = input_kwargs.get(key, None)
+
+        if key == "split":
+            value = response_kwargs["hyperparams"]["split"]
+
+        if input is None:
+            continue
+
         if isinstance(input, dict) and isinstance(value, dict):
 
             intersection = common_items(input, value)
             if not input.keys() == intersection.keys():
                 warn_list.append(f"argument: `{key}`; values: ({input} != {value})")
 
-            to_write = input if verbose == 1 else value
+            to_write = value if all_args else input
             m = max([len(s) for s in to_write] + [0])
 
             to_join = []
@@ -238,7 +248,7 @@ def print_args(response_kwargs, input_kwargs, verbose: int = 1):
             if input != intersection:
                 warn_list.append(f"argument: `{key}`; values: ({input} != {value})")
 
-            to_write = input if verbose == 1 else value
+            to_write = value if all_args else input
 
             to_join = []
             for v in to_write:
@@ -272,7 +282,7 @@ def print_args(response_kwargs, input_kwargs, verbose: int = 1):
 
 def check_filters(data: pd.DataFrame, features: Dict[str, Dict]):
     """
-    It returns `True` if any of the columns in the dataframe have a `dtype` of `filter` defined 
+    It returns `True` if any of the columns in the dataframe have a `dtype` of `filter` defined
     on features.
 
     Args:
