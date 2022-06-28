@@ -135,7 +135,14 @@ class Query(TaskBase):
         if isinstance(data, (np.ndarray, pd.Index)):
             is_id = True
             # index values
-            ids = self.ids(mode="complete")
+            if desc != "Recommendation":
+                ids = self.ids(mode="complete")
+            else:
+                twin_name = self.describe()["twin_base"]
+                ids = self._ids(twin_name, mode="complete")
+                if self.safe_mode:
+                    ids = check_response(List[Any], ids)
+
             inverted_in = np.isin(data, ids, invert=True)
             if inverted_in.sum() > 0:
                 missing = data[inverted_in].tolist()

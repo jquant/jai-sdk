@@ -215,7 +215,7 @@ class Trainer(TaskBase):
         if isinstance(data, dict):
             towers = set(data.keys()) - set([self.name, DEFAULT_NAME])
             pretrained_names = [b["db_parent"] for b in pretrained_bases]
-            if towers <= set(pretrained_names):
+            if not towers <= set(pretrained_names):
                 raise ValueError(
                     f"Both {towers} keys must be in pretrained bases:\n"
                     f"db_parents: {pretrained_names}"
@@ -233,7 +233,11 @@ class Trainer(TaskBase):
                     ids = check_response(List[Any], ids)
             elif parent_name in data.keys():
                 data_parent = data[parent_name]
-                df = data.get(DEFAULT_NAME, data[self.name])
+                df = (
+                    data[DEFAULT_NAME]
+                    if DEFAULT_NAME in data.keys()
+                    else data[self.name]
+                )
                 flat_ids = np.unique(list(flatten_sample(df[column])))
                 ids = (
                     data_parent["id"]
@@ -370,7 +374,7 @@ class Trainer(TaskBase):
         self.report(self._verbose)
 
         if self.fit_parameters["db_type"] == PossibleDtypes.recommendation_system:
-            towers = set(data.keys()) - set([self.name, DEFAULT_NAME])
+            towers = list(set(data.keys()) - set([self.name, DEFAULT_NAME]))
             return {
                 towers[0]: self.get_query(name=towers[0]),
                 towers[1]: self.get_query(name=towers[1]),

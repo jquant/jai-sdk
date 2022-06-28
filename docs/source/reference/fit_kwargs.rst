@@ -101,9 +101,9 @@ Here are the parameters that can be used for SelfSupervised models:
 
   * **batch_size** (*int*) -- Batch size for training. *Default is 512*.
   * **learning_rate** (*float*) -- Initial learning rate. *Default is 0.001*.
-  * **encoder_layer** (*str*) -- Structure for the encoder layer {"2L", "tabnet"}
+  * **encoder_layer** (*str*) -- Structure for the encoder layer {"2L", "2LR", "2LM"}
     *Default is "2L"*.
-  * **decoder_layer** (*str*) -- Structure for the decoder layer {"2L", "2L_LN", "2L_BN", "1L"}. 
+  * **decoder_layer** (*str*) -- Structure for the decoder layer {"2L", "2LM", "2L_LN", "2L_BN", "1L"}. 
     *Default is "2L"*.
   * **hidden_latent_dim** (*int*) -- Hidden layer size. *Default is 64*.
   * **dropout_rate** (*int*) -- Dropout rate for the encoder layer. *Default is 0.1*.
@@ -121,7 +121,11 @@ Here are the parameters that can be used for SelfSupervised models:
   * **min_delta** (*float*) -- Minimum change in the monitored quantity (loss) to qualify as an improvement,
     i.e. an absolute change of less than min_delta, will count as no improvement. *Default is 1e-5*.
   * **random_seed** (*int*) -- Random seed. *Default is 42*.
-  * **stochastic_weight_avg** (*bool*) -- stochastic weight avgeraging. *Default is False*.
+  * **swa_parameters** (*bool*) -- stochastic weight avgeraging.
+    * **swa_lrs**: (*float*) -- The SWA learning rate to use. If none is given, swa is unabled. *Default is None*. 
+    * **swa_epoch_start**: (*float*) -- If provided as int, the procedure will start from the swa_epoch_start-th epoch. If provided as float between 0 and 1, the procedure will start from int(swa_epoch_start * max_epochs) epoch. *Default is 0.8*. 
+    * **annealing_epochs**: (*int*) -- number of epochs in the annealing phase. *Default is 10*. 
+    * **annealing_strategy**: (*str*) -- Specifies the annealing strategy {'linear', 'cos'}. *Default is "cos"*.
   * **pruning_method** (*str*) -- name of any torch.nn.utils.prune function. *Default is l1_unstructured*.
   * **pruning_amount** (*float*) -- quantity of parameters to prune. 
     If float, should be between 0.0 and 1.0 and represent the fraction of parameters to prune.
@@ -163,6 +167,7 @@ Here are the parameters that can be used for SelfSupervised models:
   * **db_parent** (*str*) -- (*required*) Name of the preprocessed database.
   * **id_name** (*str*) -- (*required*) Name of the column with the id values in the current table.
   * **embedding_dim** (*int*) -- Initial embedding dimension. *Default is 128*.
+  * **aggregation_method** (*str*) -- If value is a list of ids, defines how to aggregate the vectors {"sum", "mean", "max"}. *Default is sum*
   
 * **split** (*dict*) -- How data will be split in the training process.
    
@@ -180,9 +185,9 @@ Here are the parameters that can be used for Supervised models:
 
   * **batch_size** (*int*) -- Batch size for training. *Default is 512*.
   * **learning_rate** (*float*) -- Initial learning rate. *Default is 0.001*.
-  * **encoder_layer** (*str*) -- Structure for the encoder layer {"2L", "tabnet"}
+  * **encoder_layer** (*str*) -- Structure for the encoder layer {"2L", "2LR", "2LM"}
     *Default is "2L"*.
-  * **decoder_layer** (*str*) -- Structure for the decoder layer {"2L", "2L_LN", "2L_BN", "1L"}. 
+  * **decoder_layer** (*str*) -- Structure for the decoder layer {"2L", "2LM", "2L_LN", "2L_BN", "1L"}. 
     *Default is "2L"*.
   * **hidden_latent_dim** (*int*) -- Hidden layer size. *Default is 64*.
   * **dropout_rate** (*int*) -- Dropout rate for the encoder layer. *Default is 0.1*.
@@ -252,9 +257,9 @@ Here are the parameters that can be used for Supervised models:
   * **regression_scaler** (*str*) -- type of scaling to apply to label on regression models {"None", "log1p", "standard", "log1p+standard"}. *Default is None*.
   * **quantiles** (*list of floats*) -- quantiles for quantile_regression. *Default is [0.1, 0.5, 0.9]*.
 
-* **split** (*dict*) -- How data will be split in the training process.
+* **split** (*dict*) -- How data will be split in the training process.  
    
-  * **type** (*str*) -- How to split the data in train and test {random, stratified}. *Default is "random"*.
+  * **type** (*str*) -- How to split the data in train and test {sequential, sequential_exclusive, random, stratified}. *Default is "random"*.
   * **split_column** (*str*) -- (*Mandatory when type is stratified*) Name of column as reference for the split. *Default is ""*.
   * **test_size** (*float*) -- Size of test for the split. *Default is 0.2*.
   * **gap** (*int*) -- when type is sequential, Number of samples to exclude from the end of each train set before the test set. *Default is 0*

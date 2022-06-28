@@ -218,7 +218,7 @@ def print_args(response_kwargs, input_kwargs, verbose: int = 1):
         value = response_kwargs.get(key, None)
         input = input_kwargs.get(key, None)
 
-        if key == "split":
+        if key == "split" and input is not None:
             value = response_kwargs["hyperparams"]["split"]
 
         if input is None:
