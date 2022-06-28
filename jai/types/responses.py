@@ -62,7 +62,7 @@ class DescribeResponse(BaseModel):
 
 class FieldsDescription(BaseModel):
     name: str
-    dtype: str
+    type: str
 
 
 class FieldsResponse(BaseModel):

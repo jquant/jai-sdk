@@ -14,8 +14,12 @@ np.random.seed(42)
 
 @pytest.fixture(scope="session")
 def setup_dataframe():
-    TITANIC_TRAIN = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/train.csv"
-    TITANIC_TEST = "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/test.csv"
+    TITANIC_TRAIN = (
+        "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/train.csv"
+    )
+    TITANIC_TEST = (
+        "https://raw.githubusercontent.com/rebeccabilbro/titanic/master/data/test.csv"
+    )
 
     train = pd.read_csv(TITANIC_TRAIN)
     test = pd.read_csv(TITANIC_TEST)
@@ -26,14 +30,21 @@ def setup_dataframe():
 # Test Text
 # =============================================================================
 @pytest.mark.parametrize("safe_mode", [True])
-@pytest.mark.parametrize("name,dtype", [("test_nlp", "Text"),
-                                        ("test_fasttext", "FastText"),
-                                        ("test_edittext", "TextEdit")])
+@pytest.mark.parametrize(
+    "name,dtype",
+    [
+        ("test_nlp", "Text"),
+        ("test_fasttext", "FastText"),
+        ("test_edittext", "TextEdit"),
+    ],
+)
 def test_text(safe_mode, name, dtype, setup_dataframe):
     train, _ = setup_dataframe
-    train = train.rename(columns={
-        "PassengerId": "id"
-    }).set_index("id")['Name'].iloc[:MAX_SIZE]
+    train = (
+        train.rename(columns={"PassengerId": "id"})
+        .set_index("id")["Name"]
+        .iloc[:MAX_SIZE]
+    )
     ids = train.index.tolist()
     query = train.loc[np.random.choice(ids, 10, replace=False)]
 
@@ -45,17 +56,16 @@ def test_text(safe_mode, name, dtype, setup_dataframe):
     j.setup(name, train, db_type=dtype, overwrite=True)
     assert j.is_valid(name), f"valid name {name} after setup failed"
 
-    assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"
-                           ], 'ids simple failed'
-    assert sorted(j.ids(name, 'complete')) == ids, "ids complete failed"
+    assert j.ids(name) == [
+        f"{len(ids)} items from {min(ids)} to {max(ids)}"
+    ], "ids simple failed"
+    assert sorted(j.ids(name, "complete")) == ids, "ids complete failed"
 
     result = j.similar(name, query)
     assert isinstance(result, list), "similar data result failed"
 
-    # try to use the fields method on a text database
-    # this will raise an exception
-    with pytest.raises(ValueError):
-        j.fields(name)
+    # TODO: improve this
+    j.fields(name)
 
     j.delete_database(name)
     assert not j.is_valid(name), "valid name after delete failed"
@@ -65,31 +75,34 @@ def test_text(safe_mode, name, dtype, setup_dataframe):
 @pytest.mark.parametrize("name,dtype", [("test_filter_nlp", "Text")])
 def test_filter_text(safe_mode, name, dtype, setup_dataframe):
     train, _ = setup_dataframe
-    train = train.rename(columns={
-        "PassengerId": "id"
-    }).set_index("id")[['Name', 'Embarked']].iloc[:MAX_SIZE]
+    train = (
+        train.rename(columns={"PassengerId": "id"})
+        .set_index("id")[["Name", "Embarked"]]
+        .iloc[:MAX_SIZE]
+    )
     ids = train.index.tolist()
-    query = train.loc[np.random.choice(ids, 10, replace=False), 'Name']
+    query = train.loc[np.random.choice(ids, 10, replace=False), "Name"]
 
     j = Jai(safe_mode=safe_mode)
 
     if j.is_valid(name):
         j.delete_database(name)
 
-    j.setup(name,
-            train,
-            features={'Embarked': {
-                "dtype": "filter"
-            }},
-            db_type=dtype,
-            overwrite=True)
+    j.setup(
+        name,
+        train,
+        features={"Embarked": {"dtype": "filter"}},
+        db_type=dtype,
+        overwrite=True,
+    )
     assert j.is_valid(name), f"valid name {name} after setup failed"
 
-    assert j.filters(name) == ['_default', 'S', 'C', 'Q'], 'filters failed'
+    assert j.filters(name) == ["_default", "S", "C", "Q"], "filters failed"
 
-    assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"
-                           ], 'ids simple failed'
-    assert sorted(j.ids(name, 'complete')) == ids, "ids complete failed"
+    assert j.ids(name) == [
+        f"{len(ids)} items from {min(ids)} to {max(ids)}"
+    ], "ids simple failed"
+    assert sorted(j.ids(name, "complete")) == ids, "ids complete failed"
 
     result = j.similar(name, query)
     assert isinstance(result, list), "similar data result failed"
@@ -112,10 +125,8 @@ def test_filter_text(safe_mode, name, dtype, setup_dataframe):
     result = j.similar(name, query.index.values)
     assert isinstance(result, list), "similar id array result failed"
 
-    # try to use the fields method on a text database
-    # this will raise an exception
-    with pytest.raises(ValueError):
-        j.fields(name)
+    # TODO: improve this
+    j.fields(name)
 
     j.delete_database(name)
     assert not j.is_valid(name), "valid name after delete failed"
@@ -126,7 +137,7 @@ def test_filter_text(safe_mode, name, dtype, setup_dataframe):
 # =============================================================================
 @pytest.mark.parametrize("safe_mode", [True])
 def test_selfsupervised(setup_dataframe, safe_mode):
-    name = 'test_selfsupervised'
+    name = "test_selfsupervised"
 
     train, _ = setup_dataframe
     train = train.drop(columns=["PassengerId"]).iloc[:MAX_SIZE]
@@ -137,27 +148,25 @@ def test_selfsupervised(setup_dataframe, safe_mode):
     if j.is_valid(name):
         j.delete_database(name)
 
-    j.setup(name,
-            train,
-            db_type="SelfSupervised",
-            hyperparams={"max_epochs": 3},
-            overwrite=True,
-            max_insert_workers=1)
+    j.setup(
+        name,
+        train,
+        db_type="SelfSupervised",
+        hyperparams={"max_epochs": 3},
+        overwrite=True,
+        max_insert_workers=1,
+    )
 
     assert j.is_valid(name), f"valid name {name} after setup failed"
 
     ids = train.index.tolist()
-    assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"
-                           ], 'ids simple failed'
-    assert j.ids(name, 'complete') == ids, "ids complete failed"
+    assert j.ids(name) == [
+        f"{len(ids)} items from {min(ids)} to {max(ids)}"
+    ], "ids simple failed"
+    assert j.ids(name, "complete") == ids, "ids complete failed"
 
-    for k, from_api in j.fields(name).items():
-        if k == 'id':
-            continue
-        original = str(train[k].dtype)
-        if original == 'object':
-            original = 'string'
-        assert original == from_api, "dtype from api {from_api} differ from data {original}"
+    # TODO: improve this
+    j.fields(name).items()
 
     result = j.similar(name, query)
 
@@ -182,7 +191,7 @@ def test_selfsupervised(setup_dataframe, safe_mode):
 # =============================================================================
 @pytest.mark.parametrize("safe_mode", [True])
 def test_supervised(setup_dataframe, safe_mode):
-    name = 'test_supervised'
+    name = "test_supervised"
 
     train, test = setup_dataframe
     train = train.rename(columns={"PassengerId": "id"}).iloc[:MAX_SIZE]
@@ -194,36 +203,34 @@ def test_supervised(setup_dataframe, safe_mode):
     if j.is_valid(name):
         j.delete_database(name)
 
-    j.fit(name,
-          train,
-          db_type="Supervised",
-          overwrite=True,
-          max_insert_workers=0,
-          hyperparams={"max_epochs": 3},
-          label={
-              "task": "metric_classification",
-              "label_name": "Survived"
-          },
-          split={
-              "type": 'stratified',
-              "split_column": "Survived",
-              "test_size": .2
-          })
+    j.fit(
+        name,
+        train,
+        db_type="Supervised",
+        overwrite=True,
+        max_insert_workers=0,
+        hyperparams={"max_epochs": 3},
+        label={"task": "metric_classification", "label_name": "Survived"},
+        split={"type": "stratified", "split_column": "Survived", "test_size": 0.2},
+    )
 
     assert j.is_valid(name), f"valid name {name} after setup failed"
 
-    ids = train['id'].tolist()
-    assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"
-                           ], 'ids simple failed'
-    assert j.ids(name, 'complete') == ids, "ids complete failed"
+    ids = train["id"].tolist()
+    assert j.ids(name) == [
+        f"{len(ids)} items from {min(ids)} to {max(ids)}"
+    ], "ids simple failed"
+    assert j.ids(name, "complete") == ids, "ids complete failed"
 
     for k, from_api in j.fields(name).items():
-        if k == 'Survived':
+        if k == "Survived":
             continue
         original = str(train[k].dtype)
-        if original == 'object':
-            original = 'string'
-        assert original == from_api, "dtype from api {from_api} differ from data {original}"
+        if original == "object":
+            original = "string"
+        assert (
+            original == from_api
+        ), "dtype from api {from_api} differ from data {original}"
 
     result = j.similar(name, query)
     assert isinstance(result, list), "similar result failed"
@@ -239,10 +246,11 @@ def test_supervised(setup_dataframe, safe_mode):
 
     j.append(name, test)
 
-    ids = train['id'].tolist() + test['id'].tolist()
-    assert j.ids(name) == [f"{len(ids)} items from {min(ids)} to {max(ids)}"
-                           ], 'ids simple failed'
-    assert j.ids(name, 'complete') == ids, "ids complete failed"
+    ids = train["id"].tolist() + test["id"].tolist()
+    assert j.ids(name) == [
+        f"{len(ids)} items from {min(ids)} to {max(ids)}"
+    ], "ids simple failed"
+    assert j.ids(name, "complete") == ids, "ids complete failed"
 
     # test _delete_tree method here
     j._delete_tree(name)
@@ -251,60 +259,55 @@ def test_supervised(setup_dataframe, safe_mode):
 
 @pytest.mark.parametrize("name,safe_mode", [("test_recommendation", True)])
 def test_recommendation(name, safe_mode):
-    mock_db = pd.DataFrame({
-        "User": [0, 1, 2, 0, 1, 2, 1, 1, 0, 2],
-        "Item": [2, 3, 1, 5, 1, 2, 4, 3, 2, 1]
-    })
+    mock_db = pd.DataFrame(
+        {"User": [0, 1, 2, 0, 1, 2, 1, 1, 0, 2], "Item": [2, 3, 1, 5, 1, 2, 4, 3, 2, 1]}
+    )
 
     mock_users = pd.DataFrame({"User": [1, 2, 3], "id": [0, 1, 2]})
-    mock_items = pd.DataFrame({
-        "id": [1, 2, 3, 4, 5],
-        "Colour": ['black', 'white', 'green', 'yellow', 'blue']
-    })
-    data = {'users': mock_users, 'items': mock_items, 'main': mock_db}
+    mock_items = pd.DataFrame(
+        {"id": [1, 2, 3, 4, 5], "Colour": ["black", "white", "green", "yellow", "blue"]}
+    )
+    data = {"users": mock_users, "items": mock_items, "main": mock_db}
 
     j = Jai(safe_mode=safe_mode)
-    j.fit(name,
-          data,
-          db_type="RecommendationSystem",
-          overwrite=True,
-          pretrained_bases=[{
-              "id_name": "User",
-              "db_parent": "users"
-          }, {
-              "id_name": "Item",
-              "db_parent": "items"
-          }])
+    j.fit(
+        name,
+        data,
+        db_type="RecommendationSystem",
+        overwrite=True,
+        pretrained_bases=[
+            {"id_name": "User", "db_parent": "users"},
+            {"id_name": "Item", "db_parent": "items"},
+        ],
+    )
 
     assert j.is_valid(name), f"valid name {name} after setup failed"
-    assert j.is_valid('users'), f"valid name users after setup failed"
-    assert j.is_valid('items'), f"valid name items after setup failed"
+    assert j.is_valid("users"), f"valid name users after setup failed"
+    assert j.is_valid("items"), f"valid name items after setup failed"
 
     users_ids = list(mock_users.index)
     j_users = Jai(safe_mode=safe_mode)
     assert j_users.ids("users") == [
         f"{len(users_ids)} items from {min(users_ids)} to {max(users_ids)}"
-    ], 'ids simple failed'
-    assert j_users.ids("users", 'complete') == users_ids, "ids complete failed"
+    ], "ids simple failed"
+    assert j_users.ids("users", "complete") == users_ids, "ids complete failed"
 
-    items_ids = list(mock_items['id'])
+    items_ids = list(mock_items["id"])
     j_trainer = Jai(safe_mode=safe_mode)
     assert j_trainer.ids("items") == [
         f"{len(items_ids)} items from {min(items_ids)} to {max(items_ids)}"
-    ], 'ids simple failed'
-    assert j_trainer.ids("items",
-                         'complete') == items_ids, "ids complete failed"
+    ], "ids simple failed"
+    assert j_trainer.ids("items", "complete") == items_ids, "ids complete failed"
 
     result = j.recommendation(name="users", data=mock_items, top_k=2)
     assert isinstance(result, list), "recommendation result failed"
-    assert list(result[0].keys()) == ['query_id', 'results']
+    assert list(result[0].keys()) == ["query_id", "results"]
 
-    result = j.recommendation(name="items",
-                              data=mock_users.index,
-                              top_k=2,
-                              orient="flat")
+    result = j.recommendation(
+        name="items", data=mock_users.index, top_k=2, orient="flat"
+    )
     assert isinstance(result, list), "recommendation result failed"
-    assert list(result[0].keys()) == ['query_id', 'id', 'distance']
+    assert list(result[0].keys()) == ["query_id", "id", "distance"]
 
     j.delete_database(name)
     j.delete_database("users")
