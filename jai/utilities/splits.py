@@ -21,7 +21,7 @@ def split(dataframe, columns, sort: bool = False, prefix: str = "id_"):
         If column has multiple data, use a dict with the format column name as
         key and separator as value. Use `None` if no separator is needed.
     sort : bool, optional
-        sort values of the split data.
+        Sort values of the split data.
     prefix : str, optional
         prefix added to the splitted column names.
 
@@ -33,6 +33,11 @@ def split(dataframe, columns, sort: bool = False, prefix: str = "id_"):
         original dataframe with columns replaced by the ids of the correlated
         base.
 
+    Example
+    -------
+    >>> from jai.utilities import split
+    ...
+    >>> split_bases, main_base = split(df, ["split_column"])
     """
     dataframe = dataframe.copy()
     if isinstance(columns, str):
@@ -47,7 +52,8 @@ def split(dataframe, columns, sort: bool = False, prefix: str = "id_"):
             issues later, we recommend treating them before split.\n\
             Found empty values on the following columns:\n\
             - {'- '.join(na_columns.index[na_columns])}",
-            stacklevel=3)
+            stacklevel=3,
+        )
 
     bases = {}
     for col, sep in columns.items():
@@ -58,25 +64,29 @@ def split(dataframe, columns, sort: bool = False, prefix: str = "id_"):
         ids, uniques = pd.factorize(values, sort=sort)
         dataframe = dataframe.drop(columns=col)
         if sep is not None:
-            dataframe[prefix + col] = pd.DataFrame({
-                "id": values.index,
-                col: ids
-            }).groupby("id")[col].agg(lambda x: list(x))
+            dataframe[prefix + col] = (
+                pd.DataFrame({"id": values.index, col: ids})
+                .groupby("id")[col]
+                .agg(lambda x: list(x))
+            )
         else:
             dataframe[prefix + col] = ids
-        base = pd.DataFrame({col: uniques},
-                            index=pd.Index(range(len(uniques)), name="id"))
+        base = pd.DataFrame(
+            {col: uniques}, index=pd.Index(range(len(uniques)), name="id")
+        )
         bases[col] = base
 
     return bases, dataframe
 
 
-def split_recommendation(dataframe,
-                         split_config: Dict[str, List[str]],
-                         columns: str,
-                         as_index: Union[bool, Dict[str, str]] = False,
-                         sort: bool = False,
-                         prefix: str = "id_"):
+def split_recommendation(
+    dataframe,
+    split_config: Dict[str, List[str]],
+    columns: str,
+    as_index: Union[bool, Dict[str, str]] = False,
+    sort: bool = False,
+    prefix: str = "id_",
+):
     """
     Split data into the 3 datasets for recommendation and also splits columns
     returning the datasets for pretrained bases and replacing the original
@@ -88,9 +98,9 @@ def split_recommendation(dataframe,
         Dataframe to be factored.
     split_config : Dict[str, List[str]]
         Dictionary with **length 2**.
-        - keys: db_names for each of the child Recommendation databases created 
+        - keys: db_names for each of the child Recommendation databases created
         on Recommendation System's setup.
-        - values: list of columns of those databases. 
+        - values: list of columns of those databases.
     columns : str, list of str or dict
         Column to be separated from dataset.
         If column has multiple data, use a dict with the format column name as
@@ -104,7 +114,7 @@ def split_recommendation(dataframe,
     prefix : str
         Prefix added to the splitted column names. See `split` function.
         Also used as prefix for de id columns of the child Recommendation databases.
-        
+
 
     Returns
     -------
@@ -114,27 +124,27 @@ def split_recommendation(dataframe,
 
     pretrained_bases : pd.DataFrame
         list of dataframes with each base extracted.
-    """
 
-    pretrained_bases, df_split = split(dataframe,
-                                       columns,
-                                       sort=sort,
-                                       prefix=prefix)
+    Example
+    -------
+    >>> from jai.utilities import split
+    ...
+    >>> processed = predict2df(results)
+    >>> pd.DataFrame(processed)
+    """
+    pretrained_bases, df_split = split(dataframe, columns, sort=sort, prefix=prefix)
 
     main_bases = {}
     for name, split_cols in split_config.items():
-        split_cols = [
-            prefix + col if col in columns else col for col in split_cols
-        ]
+        split_cols = [prefix + col if col in columns else col for col in split_cols]
         df_out = df_split.loc[:, split_cols].drop_duplicates()
         if not as_index:
-            df_out = df_out.reset_index().rename(
-                columns={'index': prefix + name})
+            df_out = df_out.reset_index().rename(columns={"index": prefix + name})
         else:
             df_out[prefix + name] = df_out[as_index[name]].copy()
-        df_split = df_split.merge(df_out,
-                                  left_on=split_cols,
-                                  right_on=split_cols).drop(columns=split_cols)
+        df_split = df_split.merge(df_out, left_on=split_cols, right_on=split_cols).drop(
+            columns=split_cols
+        )
 
         main_bases[name] = df_out.set_index(prefix + name)
 

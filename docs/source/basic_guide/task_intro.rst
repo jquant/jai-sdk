@@ -19,7 +19,7 @@ Now, the user can focus on learning one task at a time without the noise of the 
 
    Explorer Module <../task/explorer.rst>
    Trainer Module  <../task/trainer.rst>
-   Quert Module <../task/query.rst>
+   Query Module <../task/query.rst>
    Vectors Module <../task/vectors.rst>
    Linear Models <../task/linear.rst>
 

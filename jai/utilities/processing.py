@@ -8,8 +8,11 @@ from tqdm import tqdm
 from ._utils import multikeysort
 
 __all__ = [
-    "find_threshold", "filter_similar", "predict2df", "filter_resolution",
-    "treat_unix"
+    "find_threshold",
+    "filter_similar",
+    "predict2df",
+    "filter_resolution",
+    "treat_unix",
 ]
 
 
@@ -76,7 +79,7 @@ def find_threshold(results, sample_size=0.1, quantile=0.05):
     samples = np.random.randint(0, len(results), n)
     distribution = []
     for s in tqdm(samples, desc="Fiding threshold"):
-        d = [r['distance'] for r in results[s]['results'][1:]]
+        d = [r["distance"] for r in results[s]["results"][1:]]
         distribution.extend(d)
     threshold = np.quantile(distribution, quantile)
     warnings.warn("Threshold calculated automatically.")
@@ -84,10 +87,9 @@ def find_threshold(results, sample_size=0.1, quantile=0.05):
     return threshold
 
 
-def filter_similar(results,
-                   threshold: float = None,
-                   return_self: bool = True,
-                   skip_null: bool = True):
+def filter_similar(
+    results, threshold: float = None, return_self: bool = True, skip_null: bool = True
+):
     """
     Process the output from the similar methods.
 
@@ -125,18 +127,19 @@ def filter_similar(results,
         threshold = find_threshold(results)
 
     similar = []
-    for q in tqdm(results, desc='Process'):
-        sort = multikeysort(q['results'], ['distance', 'id'])
+    for q in tqdm(results, desc="Process"):
+        sort = multikeysort(q["results"], ["distance", "id"])
         zero, one = sort[0], sort[1]
-        if zero['distance'] <= threshold and (zero['id'] != q['query_id']
-                                              or return_self):
-            zero['query_id'] = q['query_id']
+        if zero["distance"] <= threshold and (
+            zero["id"] != q["query_id"] or return_self
+        ):
+            zero["query_id"] = q["query_id"]
             similar.append(zero)
-        elif one['distance'] <= threshold:
-            one['query_id'] = q['query_id']
+        elif one["distance"] <= threshold:
+            one["query_id"] = q["query_id"]
             similar.append(one)
         elif not skip_null:
-            mock = {"query_id": q['query_id'], "id": None, "distance": None}
+            mock = {"query_id": q["query_id"], "id": None, "distance": None}
             similar.append(mock)
         else:
             continue
@@ -163,9 +166,18 @@ def predict2df(predicts, digits: int = 2, percentage: bool = True):
     list
         mapping the query id to the predicted value.
 
+    Example
+    -------
+    >>> from jai.utilities import predict2df
+    ...
+    >>> split_bases, main_base = predict2df(
+    ...     df,
+    ...     {"tower_1": ["columns_tower1"], "tower_2": ["columns_tower2"]},
+    ...     ["split_column"],
+    ... )
     """
     predicts = deepcopy(predicts)
-    example = predicts[0]['predict']
+    example = predicts[0]["predict"]
     predict_proba = False
     quantiles = False
     if isinstance(example, dict):
@@ -175,31 +187,29 @@ def predict2df(predicts, digits: int = 2, percentage: bool = True):
             quantiles = True
 
     index, values = [], []
-    for query in tqdm(predicts, desc='Predict Processing'):
-        index.append(query['id'])
+    for query in tqdm(predicts, desc="Predict Processing"):
+        index.append(query["id"])
         if predict_proba:
             factor = 100 if percentage else 1
-            prob_name = 'probability(%)' if percentage else 'probability'
-            temp = deepcopy(query['predict'])
-            predict = max(query['predict'], key=query['predict'].get)
-            temp['predict'] = predict
-            temp[prob_name] = round(query['predict'][predict] * factor, digits)
+            prob_name = "probability(%)" if percentage else "probability"
+            temp = deepcopy(query["predict"])
+            predict = max(query["predict"], key=query["predict"].get)
+            temp["predict"] = predict
+            temp[prob_name] = round(query["predict"][predict] * factor, digits)
             values.append(temp)
         elif quantiles:
-            values.append({
-                f"predict_{quant}": pred
-                for quant, pred in query["predict"].items()
-            })
+            values.append(
+                {f"predict_{quant}": pred for quant, pred in query["predict"].items()}
+            )
         else:
             values.append({"predict": query["predict"]})
     index = pd.Index(index, name="id")
     return pd.DataFrame(values, index=index)
 
 
-def filter_resolution(results,
-                      threshold=None,
-                      return_self=True,
-                      res_id="resolution_id"):
+def filter_resolution(
+    results, threshold=None, return_self=True, res_id="resolution_id"
+):
     """
     Process the results of similarity for resolution goals.
 
@@ -228,21 +238,21 @@ def filter_resolution(results,
     """
 
     results = deepcopy(results)
-    results = sorted(results, key=lambda x: x['query_id'])
+    results = sorted(results, key=lambda x: x["query_id"])
     if threshold is None:
         threshold = find_threshold(results)
 
     # The if A is similar to B and B is similar to C, then C should be A
     connect = []  # all connected relations
     con_aux = {}  # past relationships
-    for q in tqdm(results, desc='Process'):
-        qid = q['query_id']
+    for q in tqdm(results, desc="Process"):
+        qid = q["query_id"]
         if qid in con_aux.keys():
             qid = con_aux[qid]
-        res = multikeysort(q['results'], ['distance', 'id'])
-        filt = filter(lambda x: x['distance'] <= threshold, res)
+        res = multikeysort(q["results"], ["distance", "id"])
+        filt = filter(lambda x: x["distance"] <= threshold, res)
         for item in filt:
-            _id = item['id']
+            _id = item["id"]
             # if id hasn't been solved
             if _id not in con_aux.keys():
                 # if is itself (root solution)

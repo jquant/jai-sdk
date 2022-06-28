@@ -22,11 +22,13 @@ def decode_image(encoded_string):
     return Image.open(BytesIO(b64decode(encoded_string))).convert("RGB")
 
 
-def read_image(folder: Union[Path, List[Path]],
-               resize: Tuple[int, int] = None,
-               handle_errors: str = "ignore",
-               id_pattern: str = None,
-               extensions: List = [".png", ".jpg", ".jpeg"]):
+def read_image(
+    folder: Union[Path, List[Path]],
+    resize: Tuple[int, int] = None,
+    handle_errors: str = "ignore",
+    id_pattern: str = None,
+    extensions: List = [".png", ".jpg", ".jpeg"],
+):
     """
     Function to read images from folder and transform to a format compatible
     to jai.
@@ -40,7 +42,7 @@ def read_image(folder: Union[Path, List[Path]],
     new_size : Tuple of int, optional
         New shape to resize images. The default is None.
     handle_errors : str, optional
-        Whether to ignore errors and skipped files. 
+        Whether to ignore errors and skipped files.
         If "ignore", could probably result in a internal error later on.
         The default is "ignore".
     id_pattern : str, optional
@@ -59,6 +61,11 @@ def read_image(folder: Union[Path, List[Path]],
     pd.Dataframe
         Pandas Dataframe with acceptable format for jai usage.
 
+    Example
+    -------
+    >>> from jai.utilities import read_image
+    ...
+    >>> df = read_image(folder_path)
     """
     if isinstance(folder, (Path, str)):
         _folder = Path(folder)
@@ -68,7 +75,7 @@ def read_image(folder: Union[Path, List[Path]],
         name = Path(folder[0]).name
         file_loop = chain(*[Path(f).iterdir() for f in folder])
 
-    if handle_errors not in ['raise', 'warn', 'ignore']:
+    if handle_errors not in ["raise", "warn", "ignore"]:
         raise ValueError("handle_errors must be `raise`, `warn` or `ignore`")
 
     encoded_images = []
@@ -94,7 +101,7 @@ def read_image(folder: Union[Path, List[Path]],
 
                 img = Image.open(filename)
                 if resize is not None:
-                    img = img.resize(resize, Image.ANTIALIAS).convert('RGB')
+                    img = img.resize(resize, Image.ANTIALIAS).convert("RGB")
                 encoded_string = encode_image(img)
 
                 # test if decoding is working
@@ -103,32 +110,30 @@ def read_image(folder: Union[Path, List[Path]],
             except KeyboardInterrupt:
                 raise KeyboardInterrupt
             except Exception as error:
-                if handle_errors == 'raise':
-                    raise ValueError(
-                        f"file {filename} seems to be corrupted. {error}")
+                if handle_errors == "raise":
+                    raise ValueError(f"file {filename} seems to be corrupted. {error}")
 
                 corrupted_files.append(filename.as_posix())
                 continue
 
-            encoded_images.append({
-                'id': i,
-                name: encoded_string,
-                "filename": filename.name
-            })
+            encoded_images.append(
+                {"id": i, name: encoded_string, "filename": filename.name}
+            )
         else:
-            if handle_errors == 'raise':
+            if handle_errors == "raise":
                 raise ValueError(
                     f"file {filename} does not have the proper extension.\
-                        acceptable extensions: {extensions}")
+                        acceptable extensions: {extensions}"
+                )
             ignored_files.append(filename.as_posix())
 
-    if handle_errors == 'warn' and len(ignored_files) > 0:
-        ignored_message = '\n'.join(ignored_files)
+    if handle_errors == "warn" and len(ignored_files) > 0:
+        ignored_message = "\n".join(ignored_files)
         print("Here are the ignored files:")
         print(f"{ignored_message}")
 
-    if handle_errors == 'warn' and len(corrupted_files) > 0:
-        corrupted_message = '\n'.join(corrupted_files)
+    if handle_errors == "warn" and len(corrupted_files) > 0:
+        corrupted_message = "\n".join(corrupted_files)
         print("Here are the files that seem to be corrupted:")
         print(f"{corrupted_message}")
 

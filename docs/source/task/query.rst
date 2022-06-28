@@ -89,6 +89,8 @@ Return information about the fields that are expected as input.
 :code:`download_vectors`
 ------------------------
 
+Returns an array with the vectors from the database.
+
 .. code-block:: python
 
    >>> from jai import Query
@@ -100,6 +102,8 @@ Return information about the fields that are expected as input.
 :code:`filters`
 -----------------
 
+Returns the list of filters if any.
+
 .. code-block:: python
 
    >>> from jai import Query
@@ -110,6 +114,8 @@ Return information about the fields that are expected as input.
 
 :code:`ids`
 -----------------
+
+Returns the list of ids in the database.
 
 .. code-block:: python
 
