@@ -21,7 +21,8 @@ __all__ = ["Vectors"]
 def get_numbers(status):
     if fnmatch(status["Description"], "*Iteration:*"):
         curr_step, max_iterations = (
-            status["Description"].split("Iteration: ")[1].strip().split(" / "))
+            status["Description"].split("Iteration: ")[1].strip().split(" / ")
+        )
         return int(curr_step), int(max_iterations)
     return False, 0, 0
 
@@ -40,16 +41,22 @@ class Vectors(TaskBase):
     environment : str
         Jai environment id or name to use. Defaults to "default"
     env_var : str
-        The environment variable that contains the JAI authentication token. 
+        The environment variable that contains the JAI authentication token.
         Defaults to "JAI_AUTH".
     verbose : int
         The level of verbosity. Defaults to 1
-    safe_mode : bool    
+    safe_mode : bool
         When safe_mode is True, responses from Jai API are validated.
-        If the validation fails, the current version you are using is probably incompatible with the current API version. 
-        We advise updating it to a newer version. If the problem persists and you are on the latest SDK version, please open an issue so we can work on a fix. 
+        If the validation fails, the current version you are using is probably incompatible with the current API version.
+        We advise updating it to a newer version. If the problem persists and you are on the latest SDK version, please open an issue so we can work on a fix.
 
+    Example
+    -------
+    >>> from jai import Vectors
+    ...
+    >>> vectors = Vectors(name)
     """
+
     def __init__(
         self,
         name: str,
@@ -77,11 +84,11 @@ class Vectors(TaskBase):
             Dictionary with the API response.
 
         Example
-        ----------
-        >>> name = 'chosen_name'
-        >>> j = Jai(AUTH_KEY)
-        >>> j.delete_raw_data(name=name)
-        'All raw data from database 'chosen_name' was deleted!'
+        -------
+        >>> from jai import Vectors
+        ...
+        >>> vectors = Vectors(name)
+        >>> vectors.delete_raw_data()
         """
         response = self._delete_raw_data(self.name)
         if self.safe_mode:
@@ -104,10 +111,10 @@ class Vectors(TaskBase):
 
         Example
         -------
-        >>> name = 'chosen_name'
-        >>> j = Jai(AUTH_KEY)
-        >>> j.delete_database(name=name)
-        'Bombs away! We nuked database chosen_name!'
+        >>> from jai import Vectors
+        ...
+        >>> vectors = Vectors(name)
+        >>> vectors.delete_database()
         """
         response = self._delete_database(self.name)
         if self.safe_mode:
@@ -142,6 +149,13 @@ class Vectors(TaskBase):
         insert_responses : dict
             Dictionary of responses for each batch. Each response contains
             information of whether or not that particular batch was successfully inserted.
+
+        Example
+        -------
+        >>> from jai import Vectors
+        ...
+        >>> vectors = Vectors(name)
+        >>> vectors.insert_vectors(data)
         """
 
         if self.is_valid():
@@ -173,20 +187,17 @@ class Vectors(TaskBase):
             )
 
         insert_responses = {}
-        for i, b in enumerate(
-                trange(0, len(data), batch_size, desc="Insert Vectors")):
-            _batch = data.iloc[b:b + batch_size]
-            data_json = data2json(_batch,
-                                  dtype=PossibleDtypes.vector,
-                                  predict=False)
+        for i, b in enumerate(trange(0, len(data), batch_size, desc="Insert Vectors")):
+            _batch = data.iloc[b : b + batch_size]
+            data_json = data2json(_batch, dtype=PossibleDtypes.vector, predict=False)
             if i == 0 and create_new_collection is True:
-                response = self._insert_vectors_json(self.name,
-                                                     data_json,
-                                                     overwrite=True)
+                response = self._insert_vectors_json(
+                    self.name, data_json, overwrite=True
+                )
             else:
-                response = self._insert_vectors_json(self.name,
-                                                     data_json,
-                                                     overwrite=False)
+                response = self._insert_vectors_json(
+                    self.name, data_json, overwrite=False
+                )
 
             if self.safe_mode:
                 response = check_response(InsertVectorResponse, response)

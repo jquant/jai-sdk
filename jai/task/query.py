@@ -20,12 +20,6 @@ from typing import Any, Dict, List, Union
 import requests
 
 from pydantic import HttpUrl
-import sys
-
-if sys.version < "3.8":
-    from typing_extensions import Literal
-else:
-    from typing import Literal
 
 __all__ = ["Query"]
 
@@ -82,6 +76,19 @@ class Query(TaskBase):
             )
 
     def check_features(self, columns: List[str], name: str = None):
+        """
+        It checks if the columns you want to use in your model match the expected from the API.
+
+        Args
+        ----
+        columns (List[str]): list of columns name to be used.
+        name (str): The name of the model. Leave this as is.
+
+        Returns
+        -------
+        A list of names of columns that were not found.
+        """
+
         def _check_fields(
             fields: Dict[str, FieldsResponse], columns: List[str], mapping: str = "id"
         ):
@@ -193,18 +200,6 @@ class Query(TaskBase):
             previously setup and 'distance' in between the correspondent 'id'
             and 'query_id'.
 
-        Example
-        -------
-        >>> name = 'chosen_name'
-        >>> DATA_ITEM = # data in the format of the database
-        >>> TOP_K = 3
-        >>> j = Jai(AUTH_KEY)
-        >>> df_index_distance = j.similar(name, DATA_ITEM, TOP_K)
-        >>> print(pd.DataFrame(df_index_distance['similarity']))
-           id  distance
-        10007       0.0
-        45568    6995.6
-         8382    7293.2
         """
 
         results = []
@@ -257,19 +252,6 @@ class Query(TaskBase):
             items dictionaries, each dictionary has the 'id' from the database
             previously setup and 'distance' in between the correspondent 'id'
             and 'query_id'.
-
-        Example
-        -------
-        >>> name = 'chosen_name'
-        >>> DATA_ITEM = # data in the format of the database
-        >>> TOP_K = 3
-        >>> j = Jai(AUTH_KEY)
-        >>> df_index_distance = j.recommendation(name, DATA_ITEM, TOP_K)
-        >>> print(pd.DataFrame(df_index_distance['recommendation']))
-           id  distance
-        10007       0.0
-        45568    6995.6
-         8382    7293.2
         """
 
         results = []
@@ -315,18 +297,6 @@ class Query(TaskBase):
             List of dictionaries with 'id' of the inputed data and 'predict'
             as predictions for the data passed as input.
 
-        Example
-        ----------
-        >>> name = 'chosen_name'
-        >>> DATA_ITEM = # data in the format of the database
-        >>> j = Jai(AUTH_KEY)
-        >>> preds = j.predict(name, DATA_ITEM)
-        >>> print(preds)
-        [{"id":0, "predict": "class1"}, {"id":1, "predict": "class0"}]
-
-        >>> preds = j.predict(name, DATA_ITEM, predict_proba=True)
-        >>> print(preds)
-        [{"id": 0 , "predict"; {"class0": 0.1, "class1": 0.6, "class2": 0.3}}]
         """
         if self.db_type != "Supervised":
             raise ValueError("predict is only available to dtype Supervised.")
@@ -360,30 +330,14 @@ class Query(TaskBase):
 
         Example
         -------
-        >>> name = 'chosen_name'
-        >>> j = Jai(AUTH_KEY)
-        >>> fields = j.fields(name=name)
-        >>> print(fields)
-        {'id': 0, 'feature1': 0.01, 'feature2': 'string', 'feature3': 0}
+        >>> from jai import Query
+        ...
+        >>> q = Query(name)
+        >>> q.fields()
         """
         fields = self._fields(self.name)
         if self.safe_mode:
-            return check_response(
-                Dict[
-                    str,
-                    Literal[
-                        "int32",
-                        "int64",
-                        "float32",
-                        "float64",
-                        "string",
-                        "embedding",
-                        "label",
-                        "datetime",
-                    ],
-                ],
-                fields,
-            )
+            return check_response(FieldsResponse, fields)
         return fields
 
     def download_vectors(self):
@@ -402,9 +356,10 @@ class Query(TaskBase):
 
         Example
         -------
-        >>> name = 'chosen_name'
-        >>> j = Jai(AUTH_KEY)
-        >>> vectors = j.download_vectors(name=name)
+        >>> from jai import Query
+        ...
+        >>> q = Query(name)
+        >>> q.download_vectors()
         >>> print(vectors)
         [[ 0.03121682  0.2101511  -0.48933393 ...  0.05550333  0.21190546  0.19986008]
         [-0.03121682 -0.21015109  0.48933393 ...  0.2267401   0.11074653  0.15064166]
@@ -446,9 +401,10 @@ class Query(TaskBase):
 
         Example
         ----------
-        >>> name = 'chosen_name'
-        >>> j = Jai(AUTH_KEY)
-        >>> ids = j.ids(name)
+        >>> from jai import Query
+        ...
+        >>> q = Query(name)
+        >>> q.ids()
         >>> print(ids)
         ['891 items from 0 to 890']
         """

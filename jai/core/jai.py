@@ -185,6 +185,9 @@ class Jai(BaseJai):
         """
         Request an auth key to use JAI-SDK with.
 
+        **This method will be deprecated.**
+        Please use `get_auth_key` function.
+
         Args
         ----------
         `email`: str
@@ -309,7 +312,7 @@ class Jai(BaseJai):
         Example
         -------
         >>> name = 'chosen_name'
-        >>> j = Jai(AUTH_KEY)
+        >>> j = Jai()
         >>> fields = j.fields(name=name)
         >>> print(fields)
         {'id': 0, 'feature1': 0.01, 'feature2': 'string', 'feature3': 0}
@@ -377,7 +380,7 @@ class Jai(BaseJai):
         Example
         -------
         >>> name = 'chosen_name'
-        >>> j = Jai(AUTH_KEY)
+        >>> j = Jai()
         >>> vectors = j.download_vectors(name=name)
         >>> print(vectors)
         [[ 0.03121682  0.2101511  -0.48933393 ...  0.05550333  0.21190546  0.19986008]
@@ -450,7 +453,7 @@ class Jai(BaseJai):
         >>> name = 'chosen_name'
         >>> DATA_ITEM = # data in the format of the database
         >>> TOP_K = 3
-        >>> j = Jai(AUTH_KEY)
+        >>> j = Jai()
         >>> df_index_distance = j.similar(name, DATA_ITEM, TOP_K)
         >>> print(pd.DataFrame(df_index_distance['similarity']))
            id  distance
@@ -539,7 +542,7 @@ class Jai(BaseJai):
         >>> name = 'chosen_name'
         >>> DATA_ITEM = # data in the format of the database
         >>> TOP_K = 3
-        >>> j = Jai(AUTH_KEY)
+        >>> j = Jai()
         >>> df_index_distance = j.recommendation(name, DATA_ITEM, TOP_K)
         >>> print(pd.DataFrame(df_index_distance['recommendation']))
            id  distance
@@ -621,7 +624,7 @@ class Jai(BaseJai):
         ----------
         >>> name = 'chosen_name'
         >>> DATA_ITEM = # data in the format of the database
-        >>> j = Jai(AUTH_KEY)
+        >>> j = Jai()
         >>> preds = j.predict(name, DATA_ITEM)
         >>> print(preds)
         [{"id":0, "predict": "class1"}, {"id":1, "predict": "class0"}]
@@ -668,7 +671,7 @@ class Jai(BaseJai):
         Example
         ----------
         >>> name = 'chosen_name'
-        >>> j = Jai(AUTH_KEY)
+        >>> j = Jai()
         >>> ids = j.ids(name)
         >>> print(ids)
         ['891 items from 0 to 890']
@@ -696,7 +699,7 @@ class Jai(BaseJai):
         Example
         -------
         >>> name = 'chosen_name'
-        >>> j = Jai(AUTH_KEY)
+        >>> j = Jai()
         >>> check_valid = j.is_valid(name)
         >>> print(check_valid)
         True
@@ -756,7 +759,7 @@ class Jai(BaseJai):
         -------
         >>> name = 'chosen_name'
         >>> data = # data in pandas.DataFrame format
-        >>> j = Jai(AUTH_KEY)
+        >>> j = Jai()
         >>> _, setup_response = j.setup(
                 name=name,
                 data=data,
@@ -1162,7 +1165,7 @@ class Jai(BaseJai):
         Example
         ----------
         >>> name = 'chosen_name'
-        >>> j = Jai(AUTH_KEY)
+        >>> j = Jai()
         >>> j.delete_raw_data(name=name)
         'All raw data from database 'chosen_name' was deleted!'
         """
@@ -1188,7 +1191,7 @@ class Jai(BaseJai):
         Example
         -------
         >>> name = 'chosen_name'
-        >>> j = Jai(AUTH_KEY)
+        >>> j = Jai()
         >>> j.delete_database(name=name)
         'Bombs away! We nuked database chosen_name!'
         """
@@ -1328,7 +1331,7 @@ class Jai(BaseJai):
         >>> import pandas as pd
         >>> from jai.processing import process_similar
         >>>
-        >>> j = Jai(AUTH_KEY)
+        >>> j = Jai()
         >>> match = j.match(name, data1, data2)
         >>> match
                   id_left     id_right     distance
@@ -1410,7 +1413,7 @@ class Jai(BaseJai):
         >>> import pandas as pd
         >>> from jai.processing import process_similar
         >>>
-        >>> j = Jai(AUTH_KEY)
+        >>> j = Jai()
         >>> results = j.resolution(name, data)
         >>> results
           id  resolution_id
@@ -1485,7 +1488,7 @@ class Jai(BaseJai):
         >>> import pandas as pd
         >>> from jai.processing import predict2df
         >>>
-        >>> j = Jai(AUTH_KEY)
+        >>> j = Jai()
         >>> results = j.fill(name, data, COL_TO_FILL)
         >>> processed = predict2df(results)
         >>> pd.DataFrame(processed).sort_values('id')
@@ -1653,7 +1656,7 @@ class Jai(BaseJai):
         >>> import pandas as pd
         >>> from jai.processing import predict2df
         >>>
-        >>> j = Jai(AUTH_KEY)
+        >>> j = Jai()
         >>> results = j.sanity(name, data)
         >>> processed = predict2df(results)
         >>> pd.DataFrame(processed).sort_values('id')

@@ -31,7 +31,7 @@ Bellow, a simple example to instanciate the Explorer class:
 You can check the user information with :code:`user` method.
 
 .. note:: 
-   We recommend the usage of this method if you wish to check if the authentication key if valid.
+   If you wish to check whether **the authentication key is valid** or not, we recommend the usage of this method.
 
 .. code-block:: python
 
@@ -94,47 +94,63 @@ It will remove the size and dimension information from the response.
 :code:`describe`
 ----------------
 
-TODO 
+Provides a full description of the database's setup configuration.
 
 .. code-block:: python
 
    >>> from jai import Explorer
    ...
    >>> explorer = Explorer()
-   >>> explorer.describe("db_name")
+   >>> explorer.describe(name)
 
 :code:`rename`
 --------------
 
-TODO 
+Renames a database.
+
+.. note:: 
+   We recommend not changing database's names if it's already being used as a parent base for another databases.
 
 .. code-block:: python
 
    >>> from jai import Explorer
    ...
    >>> explorer = Explorer()
-   >>> explorer.rename()
+   >>> explorer.rename(original_name, new_name)
 
 :code:`transfer`
 ----------------
 
-TODO 
+Transfers a collection from one environment to another.
+
+.. note:: 
+   We recommend not changing database's names if it's already being used as a parent base for another databases.
+   If a database has parents, you'll need to transfer one by one.
 
 .. code-block:: python
 
    >>> from jai import Explorer
    ...
    >>> explorer = Explorer()
-   >>> explorer.transfer()
+   >>> explorer.transfer(original_name, to_environment)
 
 :code:`import_database`
 -----------------------
 
-TODO 
+It imports a database from another user/environment.
+
+.. note:: 
+   We recommend not changing database's names if it's already being used as a parent base for another databases.
+   If a database has parents, you'll need to transfer one by one.
+   The environment must be `PUBLIC` type.
 
 .. code-block:: python
 
    >>> from jai import Explorer
    ...
    >>> explorer = Explorer()
-   >>> explorer.import_database()
+   >>> explorer.import_database(
+   ...     database_name,
+   ...     owner_id,
+   ...     import_name
+   ... )

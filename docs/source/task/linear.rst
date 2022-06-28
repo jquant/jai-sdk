@@ -24,7 +24,7 @@ Bellow, a simple example to instanciate the LinearModel class:
 
    >>> from jai import LinearModel
    ...
-   >>> model = LinearModel()
+   >>> model = LinearModel(name)
 
 
 :code:`set_parameters`
@@ -36,40 +36,44 @@ First step to train a new linear model is to define its parameters.
 
    >>> from jai import LinearModel
    ...
-   >>> model = LinearModel()
-   >>> model.set_parameters()
+   >>> model = LinearModel(name)
+   >>> model.set_parameters(model_parameters={})
 
 :code:`fit`
 ----------------------
 
+Train a Linear model.
+
 .. code-block:: python
 
    >>> from jai import LinearModel
    ...
-   >>> model = LinearModel()
-   >>> model.fit()
+   >>> model = LinearModel(name)
+   >>> model.fit(X, y)
 
 :code:`learn`
 ---------------
 
-.. code-block:: python
+Improves an existing model with informantion from a new data.
 
+.. code-block:: python
 
    >>> from jai import LinearModel
    ...
-   >>> model = LinearModel()
-   >>> model.learn()
+   >>> model = LinearModel(name)
+   >>> model.learn(X, y)
 
 :code:`predict`
 ---------------
 
-.. code-block:: python
+Makes a prediction.
 
+.. code-block:: python
 
    >>> from jai import LinearModel
    ...
-   >>> model = LinearModel()
-   >>> model.predict()
+   >>> model = LinearModel(name)
+   >>> model.predict(X)
 
 Inherited from :code:`TaskBase`
 ===============================
@@ -83,7 +87,7 @@ This attribute contains the value of the database's name.
 
    >>> from jai import LinearModel
    ...
-   >>> model = LinearModel()
+   >>> model = LinearModel(name)
    >>> model.name
 
 :code:`db_type`
@@ -95,7 +99,7 @@ This attribute returns the type of the database.
 
    >>> from jai import LinearModel
    ...
-   >>> model = LinearModel()
+   >>> model = LinearModel(name)
    >>> model.db_type
    
 :code:`is_valid`
@@ -107,7 +111,7 @@ This method returns a boolean indicating if the database exists or not.
 
    >>> from jai import LinearModel
    ...
-   >>> model = LinearModel()
+   >>> model = LinearModel(name)
    >>> model.is_valid()
 
 :code:`describe`
@@ -119,7 +123,7 @@ This method returns the full configuration information of the database.
 
    >>> from jai import LinearModel
    ...
-   >>> model = LinearModel()
+   >>> model = LinearModel(name)
    >>> model.describe()
 
    

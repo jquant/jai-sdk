@@ -142,6 +142,21 @@ class LinearModel(TaskBase):
         pretrained_bases: list = None,
         overwrite: bool = False,
     ):
+        """
+        Train a new linear model.
+
+        Args:
+          X (pd.DataFrame): dataframe of features.
+          y (pd.Series): The target variable.
+          pretrained_bases (list): mapping of ids to previously trained databases.
+          overwrite (bool): If True, will overwrite the model if it already exists. Defaults to False.
+
+        Returns:
+          A dictionary with information about the training.
+          - id_train: List[Any]
+          - id_test: List[Any]
+          - metrics: Dict[str, Union[float, str]]
+        """
         response = self._linear_train(
             self.name,
             X.to_dict(orient="records"),
@@ -159,6 +174,19 @@ class LinearModel(TaskBase):
         return response
 
     def learn(self, X: pd.DataFrame, y: pd.Series):
+        """
+        Improves an existing model with informantion from a new data.
+
+        Args:
+        X (pd.DataFrame): dataframe of features.
+        y (pd.Series): The target variable.
+
+        Returns:
+        A dictionary with the learning report.
+        - before: Dict[str, Union[float, str]]
+        - after: Dict[str, Union[float, str]]
+        - change: bool
+        """
         response = self._linear_learn(
             self.name, X.to_dict(orient="records"), y.tolist()
         )
@@ -171,7 +199,20 @@ class LinearModel(TaskBase):
     def predict(
         self, X: pd.DataFrame, predict_proba: bool = False, as_frame: bool = True
     ):
+        """
+        It takes a dataframe, converts it to a list of dictionaries, and then calls the _linear_predict
+        function
 
+        Args:
+        X (pd.DataFrame): pd.DataFrame
+        predict_proba (bool): If True, the model will return the probability of each class. Defaults to
+        False
+        as_frame (bool): If True, the result will be returned as a pandas DataFrame. If False, it will be
+        returned as a list of dictionaries. Defaults to True
+
+        Returns:
+        A list of dictionaries.
+        """
         result = self._linear_predict(
             self.name, X.to_dict(orient="records"), predict_proba=predict_proba
         )

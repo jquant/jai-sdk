@@ -21,37 +21,42 @@ Bellow, a simple example to instanciate the Vectors class:
 
    >>> from jai import Vectors
    ...
-   >>> vectors = Vectors()
+   >>> vectors = Vectors(name)
 
 
 :code:`insert_vectors`
 ----------------------
+Insert raw vectors database directly into JAI without any need of fit.
 
 .. code-block:: python
 
    >>> from jai import Vectors
    ...
-   >>> vectors = Vectors()
-   >>> vectors.insert_vectors()
+   >>> vectors = Vectors(name)
+   >>> vectors.insert_vectors(data)
 
 :code:`delete_raw_data`
 -----------------------
 
+Removes any remaining raw data that might be stored.
+
 .. code-block:: python
 
    >>> from jai import Vectors
    ...
-   >>> vectors = Vectors()
+   >>> vectors = Vectors(name)
    >>> vectors.delete_raw_data()
 
 :code:`delete_database`
 -----------------------
 
+Removes the collection.
+
 .. code-block:: python
 
    >>> from jai import Vectors
    ...
-   >>> vectors = Vectors()
+   >>> vectors = Vectors(name)
    >>> vectors.delete_database()
 
 
@@ -67,7 +72,7 @@ This attribute contains the value of the database's name.
 
    >>> from jai import Vectors
    ...
-   >>> vectors = Vectors()
+   >>> vectors = Vectors(name)
    >>> vectors.name
 
 :code:`db_type`
@@ -79,7 +84,7 @@ This attribute returns the type of the database.
 
    >>> from jai import Vectors
    ...
-   >>> vectors = Vectors()
+   >>> vectors = Vectors(name)
    >>> vectors.db_type
    
 :code:`is_valid`
@@ -91,7 +96,7 @@ This method returns a boolean indicating if the database exists or not.
 
    >>> from jai import Vectors
    ...
-   >>> vectors = Vectors()
+   >>> vectors = Vectors(name)
    >>> vectors.is_valid()
 
 :code:`describe`
@@ -103,5 +108,5 @@ This method returns the full configuration information of the database.
 
    >>> from jai import Vectors
    ...
-   >>> vectors = Vectors()
+   >>> vectors = Vectors(name)
    >>> vectors.describe()

@@ -54,87 +54,89 @@ For the complete reference of the possible parameters look at :ref:`fit kwargs <
 
    >>> from jai import Trainer
    ...
-   >>> trainer = Trainer()
+   >>> trainer = Trainer(name)
    >>> trainer.set_parameters(db_type="Text")  # example to create a Text type collection
 
-If you wish to check all parameters, after using the :code:`set_parameters`, you can use the property :code:`setup_parameters`.
+If you wish to check all parameters, after using the :code:`set_parameters`, you can use the property :code:`fit_parameters`.
 
 .. code-block:: python
 
-   >>> trainer.setup_parameters
+   >>> trainer.fit_parameters
 
 
 :code:`fit`
 -----------
 
-TODO 
+Method to create a new collection.
+
+**You must run `set_parameters` before.**
 
 .. code-block:: python
 
    >>> from jai import Trainer
    ...
-   >>> trainer = Trainer()
+   >>> trainer = Trainer(name)
    >>> trainer.fit(data)
 
 :code:`append`
 --------------
 
-TODO 
+After a collection exists, adds new data to the collection.
 
 .. code-block:: python
 
    >>> from jai import Trainer
    ...
-   >>> trainer = Trainer()
+   >>> trainer = Trainer(name)
    >>> trainer.append(data)
 
 :code:`report`
 --------------
 
-TODO 
+Some general information about the fit process.
 
 .. code-block:: python
 
    >>> from jai import Trainer
    ...
-   >>> trainer = Trainer()
-   >>> trainer.append()
+   >>> trainer = Trainer(name)
+   >>> trainer.report()
 
 :code:`delete_ids`
 ------------------
 
-TODO 
+Removes data from the collection.
 
 .. code-block:: python
 
    >>> from jai import Trainer
    ...
-   >>> trainer = Trainer()
-   >>> trainer.append()
+   >>> trainer = Trainer(name)
+   >>> trainer.delete_ids([0, 1])
 
 :code:`delete_raw_data`
 -----------------------
 
-TODO 
+Removes any remaining raw data that might be stored.
 
 .. code-block:: python
 
    >>> from jai import Trainer
    ...
-   >>> trainer = Trainer()
-   >>> trainer.append()
+   >>> trainer = Trainer(name)
+   >>> trainer.delete_raw_data()
 
 :code:`delete_database`
 -----------------------
 
-TODO 
+Removes the collection.
 
 .. code-block:: python
 
    >>> from jai import Trainer
    ...
-   >>> trainer = Trainer()
-   >>> trainer.append()
+   >>> trainer = Trainer(name)
+   >>> trainer.delete_database()
 
 :code:`get_query`
 -----------------
@@ -146,7 +148,7 @@ object.
 
    >>> from jai import Trainer
    ...
-   >>> trainer = Trainer()
+   >>> trainer = Trainer(name)
    >>> trainer.get_query()
 
 Inherited from :code:`TaskBase`
@@ -161,7 +163,7 @@ This attribute contains the value of the database's name.
 
    >>> from jai import Trainer
    ...
-   >>> trainer = Trainer()
+   >>> trainer = Trainer(name)
    >>> trainer.name
 
 :code:`db_type`
@@ -173,7 +175,7 @@ This attribute returns the type of the database.
 
    >>> from jai import Trainer
    ...
-   >>> trainer = Trainer()
+   >>> trainer = Trainer(name)
    >>> trainer.db_type
    
 :code:`is_valid`
@@ -185,7 +187,7 @@ This method returns a boolean indicating if the database exists or not.
 
    >>> from jai import Trainer
    ...
-   >>> trainer = Trainer()
+   >>> trainer = Trainer(name)
    >>> trainer.is_valid()
 
 :code:`describe`
@@ -197,7 +199,7 @@ This method returns the full configuration information of the database.
 
    >>> from jai import Trainer
    ...
-   >>> trainer = Trainer()
+   >>> trainer = Trainer(name)
    >>> trainer.describe()
 
    

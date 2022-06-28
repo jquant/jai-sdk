@@ -38,6 +38,7 @@ What is JAI-SDK?
    :caption: Advanced User Guide
    
    Creating a new collection with filters <source/advanced/filters>
+   Training Linear Models <source/advanced/linear_models>
 ..    source/advanced/environments.rst
 ..    source/advanced/multimodal.rst
 ..    source/advanced/hierarchical.rst

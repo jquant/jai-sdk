@@ -83,13 +83,6 @@ class TaskBase(BaseJai):
         response: bool
             True if name is in your environment. False, otherwise.
 
-        Example
-        -------
-        >>> name = 'chosen_name'
-        >>> j = Jai(AUTH_KEY)
-        >>> check_valid = j.is_valid(name)
-        >>> print(check_valid)
-        True
         """
         valid = self._is_valid(self.name)
         if self.safe_mode:

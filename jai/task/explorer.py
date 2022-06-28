@@ -58,9 +58,10 @@ class Explorer(BaseJai):
 
         Example
         -------
-        >>> j.names
-        ['jai_database', 'jai_selfsupervised', 'jai_supervised']
-
+        >>> from jai import Explorer
+        ...
+        >>> explorer = Explorer()
+        >>> explorer.names
         """
         names = self._info(mode="names")
         if self.safe_mode:
@@ -79,11 +80,10 @@ class Explorer(BaseJai):
 
         Example
         -------
-        >>> j.info
-                                db_name           db_type
-        0                  jai_database              Text
-        1            jai_selfsupervised    SelfSupervised
-        2                jai_supervised        Supervised
+        >>> from jai import Explorer
+        ...
+        >>> explorer = Explorer()
+        >>> explorer.info()
         """
         info = self._info(mode="complete", get_size=get_size)
         if self.safe_mode:
@@ -116,6 +116,13 @@ class Explorer(BaseJai):
             - lastName: string
             - memberRole: string
             - namespace: string
+
+        Example
+        -------
+        >>> from jai import Explorer
+        ...
+        >>> explorer = Explorer()
+        >>> explorer.user()
         """
         user = self._user()
         if self.safe_mode:
@@ -125,6 +132,13 @@ class Explorer(BaseJai):
     def environments(self):
         """
         Return names of available environments.
+
+        Example
+        -------
+        >>> from jai import Explorer
+        ...
+        >>> explorer = Explorer()
+        >>> explorer.environments()
         """
         envs = self._environments()
         if self.safe_mode:
@@ -149,6 +163,13 @@ class Explorer(BaseJai):
         ------
         response : dict
             Dictionary with database description.
+
+        Example
+        -------
+        >>> from jai import Explorer
+        ...
+        >>> explorer = Explorer()
+        >>> explorer.describe(name)
         """
         description = self._describe(name)
         if self.safe_mode:
@@ -156,6 +177,24 @@ class Explorer(BaseJai):
         return description
 
     def rename(self, original_name: str, new_name: str):
+        """
+        Renames a database.
+
+        Args:
+        original_name (str): The name of the database you want to rename.
+        new_name (str): The new name of the database.
+
+        Returns:
+        String with message of successful renaming.
+
+        Example
+        -------
+        >>> from jai import Explorer
+        ...
+        >>> explorer = Explorer()
+        >>> explorer.rename(original_name, new_name)
+        """
+
         response = self._rename(original_name=original_name, new_name=new_name)
         if self.safe_mode:
             return check_response(str, response)
@@ -168,6 +207,27 @@ class Explorer(BaseJai):
         new_name: str = None,
         from_environment: str = "default",
     ):
+        """
+        Transfers a collection from one environment to another.
+
+        Args
+        ----
+        original_name (str): The name of the database you want to transfer.
+        to_environment (str): The environment to transfer the variable to.
+        new_name (str): The name of the new environment. If not specified, the original name is used.
+        from_environment (str): The environment to transfer the variable from. Defaults to `default`.
+
+        Returns
+        -------
+        A string confirming the tranfer.
+
+        Example
+        -------
+        >>> from jai import Explorer
+        ...
+        >>> explorer = Explorer()
+        >>> explorer.transfer(original_name, to_environment)
+        """
         response = self._transfer(
             original_name=original_name,
             to_environment=to_environment,
@@ -185,6 +245,31 @@ class Explorer(BaseJai):
         owner_email: str,
         import_name: str = None,
     ):
+        """
+        It imports a database from another user/environment.
+
+        Args
+        ----
+          database_name (str): The name of the database to import.
+          owner_id (str): The ID of the user who own the database.
+          owner_email (str): The email address of the user who own the database. This is an alternative to owner_id.
+          import_name (str): The name of the database to be imported, in case of renaming. Defaults to None (the database is not renamed).
+
+        Returns
+        -------
+          A string confirming the import process.
+
+        Example
+        -------
+        >>> from jai import Explorer
+        ...
+        >>> explorer = Explorer()
+        >>> explorer.import_database(
+        ...     database_name,
+        ...     owner_id,
+        ...     import_name
+        ... )
+        """
         response = self._import_database(
             database_name=database_name,
             owner_id=owner_id,

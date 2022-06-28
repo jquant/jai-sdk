@@ -22,49 +22,66 @@ Bellow, a simple example to instanciate the Query class:
 
    >>> from jai import Query
    ...
-   >>> q = Query()
+   >>> q = Query(name)
 
 
 :code:`similar`
 ----------------------
 
+Performs a similarity search in the collection.
+
+Data can be raw data or a set of ids. If it's a set of ids, the ids must exist in the collection.
+
 .. code-block:: python
 
    >>> from jai import Query
    ...
-   >>> q = Query()
-   >>> q.similar()
+   >>> q = Query(name)
+   >>> q.similar(data)
 
 :code:`recommendation`
 ----------------------
 
+This is only available for Recommendation type databases.
+
+Performs a recommendation search in the collection.
+
+Data can be raw data or a set of ids. If it's a set of ids, the ids must exist in the collection.
+
+Returns the ids of the database selected, therefore the data/ids input must be from the twin database.
+
 .. code-block:: python
 
    >>> from jai import Query
    ...
-   >>> q = Query()
-   >>> q.recommendation()
+   >>> q = Query(name)
+   >>> q.recommendation(data)
 
 :code:`predict`
 ---------------
 
+This is only available for Supervised type databases.
+Perform a prediction to the raw data.
+
 .. code-block:: python
 
    >>> from jai import Query
    ...
-   >>> q = Query()
-   >>> q.predict()
+   >>> q = Query(name)
+   >>> q.predict(data)
 
 
    
 :code:`fields`
 -----------------
 
+Return information about the fields that are expected as input.
+
 .. code-block:: python
 
    >>> from jai import Query
    ...
-   >>> q = Query()
+   >>> q = Query(name)
    >>> q.fields()
 
 
@@ -76,7 +93,7 @@ Bellow, a simple example to instanciate the Query class:
 
    >>> from jai import Query
    ...
-   >>> q = Query()
+   >>> q = Query(name)
    >>> q.download_vectors()
 
          
@@ -87,7 +104,7 @@ Bellow, a simple example to instanciate the Query class:
 
    >>> from jai import Query
    ...
-   >>> q = Query()
+   >>> q = Query(name)
    >>> q.filters()
 
 
@@ -98,7 +115,7 @@ Bellow, a simple example to instanciate the Query class:
 
    >>> from jai import Query
    ...
-   >>> q = Query()
+   >>> q = Query(name)
    >>> q.ids()
 
 Inherited from :code:`TaskBase`
@@ -113,7 +130,7 @@ This attribute contains the value of the database's name.
 
    >>> from jai import Query
    ...
-   >>> q = Query()
+   >>> q = Query(name)
    >>> q.name
 
 :code:`db_type`
@@ -125,7 +142,7 @@ This attribute returns the type of the database.
 
    >>> from jai import Query
    ...
-   >>> q = Query()
+   >>> q = Query(name)
    >>> q.db_type
    
 :code:`is_valid`
@@ -137,7 +154,7 @@ This method returns a boolean indicating if the database exists or not.
 
    >>> from jai import Query
    ...
-   >>> q = Query()
+   >>> q = Query(name)
    >>> q.is_valid()
 
 :code:`describe`
@@ -149,5 +166,5 @@ This method returns the full configuration information of the database.
 
    >>> from jai import Query
    ...
-   >>> q = Query()
+   >>> q = Query(name)
    >>> q.describe()

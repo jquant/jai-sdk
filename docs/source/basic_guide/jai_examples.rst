@@ -2,6 +2,8 @@
 Examples
 ########
 
+Here is some examples to show the usage of Jai.
+
 .. toctree::
 
    Smartphone - Similarity Search <../examples/Smartphone_Demo>

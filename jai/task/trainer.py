@@ -1,7 +1,5 @@
-import time
-from fnmatch import fnmatch
-
 import matplotlib.pyplot as plt
+from fnmatch import fnmatch
 from tqdm import tqdm
 from typing import List, Any, Dict
 
@@ -27,6 +25,7 @@ from ..types.responses import (
 import pandas as pd
 import numpy as np
 import json
+import time
 from collections.abc import Iterable
 
 __all__ = ["Trainer"]
@@ -74,6 +73,11 @@ class Trainer(TaskBase):
         If the validation fails, the current version you are using is probably incompatible with the current API version.
         We advise updating it to a newer version. If the problem persists and you are on the latest SDK version, please open an issue so we can work on a fix.
 
+    Example
+    -------
+    >>> from jai import Trainer
+    ...
+    >>> trainer = Trainer(name)
     """
 
     def __init__(
@@ -126,7 +130,7 @@ class Trainer(TaskBase):
     def set_parameters(
         self,
         db_type: str,
-        hyperparams=None,
+        hyperparams: Dict[str, Dict] = None,
         features: Dict[str, Dict] = None,
         num_process: dict = None,
         cat_process: dict = None,
@@ -138,17 +142,24 @@ class Trainer(TaskBase):
         """
         It checks the input parameters and sets the `fit_parameters` attribute for setup.
 
-        TODO: documentate args
         Args:
-        db_type (str): str
-        hyperparams: dict
-        features: list of dictionary features to use
-        num_process (dict): dict = None,
-        cat_process (dict): dict = None,
-        datetime_process (dict): dict = None,
-        pretrained_bases (list): list = None,
-        label (dict): dict = None,
-        split (dict): dict = None,
+        db_type (str):Type of the database to be created.
+        hyperparams (dict): Dictionary of the fit parameters. Varies for each database type.
+        features (dict): Dictionary of name of the features as keys and dictionary of parameters for each feature.
+        num_process (dict): Dictionary defining the default process for numeric features.
+        cat_process (dict): Dictionary defining the default process for categorical features.
+        datetime_process (dict): Dictionary defining the default process for datetime features.
+        pretrained_bases (list): List of dictionaries mapping the features to the databases trained previously.
+        label (dict): Dictionary defining the label.
+        split (dict): Dictionary defining the train/validation split for the model training.
+
+        Example
+        -------
+        >>> from jai import Trainer
+        ...
+        >>> trainer = Trainer(name)
+        >>> trainer.set_parameters(db_type)
+
         """
 
         self._input_kwargs = dict(
@@ -190,13 +201,16 @@ class Trainer(TaskBase):
         - Else, for each pretrained base:
             - Checks if every id value on `data` column is in the existing base ids.
 
-        Args:
-            data (pd.DataFrame): data
-            pretrained_bases (List of dicts): list of pretrained bases
+        Args
+        ----
+        data (pd.DataFrame): data
+        pretrained_bases (List of dicts): list of pretrained bases
 
-        Raises:
-            ValueError: On Recomendation System, if
-            KeyError: _description_
+        Raises
+        ------
+        ValueError: On Recomendation System, if ids between bases don't match.
+        KeyError: If there are missing ids on the id_name column
+
         """
         if isinstance(data, dict):
             towers = set(data.keys()) - set([self.name, DEFAULT_NAME])
@@ -245,31 +259,35 @@ class Trainer(TaskBase):
 
     def fit(self, data, *, overwrite: bool = False, frequency_seconds: int = 1):
         """
-        Takes in a dataframe or dictionary of dataframes, and inserts the data into the database.
-
-        It then calls the `_setup` function to train the model.
-
-
+        Takes in a dataframe or dictionary of dataframes, and inserts the data into Jai.
 
         Otherwise, it calls the `wait_setup` function to wait for the model to finish training, and then
         calls the `report` function to print out the model's performance metrics.
 
-        Finally, it returns the `get_query` function, which returns the model's predictions.
+        Finally, it returns the `get_query` function, which returns the class to consume the model..
 
-        Let's take a look at the `_setup` function.
+        Args
+        ----
+        data: The data to be inserted into the database. Can be an pandas.Dataframe or dictionary of pandas.DataFrame.
+        overwrite (bool): If overwrite is True, then deletes previous database with the same name if
+        exists. Defaults to False.
+        frequency_seconds (int): How often to check the status of the model. If `frequency_seconds` is
+        less than 1, it returns the `insert_responses` and `setup_response` and it won't wait for
+        training to finish, allowing to perform other actions, but could cause errors on some scripts
+        if the model is expected to be ready for consuming. Defaults to 1.
 
-        Args:
-            data: The data to be inserted into the database. Can be an pandas.Dataframe or dictionary of pandas.DataFrame.
-            overwrite (bool): If overwrite is True, then deletes previous database with the same name if
-            exists. Defaults to False.
-            frequency_seconds (int): How often to check the status of the model. If `frequency_seconds` is
-            less than 1, it returns the `insert_responses` and `setup_response` and it won't wait for
-            training to finish, allowing to perform other actions, but could cause errors on some scripts
-            if the model is expected to be ready for consuming. Defaults to 1.
-
-        Returns:
+        Returns
+        -------
         The return value is a tuple of two elements. The first element is a list of responses from the
         insert_data function. The second element is a dictionary of the response from the setup function.
+
+        Example
+        -------
+        >>> from jai import Trainer
+        ...
+        >>> trainer = Trainer(name)
+        >>> trainer.fit(data)
+
         """
         if self.is_valid():
             if overwrite:
@@ -294,9 +312,7 @@ class Trainer(TaskBase):
                 name=self.name,
                 db_type=self.fit_parameters["db_type"],
                 batch_size=self.insert_parameters["batch_size"],
-                has_filter=check_filters(
-                    data, self.fit_parameters.get("features", {})
-                ),
+                has_filter=check_filters(data, self.fit_parameters.get("features", {})),
                 max_insert_workers=self.insert_parameters["max_insert_workers"],
                 predict=False,
             )
@@ -384,6 +400,13 @@ class Trainer(TaskBase):
         insert_responses: dict
             Dictionary of responses for each batch. Each response contains
             information of whether or not that particular batch was successfully inserted.
+
+        Example
+        -------
+        >>> from jai import Trainer
+        ...
+        >>> trainer = Trainer(name)
+        >>> trainer.append(data)
         """
         if not self.is_valid():
             raise KeyError(
@@ -427,15 +450,6 @@ class Trainer(TaskBase):
         ------
         response : dict
             A `JSON` file with the current status of the training tasks.
-
-        Example
-        -------
-        >>> j.status
-        {
-            "Task": "Training",
-            "Status": "Completed",
-            "Description": "Training of database YOUR_DATABASE has ended."
-        }
         """
         status = self._status()[self.name]
         if self.safe_mode:
@@ -461,6 +475,12 @@ class Trainer(TaskBase):
         dict
             Dictionary with the information.
 
+        Example
+        -------
+        >>> from jai import Trainer
+        ...
+        >>> trainer = Trainer(name)
+        >>> trainer.report()
         """
         if self.db_type not in [
             PossibleDtypes.selfsupervised,
@@ -503,7 +523,7 @@ class Trainer(TaskBase):
 
     def wait_setup(self, frequency_seconds: int = 1):
         """
-        Wait for the setup (model training) to finish
+        Wait for the fit (model training) to finish
 
         Args
         ----
@@ -597,6 +617,13 @@ class Trainer(TaskBase):
         -------
         response : dict
             Dictionary with the API response.
+
+        Example
+        -------
+        >>> from jai import Trainer
+        ...
+        >>> trainer = Trainer(name)
+        >>> trainer.delete_ids([0, 1])
         """
         response = self._delete_ids(self.name, ids)
         if self.safe_mode:
@@ -607,18 +634,18 @@ class Trainer(TaskBase):
         """
         Delete raw data. It is good practice to do this after training a model.
 
-
         Return
         -------
         response : dict
             Dictionary with the API response.
 
         Example
-        ----------
-        >>> name = 'chosen_name'
-        >>> j = Jai(AUTH_KEY)
-        >>> j.delete_raw_data(name=name)
-        'All raw data from database 'chosen_name' was deleted!'
+        -------
+        >>> from jai import Trainer
+        ...
+        >>> trainer = Trainer(name)
+        >>> trainer.delete_raw_data()
+
         """
         response = self._delete_raw_data(self.name)
         if self.safe_mode:
@@ -641,10 +668,10 @@ class Trainer(TaskBase):
 
         Example
         -------
-        >>> name = 'chosen_name'
-        >>> j = Jai(AUTH_KEY)
-        >>> j.delete_database(name=name)
-        'Bombs away! We nuked database chosen_name!'
+        >>> from jai import Trainer
+        ...
+        >>> trainer = Trainer(name)
+        >>> trainer.delete_database()
         """
         response = self._delete_database(self.name)
         if self.safe_mode:
@@ -656,11 +683,20 @@ class Trainer(TaskBase):
         This method returns a new `Query` object with the same initial values as the current `Trainer`
         object
 
-        Args:
+        Args
+        ----
           name (str): The name of the query. Defaults to the same name as the current `Trainer` object.
 
-        Returns:
+        Returns
+        -------
           A Query object with the name and init values.
+
+        Example
+        -------
+        >>> from jai import Trainer
+        ...
+        >>> trainer = Trainer(name)
+        >>> trainer.get_query()
         """
         if name is None:
             return Query(name=self.name, **self._init_values)
