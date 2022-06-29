@@ -344,7 +344,7 @@ class Query(TaskBase):
         """
         fields = self._fields(self.name)
         if self.safe_mode:
-            return check_response(FieldsResponse, fields)
+            return check_response(FieldsResponse, fields, list_of=True)
         return fields
 
     def download_vectors(self):
