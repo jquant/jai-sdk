@@ -135,13 +135,14 @@ class Query(TaskBase):
         if isinstance(data, (np.ndarray, pd.Index)):
             is_id = True
             # index values
-            if desc != "Recommendation":
-                ids = self.ids(mode="complete")
-            else:
-                twin_name = self.describe()["twin_base"]
+            if desc == "Recommendation":
+                description = self.describe()
+                twin_name = description["twin_base"]
                 ids = self._ids(twin_name, mode="complete")
                 if self.safe_mode:
                     ids = check_response(List[Any], ids)
+            else:
+                ids = self.ids(mode="complete")
 
             inverted_in = np.isin(data, ids, invert=True)
             if inverted_in.sum() > 0:
@@ -155,7 +156,12 @@ class Query(TaskBase):
 
             columns = data.columns if isinstance(data, pd.DataFrame) else [data.name]
 
-            not_found = self.check_features(columns)
+            if desc == "Recommendation":
+                description = self.describe()
+                twin_name = description["twin_base"]
+                not_found = self.check_features(columns, name=twin_name)
+            else:
+                not_found = self.check_features(columns)
 
             if len(not_found):
                 str_missing = "`, `".join(not_found)

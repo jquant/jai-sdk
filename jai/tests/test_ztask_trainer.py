@@ -92,7 +92,10 @@ def test_dict_data(setup_dataframe, monkeypatch, name, safe_mode):
     data = {"main": data, "test": data}
 
     trainer = Trainer(name, safe_mode=safe_mode)
-    trainer.set_parameters(db_type="SelfSupervised")
+    trainer.set_parameters(
+        db_type="SelfSupervised",
+        pretrained_bases=[{"id_name": "PassengerId", "db_parent": "test"}],
+    )
 
     def mock__setup(*args, **kwargs):
         return MockResponse._setup()
@@ -103,11 +106,7 @@ def test_dict_data(setup_dataframe, monkeypatch, name, safe_mode):
     monkeypatch.setattr(trainer, "_setup", mock__setup)
     monkeypatch.setattr(trainer, "_check_ids_consistency", mock__check_ids_consistency)
 
-    insert_res, setup_res = trainer.fit(
-        data,
-        frequency_seconds=0,
-        pretrained_bases=[{"id_name": "PassengerId", "db_parent": "test"}],
-    )
+    insert_res, setup_res = trainer.fit(data, frequency_seconds=0)
     assert setup_res == MockResponse._setup()
     assert len(insert_res) == 1
     assert dict(insert_res[0]) == {

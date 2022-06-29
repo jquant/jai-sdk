@@ -1,12 +1,16 @@
 from pydantic import BaseModel, Field
 from typing import Any, Optional, Dict, List, Union
-from enum import Enum
 import sys
 
 if sys.version < "3.8":
     from typing_extensions import Literal
 else:
     from typing import Literal
+
+if sys.version < "3.9":
+    from typing_extensions import Annotated
+else:
+    from typing import Annotated
 
 
 class UserResponse(BaseModel):
@@ -55,8 +59,10 @@ class DescribeResponse(BaseModel):
     state: str
     version: str
     has_filter: bool
+    twin_base: Optional[str]
+    dimension: Optional[int]
     features: List[Dict]  # TODO: future improvement
-    model_hyperparams: Dict  # TODO: future improvement
+    model_hyperparams: Optional[Dict]  # TODO: future improvement
     trainer_hyperparams: Optional[Dict]  # TODO: future improvement
 
 

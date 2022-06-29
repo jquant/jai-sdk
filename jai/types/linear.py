@@ -1,7 +1,6 @@
 from typing import Optional, Dict, List, Union
 
 from pydantic import BaseModel, Field
-from typing_extensions import Annotated
 from enum import Enum
 
 import sys
