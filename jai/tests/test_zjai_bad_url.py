@@ -1,16 +1,11 @@
-import json
-
-import numpy as np
-import pandas as pd
-import pytest
-from decouple import config
-
-from jai import Jai
 import os
 from copy import deepcopy
 
+import numpy as np
+import pytest
+
 from jai import Jai
-from jai.core.validations import check_dtype_and_clean, check_name_lengths
+from jai.core.validations import check_dtype_and_clean
 
 
 @pytest.fixture(scope="module")
@@ -122,7 +117,7 @@ def test_invalid_name_exception(bad_url_environ):
 
 
 def test_check_dtype_and_clean_exception(bad_url_environ):
-    j = Jai()
+    Jai()
     with pytest.raises(TypeError):
         check_dtype_and_clean(data=dict(), db_type="SelfSupervised")
 

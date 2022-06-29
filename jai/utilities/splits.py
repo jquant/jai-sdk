@@ -1,7 +1,7 @@
 import warnings
+from typing import Dict, List, Union
 
 import pandas as pd
-from typing import Union, Dict, List
 
 __all__ = ["split", "split_recommendation"]
 

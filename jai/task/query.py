@@ -1,25 +1,25 @@
+from io import BytesIO
+from typing import Any, Dict, List, Union
+
 import numpy as np
 import pandas as pd
-from io import BytesIO
+import requests
+from pydantic import HttpUrl
 from tqdm import trange
 
 from jai.utilities import predict2df
 
-from .base import TaskBase
 from ..core.utils_funcs import data2json
 from ..core.validations import check_response
 from ..types.generic import Mode
 from ..types.responses import (
     FieldsResponse,
-    SimilarNestedResponse,
+    FlatResponse,
     PredictResponse,
     RecNestedResponse,
-    FlatResponse,
+    SimilarNestedResponse,
 )
-from typing import Any, Dict, List, Union
-import requests
-
-from pydantic import HttpUrl
+from .base import TaskBase
 
 __all__ = ["Query"]
 

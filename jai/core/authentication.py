@@ -1,7 +1,8 @@
 import os
 import warnings
-from decouple import config, UndefinedValueError
+
 import requests
+from decouple import UndefinedValueError, config
 
 
 def get_auth_key(email: str, firstName: str, lastName: str, company: str = ""):

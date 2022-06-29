@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
-from typing import Any, Optional, Dict, List, Union
 import sys
+from typing import Any, Dict, List, Optional, Union
+
+from pydantic import BaseModel, Field
 
 if sys.version < "3.8":
     from typing_extensions import Literal

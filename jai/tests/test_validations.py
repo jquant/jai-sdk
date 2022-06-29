@@ -1,7 +1,6 @@
 import pytest
 
 from jai.core.exceptions import DeprecatedError
-from jai.types.generic import PossibleDtypes
 from jai.core.validations import (
     cat_process_validation,
     datetime_process_validation,
@@ -14,6 +13,7 @@ from jai.core.validations import (
     pretrained_bases_process_validation,
     split_process_validation,
 )
+from jai.types.generic import PossibleDtypes
 
 
 @pytest.mark.parametrize(

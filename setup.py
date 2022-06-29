@@ -16,8 +16,9 @@ with open("requirements.txt", "r") as f:
 def find_version(*filepath):
     # Extract version information from filepath
     with open(os.path.join(ROOT_DIR, *filepath)) as fp:
-        version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
-                                  fp.read(), re.M)
+        version_match = re.search(
+            r"^__version__ = ['\"]([^'\"]*)['\"]", fp.read(), re.M
+        )
         if version_match:
             return version_match.group(1)
         raise RuntimeError("Unable to find version string.")
@@ -32,7 +33,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/jquant/jai-sdk",
-    packages=find_packages(exclude=['tests', 'jai.tests']),
+    packages=find_packages(exclude=["tests", "jai.tests"]),
     include_package_data=True,
     license="MIT",
     classifiers=[

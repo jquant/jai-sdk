@@ -1,32 +1,27 @@
-import matplotlib.pyplot as plt
-from fnmatch import fnmatch
-from tqdm import tqdm
-from typing import List, Any, Dict
-
-from .base import TaskBase
-from .query import Query
-from ..core.utils_funcs import check_filters, print_args
-from ..core.validations import (
-    check_response,
-    check_dtype_and_clean,
-)
-
-from ..types.generic import PossibleDtypes
-from ..types.hyperparams import InsertParams
-
-from ..types.responses import (
-    Report1Response,
-    Report2Response,
-    AddDataResponse,
-    SetupResponse,
-    StatusResponse,
-)
-
-import pandas as pd
-import numpy as np
 import json
 import time
 from collections.abc import Iterable
+from fnmatch import fnmatch
+from typing import Any, Dict, List
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from tqdm import tqdm
+
+from ..core.utils_funcs import check_filters, print_args
+from ..core.validations import check_dtype_and_clean, check_response
+from ..types.generic import PossibleDtypes
+from ..types.hyperparams import InsertParams
+from ..types.responses import (
+    AddDataResponse,
+    Report1Response,
+    Report2Response,
+    SetupResponse,
+    StatusResponse,
+)
+from .base import TaskBase
+from .query import Query
 
 __all__ = ["Trainer"]
 

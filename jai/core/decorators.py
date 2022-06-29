@@ -22,6 +22,7 @@ def raise_status_error(code):
         Expected Code.
 
     """
+
     def decorator(function):
         @functools.wraps(function)
         def new_function(*args, **kwargs):
@@ -35,7 +36,8 @@ def raise_status_error(code):
                 res_json = response.json()
                 if isinstance(res_json, dict):
                     detail = res_json.get(
-                        'message', res_json.get('detail', response.text))
+                        "message", res_json.get("detail", response.text)
+                    )
                 else:
                     detail = response.text
             except:

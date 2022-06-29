@@ -1,20 +1,22 @@
-import pandas as pd
 from typing import Any, Dict, List
-from .base import TaskBase
+
+import pandas as pd
+
+from ..core.validations import check_response
 from ..types.linear import (
-    RegressionTasks,
+    ClassificationHyperparams,
     ClassificationTasks,
     RegressionHyperparams,
-    SGDRegressionHyperparams,
-    ClassificationHyperparams,
+    RegressionTasks,
     SGDClassificationHyperparams,
+    SGDRegressionHyperparams,
 )
 from ..types.responses import (
-    LinearPredictResponse,
     LinearFitResponse,
     LinearLearnResponse,
+    LinearPredictResponse,
 )
-from ..core.validations import check_response
+from .base import TaskBase
 
 __all__ = ["LinearModel"]
 

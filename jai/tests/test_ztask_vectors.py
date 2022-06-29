@@ -26,9 +26,12 @@ def setup_dataframe():
 def test_insert_vectors(safe_mode, name, setup_dataframe):
 
     data, _ = setup_dataframe
-    data = (data.drop(columns="Cabin").dropna().rename(columns={
-        "PassengerId": "id"
-    }).set_index("id"))
+    data = (
+        data.drop(columns="Cabin")
+        .dropna()
+        .rename(columns={"PassengerId": "id"})
+        .set_index("id")
+    )
     data = data.select_dtypes(exclude="object")
 
     vectors = Vectors(name=name, safe_mode=safe_mode)
@@ -37,48 +40,42 @@ def test_insert_vectors(safe_mode, name, setup_dataframe):
     overwrite = False
 
     batch_size = 200
-    res0 = vectors.insert_vectors(data=df0,
-                                  batch_size=batch_size,
-                                  overwrite=overwrite)
+    res0 = vectors.insert_vectors(data=df0, batch_size=batch_size, overwrite=overwrite)
     assert len(res0) == 2
     assert res0[0] == res0[1]
     assert res0[0] == {
-        'collection_name': 'test_insert_vector',
-        'vector_length': 200,
-        'vector_dimension': 6,
-        'message': 'test_insert_vector vector insertion has finished.'
+        "collection_name": "test_insert_vector",
+        "vector_length": 200,
+        "vector_dimension": 6,
+        "message": "test_insert_vector vector insertion has finished.",
     }
 
     overwrite = True
     df1 = data.to_numpy()
-    res1 = vectors.insert_vectors(data=df1,
-                                  batch_size=batch_size,
-                                  overwrite=overwrite)
+    res1 = vectors.insert_vectors(data=df1, batch_size=batch_size, overwrite=overwrite)
     assert len(res1) == 4
-    assert (res1[0] == res1[1]) and (res1[1]
-                                     == res1[2]) and (res1[2] != res1[3])
+    assert (res1[0] == res1[1]) and (res1[1] == res1[2]) and (res1[2] != res1[3])
     assert dict(res1[0]) == {
-        'collection_name': 'test_insert_vector',
-        'vector_length': 200,
-        'vector_dimension': 6,
-        'message': 'test_insert_vector vector insertion has finished.'
+        "collection_name": "test_insert_vector",
+        "vector_length": 200,
+        "vector_dimension": 6,
+        "message": "test_insert_vector vector insertion has finished.",
     }
     assert dict(res1[3]) == {
-        'collection_name': 'test_insert_vector',
-        'vector_length': 112,
-        'vector_dimension': 6,
-        'message': 'test_insert_vector vector insertion has finished.'
+        "collection_name": "test_insert_vector",
+        "vector_length": 112,
+        "vector_dimension": 6,
+        "message": "test_insert_vector vector insertion has finished.",
     }
 
     overwrite = False
     with pytest.raises(KeyError) as e:
-        vectors.insert_vectors(data=data,
-                               batch_size=batch_size,
-                               overwrite=overwrite)
+        vectors.insert_vectors(data=data, batch_size=batch_size, overwrite=overwrite)
         assert (
-            e.value.args[0] ==
-            f"Database 'test_insert_vector' already exists in your environment."
-            "Set overwrite=True to overwrite it.")
+            e.value.args[0]
+            == f"Database 'test_insert_vector' already exists in your environment."
+            "Set overwrite=True to overwrite it."
+        )
 
     vectors.delete_database()
 
@@ -88,8 +85,7 @@ def test_insert_vectors(safe_mode, name, setup_dataframe):
 def test_append_vectors(safe_mode, name, setup_dataframe):
 
     data, _ = setup_dataframe
-    data = data.drop(columns=["PassengerId", "Cabin"]).dropna().reset_index(
-        drop=True)
+    data = data.drop(columns=["PassengerId", "Cabin"]).dropna().reset_index(drop=True)
     data = data.select_dtypes(exclude="object")
 
     vectors = Vectors(name=name, safe_mode=safe_mode)
@@ -99,10 +95,10 @@ def test_append_vectors(safe_mode, name, setup_dataframe):
 
     assert len(res0) == 1
     assert res0[0] == {
-        'collection_name': 'test_insert_vector',
-        'vector_length': 100,
-        'vector_dimension': 3,
-        'message': 'test_insert_vector vector insertion has finished.'
+        "collection_name": "test_insert_vector",
+        "vector_length": 100,
+        "vector_dimension": 3,
+        "message": "test_insert_vector vector insertion has finished.",
     }
 
     df1 = data[100:200].iloc[:, :3]
@@ -110,10 +106,10 @@ def test_append_vectors(safe_mode, name, setup_dataframe):
 
     assert len(res1) == 1
     assert res1[0] == {
-        'collection_name': 'test_insert_vector',
-        'vector_length': 100,
-        'vector_dimension': 3,
-        'message': 'test_insert_vector vector insertion has finished.'
+        "collection_name": "test_insert_vector",
+        "vector_length": 100,
+        "vector_dimension": 3,
+        "message": "test_insert_vector vector insertion has finished.",
     }
 
     vectors.delete_database()
