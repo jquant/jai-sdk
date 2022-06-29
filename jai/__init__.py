@@ -2,16 +2,26 @@
 --- ___init___.py ---
 """
 
-__version__ = "v0.19.1"
+__version__ = "v0.20.0"
 
 from jai.core.jai import Jai
-from jai.utilities._image import read_image_folder
-from jai.utilities._processing import (filter_resolution, filter_similar,
-                                       find_threshold, predict2df, treat_unix)
-from jai.utilities._splits import split, split_recommendation
+from jai.core.authentication import get_auth_key, get_authentication, set_authentication
+
+from jai.task.explorer import Explorer
+from jai.task.linear import LinearModel
+from jai.task.trainer import Trainer
+from jai.task.query import Query
+from jai.task.vectors import Vectors
 
 __all__ = [
-    "__version__", "Jai", "read_image_folder", "split", "split_recommendation",
-    "find_threshold", "filter_similar", "predict2df", "filter_resolution",
-    "treat_unix"
+    "__version__",
+    "Jai",
+    "Explorer",
+    "Trainer",
+    "Query",
+    "LinearModel",
+    "Vectors",
+    "get_auth_key",
+    "get_authentication",
+    "set_authentication",
 ]

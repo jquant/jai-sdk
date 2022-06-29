@@ -14,13 +14,13 @@ import os
 import sys
 import sphinx_book_theme
 
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath(".."))
 
 # -- Project information -----------------------------------------------------
 
-project = 'jai-sdk'
-copyright = '2021, JQuant'
-author = 'JQuant'
+project = "jai-sdk"
+copyright = "2022, Jai"
+author = "Jai Dev Team"
 
 from jai import __version__ as version
 
@@ -34,27 +34,37 @@ release = version
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.napoleon', 'sphinx_copybutton', 'sphinx.ext.autosectionlabel'
+    "nbsphinx",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosectionlabel",
+    "sphinx_copybutton",
+    "sphinxemoji.sphinxemoji",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = [
-    '_build', 'Thumbs.db', '.DS_Store', 'source/jai.*.rst',
-    'source/modules.rst', 'setup.py'
+    "_build",
+    "Thumbs.db",
+    ".DS_Store",
+    "source/jai.*.rst",
+    "source/modules.rst",
+    "setup.py",
 ]
 
+source_suffix = [".rst", ".md"]
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_logo = 'source/images/jai_logo.png'
-html_theme = 'sphinx_book_theme'
+html_logo = "source/images/jai_logo.png"
+html_theme = "sphinx_book_theme"
 html_title = f"JAI-SDK {release}"
 html_theme_options = {
     # New theme
@@ -65,15 +75,15 @@ html_theme_options = {
     "use_edit_page_button": True,
     "path_to_docs": "docs",
     "home_page_in_toc": True,
-    "show_navbar_depth": 0
+    "show_navbar_depth": 1,
 }
 # html_sidebars = {"**": ["sidebar-logo.html"]}
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 html_css_files = [
-    'css/custom.css',
+    "css/custom.css",
 ]
 
 add_module_names = False

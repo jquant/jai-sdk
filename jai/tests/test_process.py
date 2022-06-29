@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from jai.utilities._processing import (filter_resolution, filter_similar,
+from jai.utilities.processing import (filter_resolution, filter_similar,
                                        find_threshold, predict2df)
 
 

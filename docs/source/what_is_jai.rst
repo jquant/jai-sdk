@@ -26,17 +26,18 @@ JAI accomplishes this mission by:
   
   JAI simplifies ML-based solution lifecycle these tasks so that you can focus on building problem-solving strategies.
 
-  - Developers can get started quicky (<1 min) and for free​
-  - JAI automates data conversion into machine format​
+  - Developers can get started quicky (<1 min) and for free
+  - JAI automates data conversion into machine format
   - Building new AI features leverages previous ones, leading to a much smaller time-to-production
-  - JAI results are traceable and easier to debug​
-  - Model performance is robust to real-world data​
+  - JAI results are traceable and easier to debug
+  - Model performance is robust to real-world data
   - Deploying AI into production is literally just one line of code away
 
-Check :ref:`Getting Started <getting started>` to get an overview of how to work with JAI and, also, see :ref:`JAI in 5 Minutes <jai in 5 min>` to obtain more information about using some of JAI's features.
+Check :ref:`Getting Started <getting_started>` to get an overview of how to work with JAI and, also, see :ref:`JAI in 5 Minutes </source/overview/jai_in_5_minutes.rst>` to obtain more information about using some of JAI's features.
 
 Community
 ---------
+
 JAI is more than a framework to build AI-based solutions but also an active community of developers,
 researchers, and folks that love machine learning. Here's a list of tips for getting involved with the JAI community:
 
@@ -46,6 +47,11 @@ researchers, and folks that love machine learning. Here's a list of tips for get
 - Follow us `Twitter`_, `Instagram`_ and `Linked In`_
 - Join our `Meetup Group`_ to connect with others in the community!
 
+Videos
+------
+
+Check our `Youtube`_ videos
+
 .. _`Slack community`: https://join.slack.com/t/jaicommunity/shared_invite/zt-sfkm3tpg-oJuvdziWgtaFEaIUUKWUVA
 .. _`Github`: https://github.com/jquant/jai-sdk
 .. _`Linked In`: https://www.linkedin.com/company/jai-data/
@@ -54,6 +60,3 @@ researchers, and folks that love machine learning. Here's a list of tips for get
 .. _`Meetup Group`: https://www.meetup.com/group-get-jai-official/
 .. _`Youtube`: https://www.youtube.com/channel/UCrNTucu56jwzKJfUqsloSXQ
 
-Videos
-------
-Check our `Youtube`_ videos

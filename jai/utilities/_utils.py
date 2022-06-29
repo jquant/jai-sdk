@@ -37,12 +37,17 @@ def multikeysort(items, columns):
         DESCRIPTION.
 
     """
-    comparers = [((itemgetter(col[1:].strip()), -1) if col.startswith('-') else
-                  (itemgetter(col.strip()), 1)) for col in columns]
+    comparers = [
+        (
+            (itemgetter(col[1:].strip()), -1)
+            if col.startswith("-")
+            else (itemgetter(col.strip()), 1)
+        )
+        for col in columns
+    ]
 
     def comparer(left, right):
-        comparer_iter = (cmp(fn(left), fn(right)) * mult
-                         for fn, mult in comparers)
+        comparer_iter = (cmp(fn(left), fn(right)) * mult for fn, mult in comparers)
         return next((result for result in comparer_iter if result), 0)
 
     return sorted(items, key=cmp_to_key(comparer))
