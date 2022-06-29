@@ -88,9 +88,9 @@ class Explorer(BaseJai):
         info = self._info(mode="complete", get_size=get_size)
         if self.safe_mode:
             if get_size:
-                info = check_response(InfoResponse, info, list_of=True)
-            else:
                 info = check_response(InfoSizeResponse, info, list_of=True)
+            else:
+                info = check_response(InfoResponse, info, list_of=True)
 
         df_info = pd.DataFrame(info).rename(
             columns={
