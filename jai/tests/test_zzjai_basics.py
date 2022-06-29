@@ -115,7 +115,6 @@ def test_describe(safe_mode, name):
             "shuffle_seed": 808,
             "test_batch_size": 1024,
         },
-        "trainer_hyperparams": None,
         "name": "test_resolution",
         "state": "active",
     }

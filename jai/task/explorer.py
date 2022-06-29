@@ -173,7 +173,8 @@ class Explorer(BaseJai):
         """
         description = self._describe(name)
         if self.safe_mode:
-            return check_response(DescribeResponse, description).dict()
+            description = check_response(DescribeResponse, description).dict()
+            description = {k: v for k, v in description.items() if v is not None}
         return description
 
     def rename(self, original_name: str, new_name: str):
