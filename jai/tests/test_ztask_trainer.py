@@ -36,15 +36,15 @@ def setup_dataframe():
 
 
 @pytest.mark.parametrize("safe_mode", [True])
-@pytest.mark.parametrize("pname,pdb_type", [("titanic_names", "RecommendationSystem")])
+@pytest.mark.parametrize("pname", [("titanic_names")])
 @pytest.mark.parametrize("name", ["titanic_self"])
-def test__check_pretrained_bases(setup_dataframe, safe_mode, pname, pdb_type, name):
+def test__check_pretrained_bases(setup_dataframe, safe_mode, pname, name):
     data, _ = setup_dataframe
     cols = ["Name", "Age", "Sex"]
 
     df_name = data[cols].set_index(data["PassengerId"])
     parent_trainer = Trainer(name=pname, safe_mode=safe_mode)
-    parent_trainer.set_parameters(db_type=pdb_type)
+    parent_trainer.set_parameters(db_type="SelfSupervised")
     parent_trainer.fit(df_name, overwrite=True)
 
     df_titanic = data.drop(columns=cols)
