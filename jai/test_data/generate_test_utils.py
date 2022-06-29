@@ -11,13 +11,10 @@ def generate_read_image_folder(image_folder):
     img_data.to_csv(image_folder / "dataframe_img.csv")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-p",
-                        "--path",
-                        default="test_imgs",
-                        help="Image paths.")
+    parser.add_argument("-p", "--path", default="test_imgs", help="Image paths.")
     args = parser.parse_args()
 
     generate_read_image_folder(Path(args.path))

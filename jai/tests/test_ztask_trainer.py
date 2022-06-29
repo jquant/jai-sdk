@@ -1,9 +1,8 @@
-import numpy as np
+import matplotlib.pyplot as plt
 import pandas as pd
 import pytest
 
 from jai.task.trainer import Trainer
-import matplotlib.pyplot as plt
 
 
 class MockResponse:

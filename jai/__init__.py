@@ -4,13 +4,12 @@
 
 __version__ = "v0.20.0"
 
-from jai.core.jai import Jai
 from jai.core.authentication import get_auth_key, get_authentication, set_authentication
-
+from jai.core.jai import Jai
 from jai.task.explorer import Explorer
 from jai.task.linear import LinearModel
-from jai.task.trainer import Trainer
 from jai.task.query import Query
+from jai.task.trainer import Trainer
 from jai.task.vectors import Vectors
 
 __all__ = [

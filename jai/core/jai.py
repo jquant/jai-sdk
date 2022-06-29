@@ -1,52 +1,49 @@
 import json
 import secrets
+import sys
 import time
 from fnmatch import fnmatch
 from io import BytesIO
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import requests
 from pandas.api.types import is_integer_dtype, is_numeric_dtype
+from pydantic import HttpUrl
 from sklearn.model_selection import StratifiedShuffleSplit
 from tqdm import tqdm, trange
 
 from jai.utilities import filter_resolution, filter_similar, predict2df
 
-from .base import BaseJai
-from .utils_funcs import build_name, data2json, resolve_db_type, print_args
-from .validations import (
-    check_response,
-    check_dtype_and_clean,
-    check_name_lengths,
-    kwargs_validation,
-)
 from ..types.generic import Mode, PossibleDtypes
 from ..types.responses import (
+    AddDataResponse,
+    DescribeResponse,
     EnvironmentsResponse,
-    UserResponse,
+    FieldsResponse,
+    FlatResponse,
+    InfoSizeResponse,
+    InsertVectorResponse,
+    PredictResponse,
+    RecNestedResponse,
     Report1Response,
     Report2Response,
-    DescribeResponse,
-    AddDataResponse,
-    StatusResponse,
-    InfoSizeResponse,
     SetupResponse,
     SimilarNestedResponse,
-    PredictResponse,
+    StatusResponse,
+    UserResponse,
     ValidResponse,
-    FieldsResponse,
-    InsertVectorResponse,
-    RecNestedResponse,
-    FlatResponse,
 )
-
-from pydantic import HttpUrl
-
-from typing import Any, Optional, Dict, List
-import sys
+from .base import BaseJai
+from .utils_funcs import build_name, data2json, print_args, resolve_db_type
+from .validations import (
+    check_dtype_and_clean,
+    check_name_lengths,
+    check_response,
+    kwargs_validation,
+)
 
 if sys.version < "3.8":
     from typing_extensions import Literal

@@ -1,14 +1,11 @@
-import json
-from pathlib import Path
+import os
+from copy import deepcopy
 
-import numpy as np
 import pandas as pd
 import pytest
 from decouple import config
 
 from jai import Jai
-import os
-from copy import deepcopy
 
 
 @pytest.fixture(scope="function")

@@ -1,8 +1,9 @@
+import warnings
+from typing import Dict
+
 import numpy as np
 import pandas as pd
 
-import warnings
-from typing import Dict
 from ..types.generic import PossibleDtypes
 
 __all__ = ["build_name", "data2json", "resolve_db_type"]

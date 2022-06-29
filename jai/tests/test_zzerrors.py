@@ -1,16 +1,9 @@
-import json
-
 import numpy as np
 import pandas as pd
 import pytest
-from decouple import config
 
 from jai import Jai
-import os
-from copy import deepcopy
-
-from jai import Jai
-from jai.core.validations import check_dtype_and_clean, check_name_lengths
+from jai.core.validations import check_name_lengths
 
 
 def test_generate_error():

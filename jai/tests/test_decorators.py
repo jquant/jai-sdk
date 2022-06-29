@@ -1,6 +1,7 @@
+import pytest
+
 from jai.core.decorators import deprecated, raise_status_error
 from jai.core.exceptions import DeprecatedError, ParamError, ValidationError
-import pytest
 
 
 class MockResponse:
@@ -25,7 +26,7 @@ def test_deprecated():
         return string
 
     with pytest.raises(DeprecatedError):
-        printer('test')
+        printer("test")
 
 
 def test_status_error_deprecated():
@@ -34,10 +35,10 @@ def test_status_error_deprecated():
         return MockResponse(err)
 
     with pytest.raises(DeprecatedError):
-        response('DeprecatedError')
+        response("DeprecatedError")
 
     with pytest.raises(ValidationError):
-        response('ValidationError')
+        response("ValidationError")
 
     with pytest.raises(ParamError):
-        response('ParamError')
+        response("ParamError")

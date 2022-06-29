@@ -1,19 +1,17 @@
 import time
 from fnmatch import fnmatch
+from typing import Dict
 
 import matplotlib.pyplot as plt
+from pandas.api.types import is_numeric_dtype
 from tqdm import trange
 
-from .base import TaskBase
 from ..core.utils_funcs import data2json
-from ..core.validations import check_response, check_dtype_and_clean
-from pandas.api.types import is_numeric_dtype
-
+from ..core.validations import check_dtype_and_clean, check_response
 from ..types.generic import PossibleDtypes
 from ..types.hyperparams import InsertParams
-
 from ..types.responses import InsertVectorResponse
-from typing import Dict
+from .base import TaskBase
 
 __all__ = ["Vectors"]
 

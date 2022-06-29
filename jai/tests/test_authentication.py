@@ -1,17 +1,18 @@
-from jai.core.authentication import get_auth_key, get_authentication, set_authentication
-import pytest
 import os
+
+import pytest
 import requests
+
+from jai.core.authentication import get_auth_key, get_authentication, set_authentication
 
 #! TODO: CHECK THE CORRECT RESPONSE OF /AUTH METHOD
 
 
-class MockResponse():
+class MockResponse:
     @staticmethod
     def json():
         return {
-            "content":
-            "Registration successful. Check your email for the auth key."
+            "content": "Registration successful. Check your email for the auth key."
         }
 
 
@@ -20,12 +21,11 @@ def test_authentication(monkeypatch):
         "email": "user@test.com",
         "firstName": "User",
         "lastName": "Name",
-        "company": "JAI"
+        "company": "JAI",
     }
 
     custom_res = {
-        "content":
-        "Registration successful. Check your email for the auth key."
+        "content": "Registration successful. Check your email for the auth key."
     }
 
     def mockreturn(*args, **kwargs):
