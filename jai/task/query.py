@@ -108,7 +108,11 @@ class Query(TaskBase):
 
         # column validation
         # TODO: typing validation is very complex
-        fields = {v["mapping"]: v for v in self.fields()}
+        fields = self._fields(name)
+        if self.safe_mode:
+            fields = check_response(FieldsResponse, fields, list_of=True)
+
+        fields = {v["mapping"]: v for v in fields}
         columns = [c.replace(".", "_") for c in columns]
         return _check_fields(fields, columns=columns)
 

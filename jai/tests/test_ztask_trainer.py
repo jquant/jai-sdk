@@ -36,7 +36,7 @@ def setup_dataframe():
 
 
 @pytest.mark.parametrize("safe_mode", [True])
-@pytest.mark.parametrize("pname,pdb_type", [("titanic_names", "SelfSupervised")])
+@pytest.mark.parametrize("pname,pdb_type", [("titanic_names", "RecommendationSystem")])
 @pytest.mark.parametrize("name", ["titanic_self"])
 def test__check_pretrained_bases(setup_dataframe, safe_mode, pname, pdb_type, name):
     data, _ = setup_dataframe
@@ -52,7 +52,7 @@ def test__check_pretrained_bases(setup_dataframe, safe_mode, pname, pdb_type, na
     pretrained_bases = [{"db_parent": pname, "id_name": "PassengerId"}]
     trainer._check_pretrained_bases(df_titanic, pretrained_bases)
 
-    df_dict = {"data": df_titanic}
+    df_dict = {"main": df_titanic, pname: df_titanic.set_index("PassengerId")}
     trainer._check_pretrained_bases(df_dict, pretrained_bases)
 
     parent_trainer.delete_database()
@@ -84,37 +84,6 @@ def test_report(monkeypatch, setup_dataframe, name, safe_mode):
     ]
 
     trainer.delete_database()
-
-
-@pytest.mark.parametrize("name,safe_mode", [("mock_db", True)])
-def test_dict_data(setup_dataframe, monkeypatch, name, safe_mode):
-    data, _ = setup_dataframe
-    data = {"main": data, "test": data}
-
-    trainer = Trainer(name, safe_mode=safe_mode)
-    trainer.set_parameters(
-        db_type="SelfSupervised",
-        pretrained_bases=[{"id_name": "PassengerId", "db_parent": "test"}],
-    )
-
-    def mock__setup(*args, **kwargs):
-        return MockResponse._setup()
-
-    def mock__check_ids_consistency(*args, **kwargs):
-        return MockResponse._consistency()
-
-    monkeypatch.setattr(trainer, "_setup", mock__setup)
-    monkeypatch.setattr(trainer, "_check_ids_consistency", mock__check_ids_consistency)
-
-    insert_res, setup_res = trainer.fit(data, frequency_seconds=0)
-    assert setup_res == MockResponse._setup()
-    assert len(insert_res) == 1
-    assert dict(insert_res[0]) == {
-        "Task": "Adding new data for tabular setup",
-        "Status": "Completed",
-        "Description": "Insertion completed.",
-        "Interrupted": False,
-    }
 
 
 def test_wrong_data_insertion():
