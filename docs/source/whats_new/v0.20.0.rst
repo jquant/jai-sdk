@@ -1,5 +1,5 @@
 Version 0.20.0
-=============
+==============
 
 ** date **
 
@@ -66,6 +66,22 @@ Backward Incompatible Changes
 - Changed the :code:`.status` property. Now it's a method :code:`.status()`.
 - Removed Ids from report. The handling of Ids by the API was inefficient, causing some processes to run really slow.
   We chose to remove them from the report until we can figure out a solution for the management of Ids internally.
+- Changed :code:`.fields` structure to allow for field validation. The new structure is as follows:
+
+.. code-block:: bash
+
+    [
+        {
+            "database": str, 
+            "mapping": str,
+            "fields": [
+                {
+                "name": str,
+                "type": str
+                },
+            ]
+        },
+    ]
 
 New Features
 ------------
@@ -98,7 +114,6 @@ Filter declaration
   
 The setup with filters has changed. 
 Now you define the filter column on the setup method as a feature.
-
 
 Improvements
 --------------
