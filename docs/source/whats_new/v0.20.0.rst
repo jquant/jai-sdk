@@ -1,9 +1,9 @@
-Version 1.0.0
+Version 0.20.0
 =============
 
 ** date **
 
-The release v1.0.0 contains a new structure of classes to apply Jai that aim at a more accessible and intuitive way of using the SDK for both new and experienced users.
+The release 0.20.0 contains a new structure of classes to apply Jai that aim at a more accessible and intuitive way of using the SDK for both new and experienced users.
 
 Our goal is to make Jai a great framework to build, consume and maintain models, and we hope this release is the next step to shorten the learning curve.
 
