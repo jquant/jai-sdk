@@ -139,40 +139,43 @@ class Query(TaskBase):
         if isinstance(data, (np.ndarray, pd.Index)):
             is_id = True
             # index values
-            if desc == "Recommendation":
-                description = self.describe()
-                twin_name = description["twin_base"]
-                ids = self._ids(twin_name, mode="complete")
-                if self.safe_mode:
+            if self.safe_mode:
+                if desc == "Recommendation":
+                    description = self.describe()
+                    twin_name = description["twin_base"]
+                    ids = self._ids(twin_name, mode="complete")
                     ids = check_response(List[Any], ids)
-            else:
-                ids = self.ids(mode="complete")
+                else:
+                    ids = self.ids(mode="complete")
 
-            inverted_in = np.isin(data, ids, invert=True)
-            if inverted_in.sum() > 0:
-                missing = data[inverted_in].tolist()
-                raise KeyError(
-                    f"Id values must belong to the set of Ids from database {self.name}.\n"
-                    f"Missing: {missing}"
-                )
+                inverted_in = np.isin(data, ids, invert=True)
+                if inverted_in.sum() > 0:
+                    missing = data[inverted_in].tolist()
+                    raise KeyError(
+                        f"Id values must belong to the set of Ids from database {self.name}.\n"
+                        f"Missing: {missing}"
+                    )
         elif isinstance(data, (pd.Series, pd.DataFrame)):
             is_id = False
 
-            columns = data.columns if isinstance(data, pd.DataFrame) else [data.name]
-
-            if desc == "Recommendation":
-                description = self.describe()
-                twin_name = description["twin_base"]
-                not_found = self.check_features(columns, name=twin_name)
-            else:
-                not_found = self.check_features(columns)
-
-            if len(not_found):
-                str_missing = "`, `".join(not_found)
-                raise ValueError(
-                    f"The following columns were not found in data:\n"
-                    f"- `{str_missing}`"
+            if self.safe_mode:
+                columns = (
+                    data.columns if isinstance(data, pd.DataFrame) else [data.name]
                 )
+
+                if desc == "Recommendation":
+                    description = self.describe()
+                    twin_name = description["twin_base"]
+                    not_found = self.check_features(columns, name=twin_name)
+                else:
+                    not_found = self.check_features(columns)
+
+                if len(not_found):
+                    str_missing = "`, `".join(not_found)
+                    raise ValueError(
+                        f"The following columns were not found in data:\n"
+                        f"- `{str_missing}`"
+                    )
 
         else:
             raise ValueError(
