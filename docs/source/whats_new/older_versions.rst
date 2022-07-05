@@ -17,6 +17,8 @@ This class contains the implementation of most tasks possible using the Jai API,
 Base class
 ----------
 
+Basic interface to API. Assumes data is already in the correct format. It does not perform any validations.
+
 
 
 You can find all the releases on https://github.com/jquant/jai-sdk/releases
