@@ -45,6 +45,7 @@ class Query(TaskBase):
         When safe_mode is True, responses from Jai API are validated.
         If the validation fails, the current version you are using is probably incompatible with the current API version.
         We advise updating it to a newer version. If the problem persists and you are on the latest SDK version, please open an issue so we can work on a fix.
+        Defaults to False.
     batch_size : int
         Size of the batch to split data sent to the API. It won't change results,
         but a value too small could increase the total process time and a value too large could

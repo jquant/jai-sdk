@@ -16,7 +16,7 @@ For more information, see the full :ref:`Query class reference <source/reference
 :code:`Query`
 ===============
 
-Bellow, a simple example to instanciate the Query class:
+Bellow, a simple example to instantiate the Query class:
 
 .. code-block:: python
 

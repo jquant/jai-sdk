@@ -67,6 +67,7 @@ class Trainer(TaskBase):
         When safe_mode is True, responses from Jai API are validated.
         If the validation fails, the current version you are using is probably incompatible with the current API version.
         We advise updating it to a newer version. If the problem persists and you are on the latest SDK version, please open an issue so we can work on a fix.
+        Defaults to False.
 
     Example
     -------
@@ -267,18 +268,28 @@ class Trainer(TaskBase):
 
         Args
         ----
-        data: The data to be inserted into the database. Can be an pandas.Dataframe or dictionary of pandas.DataFrame.
-        overwrite (bool): If overwrite is True, then deletes previous database with the same name if
-        exists. Defaults to False.
-        frequency_seconds (int): How often to check the status of the model. If `frequency_seconds` is
-        less than 1, it returns the `insert_responses` and `setup_response` and it won't wait for
-        training to finish, allowing to perform other actions, but could cause errors on some scripts
-        if the model is expected to be ready for consuming. Defaults to 1.
+        data: pd.DataFrame or dict of pd.DataFrame)
+            The data to be inserted into the database. It is required to be an pandas.Dataframe,
+            unless it's a RecommendationSystem, then it's a dictionary of pandas.DataFrame.
+        overwrite: bool
+            If overwrite is True, then deletes previous database with the same name if
+            exists. Defaults to False.
+        frequency_seconds:int
+            How often to check the status of the model. If `frequency_seconds` is
+            less than 1, it returns the `insert_responses` and `setup_response` and it won't wait for
+            training to finish, allowing to perform other actions, but could cause errors on some scripts
+            if the model is expected to be ready for consuming. Defaults to 1.
 
         Returns
         -------
-        The return value is a tuple of two elements. The first element is a list of responses from the
-        insert_data function. The second element is a dictionary of the response from the setup function.
+        Tuple: tuple
+            If `frequency_seconds < 1`, the returned value is a tuple of two elements.
+            The first element is a list of responses from the insert_data function.
+            The second element is a dictionary of the response from the setup function.
+
+        Query: jai.Query class
+            If `frequency_seconds >= 1`, then the return will be an Query class of the database trained.
+            If the database is a RecommendationSystem type, then it will return a dictionary of Query classes.
 
         Example
         -------
@@ -684,11 +695,12 @@ class Trainer(TaskBase):
 
         Args
         ----
-          name (str): The name of the query. Defaults to the same name as the current `Trainer` object.
+        name: str
+            The name of the query. Defaults to the same name as the current `Trainer` object.
 
         Returns
         -------
-          A Query object with the name and init values.
+            A Query object with the name and init values.
 
         Example
         -------

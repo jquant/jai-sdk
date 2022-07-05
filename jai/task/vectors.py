@@ -1,15 +1,11 @@
-import time
 from fnmatch import fnmatch
-from typing import Dict
 
-import matplotlib.pyplot as plt
 from pandas.api.types import is_numeric_dtype
 from tqdm import trange
 
 from ..core.utils_funcs import data2json
 from ..core.validations import check_dtype_and_clean, check_response
 from ..types.generic import PossibleDtypes
-from ..types.hyperparams import InsertParams
 from ..types.responses import InsertVectorResponse
 from .base import TaskBase
 
@@ -42,11 +38,12 @@ class Vectors(TaskBase):
         The environment variable that contains the JAI authentication token.
         Defaults to "JAI_AUTH".
     verbose : int
-        The level of verbosity. Defaults to 1
+        The level of verbosity. Defaults to 1.
     safe_mode : bool
         When safe_mode is True, responses from Jai API are validated.
         If the validation fails, the current version you are using is probably incompatible with the current API version.
         We advise updating it to a newer version. If the problem persists and you are on the latest SDK version, please open an issue so we can work on a fix.
+        Defaults to False.
 
     Example
     -------

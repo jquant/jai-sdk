@@ -1,7 +1,7 @@
 Version 0.20.0
 ==============
 
-** date **
+Release date: **07/07/2020**
 
 The release 0.20.0 contains a new structure of classes to apply Jai that aim at a more accessible and intuitive way of using the SDK for both new and experienced users.
 
@@ -101,19 +101,20 @@ Please check the section :ref:`Linear Model <source/task/linear:linear module>` 
 Recommendation System setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
   
-Added the setup of Recommendation System databases.
+Added the setup of Recommendation System databases. Please check the :ref:`Recommendation System Example <source/advanced/recommendation:Recommendation Systems>`.
 
-check_parameters method
-^^^^^^^^^^^^^^^^^^^^^^^
+Fit parameters check method
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
   
-Added a new method to validate parameters for setup. 
+On Trainer Module, we created a new method `set_parameters` to validate parameters for setup. 
 This method is useful to validate how the parameters are interpreted by the API without starting a new setup.
 
 Filter declaration
 ^^^^^^^^^^^^^^^^^^
   
 The setup with filters has changed. 
-Now you define the filter column on the setup method as a feature.
+Now you define the filter column on the setup method as a feature. 
+Please check the :ref:`Filter Example <source/advanced/filters:Creating a new collection with filters>`.
 
 Improvements
 --------------

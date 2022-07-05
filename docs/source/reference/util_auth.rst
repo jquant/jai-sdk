@@ -3,7 +3,7 @@
 Authentication
 ##############
 
-Here are some functions to help the manipulation of image data.
+Here are some functions to help with the handling of the authentication key.
 
 .. automodule:: jai.core.authentication
    :members:
