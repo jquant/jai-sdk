@@ -24,6 +24,13 @@ def get_auth_key(email: str, firstName: str, lastName: str, company: str = ""):
     ----------
     `response`: dict
         A Response object with whether or not the auth key was created.
+
+    Example
+    ----------
+    >>> from jai import get_auth_key
+    >>> r = get_auth_key(email='email@mail.com', firstName='Jai', lastName='Z')
+    >>> print(r.status_code) # This should be 201
+    >>> print(r.json())
     """
     url = "https://mycelia.azure-api.net/clone"
     body = {
@@ -44,6 +51,11 @@ def set_authentication(auth_key: str, env_var: str = "JAI_AUTH"):
     Args:
         auth_key (str): Authentication key value.
         env_var (str, optional): Environment variable name. Defaults to "JAI_AUTH".
+
+    Example
+    ----------
+    >>> from jai import set_authentication
+    >>> set_authentication("xXxxxXXxXXxXXxXXxXXxXXxXXxxx")
     """
     if env_var in os.environ:
         warnings.warn(f"Overwriting environment variable `{env_var}`.", stacklevel=2)
@@ -64,6 +76,11 @@ def get_authentication(env_var: str = "JAI_AUTH"):
 
     Returns:
         str: Authentication Key.
+
+    Example
+    ----------
+    >>> from jai import get_authentication
+    >>> get_authentication()
     """
     try:
         return config(env_var)
