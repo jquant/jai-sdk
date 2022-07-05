@@ -23,19 +23,6 @@ class TaskBase(BaseJai):
         verbose: int = 1,
         safe_mode: bool = False,
     ):
-        """
-        Initialize the Jai class.
-
-        An authorization key is needed to use the Mycelia API.
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-            None
-
-        """
         self._init_values = {
             "environment": environment,
             "env_var": env_var,

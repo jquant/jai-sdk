@@ -1,6 +1,5 @@
 import json
 import secrets
-import sys
 import time
 from fnmatch import fnmatch
 from io import BytesIO
@@ -45,11 +44,6 @@ from .validations import (
     kwargs_validation,
 )
 
-if sys.version < "3.8":
-    from typing_extensions import Literal
-else:
-    from typing import Literal
-
 __all__ = ["Jai"]
 
 
@@ -76,6 +70,7 @@ class Jai(BaseJai):
         When safe_mode is True, responses from Jai API are validated.
         If the validation fails, the current version you are using is probably incompatible with the current API version.
         We advise updating it to a newer version. If the problem persists and you are on the latest SDK version, please open an issue so we can work on a fix.
+        Defaults to False.
 
     """
 
