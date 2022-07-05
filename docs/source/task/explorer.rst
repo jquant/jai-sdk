@@ -17,7 +17,7 @@ For more information, see the full :ref:`Explorer class reference <source/refere
 :code:`Explorer`
 ================
 
-Bellow, a simple example to instanciate the Explorer class:
+Bellow, a simple example to instantiate the Explorer class:
 
 .. code-block:: python
 

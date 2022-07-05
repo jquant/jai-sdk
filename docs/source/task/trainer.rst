@@ -20,7 +20,7 @@ For more information, see the full :ref:`Trainer class reference <source/referen
 :code:`Trainer`
 ===============
 
-Bellow, a simple example to instanciate the Trainer class.
+Bellow, a simple example to instantiate the Trainer class.
 
 You'll need a name value as identifier for the database to be created.
 This value should be unique (unless you wish to overwrite an existing database).

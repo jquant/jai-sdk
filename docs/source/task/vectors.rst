@@ -15,7 +15,7 @@ For more information, see the full :ref:`Vectors class reference <source/referen
 :code:`Vectors`
 ===================
 
-Bellow, a simple example to instanciate the Vectors class:
+Bellow, a simple example to instantiate the Vectors class:
 
 .. code-block:: python
 

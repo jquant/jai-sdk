@@ -18,7 +18,7 @@ For more information, see the full :ref:`Linear Model class reference <source/re
 :code:`LinearModel`
 ===================
 
-Bellow, a simple example to instanciate the LinearModel class:
+Bellow, a simple example to instantiate the LinearModel class:
 
 .. code-block:: python
 
