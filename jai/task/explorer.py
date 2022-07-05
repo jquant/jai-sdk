@@ -212,10 +212,14 @@ class Explorer(BaseJai):
 
         Args
         ----
-        original_name (str): The name of the database you want to transfer.
-        to_environment (str): The environment to transfer the variable to.
-        new_name (str): The name of the new environment. If not specified, the original name is used.
-        from_environment (str): The environment to transfer the variable from. Defaults to `default`.
+        original_name: str
+            The name of the database you want to transfer.
+        to_environment: str
+            The environment to transfer the variable to.
+        new_nam: str
+            The name of the new environment. If not specified, the original name is used.
+        from_environment: str
+            The environment to transfer the variable from. Defaults to `default`.
 
         Returns
         -------
@@ -250,10 +254,14 @@ class Explorer(BaseJai):
 
         Args
         ----
-          database_name (str): The name of the database to import.
-          owner_id (str): The ID of the user who own the database.
-          owner_email (str): The email address of the user who own the database. This is an alternative to owner_id.
-          import_name (str): The name of the database to be imported, in case of renaming. Defaults to None (the database is not renamed).
+          database_name: str
+            The name of the database to import.
+          owner_id: str
+            The ID of the user who own the database.
+          owner_email: str
+            The email address of the user who own the database. This is an alternative to owner_id.
+          import_name: str
+            The name of the database to be imported, in case of renaming. Defaults to None (the database is not renamed).
 
         Returns
         -------
