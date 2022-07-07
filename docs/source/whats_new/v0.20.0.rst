@@ -1,0 +1,126 @@
+Version 0.20.0
+==============
+
+Release date: **07/07/2020**
+
+The release 0.20.0 contains a new structure of classes to apply Jai that aim at a more accessible and intuitive way of using the SDK for both new and experienced users.
+
+Our goal is to make Jai a great framework to build, consume and maintain models, and we hope this release is the next step to shorten the learning curve.
+
+.. contents:: 
+    :local: 
+    :depth: 3
+
+Highlights
+----------
+
+Authentication
+^^^^^^^^^^^^^^
+
+The authentication mode has changed. Before, it was possible to authenticate using your authentication key when instantiating the Jai class. 
+We removed this feature because we consider writing the auth key on your scripts a lousy practice.
+
+Using an environment variable with your auth key or setting it on :code:`os.environ`. We improved this feature with the usage of `python-decouple.` 
+You can also set the auth key using a :file:`.env` file or a :file:`.ini` file.
+
+Bellow an example of the content of a :file:`settings.ini` file:
+
+.. code-block:: text
+
+    [settings]
+    JAI_AUTH=xXxxxXXxXXxXXxXXxXXxXXxXXxxx
+
+Bellow an example of the content of a :file:`.env` file:
+
+.. code-block:: text
+
+    JAI_AUTH="xXxxxXXxXXxXXxXXxXXxXXxXXxxx"
+
+The default for the environment variable with the auth key has changed from "JAI_SECRET." 
+Using the authentication key is expected to be on the "JAI_AUTH" environment variable.
+
+.. note::
+    Use the parameter :code:`var_env` to change the environment variable name with the auth key value. 
+
+Please check the section :ref:`How to configure your auth key <source/overview/set_authentication:How to configure your auth key>` for more information.
+
+Safe mode
+^^^^^^^^^
+  
+Most classes now have a :code:`safe_mode` parameter on initialization. When you set this parameter to `True,` the SDK validates if the responses for most requests to the API follow the expected structure.
+
+The response check happens on the client-side, meaning that the SDK will raise an error if any API changes happen.
+If an error occurs, it probably means that your current version has become incompatible with the current API version. 
+We advise updating it to a newer version. If the problem is persistent and you are on the latest SDK version, please open an issue so we can work on a fix. 
+
+.. note::
+   Safe mode is not a solution to avoid errors, but we hope this will save you hours of debugging time. 
+   Although we try our best to keep the API stable, some changes will eventually improve its functionality and performance.
+
+Backward Incompatible Changes
+-----------------------------
+
+- Removed the :code:`auth_key` parameter on initialization of Jai class.
+- Removed the :code:`var_env` parameter to change the environment variable name that contains the auth key value (changed to :code:`env_var`).
+- Changed headers attribute name to :code:`.headers.`
+- Changed the :code:`.status` property. Now it's a method :code:`.status()`.
+- Removed Ids from report. The handling of Ids by the API was inefficient, causing some processes to run really slow.
+  We chose to remove them from the report until we can figure out a solution for the management of Ids internally.
+- Changed :code:`.fields` structure to allow for field validation. The new structure is as follows:
+
+.. code-block:: bash
+
+    [
+        {
+            "database": str, 
+            "mapping": str,
+            "fields": [
+                {
+                "name": str,
+                "type": str
+                },
+            ]
+        },
+    ]
+
+New Features
+------------
+
+Reorganization of Jai class
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  
+We split the Jai class methods into Task classes. 
+Please check the section :ref:`Task Module <source/basic_guide/task_intro:introduction>` for more information.
+
+Linear Models
+^^^^^^^^^^^^^
+  
+Added a new group of methods to train and consume linear models.
+Please check the section :ref:`Linear Model <source/task/linear:linear module>` for more information.
+
+Recommendation System setup
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  
+Added the setup of Recommendation System databases. Please check the :ref:`Recommendation System Example <source/advanced/recommendation:Recommendation Systems>`.
+
+Fit parameters check method
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  
+On Trainer Module, we created a new method `set_parameters` to validate parameters for setup. 
+This method is useful to validate how the parameters are interpreted by the API without starting a new setup.
+
+Filter declaration
+^^^^^^^^^^^^^^^^^^
+  
+The setup with filters has changed. 
+Now you define the filter column on the setup method as a feature. 
+Please check the :ref:`Filter Example <source/advanced/filters:Creating a new collection with filters>`.
+
+Improvements
+--------------
+- Changed code formatter to `black.` 
+- New function `print_args`.
+
+Documentation
+----------------
+Added documentation for the new features.

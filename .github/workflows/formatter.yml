@@ -1,0 +1,58 @@
+name: Code Formatter
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - "**.py"
+    
+jobs:
+  build:
+    name: Code Formatter
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set env.BRANCH
+        run: echo "BRANCH=$(echo $GITHUB_REF | cut -d'/' -f 3)" >> $GITHUB_ENV
+        
+      - name: checkout repo
+        uses: actions/checkout@v2.3.4
+        with:
+          repository: ${{ github.repository }}
+
+      # https://github.com/myint/autoflake
+      - name: Install autoflake
+        run: |
+          python -m pip install --upgrade autoflake
+          
+      - name: Removing unused variables and imports
+        run: |
+          autoflake jai/tests/ --remove-unused-variables --remove-all-unused-imports --ignore-init-module-imports --recursive --in-place
+
+      # https://github.com/PyCQA/isort
+      # https://github.com/isort/isort-action
+      - uses: isort/isort-action@master
+        with:
+            sortPaths: "jai/"
+            configuration: "--atomic"            
+                  
+      # https://github.com/rickstaa/action-black/
+      - name: Check files using the black formatter
+        uses: rickstaa/action-black@v1
+        id: action_black
+        with:
+          black_args: "jai/"
+
+      - name: Create Pull Request
+        if: steps.action_black.outputs.is_formatted == 'true'
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ github.token }}
+          title: "Format Python code with psf/black push"
+          commit-message: ":art: Format Python code with psf/black"
+          body: |
+            There appear to be some python formatting errors in ${{ github.sha }}. This pull request
+            uses the [psf/black](https://github.com/psf/black) formatter to fix these issues.
+          base: ${{ github.head_ref }} # Creates pull request onto pull request or commit branch
+          branch: actions-black/${{ env.BRANCH }}
+          

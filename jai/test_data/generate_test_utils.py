@@ -1,24 +1,20 @@
+import argparse
 from pathlib import Path
-import sys
 
-jai_folder = Path.cwd().parent.parent  # no one's proud of this
-sys.path.append(jai_folder.as_posix())
-
-from jai.image import read_image_folder, resize_image_folder
+from jai.utilities import read_image
 
 
-def generate_read_image_folder(image_folder=Path("test_imgs")):
-    img_data = read_image_folder(image_folder=image_folder)
+def generate_read_image_folder(image_folder):
+    img_data = read_image(image_folder=image_folder, id_pattern="img(\d+)")
     print()
     print(img_data)
-    img_data.to_pickle(Path("test_imgs/dataframe_img.pkl"))
+    img_data.to_csv(image_folder / "dataframe_img.csv")
 
 
-def generate_resize_image_folder(
-        image_folder=Path("test_imgs"), output_folder="generate_resize"):
-    resize_image_folder(image_folder=image_folder, output_folder=output_folder)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
 
+    parser.add_argument("-p", "--path", default="test_imgs", help="Image paths.")
+    args = parser.parse_args()
 
-if __name__ == '__main__':
-    generate_read_image_folder()
-    generate_resize_image_folder()
+    generate_read_image_folder(Path(args.path))
