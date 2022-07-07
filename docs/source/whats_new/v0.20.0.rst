@@ -66,6 +66,9 @@ Backward Incompatible Changes
 - Changed the :code:`.status` property. Now it's a method :code:`.status()`.
 - Removed Ids from report. The handling of Ids by the API was inefficient, causing some processes to run really slow.
   We chose to remove them from the report until we can figure out a solution for the management of Ids internally.
+- Changed `POST /rename` to `PATCH /rename` REST API method.
+- Changed `PATCH /rename` response code to 201.
+- Changed `POST /setup` response code to 202.
 - Changed :code:`.fields` structure to allow for field validation. The new structure is as follows:
 
 .. code-block:: bash
