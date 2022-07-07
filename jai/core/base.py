@@ -375,7 +375,7 @@ class BaseJai(object):
         """
         return requests.get(self.url + f"/validation/{name}", headers=self.headers)
 
-    @raise_status_error(200)
+    @raise_status_error(201)
     def _rename(self, original_name: str, new_name: str):
         """
         Get name and type of each database in your environment.
@@ -489,7 +489,7 @@ class BaseJai(object):
         }
         return requests.put(self.url + "/parameters", headers=self.headers, json=body)
 
-    @raise_status_error(201)
+    @raise_status_error(202)
     def _setup(self, name: str, body, overwrite=False):
         """
         Call the API method for database setup.

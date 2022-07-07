@@ -82,7 +82,7 @@ def test_environments(safe_mode):
     j = Jai(safe_mode=safe_mode)
     assert j.environments() == [
         {"key": "default", "id": "testsdk/test", "name": "testsdk_test"},
-        {"key": "testsdk_prod", "id": "testsdk/prod", "name": "testsdk_prod"},
+        {"key": "prod", "id": "testsdk/prod", "name": "testsdk_prod"},
     ]
 
 

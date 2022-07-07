@@ -54,7 +54,7 @@ def test_environments(safe_mode):
 
     res = [
         {"key": "default", "id": "testsdk/test", "name": "testsdk_test"},
-        {"key": "testsdk_prod", "id": "testsdk/prod", "name": "testsdk_prod"},
+        {"key": "prod", "id": "testsdk/prod", "name": "testsdk_prod"},
     ]
 
     assert envs == res
