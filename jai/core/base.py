@@ -381,7 +381,9 @@ class BaseJai(object):
         Get name and type of each database in your environment.
         """
         body = {"original_name": original_name, "new_name": new_name}
-        return requests.post(url=self.url + f"/rename", headers=self.headers, json=body)
+        return requests.patch(
+            url=self.url + f"/rename", headers=self.headers, json=body
+        )
 
     @raise_status_error(200)
     def _transfer(
