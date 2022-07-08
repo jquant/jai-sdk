@@ -694,7 +694,7 @@ class Jai(BaseJai):
                     data.iloc[b : b + batch_size], dtype=dtype, predict=True
                 )
                 task = executor.submit(
-                    self._similar_json, name, _batch, predict_proba=predict_proba
+                    self._predict, name, _batch, predict_proba=predict_proba
                 )
                 dict_futures[task] = i
 
