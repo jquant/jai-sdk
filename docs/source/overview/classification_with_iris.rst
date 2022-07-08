@@ -31,7 +31,7 @@ This dataset is frequently used on machine learning classification classes and a
 can be found in the `sklearn documentation <https://scikit-learn.org/stable/auto_examples/datasets/plot_iris_dataset.html>`_. 
 The dataset presents *150 rows* equally divided between the three flower classes, which are *Setosa*, *Versicolour* and *Virginica*.        
 
-Let's have a quick glance on come columns of this dataset below:  
+Let's have a quick glance on some columns of this dataset below:  
 
 .. code-block:: python
 
