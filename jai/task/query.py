@@ -1,11 +1,13 @@
 from io import BytesIO
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
+import concurrent
 import numpy as np
 import pandas as pd
+import psutil
 import requests
 from pydantic import HttpUrl
-from tqdm import trange
+from tqdm import tqdm
 
 from jai.utilities import predict2df
 
@@ -182,20 +184,21 @@ class Query(TaskBase):
             raise ValueError(
                 "Data must be `list`, `np.array`, `pd.Index`, `pd.Series` or `pd.DataFrame`"
             )
-
-        for i in trange(0, len(data), self.batch_size, desc=desc):
+        db_type = self.db_type
+        for i in range(0, len(data), self.batch_size):
             if is_id:
                 yield is_id, data[i : i + self.batch_size].tolist()
             else:
                 _batch = data.iloc[i : i + self.batch_size]
-                yield is_id, data2json(_batch, dtype=self.db_type, predict=True)
+                yield is_id, data2json(_batch, dtype=db_type, predict=True)
 
     def similar(
         self,
         data: Union[list, np.ndarray, pd.Index, pd.Series, pd.DataFrame],
         top_k: int = 5,
         orient: str = "nested",
-        filters=None,
+        filters: List[str] = None,
+        max_insert_workers: Optional[int] = None,
     ):
         """
         Query a database in search for the `top_k` most similar entries for each
@@ -211,6 +214,10 @@ class Query(TaskBase):
             Number of k similar items that we want to return. `Default is 5`.
         orient : "nested" or "flat"
             Changes the output format. `Default is "nested"`.
+        filters : List of strings
+            Filters to use on the similarity query. `Default is None`.
+        max_insert_workers : bool
+            Number of workers to use to parallelize the process. If None, use all workers. `Defaults to None.`
 
         Return
         ------
@@ -222,25 +229,57 @@ class Query(TaskBase):
             and 'query_id'.
 
         """
+        description = "Similar"
 
-        results = []
-        for is_id, _batch in self._generate_batch(data, desc="Similar"):
-            if is_id:
-                res = self._similar_id(
-                    self.name, _batch, top_k=top_k, orient=orient, filters=filters
-                )
-            else:
-                res = self._similar_json(
-                    self.name, _batch, top_k=top_k, orient=orient, filters=filters
-                )
-            if orient == "flat":
-                if self.safe_mode:
-                    res = check_response(FlatResponse, res, list_of=True)
-                results.extend(res)
-            else:
-                if self.safe_mode:
-                    res = check_response(SimilarNestedResponse, res).dict()
-                results.extend(res["similarity"])
+        if max_insert_workers is None:
+            pcores = psutil.cpu_count(logical=False)
+        elif not isinstance(max_insert_workers, int):
+            raise TypeError(
+                f"Variable 'max_insert_workers' must be 'None' or 'int' instance, not {max_insert_workers.__class__.__name__}."
+            )
+        elif max_insert_workers > 0:
+            pcores = max_insert_workers
+        else:
+            pcores = 1
+
+        dict_futures = {}
+        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+            for i, (is_id, _batch) in enumerate(
+                self._generate_batch(data, desc=description)
+            ):
+                if is_id:
+                    task = executor.submit(
+                        self._similar_id,
+                        self.name,
+                        _batch,
+                        top_k=top_k,
+                        orient=orient,
+                        filters=filters,
+                    )
+                else:
+                    task = executor.submit(
+                        self._similar_json,
+                        self.name,
+                        _batch,
+                        top_k=top_k,
+                        orient=orient,
+                        filters=filters,
+                    )
+                dict_futures[task] = i
+
+            with tqdm(total=len(dict_futures), desc=description) as pbar:
+                results = []
+                for future in concurrent.futures.as_completed(dict_futures):
+                    res = future.result()
+                    if orient == "flat":
+                        if self.safe_mode:
+                            res = check_response(FlatResponse, res, list_of=True)
+                        results.extend(res)
+                    else:
+                        if self.safe_mode:
+                            res = check_response(SimilarNestedResponse, res).dict()
+                        results.extend(res["similarity"])
+                    pbar.update(1)
         return results
 
     def recommendation(
@@ -248,7 +287,8 @@ class Query(TaskBase):
         data: Union[list, np.ndarray, pd.Index, pd.Series, pd.DataFrame],
         top_k: int = 5,
         orient: str = "nested",
-        filters=None,
+        filters: List[str] = None,
+        max_insert_workers: Optional[int] = None,
     ):
         """
         Query a database in search for the `top_k` most recommended entries for each
@@ -264,6 +304,10 @@ class Query(TaskBase):
             Number of k recommendations that we want to return. `Default is 5`.
         orient : "nested" or "flat"
             Changes the output format. `Default is "nested"`.
+        filters : List of strings
+            Filters to use on the similarity query. `Default is None`.
+        max_insert_workers : bool
+            Number of workers to use to parallelize the process. If None, use all workers. `Defaults to None.`
 
         Return
         ------
@@ -274,25 +318,57 @@ class Query(TaskBase):
             previously setup and 'distance' in between the correspondent 'id'
             and 'query_id'.
         """
+        description = "Recommendation"
 
-        results = []
-        for is_id, _batch in self._generate_batch(data, desc="Recommendation"):
-            if is_id:
-                res = self._recommendation_id(
-                    self.name, _batch, top_k=top_k, orient=orient, filters=filters
-                )
-            else:
-                res = self._recommendation_json(
-                    self.name, _batch, top_k=top_k, orient=orient, filters=filters
-                )
-            if orient == "flat":
-                if self.safe_mode:
-                    res = check_response(FlatResponse, res, list_of=True)
-                results.extend(res)
-            else:
-                if self.safe_mode:
-                    res = check_response(RecNestedResponse, res).dict()
-                results.extend(res["recommendation"])
+        if max_insert_workers is None:
+            pcores = psutil.cpu_count(logical=False)
+        elif not isinstance(max_insert_workers, int):
+            raise TypeError(
+                f"Variable 'max_insert_workers' must be 'None' or 'int' instance, not {max_insert_workers.__class__.__name__}."
+            )
+        elif max_insert_workers > 0:
+            pcores = max_insert_workers
+        else:
+            pcores = 1
+
+        dict_futures = {}
+        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+            for i, (is_id, _batch) in enumerate(
+                self._generate_batch(data, desc=description)
+            ):
+                if is_id:
+                    task = executor.submit(
+                        self._recommendation_id,
+                        self.name,
+                        _batch,
+                        top_k=top_k,
+                        orient=orient,
+                        filters=filters,
+                    )
+                else:
+                    task = executor.submit(
+                        self._recommendation_json,
+                        self.name,
+                        _batch,
+                        top_k=top_k,
+                        orient=orient,
+                        filters=filters,
+                    )
+                dict_futures[task] = i
+
+            with tqdm(total=len(dict_futures), desc=description) as pbar:
+                results = []
+                for future in concurrent.futures.as_completed(dict_futures):
+                    res = future.result()
+                    if orient == "flat":
+                        if self.safe_mode:
+                            res = check_response(FlatResponse, res, list_of=True)
+                        results.extend(res)
+                    else:
+                        if self.safe_mode:
+                            res = check_response(RecNestedResponse, res).dict()
+                        results.extend(res["recommendation"])
+                    pbar.update(1)
         return results
 
     def predict(
@@ -300,6 +376,7 @@ class Query(TaskBase):
         data: Union[pd.Series, pd.DataFrame],
         predict_proba: bool = False,
         as_frame: bool = False,
+        max_insert_workers: Optional[int] = None,
     ):
         """
         Predict the output of new data for a given database.
@@ -311,6 +388,11 @@ class Query(TaskBase):
         predict_proba : bool
             Whether or not to return the probabilities of each prediction is
             it's a classification. `Default is False`.
+        as_frame : bool
+            Whether or not to return the result of prediction as a DataFrame or list. `Default is False`.
+        max_insert_workers : bool
+            Number of workers to use to parallelize the process. If None, use all workers. `Defaults to None.`
+
 
         Return
         ------
@@ -325,13 +407,37 @@ class Query(TaskBase):
             raise ValueError(
                 f"data must be a pandas Series or DataFrame. (data type `{data.__class__.__name__}`)"
             )
+        description = "Predict"
 
-        results = []
-        for _, _batch in self._generate_batch(data, desc="Predict"):
-            res = self._predict(self.name, _batch, predict_proba=predict_proba)
-            if self.safe_mode:
-                res = check_response(PredictResponse, res, list_of=True)
-            results.extend(res)
+        if max_insert_workers is None:
+            pcores = psutil.cpu_count(logical=False)
+        elif not isinstance(max_insert_workers, int):
+            raise TypeError(
+                f"Variable 'max_insert_workers' must be 'None' or 'int' instance, not {max_insert_workers.__class__.__name__}."
+            )
+        elif max_insert_workers > 0:
+            pcores = max_insert_workers
+        else:
+            pcores = 1
+
+        dict_futures = {}
+        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+            for i, (_, _batch) in enumerate(
+                self._generate_batch(data, desc=description)
+            ):
+                task = executor.submit(
+                    self._predict, self.name, _batch, predict_proba=predict_proba
+                )
+                dict_futures[task] = i
+
+            with tqdm(total=len(dict_futures), desc=description) as pbar:
+                results = []
+                for future in concurrent.futures.as_completed(dict_futures):
+                    res = future.result()
+                    if self.safe_mode:
+                        res = check_response(PredictResponse, res, list_of=True)
+                    results.extend(res)
+                    pbar.update(1)
 
         return predict2df(results) if as_frame else results
 
