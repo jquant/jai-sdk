@@ -9,7 +9,7 @@ import requests
 from decouple import config
 from tqdm import tqdm
 
-from ..core.utils_funcs import data2json
+from ..core.utils_funcs import data2json, get_pcores
 from ..core.validations import check_response
 from ..types.generic import Mode
 from ..types.responses import InsertDataResponse
@@ -849,16 +849,7 @@ class BaseJai(object):
             Dictionary of responses for each batch. Each response contains
             information of whether or not that particular batch was successfully inserted.
         """
-        if max_insert_workers is None:
-            pcores = psutil.cpu_count(logical=False)
-        elif not isinstance(max_insert_workers, int):
-            raise TypeError(
-                f"Variable 'max_insert_workers' must be 'None' or 'int' instance, not {max_insert_workers.__class__.__name__}."
-            )
-        elif max_insert_workers > 0:
-            pcores = max_insert_workers
-        else:
-            pcores = 1
+        pcores = get_pcores(max_insert_workers)
 
         dict_futures = {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:

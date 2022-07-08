@@ -4,14 +4,13 @@ from typing import Any, Dict, List, Optional, Union
 import concurrent
 import numpy as np
 import pandas as pd
-import psutil
 import requests
 from pydantic import HttpUrl
 from tqdm import tqdm
 
 from jai.utilities import predict2df
 
-from ..core.utils_funcs import data2json
+from ..core.utils_funcs import data2json, get_pcores
 from ..core.validations import check_response
 from ..types.generic import Mode
 from ..types.responses import (
@@ -230,17 +229,7 @@ class Query(TaskBase):
 
         """
         description = "Similar"
-
-        if max_insert_workers is None:
-            pcores = psutil.cpu_count(logical=False)
-        elif not isinstance(max_insert_workers, int):
-            raise TypeError(
-                f"Variable 'max_insert_workers' must be 'None' or 'int' instance, not {max_insert_workers.__class__.__name__}."
-            )
-        elif max_insert_workers > 0:
-            pcores = max_insert_workers
-        else:
-            pcores = 1
+        pcores = get_pcores(max_insert_workers)
 
         dict_futures = {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
@@ -320,16 +309,7 @@ class Query(TaskBase):
         """
         description = "Recommendation"
 
-        if max_insert_workers is None:
-            pcores = psutil.cpu_count(logical=False)
-        elif not isinstance(max_insert_workers, int):
-            raise TypeError(
-                f"Variable 'max_insert_workers' must be 'None' or 'int' instance, not {max_insert_workers.__class__.__name__}."
-            )
-        elif max_insert_workers > 0:
-            pcores = max_insert_workers
-        else:
-            pcores = 1
+        pcores = get_pcores(max_insert_workers)
 
         dict_futures = {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
@@ -409,16 +389,7 @@ class Query(TaskBase):
             )
         description = "Predict"
 
-        if max_insert_workers is None:
-            pcores = psutil.cpu_count(logical=False)
-        elif not isinstance(max_insert_workers, int):
-            raise TypeError(
-                f"Variable 'max_insert_workers' must be 'None' or 'int' instance, not {max_insert_workers.__class__.__name__}."
-            )
-        elif max_insert_workers > 0:
-            pcores = max_insert_workers
-        else:
-            pcores = 1
+        pcores = get_pcores(max_insert_workers)
 
         dict_futures = {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
