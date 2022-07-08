@@ -484,7 +484,7 @@ class Jai(BaseJai):
                     _batch = data[b : b + batch_size].tolist()
                     task = executor.submit(
                         self._similar_id,
-                        self.name,
+                        name,
                         _batch,
                         top_k=top_k,
                         orient=orient,
@@ -496,7 +496,7 @@ class Jai(BaseJai):
                     )
                     task = executor.submit(
                         self._similar_json,
-                        self.name,
+                        name,
                         _batch,
                         top_k=top_k,
                         orient=orient,
@@ -596,7 +596,7 @@ class Jai(BaseJai):
                     _batch = data[b : b + batch_size].tolist()
                     task = executor.submit(
                         self._similar_id,
-                        self.name,
+                        name,
                         _batch,
                         top_k=top_k,
                         orient=orient,
@@ -608,7 +608,7 @@ class Jai(BaseJai):
                     )
                     task = executor.submit(
                         self._similar_json,
-                        self.name,
+                        name,
                         _batch,
                         top_k=top_k,
                         orient=orient,
@@ -694,7 +694,7 @@ class Jai(BaseJai):
                     data.iloc[b : b + batch_size], dtype=dtype, predict=True
                 )
                 task = executor.submit(
-                    self._similar_json, self.name, _batch, predict_proba=predict_proba
+                    self._similar_json, name, _batch, predict_proba=predict_proba
                 )
                 dict_futures[task] = i
 
