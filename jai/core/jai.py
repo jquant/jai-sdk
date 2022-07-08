@@ -595,7 +595,7 @@ class Jai(BaseJai):
                 if is_id:
                     _batch = data[b : b + batch_size].tolist()
                     task = executor.submit(
-                        self._similar_id,
+                        self._recommendation_id,
                         name,
                         _batch,
                         top_k=top_k,
@@ -607,7 +607,7 @@ class Jai(BaseJai):
                         data.iloc[b : b + batch_size], dtype=dtype, predict=True
                     )
                     task = executor.submit(
-                        self._similar_json,
+                        self._recommendation_json,
                         name,
                         _batch,
                         top_k=top_k,
