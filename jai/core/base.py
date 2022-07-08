@@ -22,6 +22,22 @@ __all__ = ["BaseJai"]
 class BaseJai(object):
     """
     Base class for requests with the Mycelia API.
+    An authorization key is needed to use the Mycelia API.
+
+    Parameters
+    ----------
+    environment : str
+        Jai environment id or name to use. Defaults to "default"
+    env_var : str
+        Name of the Environment Variable to get the value of your auth key.
+        Defaults to "JAI_AUTH".
+    url_var : str
+        Name of the Environment Variable to get the value of API's URL.
+        Used to help development only. Defaults to "JAI_URL".
+
+    Returns
+    -------
+        None
     """
 
     def __init__(
@@ -30,23 +46,7 @@ class BaseJai(object):
         env_var: str = "JAI_AUTH",
         url_var: str = "JAI_URL",
     ):
-        """
-        Initialize the Jai class.
-
-        An authorization key is needed to use the Mycelia API.
-
-        Parameters
-        ----------
-        auth_key : str
-            Authorization key for the use of the API.
-        url : str, optional
-            Param used for development purposes. `Default is None`.
-
-        Returns
-        -------
-            None
-
-        """
+        """ """
         auth_key = get_authentication(env_var)
         self.headers = {"Auth": auth_key, "environment": environment}
 

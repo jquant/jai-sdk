@@ -29,18 +29,18 @@ class LinearModel(TaskBase):
 
     Parameters
     ----------
-    name : str
+    name: str
         String with the name of a database in your JAI environment.
-    task : str
+    task: str
         Task of the linear model. One of {`regression`, `sgd_regression`, `classification`, `sgd_classification`}.
-    environment : str
+    environment: str
         Jai environment id or name to use. Defaults to "default"
-    env_var : str
+    env_var: str
         The environment variable that contains the JAI authentication token.
         Defaults to "JAI_AUTH".
-    verbose : int
+    verbose: int
         The level of verbosity. Defaults to 1
-    safe_mode : bool
+    safe_mode: bool
         When safe_mode is True, responses from Jai API are validated.
         If the validation fails, the current version you are using is probably incompatible with the current API version.
         We advise updating it to a newer version. If the problem persists and you are on the latest SDK version, please open an issue so we can work on a fix.
@@ -57,19 +57,6 @@ class LinearModel(TaskBase):
         verbose: int = 1,
         safe_mode: bool = False,
     ):
-        """
-        Initialize the Jai class.
-
-        An authorization key is needed to use the Mycelia API.
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-            None
-
-        """
         super(LinearModel, self).__init__(
             name=name,
             environment=environment,
