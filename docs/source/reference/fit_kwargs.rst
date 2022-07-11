@@ -121,7 +121,8 @@ Here are the parameters that can be used for SelfSupervised models:
   * **min_delta** (*float*) -- Minimum change in the monitored quantity (loss) to qualify as an improvement,
     i.e. an absolute change of less than min_delta, will count as no improvement. *Default is 1e-5*.
   * **random_seed** (*int*) -- Random seed. *Default is 42*.
-  * **swa_parameters** (*bool*) -- stochastic weight avgeraging.
+  * **swa_parameters** (*dict*) -- stochastic weight avgeraging.
+  
     * **swa_lrs**: (*float*) -- The SWA learning rate to use. If none is given, swa is unabled. *Default is None*. 
     * **swa_epoch_start**: (*float*) -- If provided as int, the procedure will start from the swa_epoch_start-th epoch. If provided as float between 0 and 1, the procedure will start from int(swa_epoch_start * max_epochs) epoch. *Default is 0.8*. 
     * **annealing_epochs**: (*int*) -- number of epochs in the annealing phase. *Default is 10*. 
@@ -202,7 +203,8 @@ Here are the parameters that can be used for Supervised models:
   * **min_delta** (*float*) -- Minimum change in the monitored quantity (loss) to qualify as an improvement,
     i.e. an absolute change of less than min_delta, will count as no improvement. *Default is 1e-5*.
   * **random_seed** (*int*) -- Random seed. *Default is 42*.
-  * **swa_parameters** (*bool*) -- stochastic weight avgeraging.
+  * **swa_parameters** (*dict*) -- stochastic weight avgeraging.
+  
     * **swa_lrs**: (*float*) -- The SWA learning rate to use. If none is given, swa is unabled. *Default is None*. 
     * **swa_epoch_start**: (*float*) -- If provided as int, the procedure will start from the swa_epoch_start-th epoch. If provided as float between 0 and 1, the procedure will start from int(swa_epoch_start * max_epochs) epoch. *Default is 0.8*. 
     * **annealing_epochs**: (*int*) -- number of epochs in the annealing phase. *Default is 10*. 
@@ -275,6 +277,7 @@ Here are the parameters that can be used for RecomedationSystem models:
   * **batch_size** (*int*) -- Batch size for training. *Default is 512*.
   * **learning_rate** (*float*) -- Initial learning rate. *Default is 0.001*.
   * **model** (*dict*) -- Tower models hyperparams. 
+  
     * **encoder_layer** (*str*) -- Structure for the encoder layer {"2L", "2LR", "2LM"}. *Default is "2L"*.
     * **hidden_latent_dim** (*int*) -- Hidden layer size. *Default is 64*.
     * **dropout_rate** (*int*) -- Dropout rate for the encoder layer. *Default is 0.1*.
@@ -290,7 +293,8 @@ Here are the parameters that can be used for RecomedationSystem models:
   * **min_delta** (*float*) -- Minimum change in the monitored quantity (loss) to qualify as an improvement,
     i.e. an absolute change of less than min_delta, will count as no improvement. *Default is 1e-5*.
   * **random_seed** (*int*) -- Random seed. *Default is 42*.
-  * **swa_parameters** (*bool*) -- stochastic weight avgeraging.
+  * **swa_parameters** (*dict*) -- stochastic weight avgeraging.
+  
     * **swa_lrs**: (*float*) -- The SWA learning rate to use. If none is given, swa is unabled. *Default is None*. 
     * **swa_epoch_start**: (*float*) -- If provided as int, the procedure will start from the swa_epoch_start-th epoch. If provided as float between 0 and 1, the procedure will start from int(swa_epoch_start * max_epochs) epoch. *Default is 0.8*. 
     * **annealing_epochs**: (*int*) -- number of epochs in the annealing phase. *Default is 10*. 
