@@ -1,8 +1,5 @@
-from typing import Any, Dict, List
-
 import pandas as pd
 
-from ..core.validations import check_response
 from ..types.linear import (
     ClassificationHyperparams,
     ClassificationTasks,
@@ -11,11 +8,7 @@ from ..types.linear import (
     SGDClassificationHyperparams,
     SGDRegressionHyperparams,
 )
-from ..types.responses import (
-    LinearFitResponse,
-    LinearLearnResponse,
-    LinearPredictResponse,
-)
+
 from .base import TaskBase
 
 __all__ = ["LinearModel"]
@@ -135,19 +128,25 @@ class LinearModel(TaskBase):
         """
         Train a new linear model.
 
-        Args:
-          X (pd.DataFrame): dataframe of features.
-          y (pd.Series): The target variable.
-          pretrained_bases (list): mapping of ids to previously trained databases.
-          overwrite (bool): If True, will overwrite the model if it already exists. Defaults to False.
+        Args
+        ----
+          X: pd.DataFrame)
+            dataframe of features.
+          y: pd.Series):
+            The target variable.
+          pretrained_bases: list
+            mapping of ids to previously trained databases.
+          overwrite: bool
+            If True, will overwrite the model if it already exists. Defaults to False.
 
-        Returns:
+        Returns
+        -------
           A dictionary with information about the training.
           - id_train: List[Any]
           - id_test: List[Any]
           - metrics: Dict[str, Union[float, str]]
         """
-        response = self._linear_train(
+        return self._linear_train(
             self.name,
             X.to_dict(orient="records"),
             y.tolist(),
@@ -159,58 +158,50 @@ class LinearModel(TaskBase):
             overwrite=overwrite,
         )
 
-        if self.safe_mode:
-            return check_response(LinearFitResponse, response).dict(by_alias=True)
-        return response
-
     def learn(self, X: pd.DataFrame, y: pd.Series):
         """
         Improves an existing model with informantion from a new data.
 
-        Args:
-        X (pd.DataFrame): dataframe of features.
-        y (pd.Series): The target variable.
+        Args
+        ----
+        X: pd.DataFrame
+            dataframe of features.
+        y: pd.Series
+            The target variable.
 
-        Returns:
-        A dictionary with the learning report.
-        - before: Dict[str, Union[float, str]]
-        - after: Dict[str, Union[float, str]]
-        - change: bool
+        Returns
+        -------
+        response: dict
+            A dictionary with the learning report.
+            - before: Dict[str, Union[float, str]]
+            - after: Dict[str, Union[float, str]]
+            - change: bool
         """
-        response = self._linear_learn(
-            self.name, X.to_dict(orient="records"), y.tolist()
-        )
-
-        if self.safe_mode:
-            return check_response(LinearLearnResponse, response).dict()
-
-        return response
+        return self._linear_learn(self.name, X.to_dict(orient="records"), y.tolist())
 
     def predict(
         self, X: pd.DataFrame, predict_proba: bool = False, as_frame: bool = True
     ):
         """
-        It takes a dataframe, converts it to a list of dictionaries, and then calls the _linear_predict
-        function
+        Makes the prediction using the linear models.
 
-        Args:
-        X (pd.DataFrame): pd.DataFrame
-        predict_proba (bool): If True, the model will return the probability of each class. Defaults to
-        False
-        as_frame (bool): If True, the result will be returned as a pandas DataFrame. If False, it will be
-        returned as a list of dictionaries. Defaults to True
+        Args
+        ----
+        X: pd.DataFrame
+            Raw data to be predicted.
+        predict_proba:bool):
+            If True, the model will return the probability of each class. Defaults to False.
+        as_frame: bool
+            If True, the result will be returned as a pandas DataFrame. If False, it will be
+        returned as a list of dictionaries. Defaults to True.
 
-        Returns:
-        A list of dictionaries.
+        Returns
+        -------
+            A list of dictionaries.
         """
         result = self._linear_predict(
             self.name, X.to_dict(orient="records"), predict_proba=predict_proba
         )
-        if self.safe_mode:
-            if predict_proba:
-                result = check_response(List[Dict[Any, Any]], result)
-            else:
-                result = check_response(LinearPredictResponse, result, list_of=True)
 
         if as_frame:
             return pd.DataFrame(result).set_index("id")

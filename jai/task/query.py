@@ -10,14 +10,9 @@ from tqdm import trange
 from jai.utilities import predict2df
 
 from ..core.utils_funcs import data2json
-from ..core.validations import check_response
 from ..types.generic import Mode
 from ..types.responses import (
     FieldsResponse,
-    FlatResponse,
-    PredictResponse,
-    RecNestedResponse,
-    SimilarNestedResponse,
 )
 from .base import TaskBase
 
@@ -110,9 +105,6 @@ class Query(TaskBase):
         # column validation
         # TODO: typing validation is very complex
         fields = self._fields(name)
-        if self.safe_mode:
-            fields = check_response(FieldsResponse, fields, list_of=True)
-
         fields = {v["mapping"]: v for v in fields}
         columns = [c.replace(".", "_") for c in columns]
         return _check_fields(fields, columns=columns)
@@ -145,7 +137,6 @@ class Query(TaskBase):
                     description = self.describe()
                     twin_name = description["twin_base"]
                     ids = self._ids(twin_name, mode="complete")
-                    ids = check_response(List[Any], ids)
                 else:
                     ids = self.ids(mode="complete")
 
@@ -233,14 +224,7 @@ class Query(TaskBase):
                 res = self._similar_json(
                     self.name, _batch, top_k=top_k, orient=orient, filters=filters
                 )
-            if orient == "flat":
-                if self.safe_mode:
-                    res = check_response(FlatResponse, res, list_of=True)
-                results.extend(res)
-            else:
-                if self.safe_mode:
-                    res = check_response(SimilarNestedResponse, res).dict()
-                results.extend(res["similarity"])
+            results.extend(res)
         return results
 
     def recommendation(
@@ -285,14 +269,7 @@ class Query(TaskBase):
                 res = self._recommendation_json(
                     self.name, _batch, top_k=top_k, orient=orient, filters=filters
                 )
-            if orient == "flat":
-                if self.safe_mode:
-                    res = check_response(FlatResponse, res, list_of=True)
-                results.extend(res)
-            else:
-                if self.safe_mode:
-                    res = check_response(RecNestedResponse, res).dict()
-                results.extend(res["recommendation"])
+            results.extend(res)
         return results
 
     def predict(
@@ -329,8 +306,6 @@ class Query(TaskBase):
         results = []
         for _, _batch in self._generate_batch(data, desc="Predict"):
             res = self._predict(self.name, _batch, predict_proba=predict_proba)
-            if self.safe_mode:
-                res = check_response(PredictResponse, res, list_of=True)
             results.extend(res)
 
         return predict2df(results) if as_frame else results
@@ -356,10 +331,7 @@ class Query(TaskBase):
         >>> q = Query(name)
         >>> q.fields()
         """
-        fields = self._fields(self.name)
-        if self.safe_mode:
-            return check_response(FieldsResponse, fields, list_of=True)
-        return fields
+        return self._fields(self.name)
 
     def download_vectors(self):
         """
@@ -387,11 +359,7 @@ class Query(TaskBase):
         ...
         [-0.03121682 -0.2101511   0.4893339  ...  0.00758727  0.15916921  0.1226602 ]]
         """
-        url = self._download_vectors(self.name)
-        if self.safe_mode:
-            url = check_response(HttpUrl, url)
-        r = requests.get(url)
-        return np.load(BytesIO(r.content))
+        return self._download_vectors(self.name)
 
     def filters(self):
         """
@@ -402,10 +370,7 @@ class Query(TaskBase):
         response : list of strings
             List of valid filter values.
         """
-        filters = self._filters(self.name)
-        if self.safe_mode:
-            return check_response(List[str], filters)
-        return filters
+        return self._filters(self.name)
 
     def ids(self, mode: Mode = "complete"):
         """
@@ -429,7 +394,4 @@ class Query(TaskBase):
         >>> print(ids)
         ['891 items from 0 to 890']
         """
-        ids = self._ids(self.name, mode)
-        if self.safe_mode:
-            return check_response(List[Any], ids)
-        return ids
+        return self._ids(self.name, mode)

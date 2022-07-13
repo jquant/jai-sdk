@@ -1,6 +1,4 @@
 from ..core.base import BaseJai
-from ..core.validations import check_response
-from ..types.responses import DescribeResponse, UserResponse, ValidResponse
 
 __all__ = ["TaskBase"]
 
@@ -30,11 +28,9 @@ class TaskBase(BaseJai):
             "safe_mode": safe_mode,
         }
         super(TaskBase, self).__init__(environment, env_var)
-        self.safe_mode = safe_mode
 
         if self.safe_mode:
             user = self._user()
-            user = check_response(UserResponse, user).dict()
 
             if verbose:
                 print(
@@ -69,10 +65,7 @@ class TaskBase(BaseJai):
             True if name is in your environment. False, otherwise.
 
         """
-        valid = self._is_valid(self.name)
-        if self.safe_mode:
-            return check_response(ValidResponse, valid).dict()["value"]
-        return valid["value"]
+        return self._is_valid(self.name)
 
     def describe(self):
         """
@@ -88,8 +81,4 @@ class TaskBase(BaseJai):
         response : dict
             Dictionary with database description.
         """
-        description = self._describe(self.name)
-        if self.safe_mode:
-            description = check_response(DescribeResponse, description).dict()
-            description = {k: v for k, v in description.items() if v is not None}
-        return description
+        return self._describe(self.name)
