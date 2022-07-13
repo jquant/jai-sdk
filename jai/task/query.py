@@ -1,7 +1,7 @@
+import concurrent
 from io import BytesIO
 from typing import Any, Dict, List, Optional, Union
 
-import concurrent
 import numpy as np
 import pandas as pd
 import requests
