@@ -9,7 +9,7 @@ import requests
 from decouple import config
 from tqdm import tqdm
 
-from ..core.utils_funcs import data2json
+from ..core.utils_funcs import data2json, get_pcores
 from ..core.validations import check_response
 from ..types.generic import Mode
 from ..types.responses import InsertDataResponse
@@ -815,9 +815,9 @@ class BaseJai(object):
     def _insert_data(
         self,
         data,
-        name,
-        db_type,
-        batch_size,
+        name: str,
+        db_type: str,
+        batch_size: int,
         max_insert_workers: Optional[int] = None,
         has_filter: bool = False,
         predict: bool = False,
@@ -827,12 +827,18 @@ class BaseJai(object):
 
         Args
         ----------
+        data : str
+            Raw data to be inserted for training.
         name : str
             String with the name of a database in your JAI environment.
         db_type : str
             Database type (Supervised, SelSupervised, Text...)
         batch_size : int
             Size of batch to send the data.
+        max_insert_workers : bool
+            Number of workers to use to parallelize the process. If None, use all workers. Defaults to None.
+        has_filter : bool
+            If data has an extra (filter) column than expected. Defaults to False.
         predict : bool
             Allows table type data to have only one column for predictions,
             if False, then tables must have at least 2 columns. `Default is False`.
@@ -843,16 +849,7 @@ class BaseJai(object):
             Dictionary of responses for each batch. Each response contains
             information of whether or not that particular batch was successfully inserted.
         """
-        if max_insert_workers is None:
-            pcores = psutil.cpu_count(logical=False)
-        elif not isinstance(max_insert_workers, int):
-            raise TypeError(
-                f"Variable 'max_insert_workers' must be 'None' or 'int' instance, not {max_insert_workers.__class__.__name__}."
-            )
-        elif max_insert_workers > 0:
-            pcores = max_insert_workers
-        else:
-            pcores = 1
+        pcores = get_pcores(max_insert_workers)
 
         dict_futures = {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
