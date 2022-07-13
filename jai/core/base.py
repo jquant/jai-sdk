@@ -72,10 +72,8 @@ class RequestJai(object):
         env_var: str = "JAI_AUTH",
         url_var: str = "JAI_URL",
     ):
-        """ """
         auth_key = get_authentication(env_var)
         self.headers = {"Auth": auth_key, "environment": environment}
-
         self.url = config(url_var, default="https://mycelia.azure-api.net")
 
     @property
@@ -841,7 +839,6 @@ class BaseJai(RequestJai):
         url_var: str = "JAI_URL",
         safe_mode: bool = False,
     ):
-        """ """
         auth_key = get_authentication(env_var)
         self.safe_mode = safe_mode
         self.headers = {"Auth": auth_key, "environment": environment}
@@ -897,7 +894,8 @@ class BaseJai(RequestJai):
         """
         Get name and type of each database in your environment.
         """
-        user = self._check_status_code(self._get__user())
+        response = self._get__user()
+        user = self._check_status_code(response)
         if self.safe_mode:
             return check_response(UserResponse, user).dict()
         return user
@@ -906,7 +904,8 @@ class BaseJai(RequestJai):
         """
         Get name of environments available.
         """
-        envs = self._check_status_code(self._get__environments())
+        response = self._get__environments()
+        envs = self._check_status_code(response)
         if self.safe_mode:
             environments = []
             for v in check_response(EnvironmentsResponse, envs, list_of=True):
@@ -920,7 +919,8 @@ class BaseJai(RequestJai):
         """
         Get name and type of each database in your environment.
         """
-        info = self._check_status_code(self._get__info(mode=mode, get_size=get_size))
+        response = self._get__info(mode=mode, get_size=get_size)
+        info = self._check_status_code(response)
         if mode == "names":
             if self.safe_mode:
                 names = check_response(List[str], info)
@@ -936,16 +936,18 @@ class BaseJai(RequestJai):
         """
         Get the status of your JAI environment when training.
         """
-        status = self._check_status_code(self._get__status())
+        response = self._get__status()
+        status = self._check_status_code(response)
         if self.safe_mode:
             return check_response(Dict[str, StatusResponse], status, as_dict=True)
         return status
 
-    def _delete_status(self, name):
+    def _delete_status(self, name: str):
         """
         Remove database from status. Used when processing ended.
         """
-        response = self._check_status_code(self._delete__status(name))
+        response = self._delete__status(name)
+        response = self._check_status_code(response)
         if self.safe_mode:
             response = check_response(str, response)
         return response
@@ -959,7 +961,8 @@ class BaseJai(RequestJai):
         name : str
             String with the name of a database in your JAI environment.
         """
-        url = self._check_status_code(self._get__download_vectors(name))
+        response = self._get__download_vectors(name)
+        url = self._check_status_code(response)
         if self.safe_mode:
             url = check_response(HttpUrl, url)
         r = requests.get(url)
@@ -974,7 +977,8 @@ class BaseJai(RequestJai):
         name : str
             String with the name of a database in your JAI environment.
         """
-        filters = self._check_status_code(self._get__filters(name))
+        response = self._get__filters(name)
+        filters = self._check_status_code(response)
         if self.safe_mode:
             return check_response(List[str], filters)
         return filters
@@ -1010,15 +1014,14 @@ class BaseJai(RequestJai):
         response : dict
             Dictionary with the index and distance of `the k most similar items`.
         """
-        res = self._check_status_code(
-            self._put__similar_id(
-                name=name,
-                id_item=id_item,
-                top_k=top_k,
-                orient=orient,
-                filters=filters,
-            )
+        response = self._put__similar_id(
+            name=name,
+            id_item=id_item,
+            top_k=top_k,
+            orient=orient,
+            filters=filters,
         )
+        res = self._check_status_code(response)
         if orient == "flat":
             if self.safe_mode:
                 res = check_response(FlatResponse, res, list_of=True)
@@ -1055,15 +1058,14 @@ class BaseJai(RequestJai):
             Dictionary with the index and distance of `the k most similar
             items`.
         """
-        sim = self._check_status_code(
-            self._put__similar_json(
-                name=name,
-                data_json=data_json,
-                top_k=top_k,
-                orient=orient,
-                filters=filters,
-            )
+        response = self._put__similar_json(
+            name=name,
+            data_json=data_json,
+            top_k=top_k,
+            orient=orient,
+            filters=filters,
         )
+        sim = self._check_status_code(response)
         if orient == "flat":
             if self.safe_mode:
                 sim = check_response(FlatResponse, sim, list_of=True)
@@ -1104,15 +1106,14 @@ class BaseJai(RequestJai):
             Dictionary with the index and distance of `the k most similar
             items`.
         """
-        rec = self._check_status_code(
-            self._put__recommendation_id(
-                name=name,
-                id_item=id_item,
-                top_k=top_k,
-                orient=orient,
-                filters=filters,
-            )
+        response = self._put__recommendation_id(
+            name=name,
+            id_item=id_item,
+            top_k=top_k,
+            orient=orient,
+            filters=filters,
         )
+        rec = self._check_status_code(response)
         if orient == "flat":
             if self.safe_mode:
                 rec = check_response(FlatResponse, rec, list_of=True)
@@ -1148,15 +1149,14 @@ class BaseJai(RequestJai):
         response : dict
             Dictionary with the index and distance of `the k most similar items`.
         """
-        rec = self._check_status_code(
-            self._put__recommendation_json(
-                name=name,
-                data_json=data_json,
-                top_k=top_k,
-                orient=orient,
-                filters=filters,
-            )
+        response = self._put__recommendation_json(
+            name=name,
+            data_json=data_json,
+            top_k=top_k,
+            orient=orient,
+            filters=filters,
         )
+        rec = self._check_status_code(response)
         if orient == "flat":
             if self.safe_mode:
                 rec = check_response(FlatResponse, rec, list_of=True)
@@ -1184,13 +1184,12 @@ class BaseJai(RequestJai):
         results : dict
             Dictionary of predctions for the data passed as parameter.
         """
-        pred = self._check_status_code(
-            self._put__predict(
-                name=name,
-                data_json=data_json,
-                predict_proba=predict_proba,
-            )
+        response = self._put__predict(
+            name=name,
+            data_json=data_json,
+            predict_proba=predict_proba,
         )
+        pred = self._check_status_code(response)
         if self.safe_mode:
             pred = check_response(PredictResponse, pred, list_of=True)
         return pred
@@ -1216,7 +1215,8 @@ class BaseJai(RequestJai):
         >>> print(ids)
         ['891 items from 0 to 890']
         """
-        ids = self._check_status_code(self._get__ids(name=name, mode=mode))
+        response = self._get__ids(name=name, mode=mode)
+        ids = self._check_status_code(response)
 
         if self.safe_mode:
             ids = check_response(List[Any], ids)
@@ -1237,7 +1237,8 @@ class BaseJai(RequestJai):
         response: bool
             True if name is in your environment. False, otherwise.
         """
-        valid = self._check_status_code(self._get__validation(name=name))
+        response = self._get__validation(name=name)
+        valid = self._check_status_code(response)
         if self.safe_mode:
             valid = check_response(ValidResponse, valid).dict()
         return valid["value"]
@@ -1246,10 +1247,8 @@ class BaseJai(RequestJai):
         """
         Change name of a database in your environment.
         """
-        response = self._check_status_code(
-            self._patch__rename(original_name=original_name, new_name=new_name),
-            code=201,
-        )
+        response = self._patch__rename(original_name=original_name, new_name=new_name)
+        response = self._check_status_code(response, code=201)
         if self.safe_mode:
             return check_response(str, response)
         return response
@@ -1264,14 +1263,13 @@ class BaseJai(RequestJai):
         """
         Transfer a database between environments.
         """
-        response = self._check_status_code(
-            self._post__transfer(
-                original_name=original_name,
-                to_environment=to_environment,
-                new_name=new_name,
-                from_environment=from_environment,
-            )
+        response = self._post__transfer(
+            original_name=original_name,
+            to_environment=to_environment,
+            new_name=new_name,
+            from_environment=from_environment,
         )
+        response = self._check_status_code(response)
         if self.safe_mode:
             return check_response(str, response)
         return response
@@ -1286,14 +1284,13 @@ class BaseJai(RequestJai):
         """
         Import a database from a públic environment.
         """
-        response = self._check_status_code(
-            self._post__import_database(
-                database_name=database_name,
-                owner_id=owner_id,
-                owner_email=owner_email,
-                import_name=import_name,
-            )
+        response = self._post__import_database(
+            database_name=database_name,
+            owner_id=owner_id,
+            owner_email=owner_email,
+            import_name=import_name,
         )
+        response = self._check_status_code(response)
         if self.safe_mode:
             return check_response(str, response)
         return response
@@ -1313,8 +1310,9 @@ class BaseJai(RequestJai):
         response : dict
             Dictionary with the API response.
         """
+        response = self._patch__append(name=name)
         add_data_response = self._check_status_code(
-            self._patch__append(name=name),
+            response,
             code=202,
         )
         if self.safe_mode:
@@ -1337,8 +1335,9 @@ class BaseJai(RequestJai):
         response : dict
             Dictionary with the API response.
         """
+        response = self._post__insert_json(name=name, data_json=data_json)
         insert_res = self._check_status_code(
-            self._post__insert_json(name=name, data_json=data_json),
+            response,
             code=202,
         )
         if self.safe_mode:
@@ -1357,7 +1356,7 @@ class BaseJai(RequestJai):
         label: dict = None,
         split: dict = None,
     ):
-        return self._check_status_code(
+        response = (
             self._put__check_parameters(
                 db_type=db_type,
                 hyperparams=hyperparams,
@@ -1370,6 +1369,7 @@ class BaseJai(RequestJai):
                 split=split,
             ),
         )
+        return self._check_status_code(response)
 
     def _setup(self, name: str, body, overwrite=False):
         """
@@ -1392,8 +1392,9 @@ class BaseJai(RequestJai):
         response : dict
             Dictionary with the API response.
         """
+        response = self._post__setup(name=name, body=body, overwrite=overwrite)
         setup_response = self._check_status_code(
-            self._post__setup(name=name, body=body, overwrite=overwrite),
+            response,
             code=202,
         )
         if self.safe_mode:
@@ -1419,8 +1420,9 @@ class BaseJai(RequestJai):
             Dictionary with the information.
 
         """
+        response = self._get__report(name=name, verbose=verbose)
         report = self._check_status_code(
-            self._get__report(name=name, verbose=verbose),
+            response,
         )
         if self.safe_mode:
             if verbose >= 2:
@@ -1448,8 +1450,9 @@ class BaseJai(RequestJai):
             List with the actual ids (mode: 'complete') or a summary of ids
             ('simple'/'summarized') of the given database.
         """
+        response = self._get__temp_ids(name=name, mode=mode)
         inserted_ids = self._check_status_code(
-            self._get__temp_ids(name=name, mode=mode),
+            response,
         )
         if self.safe_mode:
             inserted_ids = check_response(List[str], inserted_ids)
@@ -1469,8 +1472,9 @@ class BaseJai(RequestJai):
         response : dict
             Dictionary with table fields.
         """
+        response = self._get__fields(name=name)
         fields = self._check_status_code(
-            self._get__fields(name=name),
+            response,
         )
         if self.safe_mode:
             return check_response(FieldsResponse, fields, list_of=True)
@@ -1490,8 +1494,9 @@ class BaseJai(RequestJai):
         response : dict
             Dictionary with database description.
         """
+        response = self._get__describe(name=name)
         description = self._check_status_code(
-            self._get__describe(name=name),
+            response,
         )
         if self.safe_mode:
             description = check_response(DescribeResponse, description).dict()
@@ -1515,9 +1520,8 @@ class BaseJai(RequestJai):
         ------
         None.
         """
-        response = self._check_status_code(
-            self._post__cancel_setup(name=name), code=204
-        )
+        response = self._post__cancel_setup(name=name)
+        response = self._check_status_code(response, code=204)
         if self.safe_mode:
             response = check_response(str, response)
         return response
@@ -1546,7 +1550,8 @@ class BaseJai(RequestJai):
         >>> j.delete_raw_data(name=name)
         'All raw data from database 'chosen_name' was deleted!'
         """
-        response = self._check_status_code(self._delete__ids(name=name, ids=ids))
+        response = self._delete__ids(name=name, ids=ids)
+        response = self._check_status_code(response)
         if self.safe_mode:
             response = check_response(str, response)
         return response
@@ -1572,7 +1577,8 @@ class BaseJai(RequestJai):
         >>> j.delete_raw_data(name=name)
         'All raw data from database 'chosen_name' was deleted!'
         """
-        response = self._check_status_code(self._delete__raw_data(name=name))
+        response = self._delete__raw_data(name=name)
+        response = self._check_status_code(response)
         if self.safe_mode:
             response = check_response(str, response)
         return response
@@ -1598,7 +1604,8 @@ class BaseJai(RequestJai):
         >>> j.delete_database(name=name)
         'Bombs away! We nuked database chosen_name!'
         """
-        response = self._check_status_code(self._delete__database(name=name))
+        response = self._delete__database(name=name)
+        response = self._check_status_code(response)
         if self.safe_mode:
             response = check_response(str, response)
         return response
@@ -1617,10 +1624,12 @@ class BaseJai(RequestJai):
         response : dict
             Dictionary with the API response.
         """
+        response = self._post__insert_vectors_json(
+            name=name, data_json=data_json, overwrite=overwrite
+        )
         response = self._check_status_code(
-            self._post__insert_vectors_json(
-                name=name, data_json=data_json, overwrite=overwrite
-            )
+            response,
+            code=201,
         )
         if self.safe_mode:
             response = check_response(InsertVectorResponse, response)
@@ -1659,19 +1668,18 @@ class BaseJai(RequestJai):
           - id_test: List[Any]
           - metrics: Dict[str, Union[float, str]]
         """
-        response = self._check_status_code(
-            self._post__linear_train(
-                name=name,
-                data_dict=data_dict,
-                y=y,
-                task=task,
-                learning_rate=learning_rate,
-                l2=l2,
-                model_parameters=model_parameters,
-                pretrained_bases=pretrained_bases,
-                overwrite=overwrite,
-            )
+        response = self._post__linear_train(
+            name=name,
+            data_dict=data_dict,
+            y=y,
+            task=task,
+            learning_rate=learning_rate,
+            l2=l2,
+            model_parameters=model_parameters,
+            pretrained_bases=pretrained_bases,
+            overwrite=overwrite,
         )
+        response = self._check_status_code(response)
         if self.safe_mode:
             response = check_response(LinearFitResponse, response).dict(by_alias=True)
 
@@ -1696,13 +1704,12 @@ class BaseJai(RequestJai):
             - after: Dict[str, Union[float, str]]
             - change: bool
         """
-        response = self._check_status_code(
-            self._post__linear_learn(
-                name=name,
-                data_dict=data_dict,
-                y=y,
-            )
+        response = self._post__linear_learn(
+            name=name,
+            data_dict=data_dict,
+            y=y,
         )
+        response = self._check_status_code(response)
         if self.safe_mode:
             response = check_response(LinearLearnResponse, response).dict()
 
@@ -1726,13 +1733,12 @@ class BaseJai(RequestJai):
         -------
             A list of dictionaries.
         """
-        result = self._check_status_code(
-            self._put__linear_predict(
-                name=name,
-                data_dict=data_dict,
-                predict_proba=predict_proba,
-            )
+        response = self._put__linear_predict(
+            name=name,
+            data_dict=data_dict,
+            predict_proba=predict_proba,
         )
+        result = self._check_status_code(response)
         if self.safe_mode:
             if predict_proba:
                 result = check_response(List[Dict[Any, Any]], result)
