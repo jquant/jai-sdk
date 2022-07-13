@@ -110,9 +110,6 @@ def test_filter_text(safe_mode, name, dtype, setup_dataframe):
     result = j.similar(name, query, orient="flat")
     assert isinstance(result, list), "similar data result failed"
 
-    result = j.similar(name, pd.Series(query.index))
-    assert isinstance(result, list), "similar id series result failed"
-
     result = j.similar(name, query.index)
     assert isinstance(result, list), "similar id index result failed"
 

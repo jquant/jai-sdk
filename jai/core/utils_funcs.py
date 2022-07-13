@@ -1,12 +1,28 @@
 import warnings
-from typing import Dict
+from typing import Dict, Optional
 
 import numpy as np
 import pandas as pd
+import psutil
 
 from ..types.generic import PossibleDtypes
 
 __all__ = ["build_name", "data2json", "resolve_db_type"]
+
+
+def get_pcores(max_insert_workers: Optional[int] = None):
+
+    if max_insert_workers is None:
+        pcores = psutil.cpu_count(logical=False)
+    elif not isinstance(max_insert_workers, int):
+        raise TypeError(
+            f"Variable 'max_insert_workers' must be 'None' or 'int' instance, not {max_insert_workers.__class__.__name__}."
+        )
+    elif max_insert_workers > 0:
+        pcores = max_insert_workers
+    else:
+        pcores = 1
+    return pcores
 
 
 # Helper function to decide which kind of text model to use
