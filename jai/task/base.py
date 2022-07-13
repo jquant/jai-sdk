@@ -27,7 +27,7 @@ class TaskBase(BaseJai):
             "verbose": verbose,
             "safe_mode": safe_mode,
         }
-        super(TaskBase, self).__init__(environment, env_var)
+        super(TaskBase, self).__init__(environment, env_var, safe_mode=safe_mode)
 
         if self.safe_mode:
             user = self._user()
