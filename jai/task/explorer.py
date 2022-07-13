@@ -247,3 +247,68 @@ class Explorer(BaseJai):
             owner_email=owner_email,
             import_name=import_name,
         )
+
+    def delete_ids(self, ids):
+        """
+        Delete the specified ids from database.
+
+        Args
+        ----
+        ids : list
+            List of ids to be removed from database.
+
+        Return
+        -------
+        response : dict
+            Dictionary with the API response.
+
+        Example
+        -------
+        >>> from jai import Trainer
+        ...
+        >>> trainer = Trainer(name)
+        >>> trainer.delete_ids([0, 1])
+        """
+        return self._delete_ids(self.name, ids)
+
+    def delete_raw_data(self):
+        """
+        Delete raw data. It is good practice to do this after training a model.
+
+        Return
+        -------
+        response : dict
+            Dictionary with the API response.
+
+        Example
+        -------
+        >>> from jai import Trainer
+        ...
+        >>> trainer = Trainer(name)
+        >>> trainer.delete_raw_data()
+
+        """
+        return self._delete_raw_data(self.name)
+
+    def delete_database(self):
+        """
+        Delete a database and everything that goes with it (I thank you all).
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Return
+        ------
+        response : dict
+            Dictionary with the API response.
+
+        Example
+        -------
+        >>> from jai import Trainer
+        ...
+        >>> trainer = Trainer(name)
+        >>> trainer.delete_database()
+        """
+        return self._delete_database(self.name)

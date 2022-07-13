@@ -87,9 +87,7 @@ class Trainer(TaskBase):
             safe_mode=safe_mode,
         )
 
-        self._verbose = verbose
         self._fit_parameters = None
-
         self._insert_parameters = {"batch_size": 16384, "max_insert_workers": None}
 
     @property
@@ -128,6 +126,7 @@ class Trainer(TaskBase):
         pretrained_bases: list = None,
         label: dict = None,
         split: dict = None,
+        verbose: int = 1,
     ):
         """
         It checks the input parameters and sets the `fit_parameters` attribute for setup.
@@ -178,7 +177,7 @@ class Trainer(TaskBase):
             split=split,
         )
 
-        print_args(self.fit_parameters, self._input_kwargs, verbose=self._verbose)
+        print_args(self.fit_parameters, self._input_kwargs, verbose=verbose)
 
     def _check_pretrained_bases(self, data: pd.DataFrame, pretrained_bases: List):
         """
@@ -246,7 +245,14 @@ class Trainer(TaskBase):
                     f"Missing: {missing}"
                 )
 
-    def fit(self, data, *, overwrite: bool = False, frequency_seconds: int = 1):
+    def fit(
+        self,
+        data,
+        *,
+        overwrite: bool = False,
+        frequency_seconds: int = 1,
+        verbose: int = 1,
+    ):
         """
         Takes in a dataframe or dictionary of dataframes, and inserts the data into Jai.
 
@@ -357,14 +363,14 @@ class Trainer(TaskBase):
         print_args(
             {k: json.loads(v) for k, v in setup_response["kwargs"].items()},
             self._input_kwargs,
-            verbose=self._verbose,
+            verbose=verbose,
         )
 
         if frequency_seconds < 1:
             return insert_responses, setup_response
 
         self.wait_setup(frequency_seconds=frequency_seconds)
-        self.report(self._verbose)
+        self.report(verbose)
 
         if self.fit_parameters["db_type"] == PossibleDtypes.recommendation_system:
             towers = list(set(data.keys()) - set([self.name, DEFAULT_NAME]))
