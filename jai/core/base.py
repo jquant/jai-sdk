@@ -46,7 +46,6 @@ class BaseJai(object):
         env_var: str = "JAI_AUTH",
         url_var: str = "JAI_URL",
     ):
-        """ """
         auth_key = get_authentication(env_var)
         self.headers = {"Auth": auth_key, "environment": environment}
 

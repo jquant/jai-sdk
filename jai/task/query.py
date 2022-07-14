@@ -197,7 +197,7 @@ class Query(TaskBase):
         top_k: int = 5,
         orient: str = "nested",
         filters: List[str] = None,
-        max_insert_workers: Optional[int] = None,
+        max_workers: Optional[int] = None,
     ):
         """
         Query a database in search for the `top_k` most similar entries for each
@@ -215,7 +215,7 @@ class Query(TaskBase):
             Changes the output format. `Default is "nested"`.
         filters : List of strings
             Filters to use on the similarity query. `Default is None`.
-        max_insert_workers : bool
+        max_workers : bool
             Number of workers to use to parallelize the process. If None, use all workers. `Defaults to None.`
 
         Return
@@ -229,7 +229,7 @@ class Query(TaskBase):
 
         """
         description = "Similar"
-        pcores = get_pcores(max_insert_workers)
+        pcores = get_pcores(max_workers)
 
         dict_futures = {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
@@ -277,7 +277,7 @@ class Query(TaskBase):
         top_k: int = 5,
         orient: str = "nested",
         filters: List[str] = None,
-        max_insert_workers: Optional[int] = None,
+        max_workers: Optional[int] = None,
     ):
         """
         Query a database in search for the `top_k` most recommended entries for each
@@ -295,7 +295,7 @@ class Query(TaskBase):
             Changes the output format. `Default is "nested"`.
         filters : List of strings
             Filters to use on the similarity query. `Default is None`.
-        max_insert_workers : bool
+        max_workers : bool
             Number of workers to use to parallelize the process. If None, use all workers. `Defaults to None.`
 
         Return
@@ -309,7 +309,7 @@ class Query(TaskBase):
         """
         description = "Recommendation"
 
-        pcores = get_pcores(max_insert_workers)
+        pcores = get_pcores(max_workers)
 
         dict_futures = {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
@@ -356,7 +356,7 @@ class Query(TaskBase):
         data: Union[pd.Series, pd.DataFrame],
         predict_proba: bool = False,
         as_frame: bool = False,
-        max_insert_workers: Optional[int] = None,
+        max_workers: Optional[int] = None,
     ):
         """
         Predict the output of new data for a given database.
@@ -370,7 +370,7 @@ class Query(TaskBase):
             it's a classification. `Default is False`.
         as_frame : bool
             Whether or not to return the result of prediction as a DataFrame or list. `Default is False`.
-        max_insert_workers : bool
+        max_workers : bool
             Number of workers to use to parallelize the process. If None, use all workers. `Defaults to None.`
 
 
@@ -389,7 +389,7 @@ class Query(TaskBase):
             )
         description = "Predict"
 
-        pcores = get_pcores(max_insert_workers)
+        pcores = get_pcores(max_workers)
 
         dict_futures = {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:

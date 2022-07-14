@@ -414,7 +414,7 @@ class Jai(BaseJai):
         top_k: int = 5,
         orient: str = "nested",
         filters: List[str] = None,
-        max_insert_workers: Optional[int] = None,
+        max_workers: Optional[int] = None,
         batch_size: int = 16384,
     ):
         """
@@ -433,7 +433,7 @@ class Jai(BaseJai):
             Changes the output format. `Default is "nested"`.
         filters : List of strings
             Filters to use on the similarity query. `Default is None`.
-        max_insert_workers : bool
+        max_workers : bool
             Number of workers to use to parallelize the process. If None, use all workers. `Defaults to None.`
         batch_size : int
             Size of batches to send the data. `Default is 16384`.
@@ -462,7 +462,7 @@ class Jai(BaseJai):
         """
         description = "Similar"
 
-        pcores = get_pcores(max_insert_workers)
+        pcores = get_pcores(max_workers)
         dtype = self.get_dtype(name)
 
         if isinstance(data, list):
@@ -526,7 +526,7 @@ class Jai(BaseJai):
         top_k: int = 5,
         orient: str = "nested",
         filters: List[str] = None,
-        max_insert_workers: Optional[int] = None,
+        max_workers: Optional[int] = None,
         batch_size: int = 16384,
     ):
         """
@@ -545,7 +545,7 @@ class Jai(BaseJai):
             Changes the output format. `Default is "nested"`.
         filters : List of strings
             Filters to use on the similarity query. `Default is None`.
-        max_insert_workers : bool
+        max_workers : bool
             Number of workers to use to parallelize the process. If None, use all workers. `Defaults to None.`
         batch_size : int
             Size of batches to send the data. `Default is 16384`.
@@ -574,7 +574,7 @@ class Jai(BaseJai):
         """
         description = "Recommendation"
 
-        pcores = get_pcores(max_insert_workers)
+        pcores = get_pcores(max_workers)
         dtype = self.get_dtype(name)
 
         if isinstance(data, list):
@@ -638,7 +638,7 @@ class Jai(BaseJai):
         predict_proba: bool = False,
         as_frame: bool = False,
         batch_size: int = 16384,
-        max_insert_workers: Optional[int] = None,
+        max_workers: Optional[int] = None,
     ):
         """
         Predict the output of new data for a given database.
@@ -654,7 +654,7 @@ class Jai(BaseJai):
             it's a classification. `Default is False`.
         batch_size : int
             Size of batches to send the data. `Default is 16384`.
-        max_insert_workers : bool
+        max_workers : bool
             Number of workers to use to parallelize the process. If None, use all workers. `Defaults to None.`
 
         Return
@@ -685,7 +685,7 @@ class Jai(BaseJai):
             )
 
         description = "Predict"
-        pcores = get_pcores(max_insert_workers)
+        pcores = get_pcores(max_workers)
 
         dict_futures = {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
