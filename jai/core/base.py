@@ -598,7 +598,7 @@ class BaseJai(object):
         """
         return requests.get(self.url + f"/describe/{name}", headers=self.headers)
 
-    @raise_status_error(200)
+    @raise_status_error(204)
     def _cancel_setup(self, name: str):
         """
         Wait for the setup (model training) to finish
