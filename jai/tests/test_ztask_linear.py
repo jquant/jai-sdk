@@ -25,9 +25,11 @@ def test_linear_classification(name, dtype):
     data.columns = iris.feature_names
     target = iris.target
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        data, target, test_size=0.2, random_state=42, stratify=target
-    )
+    X_train, X_test, y_train, y_test = train_test_split(data,
+                                                        target,
+                                                        test_size=0.2,
+                                                        random_state=42,
+                                                        stratify=target)
     X_test.index.name = "id"
     X_test = X_test.reset_index()
 
@@ -56,20 +58,26 @@ def test_linear_classification(name, dtype):
     y_pred = model.predict(X_test.iloc[[0]], predict_proba=True)
     print(y_pred, y_test[0])
 
+    weights = model.get_model_weights()
+    assert set(weights.keys()) == set(['0', '1', '2'])
+    assert set(weights['0'].keys()) == set(['weights', 'intercept'])
+
     model._delete_database(model.name)
     assert not model.is_valid(), "valid name after delete failed"
 
 
 @pytest.mark.parametrize(
     "name, dtype",
-    [("test_linear_reg", "regression"), ("test_linear_sgdreg", "sgd_regression")],
+    [("test_linear_reg", "regression"),
+     ("test_linear_sgdreg", "sgd_regression")],
 )
 def test_linear_regression(name, dtype):
 
     data, labels = fetch_california_housing(as_frame=True, return_X_y=True)
-    X_train, X_test, y_train, y_test = train_test_split(
-        data, labels, test_size=0.2, random_state=42
-    )
+    X_train, X_test, y_train, y_test = train_test_split(data,
+                                                        labels,
+                                                        test_size=0.2,
+                                                        random_state=42)
     X_test.index.name = "id"
     X_test = X_test.reset_index()
 
@@ -96,6 +104,9 @@ def test_linear_regression(name, dtype):
     y_pred = model.predict(X_test.iloc[[0]], predict_proba=True)
     print(y_pred, y_test.iloc[0])
     print(mean_squared_error([y_pred["predict"]], [y_test.iloc[0]]))
+
+    weights = model.get_model_weights()
+    assert set(weights.keys()) == set(['weights', 'intercept'])
 
     model._delete_database(model.name)
     assert not model.is_valid(), "valid name after delete failed"
