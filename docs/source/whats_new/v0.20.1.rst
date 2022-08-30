@@ -15,7 +15,7 @@ Parallel Queries
   Added :code:`max_workers` to all methods above.
   This change applies to Jai class and Query Class.
 
-- Fixed Jai's `similar` and `recommendation` method to accept non-numerical list of ids as input.
+- Fixed Jai's :code:`similar` and :code:`recommendation` method to accept non-numerical list of ids as input.
 
 Bug Fixes
 ---------
