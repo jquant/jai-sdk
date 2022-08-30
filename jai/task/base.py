@@ -44,15 +44,15 @@ class TaskBase(BaseJai):
     def name(self):
         return self._name
 
+    @name.setter
+    def name(self, value):
+        self._name = value
+
     @property
     def db_type(self):
         if self.is_valid():
             return self.describe()["dtype"]
         return None
-
-    @name.setter
-    def name(self, value):
-        self._name = value
 
     def is_valid(self):
         """

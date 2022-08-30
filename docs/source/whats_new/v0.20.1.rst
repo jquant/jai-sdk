@@ -1,0 +1,25 @@
+Version 0.20.1
+==============
+
+Release date: **13/07/2020**
+
+
+Highlights
+----------
+
+Parallel Queries 
+^^^^^^^^^^^^^^^^
+
+- Added multprocessing to all parallel query methods (:code:`similar`, :code:`recommendation` and :code:`predict`) like implemented to :code:`insert_data`.
+  
+  Added :code:`max_workers` to all methods above.
+  This change applies to Jai class and Query Class.
+
+- Fixed Jai's :code:`similar` and :code:`recommendation` method to accept non-numerical list of ids as input.
+
+Bug Fixes
+---------
+
+- Fixed status code for :code:`delete_status`.
+- Updated README.
+- Small documentation fixes.

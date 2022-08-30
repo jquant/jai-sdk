@@ -1,8 +1,9 @@
+import concurrent
 import json
 import secrets
 import time
 from fnmatch import fnmatch
-from typing import Optional
+from typing import List, Optional, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,7 +18,7 @@ from jai.utilities import filter_resolution, filter_similar, predict2df
 
 from ..types.generic import Mode, PossibleDtypes
 from .base import BaseJai
-from .utils_funcs import build_name, data2json, print_args, resolve_db_type
+from .utils_funcs import build_name, data2json, get_pcores, print_args, resolve_db_type
 from .validations import (
     check_dtype_and_clean,
     check_name_lengths,
@@ -349,10 +350,11 @@ class Jai(BaseJai):
     def similar(
         self,
         name: str,
-        data,
+        data: Union[list, np.ndarray, pd.Index, pd.Series, pd.DataFrame],
         top_k: int = 5,
         orient: str = "nested",
-        filters=None,
+        filters: List[str] = None,
+        max_workers: Optional[int] = None,
         batch_size: int = 16384,
     ):
         """
@@ -361,14 +363,18 @@ class Jai(BaseJai):
 
         Args
         ----
-        name : str
-            String with the name of a database in your JAI environment.
-        data : list, np.ndarray, pd.Series or pd.DataFrame
+        data : list, np.ndarray, pd.Index, pd.Series or pd.DataFrame
             Data to be queried for similar inputs in your database.
+            - Use list, np.ndarray or pd.Index for id.
+            - Use pd.Series or pd.Dataframe for raw data.
         top_k : int
             Number of k similar items that we want to return. `Default is 5`.
         orient : "nested" or "flat"
             Changes the output format. `Default is "nested"`.
+        filters : List of strings
+            Filters to use on the similarity query. `Default is None`.
+        max_workers : bool
+            Number of workers to use to parallelize the process. If None, use all workers. `Defaults to None.`
         batch_size : int
             Size of batches to send the data. `Default is 16384`.
 
@@ -394,12 +400,22 @@ class Jai(BaseJai):
         45568    6995.6
          8382    7293.2
         """
+        description = "Similar"
+
+        pcores = get_pcores(max_workers)
         dtype = self.get_dtype(name)
 
         if isinstance(data, list):
             data = np.array(data)
 
-        is_id = is_integer_dtype(data)
+        if isinstance(data, (np.ndarray, pd.Index)):
+            is_id = True
+        elif isinstance(data, (pd.Series, pd.DataFrame)):
+            is_id = False
+        else:
+            raise ValueError(
+                "Data must be `list`, `np.array`, `pd.Index`, `pd.Series` or `pd.DataFrame`"
+            )
 
         results = []
         for i in trange(0, len(data), batch_size, desc="Similar"):
@@ -431,10 +447,11 @@ class Jai(BaseJai):
     def recommendation(
         self,
         name: str,
-        data,
+        data: Union[list, np.ndarray, pd.Index, pd.Series, pd.DataFrame],
         top_k: int = 5,
         orient: str = "nested",
-        filters=None,
+        filters: List[str] = None,
+        max_workers: Optional[int] = None,
         batch_size: int = 16384,
     ):
         """
@@ -451,6 +468,10 @@ class Jai(BaseJai):
             Number of k recommendations that we want to return. `Default is 5`.
         orient : "nested" or "flat"
             Changes the output format. `Default is "nested"`.
+        filters : List of strings
+            Filters to use on the similarity query. `Default is None`.
+        max_workers : bool
+            Number of workers to use to parallelize the process. If None, use all workers. `Defaults to None.`
         batch_size : int
             Size of batches to send the data. `Default is 16384`.
 
@@ -476,20 +497,36 @@ class Jai(BaseJai):
         45568    6995.6
          8382    7293.2
         """
+        description = "Recommendation"
+
+        pcores = get_pcores(max_workers)
         dtype = self.get_dtype(name)
 
         if isinstance(data, list):
             data = np.array(data)
 
-        is_id = is_integer_dtype(data)
+        if isinstance(data, (np.ndarray, pd.Index)):
+            is_id = True
+        elif isinstance(data, (pd.Series, pd.DataFrame)):
+            is_id = False
+        else:
+            raise ValueError(
+                "Data must be `list`, `np.array`, `pd.Index`, `pd.Series` or `pd.DataFrame`"
+            )
 
         results = []
-        for i in trange(0, len(data), batch_size, desc="Recommendation"):
-            if is_id:
-                if isinstance(data, pd.Series):
-                    _batch = data.iloc[i : i + batch_size].tolist()
-                elif isinstance(data, pd.Index):
-                    _batch = data[i : i + batch_size].tolist()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+            for i, b in enumerate(range(0, len(data), batch_size)):
+                if is_id:
+                    _batch = data[b : b + batch_size].tolist()
+                    task = executor.submit(
+                        self._recommendation_id,
+                        name,
+                        _batch,
+                        top_k=top_k,
+                        orient=orient,
+                        filters=filters,
+                    )
                 else:
                     _batch = data[i : i + batch_size].tolist()
                 res = self._recommendation_id(
@@ -517,6 +554,7 @@ class Jai(BaseJai):
         predict_proba: bool = False,
         as_frame: bool = False,
         batch_size: int = 16384,
+        max_workers: Optional[int] = None,
     ):
         """
         Predict the output of new data for a given database.
@@ -532,6 +570,8 @@ class Jai(BaseJai):
             it's a classification. `Default is False`.
         batch_size : int
             Size of batches to send the data. `Default is 16384`.
+        max_workers : bool
+            Number of workers to use to parallelize the process. If None, use all workers. `Defaults to None.`
 
         Return
         ------

@@ -13,7 +13,7 @@ from pydantic import HttpUrl
 from tqdm import tqdm
 from typing import Any, Dict, List, Optional
 
-from ..core.utils_funcs import data2json
+from ..core.utils_funcs import data2json, get_pcores
 from ..core.validations import check_response
 from ..types.generic import Mode
 from ..types.responses import (
@@ -803,6 +803,22 @@ class RequestJai(object):
             headers=self.headers,
             json=data_dict,
         )
+
+    def _get_linear_model_weights(self, name: str):
+        """
+        Get model weights from the specified model. This is a protected method.
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Return
+        ------
+        response : dict
+            Dictionary with the API response.
+        """
+
+        return requests.get(self.url + f"/linear/weights/{name}", headers=self.headers)
 
 
 class BaseJai(RequestJai):

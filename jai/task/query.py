@@ -1,11 +1,12 @@
+import concurrent
 from io import BytesIO
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
 import requests
 from pydantic import HttpUrl
-from tqdm import trange
+from tqdm import tqdm
 
 from jai.utilities import predict2df
 
@@ -173,20 +174,21 @@ class Query(TaskBase):
             raise ValueError(
                 "Data must be `list`, `np.array`, `pd.Index`, `pd.Series` or `pd.DataFrame`"
             )
-
-        for i in trange(0, len(data), self.batch_size, desc=desc):
+        db_type = self.db_type
+        for i in range(0, len(data), self.batch_size):
             if is_id:
                 yield is_id, data[i : i + self.batch_size].tolist()
             else:
                 _batch = data.iloc[i : i + self.batch_size]
-                yield is_id, data2json(_batch, dtype=self.db_type, predict=True)
+                yield is_id, data2json(_batch, dtype=db_type, predict=True)
 
     def similar(
         self,
         data: Union[list, np.ndarray, pd.Index, pd.Series, pd.DataFrame],
         top_k: int = 5,
         orient: str = "nested",
-        filters=None,
+        filters: List[str] = None,
+        max_workers: Optional[int] = None,
     ):
         """
         Query a database in search for the `top_k` most similar entries for each
@@ -202,6 +204,10 @@ class Query(TaskBase):
             Number of k similar items that we want to return. `Default is 5`.
         orient : "nested" or "flat"
             Changes the output format. `Default is "nested"`.
+        filters : List of strings
+            Filters to use on the similarity query. `Default is None`.
+        max_workers : bool
+            Number of workers to use to parallelize the process. If None, use all workers. `Defaults to None.`
 
         Return
         ------
@@ -232,7 +238,8 @@ class Query(TaskBase):
         data: Union[list, np.ndarray, pd.Index, pd.Series, pd.DataFrame],
         top_k: int = 5,
         orient: str = "nested",
-        filters=None,
+        filters: List[str] = None,
+        max_workers: Optional[int] = None,
     ):
         """
         Query a database in search for the `top_k` most recommended entries for each
@@ -248,6 +255,10 @@ class Query(TaskBase):
             Number of k recommendations that we want to return. `Default is 5`.
         orient : "nested" or "flat"
             Changes the output format. `Default is "nested"`.
+        filters : List of strings
+            Filters to use on the similarity query. `Default is None`.
+        max_workers : bool
+            Number of workers to use to parallelize the process. If None, use all workers. `Defaults to None.`
 
         Return
         ------
@@ -277,6 +288,7 @@ class Query(TaskBase):
         data: Union[pd.Series, pd.DataFrame],
         predict_proba: bool = False,
         as_frame: bool = False,
+        max_workers: Optional[int] = None,
     ):
         """
         Predict the output of new data for a given database.
@@ -288,6 +300,11 @@ class Query(TaskBase):
         predict_proba : bool
             Whether or not to return the probabilities of each prediction is
             it's a classification. `Default is False`.
+        as_frame : bool
+            Whether or not to return the result of prediction as a DataFrame or list. `Default is False`.
+        max_workers : bool
+            Number of workers to use to parallelize the process. If None, use all workers. `Defaults to None.`
+
 
         Return
         ------
