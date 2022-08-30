@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import requests
-from pandas.api.types import is_integer_dtype, is_numeric_dtype
+from pandas.api.types import is_numeric_dtype
 
 from sklearn.model_selection import StratifiedShuffleSplit
 from tqdm import tqdm, trange
@@ -62,7 +62,9 @@ class Jai(BaseJai):
         safe_mode: bool = False,
     ):
 
-        super(Jai, self).__init__(environment, env_var)
+        super(Jai, self).__init__(
+            environment=environment, env_var=env_var, safe_mode=safe_mode
+        )
 
     @property
     def names(self):
@@ -417,31 +419,39 @@ class Jai(BaseJai):
                 "Data must be `list`, `np.array`, `pd.Index`, `pd.Series` or `pd.DataFrame`"
             )
 
-        results = []
-        for i in trange(0, len(data), batch_size, desc="Similar"):
-            if is_id:
-                if isinstance(data, pd.Series):
-                    _batch = data.iloc[i : i + batch_size].tolist()
-                elif isinstance(data, pd.Index):
-                    _batch = data[i : i + batch_size].tolist()
+        dict_futures = {}
+        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+            for i, b in enumerate(range(0, len(data), batch_size)):
+                if is_id:
+                    _batch = data[b : b + batch_size].tolist()
+                    task = executor.submit(
+                        self._similar_id,
+                        name,
+                        _batch,
+                        top_k=top_k,
+                        orient=orient,
+                        filters=filters,
+                    )
                 else:
-                    _batch = data[i : i + batch_size].tolist()
-                res = self._similar_id(
-                    name, _batch, top_k=top_k, orient=orient, filters=filters
-                )
-            else:
-                if isinstance(data, (pd.Series, pd.DataFrame)):
-                    _batch = data.iloc[i : i + batch_size]
-                else:
-                    _batch = data[i : i + batch_size]
-                res = self._similar_json(
-                    name,
-                    data2json(_batch, dtype=dtype, predict=True),
-                    top_k=top_k,
-                    orient=orient,
-                    filters=filters,
-                )
-            results.extend(res)
+                    _batch = data2json(
+                        data.iloc[b : b + batch_size], dtype=dtype, predict=True
+                    )
+                    task = executor.submit(
+                        self._similar_json,
+                        name,
+                        _batch,
+                        top_k=top_k,
+                        orient=orient,
+                        filters=filters,
+                    )
+                dict_futures[task] = i
+
+            with tqdm(total=len(dict_futures), desc=description) as pbar:
+                results = []
+                for future in concurrent.futures.as_completed(dict_futures):
+                    res = future.result()
+                    results.extend(res)
+                    pbar.update(1)
         return results
 
     def recommendation(
@@ -514,7 +524,7 @@ class Jai(BaseJai):
                 "Data must be `list`, `np.array`, `pd.Index`, `pd.Series` or `pd.DataFrame`"
             )
 
-        results = []
+        dict_futures = {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
             for i, b in enumerate(range(0, len(data), batch_size)):
                 if is_id:
@@ -528,23 +538,25 @@ class Jai(BaseJai):
                         filters=filters,
                     )
                 else:
-                    _batch = data[i : i + batch_size].tolist()
-                res = self._recommendation_id(
-                    name, _batch, top_k=top_k, orient=orient, filters=filters
-                )
-            else:
-                if isinstance(data, (pd.Series, pd.DataFrame)):
-                    _batch = data.iloc[i : i + batch_size]
-                else:
-                    _batch = data[i : i + batch_size]
-                res = self._recommendation_json(
-                    name,
-                    data2json(_batch, dtype=dtype, predict=True),
-                    top_k=top_k,
-                    orient=orient,
-                    filters=filters,
-                )
-            results.extend(res)
+                    _batch = data2json(
+                        data.iloc[b : b + batch_size], dtype=dtype, predict=True
+                    )
+                    task = executor.submit(
+                        self._recommendation_json,
+                        name,
+                        _batch,
+                        top_k=top_k,
+                        orient=orient,
+                        filters=filters,
+                    )
+                dict_futures[task] = i
+
+            with tqdm(total=len(dict_futures), desc=description) as pbar:
+                results = []
+                for future in concurrent.futures.as_completed(dict_futures):
+                    res = future.result()
+                    results.extend(res)
+                    pbar.update(1)
         return results
 
     def predict(
@@ -600,15 +612,25 @@ class Jai(BaseJai):
                 f"data must be a pandas Series or DataFrame. (data type `{data.__class__.__name__}`)"
             )
 
-        results = []
-        for i in trange(0, len(data), batch_size, desc="Predict"):
-            _batch = data.iloc[i : i + batch_size]
-            res = self._predict(
-                name,
-                data2json(_batch, dtype=dtype, predict=True),
-                predict_proba=predict_proba,
-            )
-            results.extend(res)
+        description = "Predict"
+        pcores = get_pcores(max_workers)
+        dict_futures = {}
+        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+            for i, b in enumerate(range(0, len(data), batch_size)):
+                _batch = data2json(
+                    data.iloc[b : b + batch_size], dtype=dtype, predict=True
+                )
+                task = executor.submit(
+                    self._predict, name, _batch, predict_proba=predict_proba
+                )
+                dict_futures[task] = i
+
+            with tqdm(total=len(dict_futures), desc=description) as pbar:
+                results = []
+                for future in concurrent.futures.as_completed(dict_futures):
+                    res = future.result()
+                    results.extend(res)
+                    pbar.update(1)
 
         return predict2df(results) if as_frame else results
 

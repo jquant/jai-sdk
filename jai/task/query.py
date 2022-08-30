@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 from jai.utilities import predict2df
 
-from ..core.utils_funcs import data2json
+from ..core.utils_funcs import data2json, get_pcores
 from ..types.generic import Mode
 from ..types.responses import (
     FieldsResponse,
@@ -219,18 +219,41 @@ class Query(TaskBase):
             and 'query_id'.
 
         """
+        description = "Similar"
+        pcores = get_pcores(max_workers)
 
-        results = []
-        for is_id, _batch in self._generate_batch(data, desc="Similar"):
-            if is_id:
-                res = self._similar_id(
-                    self.name, _batch, top_k=top_k, orient=orient, filters=filters
-                )
-            else:
-                res = self._similar_json(
-                    self.name, _batch, top_k=top_k, orient=orient, filters=filters
-                )
-            results.extend(res)
+        dict_futures = {}
+        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+            for i, (is_id, _batch) in enumerate(
+                self._generate_batch(data, desc=description)
+            ):
+                if is_id:
+                    task = executor.submit(
+                        self._similar_id,
+                        self.name,
+                        _batch,
+                        top_k=top_k,
+                        orient=orient,
+                        filters=filters,
+                    )
+                else:
+                    task = executor.submit(
+                        self._similar_json,
+                        self.name,
+                        _batch,
+                        top_k=top_k,
+                        orient=orient,
+                        filters=filters,
+                    )
+                dict_futures[task] = i
+
+            with tqdm(total=len(dict_futures), desc=description) as pbar:
+                results = []
+                for future in concurrent.futures.as_completed(dict_futures):
+                    res = future.result()
+                    results.extend(res)
+                    pbar.update(1)
+
         return results
 
     def recommendation(
@@ -269,18 +292,41 @@ class Query(TaskBase):
             previously setup and 'distance' in between the correspondent 'id'
             and 'query_id'.
         """
+        description = "Recommendation"
 
-        results = []
-        for is_id, _batch in self._generate_batch(data, desc="Recommendation"):
-            if is_id:
-                res = self._recommendation_id(
-                    self.name, _batch, top_k=top_k, orient=orient, filters=filters
-                )
-            else:
-                res = self._recommendation_json(
-                    self.name, _batch, top_k=top_k, orient=orient, filters=filters
-                )
-            results.extend(res)
+        pcores = get_pcores(max_workers)
+
+        dict_futures = {}
+        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+            for i, (is_id, _batch) in enumerate(
+                self._generate_batch(data, desc=description)
+            ):
+                if is_id:
+                    task = executor.submit(
+                        self._recommendation_id,
+                        self.name,
+                        _batch,
+                        top_k=top_k,
+                        orient=orient,
+                        filters=filters,
+                    )
+                else:
+                    task = executor.submit(
+                        self._recommendation_json,
+                        self.name,
+                        _batch,
+                        top_k=top_k,
+                        orient=orient,
+                        filters=filters,
+                    )
+                dict_futures[task] = i
+
+            with tqdm(total=len(dict_futures), desc=description) as pbar:
+                results = []
+                for future in concurrent.futures.as_completed(dict_futures):
+                    res = future.result()
+                    results.extend(res)
+                    pbar.update(1)
         return results
 
     def predict(
@@ -320,10 +366,25 @@ class Query(TaskBase):
                 f"data must be a pandas Series or DataFrame. (data type `{data.__class__.__name__}`)"
             )
 
-        results = []
-        for _, _batch in self._generate_batch(data, desc="Predict"):
-            res = self._predict(self.name, _batch, predict_proba=predict_proba)
-            results.extend(res)
+        description = "Predict"
+        pcores = get_pcores(max_workers)
+
+        dict_futures = {}
+        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+            for i, (_, _batch) in enumerate(
+                self._generate_batch(data, desc=description)
+            ):
+                task = executor.submit(
+                    self._predict, self.name, _batch, predict_proba=predict_proba
+                )
+                dict_futures[task] = i
+
+            with tqdm(total=len(dict_futures), desc=description) as pbar:
+                results = []
+                for future in concurrent.futures.as_completed(dict_futures):
+                    res = future.result()
+                    results.extend(res)
+                    pbar.update(1)
 
         return predict2df(results) if as_frame else results
 
