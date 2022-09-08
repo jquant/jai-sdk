@@ -47,6 +47,7 @@ class LinearModel(TaskBase):
         Defaults to False.
 
     """
+
     def __init__(
         self,
         name: str,
@@ -63,8 +64,9 @@ class LinearModel(TaskBase):
             verbose=verbose,
             safe_mode=safe_mode,
         )
-        possible_tasks = [t.value for t in RegressionTasks
-                          ] + [t.value for t in ClassificationTasks]
+        possible_tasks = [t.value for t in RegressionTasks] + [
+            t.value for t in ClassificationTasks
+        ]
         if task in possible_tasks:
             self.task = task
         else:
@@ -158,8 +160,7 @@ class LinearModel(TaskBase):
         )
 
         if self.safe_mode:
-            return check_response(LinearFitResponse,
-                                  response).dict(by_alias=True)
+            return check_response(LinearFitResponse, response).dict(by_alias=True)
         return response
 
     def learn(self, X: pd.DataFrame, y: pd.Series):
@@ -176,18 +177,18 @@ class LinearModel(TaskBase):
         - after: Dict[str, Union[float, str]]
         - change: bool
         """
-        response = self._linear_learn(self.name, X.to_dict(orient="records"),
-                                      y.tolist())
+        response = self._linear_learn(
+            self.name, X.to_dict(orient="records"), y.tolist()
+        )
 
         if self.safe_mode:
             return check_response(LinearLearnResponse, response).dict()
 
         return response
 
-    def predict(self,
-                X: pd.DataFrame,
-                predict_proba: bool = False,
-                as_frame: bool = True):
+    def predict(
+        self, X: pd.DataFrame, predict_proba: bool = False, as_frame: bool = True
+    ):
         """
         It takes a dataframe, converts it to a list of dictionaries, and then calls the _linear_predict
         function
@@ -202,16 +203,14 @@ class LinearModel(TaskBase):
         Returns:
         A list of dictionaries.
         """
-        result = self._linear_predict(self.name,
-                                      X.to_dict(orient="records"),
-                                      predict_proba=predict_proba)
+        result = self._linear_predict(
+            self.name, X.to_dict(orient="records"), predict_proba=predict_proba
+        )
         if self.safe_mode:
             if predict_proba:
                 result = check_response(List[Dict[Any, Any]], result)
             else:
-                result = check_response(LinearPredictResponse,
-                                        result,
-                                        list_of=True)
+                result = check_response(LinearPredictResponse, result, list_of=True)
 
         if as_frame:
             return pd.DataFrame(result).set_index("id")
