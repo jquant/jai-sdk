@@ -95,7 +95,7 @@ def test_describe(safe_mode, name):
     assert description == {
         "name": "test_resolution",
         "displayName": "test_resolution",
-        "owner": "",
+        "owner": "testsdk_test",
         "project": "",
         "dtype": "TextEdit",
         "features": [{"dtype": "text", "name": "0"}],
