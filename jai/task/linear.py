@@ -217,3 +217,6 @@ class LinearModel(TaskBase):
         if as_frame:
             return pd.DataFrame(result).set_index("id")
         return result
+
+    def get_model_weights(self):
+        return self._get_linear_model_weights(self.name)
