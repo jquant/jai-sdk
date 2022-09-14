@@ -42,11 +42,13 @@ class BaseJai(object):
 
     def __init__(
         self,
+        auth_key: str = None,
         environment: str = "default",
         env_var: str = "JAI_AUTH",
         url_var: str = "JAI_URL",
     ):
-        auth_key = get_authentication(env_var)
+        if auth_key is None:
+            auth_key = get_authentication(env_var)
         self.headers = {"Auth": auth_key, "environment": environment}
 
         self.url = config(url_var, default="https://mycelia.azure-api.net")

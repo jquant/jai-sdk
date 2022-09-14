@@ -18,6 +18,7 @@ class TaskBase(BaseJai):
     def __init__(
         self,
         name: str,
+        auth_key: str = None,
         environment: str = "default",
         env_var: str = "JAI_AUTH",
         verbose: int = 1,
@@ -29,7 +30,9 @@ class TaskBase(BaseJai):
             "verbose": verbose,
             "safe_mode": safe_mode,
         }
-        super(TaskBase, self).__init__(environment, env_var)
+        super(TaskBase, self).__init__(
+            auth_key, environment=environment, env_var=env_var
+        )
         self.safe_mode = safe_mode
 
         if self.safe_mode:

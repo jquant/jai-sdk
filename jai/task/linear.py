@@ -52,6 +52,7 @@ class LinearModel(TaskBase):
         self,
         name: str,
         task: str,
+        auth_key: str = None,
         environment: str = "default",
         env_var: str = "JAI_AUTH",
         verbose: int = 1,
@@ -59,6 +60,7 @@ class LinearModel(TaskBase):
     ):
         super(LinearModel, self).__init__(
             name=name,
+            auth_key=auth_key,
             environment=environment,
             env_var=env_var,
             verbose=verbose,
