@@ -13,7 +13,6 @@ from ..core.utils_funcs import check_filters, print_args
 from ..core.validations import check_dtype_and_clean
 from ..types.generic import PossibleDtypes
 from ..types.hyperparams import InsertParams
-
 from .base import TaskBase
 from .query import Query
 

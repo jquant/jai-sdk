@@ -10,7 +10,6 @@ import numpy as np
 import pandas as pd
 import requests
 from pandas.api.types import is_numeric_dtype
-
 from sklearn.model_selection import StratifiedShuffleSplit
 from tqdm import tqdm, trange
 
@@ -19,11 +18,7 @@ from jai.utilities import filter_resolution, filter_similar, predict2df
 from ..types.generic import Mode, PossibleDtypes
 from .base import BaseJai
 from .utils_funcs import build_name, data2json, get_pcores, print_args, resolve_db_type
-from .validations import (
-    check_dtype_and_clean,
-    check_name_lengths,
-    kwargs_validation,
-)
+from .validations import check_dtype_and_clean, check_name_lengths, kwargs_validation
 
 __all__ = ["Jai"]
 
