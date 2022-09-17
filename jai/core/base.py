@@ -193,7 +193,7 @@ class RequestJai(object):
         url = self.url + f"/similar/id/{name}?top_k={top_k}&orient={orient}" + filtering
         return requests.put(url, headers=self.headers, json=id_item)
 
-    def _similar_json(
+    def _put__similar_json(
         self, name: str, data_json, top_k: int = 5, orient: str = "nested", filters=None
     ):
         """
@@ -284,7 +284,7 @@ class RequestJai(object):
             json=id_item,
         )
 
-    def _recommendation_json(
+    def _put__recommendation_json(
         self, name: str, data_json, top_k: int = 5, orient: str = "nested", filters=None
     ):
         """
@@ -646,7 +646,7 @@ class RequestJai(object):
             self.url + f"/entity/{name}", headers=self.headers, json=ids
         )
 
-    def _delete_raw_data(self, name: str):
+    def _delete__raw_data(self, name: str):
         """
         Delete raw data. It is good practice to do this after training a model.
 
@@ -806,7 +806,7 @@ class RequestJai(object):
             json=data_dict,
         )
 
-    def _get_linear_model_weights(self, name: str):
+    def _get__linear_model_weights(self, name: str):
         """
         Get model weights from the specified model. This is a protected method.
         Args

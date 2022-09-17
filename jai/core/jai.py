@@ -64,9 +64,11 @@ class Jai(BaseJai):
     ):
 
         super(Jai, self).__init__(
-            auth_key=auth_key, environment=environment, env_var=env_var
+            auth_key=auth_key,
+            environment=environment,
+            env_var=env_var,
+            safe_mode=safe_mode,
         )
-        self.safe_mode = safe_mode
 
     @property
     def names(self):

@@ -210,4 +210,4 @@ class LinearModel(TaskBase):
         return result
 
     def get_model_weights(self):
-        return self._get_linear_model_weights(self.name)
+        return self._get__linear_model_weights(self.name)
