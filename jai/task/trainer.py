@@ -10,16 +10,10 @@ import pandas as pd
 from tqdm import tqdm
 
 from ..core.utils_funcs import check_filters, print_args
-from ..core.validations import check_dtype_and_clean, check_response
+from ..core.validations import check_dtype_and_clean
 from ..types.generic import PossibleDtypes
 from ..types.hyperparams import InsertParams
-from ..types.responses import (
-    AddDataResponse,
-    Report1Response,
-    Report2Response,
-    SetupResponse,
-    StatusResponse,
-)
+
 from .base import TaskBase
 from .query import Query
 
@@ -95,9 +89,7 @@ class Trainer(TaskBase):
             safe_mode=safe_mode,
         )
 
-        self._verbose = verbose
         self._fit_parameters = None
-
         self._insert_parameters = {"batch_size": 16384, "max_insert_workers": None}
 
     @property
@@ -136,6 +128,7 @@ class Trainer(TaskBase):
         pretrained_bases: list = None,
         label: dict = None,
         split: dict = None,
+        verbose: int = 1,
     ):
         """
         It checks the input parameters and sets the `fit_parameters` attribute for setup.
@@ -186,7 +179,7 @@ class Trainer(TaskBase):
             split=split,
         )
 
-        print_args(self.fit_parameters, self._input_kwargs, verbose=self._verbose)
+        print_args(self.fit_parameters, self._input_kwargs, verbose=verbose)
 
     def _check_pretrained_bases(self, data: pd.DataFrame, pretrained_bases: List):
         """
@@ -225,10 +218,7 @@ class Trainer(TaskBase):
 
             if isinstance(data, pd.DataFrame):
                 flat_ids = np.unique(list(flatten_sample(data[column])))
-
                 ids = self._ids(parent_name, mode="complete")
-                if self.safe_mode:
-                    ids = check_response(List[Any], ids)
             elif parent_name in data.keys():
                 data_parent = data[parent_name]
                 df = (
@@ -247,8 +237,6 @@ class Trainer(TaskBase):
                     if column in df.columns:
                         flat_ids = np.unique(list(flatten_sample(df[column])))
                         ids = self._ids(parent_name, mode="complete")
-                        if self.safe_mode:
-                            ids = check_response(List[Any], ids)
                         break
 
             inverted_in = np.isin(flat_ids, ids, invert=True)
@@ -259,7 +247,14 @@ class Trainer(TaskBase):
                     f"Missing: {missing}"
                 )
 
-    def fit(self, data, *, overwrite: bool = False, frequency_seconds: int = 1):
+    def fit(
+        self,
+        data,
+        *,
+        overwrite: bool = False,
+        frequency_seconds: int = 1,
+        verbose: int = 1,
+    ):
         """
         Takes in a dataframe or dictionary of dataframes, and inserts the data into Jai.
 
@@ -366,20 +361,18 @@ class Trainer(TaskBase):
         setup_response = self._setup(
             self.name, self.fit_parameters, overwrite=overwrite
         )
-        if self.safe_mode:
-            setup_response = check_response(SetupResponse, setup_response).dict()
 
         print_args(
             {k: json.loads(v) for k, v in setup_response["kwargs"].items()},
             self._input_kwargs,
-            verbose=self._verbose,
+            verbose=verbose,
         )
 
         if frequency_seconds < 1:
             return insert_responses, setup_response
 
         self.wait_setup(frequency_seconds=frequency_seconds)
-        self.report(self._verbose)
+        self.report(verbose)
 
         if self.fit_parameters["db_type"] == PossibleDtypes.recommendation_system:
             towers = list(set(data.keys()) - set([self.name, DEFAULT_NAME]))
@@ -446,8 +439,6 @@ class Trainer(TaskBase):
 
         # add data per se
         add_data_response = self._append(name=self.name)
-        if self.safe_mode:
-            add_data_response = check_response(AddDataResponse, add_data_response)
 
         if frequency_seconds >= 1:
             self.wait_setup(frequency_seconds=frequency_seconds)
@@ -463,10 +454,10 @@ class Trainer(TaskBase):
         response : dict
             A `JSON` file with the current status of the training tasks.
         """
-        status = self._status()[self.name]
-        if self.safe_mode:
-            return check_response(StatusResponse, status).dict()
-        return status
+        all_status = self._status()
+        if self.name not in all_status.keys():
+            raise ValueError(f"No status found for `{self.name}`")
+        return all_status[self.name]
 
     def report(self, verbose: int = 2, return_report: bool = False):
         """
@@ -502,14 +493,6 @@ class Trainer(TaskBase):
             return None
 
         report = self._report(self.name, verbose)
-
-        if self.safe_mode:
-            if verbose >= 2:
-                report = check_response(Report2Response, report).dict(by_alias=True)
-            elif verbose == 1:
-                report = check_response(Report1Response, report).dict(by_alias=True)
-            else:
-                report = check_response(Report1Response, report).dict(by_alias=True)
 
         if return_report:
             return report
@@ -607,13 +590,9 @@ class Trainer(TaskBase):
         except KeyboardInterrupt:
             print("\n\nInterruption caught!\n\n")
             response = self._cancel_setup(self.name)
-            if self.safe_mode:
-                response = check_response(str, response)
             raise KeyboardInterrupt(response)
 
         response = self._delete_status(self.name)
-        if self.safe_mode:
-            check_response(str, response)
         return status
 
     def delete_ids(self, ids):
@@ -637,10 +616,7 @@ class Trainer(TaskBase):
         >>> trainer = Trainer(name)
         >>> trainer.delete_ids([0, 1])
         """
-        response = self._delete_ids(self.name, ids)
-        if self.safe_mode:
-            return check_response(str, response)
-        return response
+        return self._delete_ids(self.name, ids)
 
     def delete_raw_data(self):
         """
@@ -659,10 +635,7 @@ class Trainer(TaskBase):
         >>> trainer.delete_raw_data()
 
         """
-        response = self._delete_raw_data(self.name)
-        if self.safe_mode:
-            return check_response(str, response)
-        return response
+        return self._delete_raw_data(self.name)
 
     def delete_database(self):
         """
@@ -685,10 +658,7 @@ class Trainer(TaskBase):
         >>> trainer = Trainer(name)
         >>> trainer.delete_database()
         """
-        response = self._delete_database(self.name)
-        if self.safe_mode:
-            return check_response(str, response)
-        return response
+        return self._delete_database(self.name)
 
     def get_query(self, name: str = None):
         """
