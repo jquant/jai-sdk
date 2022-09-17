@@ -42,11 +42,13 @@ class BaseJai(object):
 
     def __init__(
         self,
+        auth_key: str = None,
         environment: str = "default",
         env_var: str = "JAI_AUTH",
         url_var: str = "JAI_URL",
     ):
-        auth_key = get_authentication(env_var)
+        if auth_key is None:
+            auth_key = get_authentication(env_var)
         self.headers = {"Auth": auth_key, "environment": environment}
 
         self.url = config(url_var, default="https://mycelia.azure-api.net")
@@ -810,6 +812,23 @@ class BaseJai(object):
             headers=self.headers,
             json=data_dict,
         )
+
+    @raise_status_error(200)
+    def _get_linear_model_weights(self, name: str):
+        """
+        Get model weights from the specified model. This is a protected method.
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Return
+        ------
+        response : dict
+            Dictionary with the API response.
+        """
+
+        return requests.get(self.url + f"/linear/weights/{name}", headers=self.headers)
 
     def _insert_data(
         self,

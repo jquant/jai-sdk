@@ -93,6 +93,10 @@ def test_describe(safe_mode, name):
     description = j.describe(name)
     description.pop("version")
     assert description == {
+        "name": "test_resolution",
+        "displayName": "test_resolution",
+        "owner": "testsdk_test",
+        "project": "",
         "dtype": "TextEdit",
         "features": [{"dtype": "text", "name": "0"}],
         "has_filter": False,
@@ -112,7 +116,6 @@ def test_describe(safe_mode, name):
             "shuffle_seed": 808,
             "test_batch_size": 1024,
         },
-        "name": "test_resolution",
         "state": "active",
     }
 

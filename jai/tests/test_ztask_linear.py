@@ -56,6 +56,10 @@ def test_linear_classification(name, dtype):
     y_pred = model.predict(X_test.iloc[[0]], predict_proba=True)
     print(y_pred, y_test[0])
 
+    weights = model.get_model_weights()
+    assert set(weights.keys()) == set(["0", "1", "2"])
+    assert set(weights["0"].keys()) == set(["weights", "intercept"])
+
     model._delete_database(model.name)
     assert not model.is_valid(), "valid name after delete failed"
 
@@ -96,6 +100,9 @@ def test_linear_regression(name, dtype):
     y_pred = model.predict(X_test.iloc[[0]], predict_proba=True)
     print(y_pred, y_test.iloc[0])
     print(mean_squared_error([y_pred["predict"]], [y_test.iloc[0]]))
+
+    weights = model.get_model_weights()
+    assert set(weights.keys()) == set(["weights", "intercept"])
 
     model._delete_database(model.name)
     assert not model.is_valid(), "valid name after delete failed"
