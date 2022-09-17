@@ -1375,18 +1375,16 @@ class BaseJai(RequestJai):
         label: dict = None,
         split: dict = None,
     ):
-        response = (
-            self._put__check_parameters(
-                db_type=db_type,
-                hyperparams=hyperparams,
-                features=features,
-                num_process=num_process,
-                cat_process=cat_process,
-                datetime_process=datetime_process,
-                pretrained_bases=pretrained_bases,
-                label=label,
-                split=split,
-            ),
+        response = self._put__check_parameters(
+            db_type=db_type,
+            hyperparams=hyperparams,
+            features=features,
+            num_process=num_process,
+            cat_process=cat_process,
+            datetime_process=datetime_process,
+            pretrained_bases=pretrained_bases,
+            label=label,
+            split=split,
         )
         return self._check_status_code(response)
 
