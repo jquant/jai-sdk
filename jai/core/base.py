@@ -1,9 +1,9 @@
 import concurrent
 import json
+import numpy as np
 import psutil
 import requests
 import warnings
-import numpy as np
 
 from copy import copy
 from decouple import config

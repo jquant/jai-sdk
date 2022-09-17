@@ -12,9 +12,7 @@ from jai.utilities import predict2df
 
 from ..core.utils_funcs import data2json, get_pcores
 from ..types.generic import Mode
-from ..types.responses import (
-    FieldsResponse,
-)
+from ..types.responses import FieldsResponse
 from .base import TaskBase
 
 __all__ = ["Query"]
