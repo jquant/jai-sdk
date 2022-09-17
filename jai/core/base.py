@@ -4,7 +4,6 @@ import warnings
 from copy import copy
 from typing import List, Optional
 
-import psutil
 import requests
 from decouple import config
 from tqdm import tqdm

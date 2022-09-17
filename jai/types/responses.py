@@ -1,17 +1,6 @@
-import sys
 from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
-
-if sys.version < "3.8":
-    from typing_extensions import Literal
-else:
-    from typing import Literal
-
-if sys.version < "3.9":
-    from typing_extensions import Annotated
-else:
-    from typing import Annotated
 
 
 class UserResponse(BaseModel):
@@ -39,17 +28,23 @@ class StatusResponse(BaseModel):
 
 
 class InfoResponse(BaseModel):
-    db_name: str
-    db_type: str
-    db_version: str
-    db_parents: List[str]
+    name: str
+    displayName: str
+    owner: str
+    project: str
+    type: str
+    version: str
+    parents: List[str]
 
 
 class InfoSizeResponse(BaseModel):
-    db_name: str
-    db_type: str
-    db_version: str
-    db_parents: List[str]
+    name: str
+    displayName: str
+    owner: str
+    project: str
+    type: str
+    version: str
+    parents: List[str]
     size: int
     embedding_dimension: int
 
