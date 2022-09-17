@@ -876,7 +876,7 @@ class BaseJai(RequestJai):
             Expected Code.
         """
 
-        if self.safe_mode & response.status_code == code:
+        if self.safe_mode and response.status_code == code:
             return response.json()
         elif response.status_code >= 200 and response.status_code <= 299:
             return response.json()
@@ -941,8 +941,9 @@ class BaseJai(RequestJai):
         response = self._get__info(mode=mode, get_size=get_size)
         info = self._check_status_code(response)
         if mode == "names":
+            names = info
             if self.safe_mode:
-                names = check_response(List[str], info)
+                names = check_response(List[str], names)
             return sorted(names)
         elif self.safe_mode:
             if get_size:
