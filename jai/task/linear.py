@@ -8,7 +8,6 @@ from ..types.linear import (
     SGDClassificationHyperparams,
     SGDRegressionHyperparams,
 )
-
 from .base import TaskBase
 
 __all__ = ["LinearModel"]
