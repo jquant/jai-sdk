@@ -4,9 +4,8 @@ from pandas.api.types import is_numeric_dtype
 from tqdm import trange
 
 from ..core.utils_funcs import data2json
-from ..core.validations import check_dtype_and_clean, check_response
+from ..core.validations import check_dtype_and_clean
 from ..types.generic import PossibleDtypes
-from ..types.responses import InsertVectorResponse
 from .base import TaskBase
 
 __all__ = ["Vectors"]
@@ -87,10 +86,7 @@ class Vectors(TaskBase):
         >>> vectors = Vectors(name)
         >>> vectors.delete_raw_data()
         """
-        response = self._delete_raw_data(self.name)
-        if self.safe_mode:
-            return check_response(str, response)
-        return response
+        return self._delete_raw_data(self.name)
 
     def delete_database(self):
         """
@@ -113,10 +109,7 @@ class Vectors(TaskBase):
         >>> vectors = Vectors(name)
         >>> vectors.delete_database()
         """
-        response = self._delete_database(self.name)
-        if self.safe_mode:
-            return check_response(str, response)
-        return response
+        return self._delete_database(self.name)
 
     def insert_vectors(
         self,
@@ -196,8 +189,6 @@ class Vectors(TaskBase):
                     self.name, data_json, overwrite=False
                 )
 
-            if self.safe_mode:
-                response = check_response(InsertVectorResponse, response)
             insert_responses[i] = response
 
         return insert_responses

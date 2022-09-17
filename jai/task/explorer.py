@@ -1,16 +1,7 @@
-from typing import List
-
 import pandas as pd
 
 from ..core.base import BaseJai
-from ..core.validations import check_response
-from ..types.responses import (
-    DescribeResponse,
-    EnvironmentsResponse,
-    InfoResponse,
-    InfoSizeResponse,
-    UserResponse,
-)
+
 
 __all__ = ["Explorer"]
 
@@ -66,10 +57,7 @@ class Explorer(BaseJai):
         >>> explorer = Explorer()
         >>> explorer.names
         """
-        names = self._info(mode="names")
-        if self.safe_mode:
-            names = check_response(List[str], names)
-        return sorted(names)
+        return self._info(mode="names")
 
     def info(self, get_size=True):
         """
@@ -89,12 +77,6 @@ class Explorer(BaseJai):
         >>> explorer.info()
         """
         info = self._info(mode="complete", get_size=get_size)
-        if self.safe_mode:
-            if get_size:
-                info = check_response(InfoSizeResponse, info, list_of=True)
-            else:
-                info = check_response(InfoResponse, info, list_of=True)
-
         df_info = pd.DataFrame(info).rename(
             columns={
                 "db_name": "name",
@@ -127,10 +109,7 @@ class Explorer(BaseJai):
         >>> explorer = Explorer()
         >>> explorer.user()
         """
-        user = self._user()
-        if self.safe_mode:
-            return check_response(UserResponse, user).dict()
-        return user
+        return self._user()
 
     def environments(self):
         """
@@ -143,15 +122,7 @@ class Explorer(BaseJai):
         >>> explorer = Explorer()
         >>> explorer.environments()
         """
-        envs = self._environments()
-        if self.safe_mode:
-            environments = []
-            for v in check_response(EnvironmentsResponse, envs, list_of=True):
-                if v["key"] is None:
-                    v.pop("key")
-                environments.append(v)
-            return environments
-        return envs
+        return self._environments()
 
     def describe(self, name: str):
         """
@@ -174,11 +145,7 @@ class Explorer(BaseJai):
         >>> explorer = Explorer()
         >>> explorer.describe(name)
         """
-        description = self._describe(name)
-        if self.safe_mode:
-            description = check_response(DescribeResponse, description).dict()
-            description = {k: v for k, v in description.items() if v is not None}
-        return description
+        return self._describe(name)
 
     def rename(self, original_name: str, new_name: str):
         """
@@ -199,10 +166,7 @@ class Explorer(BaseJai):
         >>> explorer.rename(original_name, new_name)
         """
 
-        response = self._rename(original_name=original_name, new_name=new_name)
-        if self.safe_mode:
-            return check_response(str, response)
-        return response
+        return self._rename(original_name=original_name, new_name=new_name)
 
     def transfer(
         self,
@@ -236,15 +200,12 @@ class Explorer(BaseJai):
         >>> explorer = Explorer()
         >>> explorer.transfer(original_name, to_environment)
         """
-        response = self._transfer(
+        return self._transfer(
             original_name=original_name,
             to_environment=to_environment,
             new_name=new_name,
             from_environment=from_environment,
         )
-        if self.safe_mode:
-            return check_response(str, response)
-        return response
 
     def import_database(
         self,
@@ -282,12 +243,74 @@ class Explorer(BaseJai):
         ...     import_name
         ... )
         """
-        response = self._import_database(
+        return self._import_database(
             database_name=database_name,
             owner_id=owner_id,
             owner_email=owner_email,
             import_name=import_name,
         )
-        if self.safe_mode:
-            return check_response(str, response)
-        return response
+
+    def delete_ids(self, ids):
+        """
+        Delete the specified ids from database.
+
+        Args
+        ----
+        ids : list
+            List of ids to be removed from database.
+
+        Return
+        -------
+        response : dict
+            Dictionary with the API response.
+
+        Example
+        -------
+        >>> from jai import Trainer
+        ...
+        >>> trainer = Trainer(name)
+        >>> trainer.delete_ids([0, 1])
+        """
+        return self._delete_ids(self.name, ids)
+
+    def delete_raw_data(self):
+        """
+        Delete raw data. It is good practice to do this after training a model.
+
+        Return
+        -------
+        response : dict
+            Dictionary with the API response.
+
+        Example
+        -------
+        >>> from jai import Trainer
+        ...
+        >>> trainer = Trainer(name)
+        >>> trainer.delete_raw_data()
+
+        """
+        return self._delete_raw_data(self.name)
+
+    def delete_database(self):
+        """
+        Delete a database and everything that goes with it (I thank you all).
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Return
+        ------
+        response : dict
+            Dictionary with the API response.
+
+        Example
+        -------
+        >>> from jai import Trainer
+        ...
+        >>> trainer = Trainer(name)
+        >>> trainer.delete_database()
+        """
+        return self._delete_database(self.name)
