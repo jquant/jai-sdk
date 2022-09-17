@@ -56,6 +56,9 @@ class InfoSizeResponse(BaseModel):
 
 class DescribeResponse(BaseModel):
     name: str
+    displayName: str
+    owner: str
+    project: str
     dtype: str
     state: str
     version: str

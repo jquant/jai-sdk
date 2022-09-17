@@ -68,6 +68,9 @@ def test_describe(safe_mode, name):
     desc = j.describe(name)
     res_keys = [
         "name",
+        "displayName",
+        "owner",
+        "project",
         "dtype",
         "state",
         "version",

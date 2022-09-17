@@ -31,13 +31,15 @@ class Explorer(BaseJai):
 
     def __init__(
         self,
+        auth_key: str = None,
         environment: str = "default",
         env_var: str = "JAI_AUTH",
         safe_mode: bool = False,
     ):
         super(Explorer, self).__init__(
-            environment=environment, env_var=env_var, safe_mode=safe_mode
+            auth_key=auth_key, environment=environment, env_var=env_var
         )
+        self.safe_mode = safe_mode
 
     @property
     def names(self):

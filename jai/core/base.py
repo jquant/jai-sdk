@@ -68,11 +68,13 @@ class RequestJai(object):
 
     def __init__(
         self,
+        auth_key: str = None,
         environment: str = "default",
         env_var: str = "JAI_AUTH",
         url_var: str = "JAI_URL",
     ):
-        auth_key = get_authentication(env_var)
+        if auth_key is None:
+            auth_key = get_authentication(env_var)
         self.headers = {"Auth": auth_key, "environment": environment}
         self.url = config(url_var, default="https://mycelia.azure-api.net")
 
@@ -191,7 +193,7 @@ class RequestJai(object):
         url = self.url + f"/similar/id/{name}?top_k={top_k}&orient={orient}" + filtering
         return requests.put(url, headers=self.headers, json=id_item)
 
-    def _put__similar_json(
+    def _similar_json(
         self, name: str, data_json, top_k: int = 5, orient: str = "nested", filters=None
     ):
         """
@@ -282,7 +284,7 @@ class RequestJai(object):
             json=id_item,
         )
 
-    def _put__recommendation_json(
+    def _recommendation_json(
         self, name: str, data_json, top_k: int = 5, orient: str = "nested", filters=None
     ):
         """
@@ -644,7 +646,7 @@ class RequestJai(object):
             self.url + f"/entity/{name}", headers=self.headers, json=ids
         )
 
-    def _delete__raw_data(self, name: str):
+    def _delete_raw_data(self, name: str):
         """
         Delete raw data. It is good practice to do this after training a model.
 
