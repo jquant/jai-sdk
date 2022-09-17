@@ -852,15 +852,16 @@ class BaseJai(RequestJai):
 
     def __init__(
         self,
+        auth_key: str = None,
         environment: str = "default",
         env_var: str = "JAI_AUTH",
         url_var: str = "JAI_URL",
         safe_mode: bool = False,
     ):
-        auth_key = get_authentication(env_var)
+        super(BaseJai, self).__init__(
+            auth_key=auth_key, environment=environment, env_var=env_var, url_var=url_var
+        )
         self.safe_mode = safe_mode
-        self.headers = {"Auth": auth_key, "environment": environment}
-        self.url = config(url_var, default="https://mycelia.azure-api.net")
 
     def _check_status_code(self, response, code: int = 200):
         """
