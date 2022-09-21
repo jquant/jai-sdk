@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from pandas.testing import assert_frame_equal
 import pytest
 
 from jai.task.explorer import Explorer
@@ -22,13 +23,16 @@ def test_info():
     res = pd.DataFrame(
         {
             "name": ["test_match", "test_resolution"],
+            "displayName": ["test_match", "test_resolution"],
+            "owner": ["testsdk_test", "testsdk_test"],
+            "project": ["", ""],
             "type": ["TextEdit", "TextEdit"],
             "dependencies": [[], []],
             "size": [15, 43],
             "embedding_dimension": [128, 128],
         }
     )
-    assert np.array_equal(info.values, res.values)
+    assert_frame_equal(info, res)
 
 
 @pytest.mark.parametrize("safe_mode", ["False", "True"])

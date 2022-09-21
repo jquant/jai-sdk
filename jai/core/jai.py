@@ -104,10 +104,10 @@ class Jai(BaseJai):
         info = self._info()
         df_info = pd.DataFrame(info).rename(
             columns={
-                "db_name": "name",
-                "db_type": "type",
-                "db_version": "last modified",
-                "db_parents": "dependencies",
+                "name": "name",
+                "type": "type",
+                "version": "last modified",
+                "parents": "dependencies",
             }
         )
         if len(df_info) == 0:
