@@ -9,7 +9,7 @@ from copy import copy
 from decouple import config
 from io import BytesIO
 from pydantic import HttpUrl
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from typing import Any, Dict, List, Optional
 
 from ..core.utils_funcs import data2json, get_pcores

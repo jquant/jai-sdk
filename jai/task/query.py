@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import requests
 from pydantic import HttpUrl
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from jai.utilities import predict2df
 

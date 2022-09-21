@@ -11,7 +11,7 @@ import pandas as pd
 import requests
 from pandas.api.types import is_numeric_dtype
 from sklearn.model_selection import StratifiedShuffleSplit
-from tqdm import tqdm, trange
+from tqdm.auto import tqdm, trange
 
 from jai.utilities import filter_resolution, filter_similar, predict2df
 

@@ -7,7 +7,7 @@ from typing import Any, Dict, List
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from ..core.utils_funcs import check_filters, print_args
 from ..core.validations import check_dtype_and_clean
