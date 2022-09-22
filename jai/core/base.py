@@ -395,6 +395,19 @@ class RequestJai(object):
             url=self.url + f"/rename", headers=self.headers, json=body
         )
 
+    def _post__update_database(
+        self, name: str, display_name: str = None, project: str = None
+    ):
+        if display_name is None and project is None:
+            raise ValueError("must pass one of `displayName` or `project`")
+        elif display_name is None:
+            path = f"/database/{name}?project={project}"
+        elif project is None:
+            path = f"/database/{name}?displayName={display_name}"
+        else:
+            path = f"/database/{name}?displayName={display_name}&project={project}"
+        return requests.post(self.url + path, headers=self.headers)
+
     def _post__transfer(
         self,
         original_name: str,
@@ -1416,6 +1429,17 @@ class BaseJai(RequestJai):
         )
         if self.safe_mode:
             setup_response = check_response(SetupResponse, setup_response).dict()
+        return setup_response
+
+    def _update_database(
+        self, name: str, display_name: str = None, project: str = None
+    ):
+        response = self._post__update_database(
+            name=name, display_name=display_name, project=project
+        )
+        setup_response = self._check_status_code(response)
+        if self.safe_mode:
+            setup_response = check_response(str, setup_response)
         return setup_response
 
     def _report(self, name, verbose: int = 2):

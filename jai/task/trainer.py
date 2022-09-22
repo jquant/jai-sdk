@@ -116,6 +116,11 @@ class Trainer(TaskBase):
             )
         return self._fit_parameters
 
+    def update_database(self, name: str, display_name: str = None, project: str = None):
+        return self._update_database(
+            name=name, display_name=display_name, project=project
+        )
+
     def set_parameters(
         self,
         db_type: str,

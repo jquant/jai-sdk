@@ -348,6 +348,11 @@ class Jai(BaseJai):
         """
         return self._filters(name)
 
+    def update_database(self, name: str, display_name: str = None, project: str = None):
+        return self._update_database(
+            name=name, display_name=display_name, project=project
+        )
+
     def similar(
         self,
         name: str,
