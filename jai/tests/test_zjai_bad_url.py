@@ -96,13 +96,6 @@ def test_similar_id_exceptions_invalid(bad_url_environ):
         j._similar_id("test", id_item=dict())
 
 
-def test_similar_id_exceptions(bad_url_environ):
-    # we need to use a valid URL for this one
-    j = Jai()
-    with pytest.raises(ValueError):
-        j._similar_id("test", id_item=[])
-
-
 def test_similar_json_exception(bad_url_environ):
     j = Jai()
     with pytest.raises(ValueError):
