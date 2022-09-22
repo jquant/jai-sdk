@@ -7,7 +7,7 @@ from typing import List, Tuple, Union
 
 import pandas as pd
 from PIL import Image
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 __all__ = ["read_image"]
 

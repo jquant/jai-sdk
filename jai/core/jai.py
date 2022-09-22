@@ -11,7 +11,7 @@ import pandas as pd
 import requests
 from pandas.api.types import is_numeric_dtype
 from sklearn.model_selection import StratifiedShuffleSplit
-from tqdm import tqdm, trange
+from tqdm.auto import tqdm, trange
 
 from jai.utilities import filter_resolution, filter_similar, predict2df
 
@@ -347,6 +347,11 @@ class Jai(BaseJai):
             List of valid filter values.
         """
         return self._filters(name)
+
+    def update_database(self, name: str, display_name: str = None, project: str = None):
+        return self._update_database(
+            name=name, display_name=display_name, project=project
+        )
 
     def similar(
         self,
