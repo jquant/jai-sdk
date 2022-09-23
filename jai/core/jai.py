@@ -3,47 +3,22 @@ import json
 import secrets
 import time
 from fnmatch import fnmatch
-from io import BytesIO
-from typing import Any, Dict, List, Optional, Union
+from typing import List, Optional, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import requests
 from pandas.api.types import is_numeric_dtype
-from pydantic import HttpUrl
 from sklearn.model_selection import StratifiedShuffleSplit
-from tqdm import tqdm, trange
+from tqdm.auto import tqdm, trange
 
 from jai.utilities import filter_resolution, filter_similar, predict2df
 
 from ..types.generic import Mode, PossibleDtypes
-from ..types.responses import (
-    AddDataResponse,
-    DescribeResponse,
-    EnvironmentsResponse,
-    FieldsResponse,
-    FlatResponse,
-    InfoSizeResponse,
-    InsertVectorResponse,
-    PredictResponse,
-    RecNestedResponse,
-    Report1Response,
-    Report2Response,
-    SetupResponse,
-    SimilarNestedResponse,
-    StatusResponse,
-    UserResponse,
-    ValidResponse,
-)
 from .base import BaseJai
 from .utils_funcs import build_name, data2json, get_pcores, print_args, resolve_db_type
-from .validations import (
-    check_dtype_and_clean,
-    check_name_lengths,
-    check_response,
-    kwargs_validation,
-)
+from .validations import check_dtype_and_clean, check_name_lengths, kwargs_validation
 
 __all__ = ["Jai"]
 
@@ -84,9 +59,11 @@ class Jai(BaseJai):
     ):
 
         super(Jai, self).__init__(
-            auth_key=auth_key, environment=environment, env_var=env_var
+            auth_key=auth_key,
+            environment=environment,
+            env_var=env_var,
+            safe_mode=safe_mode,
         )
-        self.safe_mode = safe_mode
 
     @property
     def names(self):
@@ -103,10 +80,7 @@ class Jai(BaseJai):
         ['jai_database', 'jai_selfsupervised', 'jai_supervised']
 
         """
-        names = self._info(mode="names")
-        if self.safe_mode:
-            names = check_response(List[str], names)
-        return sorted(names)
+        return self._info(mode="names")
 
     @property
     def info(self):
@@ -128,15 +102,12 @@ class Jai(BaseJai):
         2                jai_supervised        Supervised
         """
         info = self._info()
-        if self.safe_mode:
-            info = check_response(InfoSizeResponse, info, list_of=True)
-
         df_info = pd.DataFrame(info).rename(
             columns={
-                "db_name": "name",
-                "db_type": "type",
-                "db_version": "last modified",
-                "db_parents": "dependencies",
+                "name": "name",
+                "type": "type",
+                "version": "last modified",
+                "parents": "dependencies",
             }
         )
         if len(df_info) == 0:
@@ -163,18 +134,10 @@ class Jai(BaseJai):
         """
         for _ in range(max_tries):
             try:
-                status = self._status()
-                if self.safe_mode:
-                    return check_response(
-                        Dict[str, StatusResponse], status, as_dict=True
-                    )
-                return status
+                return self._status()
             except BaseException:
                 time.sleep(patience)
-        status = self._status()
-        if self.safe_mode:
-            return check_response(Dict[str, StatusResponse], status, as_dict=True)
-        return status
+        return self._status()
 
     @staticmethod
     def get_auth_key(email: str, firstName: str, lastName: str, company: str = ""):
@@ -223,24 +186,13 @@ class Jai(BaseJai):
             - memberRole: str
             - namespace: srt
         """
-        user = self._user()
-        if self.safe_mode:
-            return check_response(UserResponse, user).dict()
-        return user
+        return self._user()
 
     def environments(self):
         """
         Return names of available environments.
         """
-        envs = self._environments()
-        if self.safe_mode:
-            environments = []
-            for v in check_response(EnvironmentsResponse, envs, list_of=True):
-                if v["key"] is None:
-                    v.pop("key")
-                environments.append(v)
-            return environments
-        return envs
+        return self._environments()
 
     def generate_name(self, length: int = 8, prefix: str = "", suffix: str = ""):
         """
@@ -313,10 +265,7 @@ class Jai(BaseJai):
         >>> print(fields)
         {'id': 0, 'feature1': 0.01, 'feature2': 'string', 'feature3': 0}
         """
-        fields = self._fields(name)
-        if self.safe_mode:
-            return check_response(FieldsResponse, fields, list_of=True)
-        return fields
+        return self._fields(name)
 
     def describe(self, name: str):
         """
@@ -332,11 +281,7 @@ class Jai(BaseJai):
         response : dict
             Dictionary with database description.
         """
-        description = self._describe(name)
-        if self.safe_mode:
-            description = check_response(DescribeResponse, description).dict()
-            description = {k: v for k, v in description.items() if v is not None}
-        return description
+        return self._describe(name)
 
     def get_dtype(self, name: str):
         """
@@ -385,11 +330,7 @@ class Jai(BaseJai):
         ...
         [-0.03121682 -0.2101511   0.4893339  ...  0.00758727  0.15916921  0.1226602 ]]
         """
-        url = self._download_vectors(name)
-        if self.safe_mode:
-            url = check_response(HttpUrl, url)
-        r = requests.get(url)
-        return np.load(BytesIO(r.content))
+        return self._download_vectors(name)
 
     def filters(self, name: str):
         """
@@ -405,10 +346,12 @@ class Jai(BaseJai):
         response : list of strings
             List of valid filter values.
         """
-        filters = self._filters(name)
-        if self.safe_mode:
-            return check_response(List[str], filters)
-        return filters
+        return self._filters(name)
+
+    def update_database(self, name: str, display_name: str = None, project: str = None):
+        return self._update_database(
+            name=name, display_name=display_name, project=project
+        )
 
     def similar(
         self,
@@ -511,14 +454,7 @@ class Jai(BaseJai):
                 results = []
                 for future in concurrent.futures.as_completed(dict_futures):
                     res = future.result()
-                    if orient == "flat":
-                        if self.safe_mode:
-                            res = check_response(FlatResponse, res, list_of=True)
-                        results.extend(res)
-                    else:
-                        if self.safe_mode:
-                            res = check_response(SimilarNestedResponse, res).dict()
-                        results.extend(res["similarity"])
+                    results.extend(res)
                     pbar.update(1)
         return results
 
@@ -623,14 +559,7 @@ class Jai(BaseJai):
                 results = []
                 for future in concurrent.futures.as_completed(dict_futures):
                     res = future.result()
-                    if orient == "flat":
-                        if self.safe_mode:
-                            res = check_response(FlatResponse, res, list_of=True)
-                        results.extend(res)
-                    else:
-                        if self.safe_mode:
-                            res = check_response(RecNestedResponse, res).dict()
-                        results.extend(res["recommendation"])
+                    results.extend(res)
                     pbar.update(1)
         return results
 
@@ -689,7 +618,6 @@ class Jai(BaseJai):
 
         description = "Predict"
         pcores = get_pcores(max_workers)
-
         dict_futures = {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
             for i, b in enumerate(range(0, len(data), batch_size)):
@@ -705,10 +633,9 @@ class Jai(BaseJai):
                 results = []
                 for future in concurrent.futures.as_completed(dict_futures):
                     res = future.result()
-                    if self.safe_mode:
-                        res = check_response(PredictResponse, res, list_of=True)
                     results.extend(res)
                     pbar.update(1)
+
         return predict2df(results) if as_frame else results
 
     def ids(self, name: str, mode: Mode = "simple"):
@@ -732,10 +659,7 @@ class Jai(BaseJai):
         >>> print(ids)
         ['891 items from 0 to 890']
         """
-        ids = self._ids(name, mode)
-        if self.safe_mode:
-            return check_response(List[Any], ids)
-        return ids
+        return self._ids(name, mode)
 
     def is_valid(self, name: str):
         """
@@ -760,10 +684,7 @@ class Jai(BaseJai):
         >>> print(check_valid)
         True
         """
-        valid = self._is_valid(name)
-        if self.safe_mode:
-            return check_response(ValidResponse, valid).dict()["value"]
-        return valid["value"]
+        return self._is_valid(name)
 
     def setup(
         self,
@@ -898,8 +819,6 @@ class Jai(BaseJai):
         # train model
         body = kwargs_validation(db_type=db_type, **kwargs)
         setup_response = self._setup(name, body, overwrite)
-        if self.safe_mode:
-            setup_response = check_response(SetupResponse, setup_response).dict()
         print_args(
             {k: json.loads(v) for k, v in setup_response["kwargs"].items()},
             dict(db_type=db_type, **kwargs),
@@ -925,10 +844,7 @@ class Jai(BaseJai):
         return self.setup(*args, **kwargs)
 
     def rename(self, original_name: str, new_name: str):
-        response = self._rename(original_name=original_name, new_name=new_name)
-        if self.safe_mode:
-            return check_response(str, response)
-        return response
+        return self._rename(original_name=original_name, new_name=new_name)
 
     def transfer(
         self,
@@ -937,15 +853,12 @@ class Jai(BaseJai):
         new_name: str = None,
         from_environment: str = "default",
     ):
-        response = self._transfer(
+        return self._transfer(
             original_name=original_name,
             to_environment=to_environment,
             new_name=new_name,
             from_environment=from_environment,
         )
-        if self.safe_mode:
-            return check_response(str, response)
-        return response
 
     def import_database(
         self,
@@ -954,15 +867,12 @@ class Jai(BaseJai):
         owner_email: str,
         import_name: str = None,
     ):
-        response = self._import_database(
+        return self._import_database(
             database_name=database_name,
             owner_id=owner_id,
             owner_email=owner_email,
             import_name=import_name,
         )
-        if self.safe_mode:
-            return check_response(str, response)
-        return response
 
     def add_data(
         self, name: str, data, batch_size: int = 16384, frequency_seconds: int = 1
@@ -1014,8 +924,6 @@ class Jai(BaseJai):
 
         # add data per se
         add_data_response = self._append(name=name)
-        if self.safe_mode:
-            add_data_response = check_response(AddDataResponse, add_data_response)
 
         if frequency_seconds >= 1:
             self.wait_setup(name=name, frequency_seconds=frequency_seconds)
@@ -1063,14 +971,6 @@ class Jai(BaseJai):
             return None
 
         result = self._report(name, verbose)
-
-        if self.safe_mode:
-            if verbose >= 2:
-                result = check_response(Report2Response, result).dict(by_alias=True)
-            elif verbose == 1:
-                result = check_response(Report1Response, result).dict(by_alias=True)
-            else:
-                result = check_response(Report1Response, result).dict(by_alias=True)
 
         if return_report:
             return result
@@ -1173,13 +1073,9 @@ class Jai(BaseJai):
         except KeyboardInterrupt:
             print("\n\nInterruption caught!\n\n")
             response = self._cancel_setup(name)
-            if self.safe_mode:
-                response = check_response(str, response)
             raise KeyboardInterrupt(response)
 
         response = self._delete_status(name)
-        if self.safe_mode:
-            check_response(str, response)
         return status
 
     def delete_ids(self, name, ids):
@@ -1199,10 +1095,7 @@ class Jai(BaseJai):
         response : dict
             Dictionary with the API response.
         """
-        response = self._delete_ids(name, ids)
-        if self.safe_mode:
-            return check_response(str, response)
-        return response
+        return self._delete_ids(name, ids)
 
     def delete_raw_data(self, name: str):
         """
@@ -1225,10 +1118,7 @@ class Jai(BaseJai):
         >>> j.delete_raw_data(name=name)
         'All raw data from database 'chosen_name' was deleted!'
         """
-        response = self._delete_raw_data(name)
-        if self.safe_mode:
-            return check_response(str, response)
-        return response
+        return self._delete_raw_data(name)
 
     def delete_database(self, name: str):
         """
@@ -1251,10 +1141,7 @@ class Jai(BaseJai):
         >>> j.delete_database(name=name)
         'Bombs away! We nuked database chosen_name!'
         """
-        response = self._delete_database(name)
-        if self.safe_mode:
-            return check_response(str, response)
-        return response
+        return self._delete_database(name)
 
     # Helper function to delete the whole tree of databases related with
     # database 'name'
@@ -1949,8 +1836,6 @@ class Jai(BaseJai):
             else:
                 response = self._insert_vectors_json(name, data_json, overwrite=False)
 
-            if self.safe_mode:
-                response = check_response(InsertVectorResponse, response)
             insert_responses[i] = response
 
         return insert_responses
