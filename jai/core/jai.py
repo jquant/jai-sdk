@@ -986,13 +986,13 @@ class Jai(BaseJai):
             plt.show()
 
         print("\nSetup Report:")
-        print(
-            result["Model Evaluation"]
-        ) if "Model Evaluation" in result.keys() else None
+        print(result["Model Evaluation"]) if result.get(
+            "Model Evaluation", None
+        ) is not None else None
         print()
-        print(
-            result["Loading from checkpoint"].split("\n")[1]
-        ) if "Loading from checkpoint" in result.keys() else None
+        print(result["Loading from checkpoint"].split("\n")[1]) if result.get(
+            "Loading from checkpoint", None
+        ) is not None else None
 
     def wait_setup(self, name: str, frequency_seconds: int = 1):
         """
