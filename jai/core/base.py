@@ -655,7 +655,8 @@ class RequestJai(object):
         'All raw data from database 'chosen_name' was deleted!'
         """
         return requests.delete(
-            self.url + f"/entity/{name}", headers=self.headers, json=ids
+            self.url + f"/entity/{name}?{'&'.join([f'id={i}'for i in ids])}",
+            headers=self.headers,
         )
 
     def _delete__raw_data(self, name: str):
