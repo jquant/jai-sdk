@@ -22,8 +22,7 @@ __all__ = ["Trainer"]
 def get_numbers(status):
     if fnmatch(status["Description"], "*Iteration:*"):
         curr_step, max_iterations = (
-            status["Description"].split("Iteration: ")[1].strip().split(" / ")
-        )
+            status["Description"].split("Iteration: ")[1].strip().split(" / "))
         return True, int(curr_step), int(max_iterations)
     return False, 0, 0
 
@@ -68,7 +67,6 @@ class Trainer(TaskBase):
     ...
     >>> trainer = Trainer(name)
     """
-
     def __init__(
         self,
         name: str,
@@ -89,7 +87,10 @@ class Trainer(TaskBase):
         )
 
         self._fit_parameters = None
-        self._insert_parameters = {"batch_size": 16384, "max_insert_workers": None}
+        self._insert_parameters = {
+            "batch_size": 16384,
+            "max_insert_workers": None
+        }
 
     @property
     def insert_parameters(self):
@@ -116,10 +117,13 @@ class Trainer(TaskBase):
             )
         return self._fit_parameters
 
-    def update_database(self, name: str, display_name: str = None, project: str = None):
-        return self._update_database(
-            name=name, display_name=display_name, project=project
-        )
+    def update_database(self,
+                        name: str,
+                        display_name: str = None,
+                        project: str = None):
+        return self._update_database(name=name,
+                                     display_name=display_name,
+                                     project=project)
 
     def set_parameters(
         self,
@@ -185,7 +189,8 @@ class Trainer(TaskBase):
 
         print_args(self.fit_parameters, self._input_kwargs, verbose=verbose)
 
-    def _check_pretrained_bases(self, data: pd.DataFrame, pretrained_bases: List):
+    def _check_pretrained_bases(self, data: pd.DataFrame,
+                                pretrained_bases: List):
         """
         Processes the following checks:
         - If RecommendationSystem:
@@ -213,8 +218,7 @@ class Trainer(TaskBase):
             if not towers <= set(pretrained_names):
                 raise ValueError(
                     f"Both {towers} keys must be in pretrained bases:\n"
-                    f"db_parents: {pretrained_names}"
-                )
+                    f"db_parents: {pretrained_names}")
 
         for base in pretrained_bases:
             parent_name = base["db_parent"]
@@ -225,17 +229,11 @@ class Trainer(TaskBase):
                 ids = self._ids(parent_name, mode="complete")
             elif parent_name in data.keys():
                 data_parent = data[parent_name]
-                df = (
-                    data[DEFAULT_NAME]
-                    if DEFAULT_NAME in data.keys()
-                    else data[self.name]
-                )
+                df = (data[DEFAULT_NAME]
+                      if DEFAULT_NAME in data.keys() else data[self.name])
                 flat_ids = np.unique(list(flatten_sample(df[column])))
-                ids = (
-                    data_parent["id"]
-                    if "id" in data_parent.columns
-                    else data_parent.index
-                )
+                ids = (data_parent["id"]
+                       if "id" in data_parent.columns else data_parent.index)
             else:
                 for df in data.values():
                     if column in df.columns:
@@ -248,8 +246,7 @@ class Trainer(TaskBase):
                 missing = flat_ids[inverted_in].tolist()
                 raise KeyError(
                     f"Id values on column `{column}` must belong to the set of Ids from database {parent_name}.\n"
-                    f"Missing: {missing}"
-                )
+                    f"Missing: {missing}")
 
     def fit(
         self,
@@ -306,11 +303,9 @@ class Trainer(TaskBase):
             else:
                 raise KeyError(
                     f"Database '{self.name}' already exists in your environment.\
-                        Set overwrite=True to overwrite it."
-                )
+                        Set overwrite=True to overwrite it.")
         self._check_pretrained_bases(
-            data, self.fit_parameters.get("pretrained_bases", [])
-        )
+            data, self.fit_parameters.get("pretrained_bases", []))
 
         if isinstance(data, (pd.Series, pd.DataFrame)):
             # make sure our data has the correct type and is free of NAs
@@ -323,13 +318,16 @@ class Trainer(TaskBase):
                 name=self.name,
                 db_type=self.fit_parameters["db_type"],
                 batch_size=self.insert_parameters["batch_size"],
-                has_filter=check_filters(data, self.fit_parameters.get("features", {})),
-                max_insert_workers=self.insert_parameters["max_insert_workers"],
+                has_filter=check_filters(
+                    data, self.fit_parameters.get("features", {})),
+                max_insert_workers=self.
+                insert_parameters["max_insert_workers"],
                 predict=False,
             )
 
         elif isinstance(data, dict):
-            if self.fit_parameters["db_type"] != PossibleDtypes.recommendation_system:
+            if self.fit_parameters[
+                    "db_type"] != PossibleDtypes.recommendation_system:
                 raise ValueError(
                     "Data as type `dict` is only used for RecommendationSystem databases."
                 )
@@ -351,23 +349,25 @@ class Trainer(TaskBase):
                     db_type=self.fit_parameters["db_type"],
                     batch_size=self.insert_parameters["batch_size"],
                     has_filter=check_filters(
-                        value, self.fit_parameters.get("features", {})
-                    ),
-                    max_insert_workers=self.insert_parameters["max_insert_workers"],
+                        value, self.fit_parameters.get("features", {})),
+                    max_insert_workers=self.
+                    insert_parameters["max_insert_workers"],
                     predict=False,
                 )
-        elif self.fit_parameters["db_type"] == PossibleDtypes.recommendation_system:
+        elif self.fit_parameters[
+                "db_type"] == PossibleDtypes.recommendation_system:
             raise ValueError("Data must be a dictionary of pd.DataFrames.")
         else:
             raise ValueError("Data must be a pd.Series or pd.Dataframe.")
 
         # send request to start training
-        setup_response = self._setup(
-            self.name, self.fit_parameters, overwrite=overwrite
-        )
+        setup_response = self._setup(self.name,
+                                     self.fit_parameters,
+                                     overwrite=overwrite)
 
         print_args(
-            {k: json.loads(v) for k, v in setup_response["kwargs"].items()},
+            {k: json.loads(v)
+             for k, v in setup_response["kwargs"].items()},
             self._input_kwargs,
             verbose=verbose,
         )
@@ -378,7 +378,8 @@ class Trainer(TaskBase):
         self.wait_setup(frequency_seconds=frequency_seconds)
         self.report(verbose)
 
-        if self.fit_parameters["db_type"] == PossibleDtypes.recommendation_system:
+        if self.fit_parameters[
+                "db_type"] == PossibleDtypes.recommendation_system:
             towers = list(set(data.keys()) - set([self.name, DEFAULT_NAME]))
             return {
                 towers[0]: self.get_query(name=towers[0]),
@@ -420,8 +421,7 @@ class Trainer(TaskBase):
         if not self.is_valid():
             raise KeyError(
                 f"Database '{self.name}' does not exist in your environment.\n"
-                "Run a `setup` set your database up first."
-            )
+                "Run a `setup` set your database up first.")
 
         # delete data reamains
         self.delete_raw_data()
@@ -490,9 +490,10 @@ class Trainer(TaskBase):
         >>> trainer.report()
         """
         if self.db_type not in [
-            PossibleDtypes.selfsupervised,
-            PossibleDtypes.supervised,
-            PossibleDtypes.recommendation_system,
+                PossibleDtypes.selfsupervised,
+                PossibleDtypes.supervised,
+                PossibleDtypes.linear,
+                PossibleDtypes.recommendation_system,
         ]:
             return None
 
@@ -512,13 +513,11 @@ class Trainer(TaskBase):
             plt.show()
 
         print("\nSetup Report:")
-        print(
-            report["Model Evaluation"]
-        ) if "Model Evaluation" in report.keys() else None
+        print(report["Model Evaluation"]) if "Model Evaluation" in report.keys(
+        ) else None
         print()
-        print(
-            report["Loading from checkpoint"].split("\n")[1]
-        ) if "Loading from checkpoint" in report.keys() else None
+        print(report["Loading from checkpoint"].split("\n")
+              [1]) if "Loading from checkpoint" in report.keys() else None
 
     def wait_setup(self, frequency_seconds: int = 1):
         """
@@ -545,9 +544,9 @@ class Trainer(TaskBase):
         sleep_time = frequency_seconds
         try:
             with tqdm(
-                total=max_steps,
-                desc="JAI is working",
-                bar_format="{l_bar}{bar}|{n_fmt}/{total_fmt} [{elapsed}]",
+                    total=max_steps,
+                    desc="JAI is working",
+                    bar_format="{l_bar}{bar}|{n_fmt}/{total_fmt} [{elapsed}]",
             ) as pbar:
                 while status["Status"] != end_message:
                     if status["Status"] == error_message:
@@ -556,9 +555,9 @@ class Trainer(TaskBase):
                     iteration, _, max_iterations = get_numbers(status)
                     if iteration:
                         with tqdm(
-                            total=max_iterations,
-                            desc=f"[{self.name}] Training",
-                            leave=False,
+                                total=max_iterations,
+                                desc=f"[{self.name}] Training",
+                                leave=False,
                         ) as iteration_bar:
                             while iteration:
                                 iteration, curr_step, _ = get_numbers(status)
@@ -573,7 +572,8 @@ class Trainer(TaskBase):
 
                             # training might stop early, so we make the progress bar appear
                             # full when early stopping is reached -- peace of mind
-                            iteration_bar.update(max_iterations - iteration_bar.n)
+                            iteration_bar.update(max_iterations -
+                                                 iteration_bar.n)
 
                     if (step == current) and is_init:
                         pbar.update(current)

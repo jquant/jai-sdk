@@ -8,6 +8,7 @@ from ..types.linear import (
     SGDClassificationHyperparams,
     SGDRegressionHyperparams,
 )
+from ..types.generic import PossibleDtypes
 from .base import TaskBase
 
 __all__ = ["LinearModel"]
@@ -39,7 +40,6 @@ class LinearModel(TaskBase):
         Defaults to False.
 
     """
-
     def __init__(
         self,
         name: str,
@@ -58,9 +58,8 @@ class LinearModel(TaskBase):
             verbose=verbose,
             safe_mode=safe_mode,
         )
-        possible_tasks = [t.value for t in RegressionTasks] + [
-            t.value for t in ClassificationTasks
-        ]
+        possible_tasks = [t.value for t in RegressionTasks
+                          ] + [t.value for t in ClassificationTasks]
         if task in possible_tasks:
             self.task = task
         else:
@@ -178,11 +177,13 @@ class LinearModel(TaskBase):
             - after: Dict[str, Union[float, str]]
             - change: bool
         """
-        return self._linear_learn(self.name, X.to_dict(orient="records"), y.tolist())
+        return self._linear_learn(self.name, X.to_dict(orient="records"),
+                                  y.tolist())
 
-    def predict(
-        self, X: pd.DataFrame, predict_proba: bool = False, as_frame: bool = True
-    ):
+    def predict(self,
+                X: pd.DataFrame,
+                predict_proba: bool = False,
+                as_frame: bool = True):
         """
         Makes the prediction using the linear models.
 
@@ -200,9 +201,9 @@ class LinearModel(TaskBase):
         -------
             A list of dictionaries.
         """
-        result = self._linear_predict(
-            self.name, X.to_dict(orient="records"), predict_proba=predict_proba
-        )
+        result = self._linear_predict(self.name,
+                                      X.to_dict(orient="records"),
+                                      predict_proba=predict_proba)
 
         if as_frame:
             return pd.DataFrame(result).set_index("id")
@@ -210,3 +211,39 @@ class LinearModel(TaskBase):
 
     def get_model_weights(self):
         return self._get__linear_model_weights(self.name).json()
+
+    def report(self, verbose: int = 2, return_report: bool = False):
+        """
+        Get a report about the training model.
+
+        Parameters
+        ----------
+        verbose : int, optional
+            Level of description. The default is 2.
+            Use verbose 2 to get the loss graph, verbose 1 to get only the
+            metrics result.
+        return_report : bool, optional
+            Returns the report dictionary and does not print or plot anything. The default is False.
+
+
+        Returns
+        -------
+        dict
+            Dictionary with the information.
+
+        Example
+        -------
+        >>> from jai import Trainer
+        ...
+        >>> trainer = Trainer(name)
+        >>> trainer.report()
+        """
+        if self.db_type not in [
+                PossibleDtypes.linear,
+        ]:
+            return None
+
+        report = self._report(self.name, verbose)
+
+        if return_report:
+            return report

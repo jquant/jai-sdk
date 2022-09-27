@@ -49,7 +49,6 @@ class Jai(BaseJai):
         Defaults to False.
 
     """
-
     def __init__(
         self,
         auth_key: str = None,
@@ -108,8 +107,7 @@ class Jai(BaseJai):
                 "type": "type",
                 "version": "last modified",
                 "parents": "dependencies",
-            }
-        )
+            })
         if len(df_info) == 0:
             return df_info
         return df_info.sort_values(by="name")
@@ -140,7 +138,10 @@ class Jai(BaseJai):
         return self._status()
 
     @staticmethod
-    def get_auth_key(email: str, firstName: str, lastName: str, company: str = ""):
+    def get_auth_key(email: str,
+                     firstName: str,
+                     lastName: str,
+                     company: str = ""):
         """
         Request an auth key to use JAI-SDK with.
 
@@ -194,7 +195,10 @@ class Jai(BaseJai):
         """
         return self._environments()
 
-    def generate_name(self, length: int = 8, prefix: str = "", suffix: str = ""):
+    def generate_name(self,
+                      length: int = 8,
+                      prefix: str = "",
+                      suffix: str = ""):
         """
 
         Generate a random string. You can pass a prefix and/or suffix. In this case,
@@ -348,10 +352,13 @@ class Jai(BaseJai):
         """
         return self._filters(name)
 
-    def update_database(self, name: str, display_name: str = None, project: str = None):
-        return self._update_database(
-            name=name, display_name=display_name, project=project
-        )
+    def update_database(self,
+                        name: str,
+                        display_name: str = None,
+                        project: str = None):
+        return self._update_database(name=name,
+                                     display_name=display_name,
+                                     project=project)
 
     def similar(
         self,
@@ -424,10 +431,11 @@ class Jai(BaseJai):
             )
 
         dict_futures = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+        with concurrent.futures.ThreadPoolExecutor(
+                max_workers=pcores) as executor:
             for i, b in enumerate(range(0, len(data), batch_size)):
                 if is_id:
-                    _batch = data[b : b + batch_size].tolist()
+                    _batch = data[b:b + batch_size].tolist()
                     task = executor.submit(
                         self._similar_id,
                         name,
@@ -437,9 +445,9 @@ class Jai(BaseJai):
                         filters=filters,
                     )
                 else:
-                    _batch = data2json(
-                        data.iloc[b : b + batch_size], dtype=dtype, predict=True
-                    )
+                    _batch = data2json(data.iloc[b:b + batch_size],
+                                       dtype=dtype,
+                                       predict=True)
                     task = executor.submit(
                         self._similar_json,
                         name,
@@ -529,10 +537,11 @@ class Jai(BaseJai):
             )
 
         dict_futures = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+        with concurrent.futures.ThreadPoolExecutor(
+                max_workers=pcores) as executor:
             for i, b in enumerate(range(0, len(data), batch_size)):
                 if is_id:
-                    _batch = data[b : b + batch_size].tolist()
+                    _batch = data[b:b + batch_size].tolist()
                     task = executor.submit(
                         self._recommendation_id,
                         name,
@@ -542,9 +551,9 @@ class Jai(BaseJai):
                         filters=filters,
                     )
                 else:
-                    _batch = data2json(
-                        data.iloc[b : b + batch_size], dtype=dtype, predict=True
-                    )
+                    _batch = data2json(data.iloc[b:b + batch_size],
+                                       dtype=dtype,
+                                       predict=True)
                     task = executor.submit(
                         self._recommendation_json,
                         name,
@@ -619,14 +628,16 @@ class Jai(BaseJai):
         description = "Predict"
         pcores = get_pcores(max_workers)
         dict_futures = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+        with concurrent.futures.ThreadPoolExecutor(
+                max_workers=pcores) as executor:
             for i, b in enumerate(range(0, len(data), batch_size)):
-                _batch = data2json(
-                    data.iloc[b : b + batch_size], dtype=dtype, predict=True
-                )
-                task = executor.submit(
-                    self._predict, name, _batch, predict_proba=predict_proba
-                )
+                _batch = data2json(data.iloc[b:b + batch_size],
+                                   dtype=dtype,
+                                   predict=True)
+                task = executor.submit(self._predict,
+                                       name,
+                                       _batch,
+                                       predict_proba=predict_proba)
                 dict_futures[task] = i
 
             with tqdm(total=len(dict_futures), desc=description) as pbar:
@@ -760,8 +771,7 @@ class Jai(BaseJai):
             else:
                 raise KeyError(
                     f"Database '{name}' already exists in your environment.\
-                        Set overwrite=True to overwrite it."
-                )
+                        Set overwrite=True to overwrite it.")
 
         if isinstance(data, (pd.Series, pd.DataFrame)):
 
@@ -775,12 +785,10 @@ class Jai(BaseJai):
                 name=name,
                 db_type=db_type,
                 batch_size=batch_size,
-                has_filter=any(
-                    [
-                        feat["dtype"] == "filter"
-                        for feat in kwargs.get("features", {}).values()
-                    ]
-                ),
+                has_filter=any([
+                    feat["dtype"] == "filter"
+                    for feat in kwargs.get("features", {}).values()
+                ]),
                 max_insert_workers=max_insert_workers,
             )
 
@@ -802,12 +810,10 @@ class Jai(BaseJai):
                     name=key,
                     db_type=db_type,
                     batch_size=batch_size,
-                    has_filter=any(
-                        [
-                            feat["dtype"] == "filter"
-                            for feat in kwargs.get("features", {}).values()
-                        ]
-                    ),
+                    has_filter=any([
+                        feat["dtype"] == "filter"
+                        for feat in kwargs.get("features", {}).values()
+                    ]),
                     max_insert_workers=max_insert_workers,
                     predict=False,
                 )
@@ -820,7 +826,8 @@ class Jai(BaseJai):
         body = kwargs_validation(db_type=db_type, **kwargs)
         setup_response = self._setup(name, body, overwrite)
         print_args(
-            {k: json.loads(v) for k, v in setup_response["kwargs"].items()},
+            {k: json.loads(v)
+             for k, v in setup_response["kwargs"].items()},
             dict(db_type=db_type, **kwargs),
             verbose=verbose,
         )
@@ -829,9 +836,9 @@ class Jai(BaseJai):
             self.wait_setup(name=name, frequency_seconds=frequency_seconds)
 
             if db_type in [
-                PossibleDtypes.selfsupervised,
-                PossibleDtypes.supervised,
-                PossibleDtypes.recommendation_system,
+                    PossibleDtypes.selfsupervised,
+                    PossibleDtypes.supervised,
+                    PossibleDtypes.recommendation_system,
             ]:
                 self.report(name, verbose)
 
@@ -874,9 +881,11 @@ class Jai(BaseJai):
             import_name=import_name,
         )
 
-    def add_data(
-        self, name: str, data, batch_size: int = 16384, frequency_seconds: int = 1
-    ):
+    def add_data(self,
+                 name: str,
+                 data,
+                 batch_size: int = 16384,
+                 frequency_seconds: int = 1):
         """
         Insert raw data and extract their latent representation.
 
@@ -930,9 +939,11 @@ class Jai(BaseJai):
 
         return insert_responses, add_data_response
 
-    def append(
-        self, name: str, data, batch_size: int = 16384, frequency_seconds: int = 1
-    ):
+    def append(self,
+               name: str,
+               data,
+               batch_size: int = 16384,
+               frequency_seconds: int = 1):
         """
         Another name for add_data
         """
@@ -964,9 +975,10 @@ class Jai(BaseJai):
         """
         dtype = self.get_dtype(name)
         if dtype not in [
-            PossibleDtypes.selfsupervised,
-            PossibleDtypes.supervised,
-            PossibleDtypes.recommendation_system,
+                PossibleDtypes.selfsupervised,
+                PossibleDtypes.supervised,
+                PossibleDtypes.linear,
+                PossibleDtypes.recommendation_system,
         ]:
             return None
 
@@ -987,12 +999,10 @@ class Jai(BaseJai):
 
         print("\nSetup Report:")
         print(result["Model Evaluation"]) if result.get(
-            "Model Evaluation", None
-        ) is not None else None
+            "Model Evaluation", None) is not None else None
         print()
         print(result["Loading from checkpoint"].split("\n")[1]) if result.get(
-            "Loading from checkpoint", None
-        ) is not None else None
+            "Loading from checkpoint", None) is not None else None
 
     def wait_setup(self, name: str, frequency_seconds: int = 1):
         """
@@ -1011,11 +1021,9 @@ class Jai(BaseJai):
         ------
         None.
         """
-
         def get_numbers(sts):
-            curr_step, max_iterations = (
-                sts["Description"].split("Iteration: ")[1].strip().split(" / ")
-            )
+            curr_step, max_iterations = (sts["Description"].split(
+                "Iteration: ")[1].strip().split(" / "))
             return int(curr_step), int(max_iterations)
 
         status = self.status()[name]
@@ -1026,9 +1034,9 @@ class Jai(BaseJai):
         sleep_time = frequency_seconds
         try:
             with tqdm(
-                total=max_steps,
-                desc="JAI is working",
-                bar_format="{l_bar}{bar}|{n_fmt}/{total_fmt} [{elapsed}]",
+                    total=max_steps,
+                    desc="JAI is working",
+                    bar_format="{l_bar}{bar}|{n_fmt}/{total_fmt} [{elapsed}]",
             ) as pbar:
                 while status["Status"] != "Task ended successfully.":
                     if status["Status"] == "Something went wrong.":
@@ -1037,10 +1045,11 @@ class Jai(BaseJai):
                         # create a second progress bar to track
                         # training progress
                         _, max_iterations = get_numbers(status)
-                        with tqdm(
-                            total=max_iterations, desc=f"[{name}] Training", leave=False
-                        ) as iteration_bar:
-                            while fnmatch(status["Description"], "*Iteration:*"):
+                        with tqdm(total=max_iterations,
+                                  desc=f"[{name}] Training",
+                                  leave=False) as iteration_bar:
+                            while fnmatch(status["Description"],
+                                          "*Iteration:*"):
                                 curr_step, _ = get_numbers(status)
                                 step_update = curr_step - iteration_bar.n
                                 if step_update > 0:
@@ -1052,7 +1061,8 @@ class Jai(BaseJai):
                                 status = self.status()[name]
                             # training might stop early, so we make the progress bar appear
                             # full when early stopping is reached -- peace of mind
-                            iteration_bar.update(max_iterations - iteration_bar.n)
+                            iteration_bar.update(max_iterations -
+                                                 iteration_bar.n)
 
                     if (step == starts_at) and (aux == 0):
                         pbar.update(starts_at)
@@ -1194,13 +1204,14 @@ class Jai(BaseJai):
             data = data.copy()
         else:
             raise ValueError(
-                f"data must be a Series. data is `{data.__class__.__name__}`"
-            )
+                f"data must be a Series. data is `{data.__class__.__name__}`")
 
         ids = data.index
 
         if db_type == "TextEdit":
-            hyperparams = {"nt": np.clip(np.round(len(data) / 10, -3), 1000, 10000)}
+            hyperparams = {
+                "nt": np.clip(np.round(len(data) / 10, -3), 1000, 10000)
+            }
 
         if name not in self.names or overwrite:
             self.setup(
@@ -1292,13 +1303,20 @@ class Jai(BaseJai):
             hyperparams=hyperparams,
             overwrite=overwrite,
         )
-        similar = self.similar(name, data_right, top_k=top_k, batch_size=batch_size)
-        processed = filter_similar(similar, threshold=threshold, return_self=True)
+        similar = self.similar(name,
+                               data_right,
+                               top_k=top_k,
+                               batch_size=batch_size)
+        processed = filter_similar(similar,
+                                   threshold=threshold,
+                                   return_self=True)
         match = pd.DataFrame(processed).sort_values("query_id")
         match = match.rename(columns={"id": "id_left", "query_id": "id_right"})
         if original_data:
-            match["data_letf"] = data_left.loc[match["id_left"]].to_numpy(copy=True)
-            match["data_rigth"] = data_right.loc[match["id_right"]].to_numpy(copy=True)
+            match["data_letf"] = data_left.loc[match["id_left"]].to_numpy(
+                copy=True)
+            match["data_rigth"] = data_right.loc[match["id_right"]].to_numpy(
+                copy=True)
 
         return match
 
@@ -1376,14 +1394,15 @@ class Jai(BaseJai):
             overwrite=overwrite,
         )
         simliar = self.similar(name, ids, top_k=top_k, batch_size=batch_size)
-        connect = filter_resolution(
-            simliar, threshold=threshold, return_self=return_self
-        )
+        connect = filter_resolution(simliar,
+                                    threshold=threshold,
+                                    return_self=return_self)
         r = pd.DataFrame(connect).set_index("id").sort_index()
 
         if original_data:
             r["Original"] = data.loc[r.index.values].to_numpy(copy=True)
-            r["Resolution"] = data.loc[r["resolution_id"].values].to_numpy(copy=True)
+            r["Resolution"] = data.loc[r["resolution_id"].values].to_numpy(
+                copy=True)
 
         return r
 
@@ -1478,7 +1497,8 @@ class Jai(BaseJai):
             # that do not satisfy the cat_threshold, but must be
             # processed anyway
             if isinstance(db_type, dict):
-                pre.extend([item for item in db_type.keys() if item in cat.columns])
+                pre.extend(
+                    [item for item in db_type.keys() if item in cat.columns])
 
             # we make `pre` a set to ensure it has
             # unique column names
@@ -1497,19 +1517,26 @@ class Jai(BaseJai):
                 # find out which db_type to use for this particular column
                 curr_db_type = resolve_db_type(db_type, col)
 
-                train[id_col] = self.embedding(origin, train[col], db_type=curr_db_type)
-                test[id_col] = self.embedding(origin, test[col], db_type=curr_db_type)
+                train[id_col] = self.embedding(origin,
+                                               train[col],
+                                               db_type=curr_db_type)
+                test[id_col] = self.embedding(origin,
+                                              test[col],
+                                              db_type=curr_db_type)
 
                 prep_bases.append({"id_name": id_col, "db_parent": origin})
             train = train.drop(columns=pre)
             test = test.drop(columns=pre)
 
             label = {"task": "metric_classification", "label_name": column}
-            split = {"type": "stratified", "split_column": column, "test_size": 0.2}
+            split = {
+                "type": "stratified",
+                "split_column": column,
+                "test_size": 0.2
+            }
 
-            pretrained_bases = kwargs.get(
-                "pretrained_bases", kwargs.get("mycelia_bases", [])
-            )
+            pretrained_bases = kwargs.get("pretrained_bases",
+                                          kwargs.get("mycelia_bases", []))
             kwargs["pretrained_bases"] = pretrained_bases
             kwargs.pop("mycelia_bases", None)
             if not kwargs["pretrained_bases"]:
@@ -1541,9 +1568,11 @@ class Jai(BaseJai):
         missing_test = ids_test[~np.isin(ids_test, self.ids(name, "complete"))]
         if len(missing_test) > 0:
             self.add_data(name, test.loc[missing_test], batch_size=batch_size)
-        return self.predict(
-            name, test, predict_proba=True, batch_size=batch_size, as_frame=as_frame
-        )
+        return self.predict(name,
+                            test,
+                            predict_proba=True,
+                            batch_size=batch_size,
+                            as_frame=as_frame)
 
     def sanity(
         self,
@@ -1640,7 +1669,8 @@ class Jai(BaseJai):
             # that do not satisfy the cat_threshold, but must be
             # processed anyway
             if isinstance(db_type, dict):
-                pre.extend([item for item in db_type.keys() if item in cat.columns])
+                pre.extend(
+                    [item for item in db_type.keys() if item in cat.columns])
 
             # we make `pre` a set to ensure it has
             # unique column names
@@ -1663,7 +1693,9 @@ class Jai(BaseJai):
 
                 # find out which db_type to use for this particular column
                 curr_db_type = resolve_db_type(db_type, col)
-                data[id_col] = self.embedding(origin, data[col], db_type=curr_db_type)
+                data[id_col] = self.embedding(origin,
+                                              data[col],
+                                              db_type=curr_db_type)
                 prep_bases.append({"id_name": id_col, "db_parent": origin})
 
                 if col in columns_ref:
@@ -1679,9 +1711,9 @@ class Jai(BaseJai):
 
                 # get a sample of the data and shuffle it
                 sample = []
-                strat_split = StratifiedShuffleSplit(
-                    n_splits=1, test_size=frac, random_state=0
-                )
+                strat_split = StratifiedShuffleSplit(n_splits=1,
+                                                     test_size=frac,
+                                                     random_state=0)
                 for c in columns_ref:
                     indexes = []
                     # We try to get a stratified sample on each column.
@@ -1689,10 +1721,8 @@ class Jai(BaseJai):
                     # we need to drop them before getting the samples
                     try:
                         _, indexes = next(
-                            strat_split.split(
-                                data.dropna(subset=[c]), data.dropna(subset=[c])[c]
-                            )
-                        )
+                            strat_split.split(data.dropna(subset=[c]),
+                                              data.dropna(subset=[c])[c]))
                         s = data.dropna(subset=[c]).iloc[indexes].copy()
                     except:
                         pass
@@ -1716,20 +1746,22 @@ class Jai(BaseJai):
                 sample[target] = "Invalid"
 
                 # set index of samples with different values as data
-                sample.index = 10 ** int(np.log10(data.shape[0]) + 2) + np.arange(
-                    len(sample)
-                )
+                sample.index = 10**int(np.log10(data.shape[0]) +
+                                       2) + np.arange(len(sample))
                 data[target] = "Valid"
                 train = pd.concat([data, sample])
             else:
                 train = data.copy()
 
             label = {"task": "metric_classification", "label_name": target}
-            split = {"type": "stratified", "split_column": target, "test_size": 0.2}
+            split = {
+                "type": "stratified",
+                "split_column": target,
+                "test_size": 0.2
+            }
 
-            pretrained_bases = kwargs.get(
-                "pretrained_bases", kwargs.get("mycelia_bases", [])
-            )
+            pretrained_bases = kwargs.get("pretrained_bases",
+                                          kwargs.get("mycelia_bases", []))
             kwargs["pretrained_bases"] = pretrained_bases
             kwargs.pop("mycelia_bases", None)
             if not kwargs["pretrained_bases"]:
@@ -1762,9 +1794,11 @@ class Jai(BaseJai):
 
             if len(missing) > 0:
                 self.add_data(name, data.loc[missing], batch_size=batch_size)
-        return self.predict(
-            name, data, predict_proba=True, batch_size=batch_size, as_frame=as_frame
-        )
+        return self.predict(name,
+                            data,
+                            predict_proba=True,
+                            batch_size=batch_size,
+                            as_frame=as_frame)
 
     def insert_vectors(
         self,
@@ -1826,15 +1860,22 @@ class Jai(BaseJai):
             )
 
         insert_responses = {}
-        for i, b in enumerate(trange(0, len(data), batch_size, desc="Insert Vectors")):
-            _batch = data.iloc[b : b + batch_size]
-            data_json = data2json(_batch, dtype=PossibleDtypes.vector, predict=False)
+        for i, b in enumerate(
+                trange(0, len(data), batch_size, desc="Insert Vectors")):
+            _batch = data.iloc[b:b + batch_size]
+            data_json = data2json(_batch,
+                                  dtype=PossibleDtypes.vector,
+                                  predict=False)
 
             if i == 0 and create_new_collection is True:
-                response = self._insert_vectors_json(name, data_json, overwrite=True)
+                response = self._insert_vectors_json(name,
+                                                     data_json,
+                                                     overwrite=True)
 
             else:
-                response = self._insert_vectors_json(name, data_json, overwrite=False)
+                response = self._insert_vectors_json(name,
+                                                     data_json,
+                                                     overwrite=False)
 
             insert_responses[i] = response
 
