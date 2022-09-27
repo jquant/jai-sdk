@@ -128,7 +128,7 @@ class SchedulerType(str, Enum):
 
 
 class LinearBase(BaseModel):
-    learning_rate: Optional[float]
+    learning_rate: float
     l2: float
     scheduler_type: SchedulerType = SchedulerType.constant
     scheduler_argument: Optional[float]
