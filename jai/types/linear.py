@@ -115,9 +115,23 @@ class SGDClassifierParams(BaseModel):
     average: Union[int, bool] = False
 
 
+class TrainMode(Enum):
+    always = "always"
+    greedy = "greedy"
+    never = "never"
+
+
+class SchedulerType(Enum):
+    constant = "constant"
+    inverse = "inverse_scaling"
+    optimal = "optimal"
+
+
 class LinearBase(BaseModel):
     learning_rate: Optional[float]
     l2: float
+    scheduler_type: SchedulerType = SchedulerType.constant
+    scheduler_argument: Optional[float]
 
 
 class RegressionHyperparams(LinearBase):
