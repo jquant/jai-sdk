@@ -115,13 +115,13 @@ class SGDClassifierParams(BaseModel):
     average: Union[int, bool] = False
 
 
-class TrainMode(Enum):
+class TrainMode(str, Enum):
     always = "always"
     greedy = "greedy"
     never = "never"
 
 
-class SchedulerType(Enum):
+class SchedulerType(str, Enum):
     constant = "constant"
     inverse = "inverse_scaling"
     optimal = "optimal"
