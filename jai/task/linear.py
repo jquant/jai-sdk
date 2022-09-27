@@ -87,10 +87,10 @@ class LinearModel(TaskBase):
 
     def set_parameters(
         self,
-        learning_rate: float = None,
-        l2: float = 0.1,
+        learning_rate: Optional[float] = 0.01,
+        l2: float = 0.0,
         scheduler_type: str = "constant",
-        scheduler_argument: Optional[float] = 0.1,
+        scheduler_argument: Optional[float] = None,
         model_parameters: dict = None,
     ):
         if self.task == RegressionTasks.regression:
