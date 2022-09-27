@@ -87,7 +87,7 @@ def test_linear_regression(name, dtype):
         model._delete_database(model.name)
 
     print(model.model_parameters)
-    # print(model.fit(X_train, y_train))
+    model.fit(X_train, y_train)
 
     y_pred = model.predict(X_test)
     # print(mean_squared_error(y_pred["predict"], y_test))
