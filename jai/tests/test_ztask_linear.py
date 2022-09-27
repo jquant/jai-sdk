@@ -40,21 +40,21 @@ def test_linear_classification(name, dtype):
     model.fit(X_train, y_train)
 
     y_pred = model.predict(X_test)
-    print(classification_report(y_pred, y_test))
+    # print(classification_report(y_pred, y_test))
 
     model.learn(X_test, y_test)
 
     y_pred = model.predict(X_test)
-    print(classification_report(y_pred, y_test))
+    # print(classification_report(y_pred, y_test))
 
     y_pred = model.predict(X_test, predict_proba=True)
-    print(y_pred)
+    # print(y_pred)
 
     y_pred = model.predict(X_test.iloc[[0]])
-    print(y_pred, y_test[0])
+    # print(y_pred, y_test[0])
 
     y_pred = model.predict(X_test.iloc[[0]], predict_proba=True)
-    print(y_pred, y_test[0])
+    # print(y_pred, y_test[0])
 
     weights = model.get_model_weights()
     assert set(weights.keys()) == set(["preprocessing", "weights"])
@@ -87,23 +87,23 @@ def test_linear_regression(name, dtype):
         model._delete_database(model.name)
 
     print(model.model_parameters)
-    print(model.fit(X_train, y_train))
+    # print(model.fit(X_train, y_train))
 
     y_pred = model.predict(X_test)
-    print(mean_squared_error(y_pred["predict"], y_test))
+    # print(mean_squared_error(y_pred["predict"], y_test))
 
-    print(model.learn(X_test, y_test))
+    model.learn(X_test, y_test)
 
     y_pred = model.predict(X_test)
-    print(mean_squared_error(y_pred["predict"], y_test))
+    # print(mean_squared_error(y_pred["predict"], y_test))
 
     y_pred = model.predict(X_test.iloc[[0]])
-    print(y_pred, y_test.iloc[0])
-    print(mean_squared_error([y_pred["predict"]], [y_test.iloc[0]]))
+    # print(y_pred, y_test.iloc[0])
+    # print(mean_squared_error([y_pred["predict"]], [y_test.iloc[0]]))
 
     y_pred = model.predict(X_test.iloc[[0]], predict_proba=True)
-    print(y_pred, y_test.iloc[0])
-    print(mean_squared_error([y_pred["predict"]], [y_test.iloc[0]]))
+    # print(y_pred, y_test.iloc[0])
+    # print(mean_squared_error([y_pred["predict"]], [y_test.iloc[0]]))
 
     weights = model.get_model_weights()
     assert set(weights.keys()) == set(["preprocessing", "weights"])
