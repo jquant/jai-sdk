@@ -12,7 +12,6 @@ from decouple import config
 from pydantic import HttpUrl
 from tqdm.auto import tqdm
 
-
 from ..core.utils_funcs import data2json, get_pcores
 from ..core.validations import check_response
 from ..types.generic import Mode
@@ -738,7 +737,7 @@ class RequestJai(object):
         learning_rate: float = 0.01,
         l2: float = 0.0,
         scheduler_type: str = "constant",
-        scheduler_argument: Optional[float] =  None,
+        scheduler_argument: Optional[float] = None,
         model_parameters: dict = None,
         pretrained_bases: list = None,
         overwrite: bool = False,

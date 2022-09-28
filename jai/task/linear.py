@@ -1,4 +1,5 @@
 from typing import Optional
+
 import pandas as pd
 
 from ..types.linear import (
@@ -6,9 +7,9 @@ from ..types.linear import (
     ClassificationTasks,
     RegressionHyperparams,
     RegressionTasks,
+    SchedulerType,
     SGDClassificationHyperparams,
     SGDRegressionHyperparams,
-    SchedulerType,
     TrainMode,
 )
 from .base import TaskBase

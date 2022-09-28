@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.datasets import fetch_california_housing, load_iris
-from sklearn.metrics import classification_report, mean_squared_error
 from sklearn.model_selection import train_test_split
 
 from jai import LinearModel
