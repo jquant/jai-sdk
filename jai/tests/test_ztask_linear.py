@@ -40,25 +40,29 @@ def test_linear_classification(name, dtype):
     model.fit(X_train, y_train)
 
     y_pred = model.predict(X_test)
-    print(classification_report(y_pred, y_test))
+    # print(classification_report(y_pred, y_test))
 
     model.learn(X_test, y_test)
 
     y_pred = model.predict(X_test)
-    print(classification_report(y_pred, y_test))
+    # print(classification_report(y_pred, y_test))
 
     y_pred = model.predict(X_test, predict_proba=True)
-    print(y_pred)
+    # print(y_pred)
 
     y_pred = model.predict(X_test.iloc[[0]])
-    print(y_pred, y_test[0])
+    # print(y_pred, y_test[0])
 
     y_pred = model.predict(X_test.iloc[[0]], predict_proba=True)
-    print(y_pred, y_test[0])
+    # print(y_pred, y_test[0])
 
     weights = model.get_model_weights()
-    assert set(weights.keys()) == set(["0", "1", "2"])
-    assert set(weights["0"].keys()) == set(["weights", "intercept"])
+    assert set(weights.keys()) == set(["preprocessing", "weights"])
+    for key in weights["weights"].keys():
+        assert set(weights["weights"][key].keys()) == set(["coefficients", "intercept"])
+        assert set(weights["weights"][key]["coefficients"].keys()) == set(
+            X_train.columns
+        )
 
     model._delete_database(model.name)
     assert not model.is_valid(), "valid name after delete failed"
@@ -83,26 +87,28 @@ def test_linear_regression(name, dtype):
         model._delete_database(model.name)
 
     print(model.model_parameters)
-    print(model.fit(X_train, y_train))
+    model.fit(X_train, y_train)
 
     y_pred = model.predict(X_test)
-    print(mean_squared_error(y_pred["predict"], y_test))
+    # print(mean_squared_error(y_pred["predict"], y_test))
 
-    print(model.learn(X_test, y_test))
+    model.learn(X_test, y_test)
 
     y_pred = model.predict(X_test)
-    print(mean_squared_error(y_pred["predict"], y_test))
+    # print(mean_squared_error(y_pred["predict"], y_test))
 
     y_pred = model.predict(X_test.iloc[[0]])
-    print(y_pred, y_test.iloc[0])
-    print(mean_squared_error([y_pred["predict"]], [y_test.iloc[0]]))
+    # print(y_pred, y_test.iloc[0])
+    # print(mean_squared_error([y_pred["predict"]], [y_test.iloc[0]]))
 
     y_pred = model.predict(X_test.iloc[[0]], predict_proba=True)
-    print(y_pred, y_test.iloc[0])
-    print(mean_squared_error([y_pred["predict"]], [y_test.iloc[0]]))
+    # print(y_pred, y_test.iloc[0])
+    # print(mean_squared_error([y_pred["predict"]], [y_test.iloc[0]]))
 
     weights = model.get_model_weights()
-    assert set(weights.keys()) == set(["weights", "intercept"])
+    assert set(weights.keys()) == set(["preprocessing", "weights"])
+    assert set(weights["weights"].keys()) == set(["coefficients", "intercept"])
+    assert set(weights["weights"]["coefficients"].keys()) == set(X_train.columns)
 
     model._delete_database(model.name)
     assert not model.is_valid(), "valid name after delete failed"

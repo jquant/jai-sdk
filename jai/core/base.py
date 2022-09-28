@@ -12,9 +12,11 @@ from decouple import config
 from pydantic import HttpUrl
 from tqdm.auto import tqdm
 
+
 from ..core.utils_funcs import data2json, get_pcores
 from ..core.validations import check_response
 from ..types.generic import Mode
+from ..types.linear import SchedulerType, TrainMode
 from ..types.responses import (
     AddDataResponse,
     DescribeResponse,
@@ -733,8 +735,10 @@ class RequestJai(object):
         data_dict,
         y,
         task,
-        learning_rate: float = None,
-        l2: float = 0.1,
+        learning_rate: float = 0.01,
+        l2: float = 0.0,
+        scheduler_type: str = "constant",
+        scheduler_argument: Optional[float] =  None,
         model_parameters: dict = None,
         pretrained_bases: list = None,
         overwrite: bool = False,
@@ -768,12 +772,30 @@ class RequestJai(object):
                     "learning_rate": learning_rate,
                     "l2": l2,
                     "model": model_parameters,
+                    "learn_parameters": {
+                        "learning_rate": learning_rate,
+                        "l2": l2,
+                        "scheduler_type": scheduler_type,
+                        "scheduler_argument": scheduler_argument,
+                    },
                 },
                 "pretrained_bases": pretrained_bases,
             },
         )
 
-    def _post__linear_learn(self, name: str, data_dict, y: list):
+    def _post__linear_learn(
+        self,
+        name: str,
+        data_dict,
+        y: list,
+        learning_rate: Optional[float] = 0.01,
+        l2: Optional[float] = 0.0,
+        n_iterations: int = 1,
+        scheduler_type: SchedulerType = SchedulerType.constant,
+        scheduler_argument: Optional[float] = None,
+        custom: bool = False,
+        train_mode: TrainMode = TrainMode.always,
+    ):
         """
         Insert data in JSON format. This is a protected method.
         Args
@@ -790,7 +812,19 @@ class RequestJai(object):
         return requests.post(
             self.url + f"/linear/learn/{name}",
             headers=self.headers,
-            json={"X": data_dict, "y": y},
+            json={
+                "X": data_dict,
+                "y": y,
+                "parameters": {
+                    "learning_rate": learning_rate,
+                    "l2": l2,
+                    "n_iterations": n_iterations,
+                    "scheduler_type": scheduler_type,
+                    "scheduler_argument": scheduler_argument,
+                    "custom": custom,
+                },
+                "train_mode": train_mode,
+            },
         )
 
     def _put__linear_predict(
@@ -1683,8 +1717,10 @@ class BaseJai(RequestJai):
         data_dict,
         y,
         task,
-        learning_rate: float = None,
+        learning_rate: float = 0.01,
         l2: float = 0.1,
+        scheduler_type: str = "constant",
+        scheduler_argument: Optional[float] = None,
         model_parameters: dict = None,
         pretrained_bases: list = None,
         overwrite: bool = False,
@@ -1717,6 +1753,8 @@ class BaseJai(RequestJai):
             task=task,
             learning_rate=learning_rate,
             l2=l2,
+            scheduler_type=scheduler_type,
+            scheduler_argument=scheduler_argument,
             model_parameters=model_parameters,
             pretrained_bases=pretrained_bases,
             overwrite=overwrite,
@@ -1727,7 +1765,18 @@ class BaseJai(RequestJai):
 
         return response
 
-    def _linear_learn(self, name: str, data_dict, y: list):
+    def _linear_learn(
+        self,
+        name: str,
+        data_dict,
+        y: list,
+        learning_rate: Optional[float] = 0.01,
+        l2: Optional[float] = 0.0,
+        n_iterations: int = 1,
+        scheduler_type: SchedulerType = SchedulerType.constant,
+        scheduler_argument: Optional[float] = None,
+        train_mode: TrainMode = TrainMode.always,
+    ):
         """
         Improves an existing model with informantion from a new data.
 
@@ -1746,10 +1795,26 @@ class BaseJai(RequestJai):
             - after: Dict[str, Union[float, str]]
             - change: bool
         """
+        custom = any(
+            [
+                learning_rate != 0.01,
+                l2 != 0.0,
+                n_iterations != 1,
+                scheduler_type != SchedulerType.constant,
+                scheduler_argument is not None,
+            ]
+        )
         response = self._post__linear_learn(
             name=name,
             data_dict=data_dict,
             y=y,
+            learning_rate=learning_rate,
+            l2=l2,
+            n_iterations=n_iterations,
+            scheduler_type=scheduler_type,
+            scheduler_argument=scheduler_argument,
+            custom=custom,
+            train_mode=train_mode,
         )
         response = self._check_status_code(response)
         if self.safe_mode:
