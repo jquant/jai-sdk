@@ -96,21 +96,26 @@ def split_recommendation(
     ----------
     dataframe : pd.DataFrame
         Dataframe to be factored.
+
     split_config : Dict[str, List[str]]
         Dictionary with **length 2**.
         - keys: db_names for each of the child Recommendation databases created
         on Recommendation System's setup.
         - values: list of columns of those databases.
+
     columns : str, list of str or dict
         Column to be separated from dataset.
         If column has multiple data, use a dict with the format column name as
         key and separator as value. Use `None` if no separator is needed.
+
     as_index : False or Dict[str, str]
         Dictionary with **length 2**:
         - keys: database name.
         - values: column name to be used as id for that database
+
     sort : bool
         sort values of the split data. See `split` function.
+
     prefix : str
         Prefix added to the splitted column names. See `split` function.
         Also used as prefix for de id columns of the child Recommendation databases.
