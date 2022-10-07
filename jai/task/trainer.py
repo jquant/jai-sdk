@@ -89,7 +89,7 @@ class Trainer(TaskBase):
         )
 
         self._fit_parameters = None
-        self._insert_parameters = {"batch_size": 16384, "max_insert_workers": None}
+        self._insert_parameters = {"batch_size": 2**20, "max_insert_workers": None}
 
     @property
     def insert_parameters(self):

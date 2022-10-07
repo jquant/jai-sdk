@@ -11,7 +11,7 @@ else:
 
 
 class InsertParams(BaseModel):
-    batch_size: int = 16384
+    batch_size: int = 2**20
     max_insert_workers: Optional[int] = None
 
 
