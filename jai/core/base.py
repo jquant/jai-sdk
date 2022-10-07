@@ -768,9 +768,7 @@ class RequestJai(object):
                 "y": y,
                 "hyperparams": {
                     "task": task,
-                    "learning_rate": learning_rate,
-                    "l2": l2,
-                    "model": model_parameters,
+                    "model_params": model_parameters,
                     "learn_parameters": {
                         "learning_rate": learning_rate,
                         "l2": l2,
