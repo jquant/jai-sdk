@@ -1,5 +1,8 @@
+import time
 import pandas as pd
 
+from tqdm import tqdm
+from fnmatch import fnmatch
 from ..types.linear import (
     ClassificationHyperparams,
     ClassificationTasks,
@@ -12,6 +15,14 @@ from ..types.generic import PossibleDtypes
 from .base import TaskBase
 
 __all__ = ["LinearModel"]
+
+
+def get_numbers(status):
+    if fnmatch(status["Description"], "*Iteration:*"):
+        curr_step, max_iterations = (
+            status["Description"].split("Iteration: ")[1].strip().split(" / "))
+        return True, int(curr_step), int(max_iterations)
+    return False, 0, 0
 
 
 class LinearModel(TaskBase):
@@ -124,6 +135,7 @@ class LinearModel(TaskBase):
         y: pd.Series,
         pretrained_bases: list = None,
         overwrite: bool = False,
+        frequency_seconds: int = 1,
     ):
         """
         Train a new linear model.
@@ -146,7 +158,8 @@ class LinearModel(TaskBase):
           - id_test: List[Any]
           - metrics: Dict[str, Union[float, str]]
         """
-        return self._linear_train(
+
+        linear_response = self._linear_train(
             self.name,
             X.to_dict(orient="records"),
             y.tolist(),
@@ -157,6 +170,12 @@ class LinearModel(TaskBase):
             pretrained_bases=pretrained_bases,
             overwrite=overwrite,
         )
+
+        if frequency_seconds < 1:
+            return linear_response
+
+        self.wait_setup(frequency_seconds=frequency_seconds)
+        return linear_response
 
     def learn(self, X: pd.DataFrame, y: pd.Series):
         """
@@ -211,6 +230,100 @@ class LinearModel(TaskBase):
 
     def get_model_weights(self):
         return self._get__linear_model_weights(self.name).json()
+
+    def wait_setup(self, frequency_seconds: int = 1):
+        """
+        Wait for the fit (model training) to finish
+
+        Args
+        ----
+        frequency_seconds : int, optional
+            Number of seconds apart from each status check. `Default is 5`.
+
+        Return
+        ------
+        None.
+        """
+
+        end_message = "Task ended successfully."
+        error_message = "Something went wrong."
+
+        status = self.status()
+        current, max_steps = status["CurrentStep"], status["TotalSteps"]
+
+        step = current
+        is_init = True
+        sleep_time = frequency_seconds
+        try:
+            with tqdm(
+                    total=max_steps,
+                    desc="JAI is working",
+                    bar_format="{l_bar}{bar}|{n_fmt}/{total_fmt} [{elapsed}]",
+            ) as pbar:
+                while status["Status"] != end_message:
+                    if status["Status"] == error_message:
+                        raise BaseException(status["Description"])
+
+                    iteration, _, max_iterations = get_numbers(status)
+                    if iteration:
+                        with tqdm(
+                                total=max_iterations,
+                                desc=f"[{self.name}] Training",
+                                leave=False,
+                        ) as iteration_bar:
+                            while iteration:
+                                iteration, curr_step, _ = get_numbers(status)
+                                step_update = curr_step - iteration_bar.n
+                                if step_update > 0:
+                                    iteration_bar.update(step_update)
+                                    sleep_time = frequency_seconds
+                                else:
+                                    sleep_time += frequency_seconds
+                                time.sleep(sleep_time)
+                                status = self.status()
+
+                            # training might stop early, so we make the progress bar appear
+                            # full when early stopping is reached -- peace of mind
+                            iteration_bar.update(max_iterations -
+                                                 iteration_bar.n)
+
+                    if (step == current) and is_init:
+                        pbar.update(current)
+                    else:
+                        pbar.update(step - current)
+                        current = step
+
+                    step = status["CurrentStep"]
+                    time.sleep(frequency_seconds)
+                    status = self.status()
+                    is_init = False
+
+                if (current != max_steps) and not is_init:
+                    pbar.update(max_steps - current)
+                elif (current != max_steps) and is_init:
+                    pbar.update(max_steps)
+
+        except KeyboardInterrupt:
+            print("\n\nInterruption caught!\n\n")
+            response = self._cancel_setup(self.name)
+            raise KeyboardInterrupt(response)
+
+        response = self._delete_status(self.name)
+        return status
+
+    def status(self):
+        """
+        Get the status of your JAI environment when training.
+
+        Return
+        ------
+        response : dict
+            A `JSON` file with the current status of the training tasks.
+        """
+        all_status = self._status()
+        if self.name not in all_status.keys():
+            raise ValueError(f"No status found for `{self.name}`")
+        return all_status[self.name]
 
     def report(self, verbose: int = 2, return_report: bool = False):
         """
