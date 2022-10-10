@@ -1,5 +1,7 @@
+
 import time
 import pandas as pd
+from typing import Optional
 
 from tqdm import tqdm
 from fnmatch import fnmatch
@@ -8,8 +10,10 @@ from ..types.linear import (
     ClassificationTasks,
     RegressionHyperparams,
     RegressionTasks,
+    SchedulerType,
     SGDClassificationHyperparams,
     SGDRegressionHyperparams,
+    TrainMode,
 )
 from ..types.generic import PossibleDtypes
 from .base import TaskBase
@@ -94,8 +98,10 @@ class LinearModel(TaskBase):
 
     def set_parameters(
         self,
-        learning_rate: float = None,
-        l2: float = 0.1,
+        learning_rate: Optional[float] = 0.01,
+        l2: float = 0.0,
+        scheduler_type: str = "constant",
+        scheduler_argument: Optional[float] = None,
         model_parameters: dict = None,
     ):
         if self.task == RegressionTasks.regression:
@@ -103,6 +109,8 @@ class LinearModel(TaskBase):
                 task=self.task,
                 learning_rate=learning_rate,
                 l2=l2,
+                scheduler_type=scheduler_type,
+                scheduler_argument=scheduler_argument,
                 model_parameters=model_parameters,
             )
         elif self.task == RegressionTasks.sgd_regression:
@@ -110,6 +118,8 @@ class LinearModel(TaskBase):
                 task=self.task,
                 learning_rate=learning_rate,
                 l2=l2,
+                scheduler_type=scheduler_type,
+                scheduler_argument=scheduler_argument,
                 model_parameters=model_parameters,
             )
         elif self.task == ClassificationTasks.classification:
@@ -117,6 +127,8 @@ class LinearModel(TaskBase):
                 task=self.task,
                 learning_rate=learning_rate,
                 l2=l2,
+                scheduler_type=scheduler_type,
+                scheduler_argument=scheduler_argument,
                 model_parameters=model_parameters,
             )
         elif self.task == ClassificationTasks.sgd_classification:
@@ -124,6 +136,8 @@ class LinearModel(TaskBase):
                 task=self.task,
                 learning_rate=learning_rate,
                 l2=l2,
+                scheduler_type=scheduler_type,
+                scheduler_argument=scheduler_argument,
                 model_parameters=model_parameters,
             )
 
@@ -166,6 +180,8 @@ class LinearModel(TaskBase):
             task=self.model_parameters["task"],
             learning_rate=self.model_parameters["learning_rate"],
             l2=self.model_parameters["l2"],
+            scheduler_type=self.model_parameters["scheduler_type"],
+            scheduler_argument=self.model_parameters["scheduler_argument"],
             model_parameters=self.model_parameters["model_parameters"],
             pretrained_bases=pretrained_bases,
             overwrite=overwrite,
@@ -177,7 +193,17 @@ class LinearModel(TaskBase):
         self.wait_setup(frequency_seconds=frequency_seconds)
         return linear_response
 
-    def learn(self, X: pd.DataFrame, y: pd.Series):
+    def learn(
+        self,
+        X: pd.DataFrame,
+        y: pd.Series,
+        learning_rate: Optional[float] = 0.01,
+        l2: Optional[float] = 0.0,
+        n_iterations: int = 1,
+        scheduler_type: SchedulerType = SchedulerType.constant,
+        scheduler_argument: Optional[float] = None,
+        train_mode: TrainMode = TrainMode.always,
+    ):
         """
         Improves an existing model with informantion from a new data.
 
@@ -196,8 +222,17 @@ class LinearModel(TaskBase):
             - after: Dict[str, Union[float, str]]
             - change: bool
         """
-        return self._linear_learn(self.name, X.to_dict(orient="records"),
-                                  y.tolist())
+        return self._linear_learn(
+            self.name,
+            X.to_dict(orient="records"),
+            y.tolist(),
+            learning_rate=learning_rate,
+            l2=l2,
+            n_iterations=n_iterations,
+            scheduler_type=scheduler_type,
+            scheduler_argument=scheduler_argument,
+            train_mode=train_mode,
+        )
 
     def predict(self,
                 X: pd.DataFrame,
