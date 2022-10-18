@@ -23,6 +23,6 @@ If you trained a classification model, you can have the probabilities for each c
 
 .. note::
 
-    The method :code:`predict` has a default :code:`batch_size=16384`, which will result in 
+    The method :code:`predict` has a default :code:`batch_size=2**20`, which will result in 
     :code:`ceil(n_samples/batch_size) + 2` requests. We **DON'T** recommend changing the default 
     value as it could reduce the performance of the API.
