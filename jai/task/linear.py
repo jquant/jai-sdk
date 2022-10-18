@@ -1,9 +1,11 @@
 import time
-import pandas as pd
+from fnmatch import fnmatch
 from typing import Optional
 
+import pandas as pd
 from tqdm import tqdm
-from fnmatch import fnmatch
+
+from ..types.generic import PossibleDtypes
 from ..types.linear import (
     ClassificationHyperparams,
     ClassificationTasks,
@@ -14,7 +16,6 @@ from ..types.linear import (
     SGDRegressionHyperparams,
     TrainMode,
 )
-from ..types.generic import PossibleDtypes
 from .base import TaskBase
 
 __all__ = ["LinearModel"]
