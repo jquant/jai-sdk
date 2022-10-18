@@ -492,6 +492,7 @@ class Trainer(TaskBase):
         if self.db_type not in [
             PossibleDtypes.selfsupervised,
             PossibleDtypes.supervised,
+            PossibleDtypes.linear,
             PossibleDtypes.recommendation_system,
         ]:
             return None

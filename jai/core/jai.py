@@ -966,6 +966,7 @@ class Jai(BaseJai):
         if dtype not in [
             PossibleDtypes.selfsupervised,
             PossibleDtypes.supervised,
+            PossibleDtypes.linear,
             PossibleDtypes.recommendation_system,
         ]:
             return None
