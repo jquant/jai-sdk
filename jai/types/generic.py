@@ -14,6 +14,7 @@ class PossibleDtypes(str, Enum):
     recommendation = "Recommendation"
     recommendation_system = "RecommendationSystem"
     vector = "Vector"
+    linear = "Linear"
 
 
 class Mode(str, Enum):

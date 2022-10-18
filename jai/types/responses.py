@@ -164,9 +164,10 @@ class InsertVectorResponse(BaseModel):
 
 
 class LinearFitResponse(BaseModel):
-    id_train: List[Any] = Field(..., alias="Train Ids")
-    id_test: List[Any] = Field(..., alias="Evaluation Ids")
-    metrics: Dict[str, Union[float, str]] = Field(..., alias="Metrics")
+    Task: str
+    Status: str
+    Description: str
+    kwargs: Dict
 
 
 class LinearLearnResponse(BaseModel):
