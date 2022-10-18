@@ -1,4 +1,3 @@
-
 import time
 import pandas as pd
 from typing import Optional
@@ -24,7 +23,8 @@ __all__ = ["LinearModel"]
 def get_numbers(status):
     if fnmatch(status["Description"], "*Iteration:*"):
         curr_step, max_iterations = (
-            status["Description"].split("Iteration: ")[1].strip().split(" / "))
+            status["Description"].split("Iteration: ")[1].strip().split(" / ")
+        )
         return True, int(curr_step), int(max_iterations)
     return False, 0, 0
 
@@ -55,6 +55,7 @@ class LinearModel(TaskBase):
         Defaults to False.
 
     """
+
     def __init__(
         self,
         name: str,
@@ -73,8 +74,9 @@ class LinearModel(TaskBase):
             verbose=verbose,
             safe_mode=safe_mode,
         )
-        possible_tasks = [t.value for t in RegressionTasks
-                          ] + [t.value for t in ClassificationTasks]
+        possible_tasks = [t.value for t in RegressionTasks] + [
+            t.value for t in ClassificationTasks
+        ]
         if task in possible_tasks:
             self.task = task
         else:
@@ -234,10 +236,9 @@ class LinearModel(TaskBase):
             train_mode=train_mode,
         )
 
-    def predict(self,
-                X: pd.DataFrame,
-                predict_proba: bool = False,
-                as_frame: bool = True):
+    def predict(
+        self, X: pd.DataFrame, predict_proba: bool = False, as_frame: bool = True
+    ):
         """
         Makes the prediction using the linear models.
 
@@ -255,9 +256,9 @@ class LinearModel(TaskBase):
         -------
             A list of dictionaries.
         """
-        result = self._linear_predict(self.name,
-                                      X.to_dict(orient="records"),
-                                      predict_proba=predict_proba)
+        result = self._linear_predict(
+            self.name, X.to_dict(orient="records"), predict_proba=predict_proba
+        )
 
         if as_frame:
             return pd.DataFrame(result).set_index("id")
@@ -291,9 +292,9 @@ class LinearModel(TaskBase):
         sleep_time = frequency_seconds
         try:
             with tqdm(
-                    total=max_steps,
-                    desc="JAI is working",
-                    bar_format="{l_bar}{bar}|{n_fmt}/{total_fmt} [{elapsed}]",
+                total=max_steps,
+                desc="JAI is working",
+                bar_format="{l_bar}{bar}|{n_fmt}/{total_fmt} [{elapsed}]",
             ) as pbar:
                 while status["Status"] != end_message:
                     if status["Status"] == error_message:
@@ -302,9 +303,9 @@ class LinearModel(TaskBase):
                     iteration, _, max_iterations = get_numbers(status)
                     if iteration:
                         with tqdm(
-                                total=max_iterations,
-                                desc=f"[{self.name}] Training",
-                                leave=False,
+                            total=max_iterations,
+                            desc=f"[{self.name}] Training",
+                            leave=False,
                         ) as iteration_bar:
                             while iteration:
                                 iteration, curr_step, _ = get_numbers(status)
@@ -319,8 +320,7 @@ class LinearModel(TaskBase):
 
                             # training might stop early, so we make the progress bar appear
                             # full when early stopping is reached -- peace of mind
-                            iteration_bar.update(max_iterations -
-                                                 iteration_bar.n)
+                            iteration_bar.update(max_iterations - iteration_bar.n)
 
                     if (step == current) and is_init:
                         pbar.update(current)
@@ -387,7 +387,7 @@ class LinearModel(TaskBase):
         >>> trainer.report()
         """
         if self.db_type not in [
-                PossibleDtypes.linear,
+            PossibleDtypes.linear,
         ]:
             return None
 
