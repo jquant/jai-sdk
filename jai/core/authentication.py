@@ -12,7 +12,7 @@ def get_auth_key(firstName: str,
                  company: str = "",
                  company_size: str = "",
                  jobtitle: str = "",
-                 coding: str = ""):
+                 code_skills: str = ""):
     """
     Request an auth key to use JAI-SDK with.
 
@@ -48,7 +48,8 @@ def get_auth_key(firstName: str,
     >>> print(r.json())
     """
 
-    url = "https://mycelia.azure-api.net/clone"
+    # url = "https://mycelia.azure-api.net/clone"
+    url = 'http://localhost:8000'
     body = {
         "firstName": firstName,
         "lastName": lastName,
@@ -57,7 +58,7 @@ def get_auth_key(firstName: str,
         "company": company,
         "company_size": str(company_size),
         "jobtitle": jobtitle,
-        "coding": coding
+        "code_skills": code_skills
     }
     response = requests.put(url + "/auth", json=body)
     print(response.json())
