@@ -6,7 +6,7 @@ from decouple import UndefinedValueError, config
 
 
 def get_auth_key(firstName: str,
-                 lastName: str,
+                 lastName: str = "",
                  email: str = "",
                  work_email: str = "",
                  company: str = "",
@@ -48,8 +48,7 @@ def get_auth_key(firstName: str,
     >>> print(r.json())
     """
 
-    # url = "https://mycelia.azure-api.net/clone"
-    url = 'http://localhost:8000'
+    url = "https://mycelia.azure-api.net/clone"
     body = {
         "firstName": firstName,
         "lastName": lastName,
