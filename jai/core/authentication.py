@@ -55,9 +55,9 @@ def get_auth_key(firstName: str,
         "email": email,
         "workEmail": work_email,
         "company": company,
-        "company_size": str(company_size),
+        "companySize": str(company_size),
         "jobtitle": jobtitle,
-        "code_skills": code_skills
+        "codeSkills": code_skills
     }
     response = requests.put(url + "/auth", json=body)
     print(response.json())
