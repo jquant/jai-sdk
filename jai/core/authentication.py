@@ -51,7 +51,9 @@ def get_auth_key(firstName: str,
     >>> print(r.json())
     """
 
-    url = "https://mycelia.azure-api.net/clone"
+    #! HARDCODE FORTISSIMO AQUI
+    # url = "https://mycelia.azure-api.net/clone"
+    url = "http://52.151.242.206:8001"
     body = {
         "firstName": firstName,
         "lastName": lastName,
