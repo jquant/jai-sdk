@@ -9,6 +9,7 @@ def get_auth_key(firstName: str,
                  lastName: str = "",
                  email: str = "",
                  work_email: str = "",
+                 phone: str = "",
                  company: str = "",
                  company_size: str = "",
                  jobtitle: str = "",
@@ -26,6 +27,8 @@ def get_auth_key(firstName: str,
         A valid email address where the auth key will be sent to.
     `work_email`: str
         A valid business email address where the auth key will be sent to.
+    `phone`: str
+        Phone number.
     `company`: str
         User's company.
     `company_size`: str
@@ -54,6 +57,7 @@ def get_auth_key(firstName: str,
         "lastName": lastName,
         "email": email,
         "workEmail": work_email,
+        "phone": phone,
         "company": company,
         "companySize": str(company_size),
         "jobtitle": jobtitle,
