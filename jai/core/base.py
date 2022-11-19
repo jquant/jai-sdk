@@ -768,9 +768,7 @@ class RequestJai(object):
                 "y": y,
                 "hyperparams": {
                     "task": task,
-                    "learning_rate": learning_rate,
-                    "l2": l2,
-                    "model": model_parameters,
+                    "model_params": model_parameters,
                     "learn_parameters": {
                         "learning_rate": learning_rate,
                         "l2": l2,
@@ -1857,7 +1855,7 @@ class BaseJai(RequestJai):
         data,
         name,
         db_type,
-        batch_size,
+        batch_size: int = 2**20,
         max_insert_workers: Optional[int] = None,
         has_filter: bool = False,
         predict: bool = False,
@@ -1872,7 +1870,7 @@ class BaseJai(RequestJai):
         db_type : str
             Database type (Supervised, SelSupervised, Text...)
         batch_size : int
-            Size of batch to send the data.
+            Size of batch to send the data. `Default is 2**20 (1.048.576).`
         predict : bool
             Allows table type data to have only one column for predictions,
             if False, then tables must have at least 2 columns. `Default is False`.

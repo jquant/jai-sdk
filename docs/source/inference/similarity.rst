@@ -75,7 +75,7 @@ and the :code:`'distance'` between :code:`'query_id'` and :code:`'id'`.
 
 .. note::
     
-    The method :code:`similar` has a default :code:`batch_size=16384`, which will result in 
+    The method :code:`similar` has a default :code:`batch_size=2**20`, which will result in 
     :code:`ceil(n_samples/batch_size) + 2` requests. We **DON'T** recommend changing the default value 
     as it could reduce the performance of the API.
 

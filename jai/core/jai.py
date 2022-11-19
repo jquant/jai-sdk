@@ -361,7 +361,7 @@ class Jai(BaseJai):
         orient: str = "nested",
         filters: List[str] = None,
         max_workers: Optional[int] = None,
-        batch_size: int = 16384,
+        batch_size: int = 2**20,
     ):
         """
         Query a database in search for the `top_k` most similar entries for each
@@ -382,7 +382,7 @@ class Jai(BaseJai):
         max_workers : bool
             Number of workers to use to parallelize the process. If None, use all workers. `Defaults to None.`
         batch_size : int
-            Size of batches to send the data. `Default is 16384`.
+            Size of batches to send the data. `Default is 2**20 (1.048.576)`.
 
         Return
         ------
@@ -466,7 +466,7 @@ class Jai(BaseJai):
         orient: str = "nested",
         filters: List[str] = None,
         max_workers: Optional[int] = None,
-        batch_size: int = 16384,
+        batch_size: int = 2**20,
     ):
         """
         Query a database in search for the `top_k` most recommended entries for each
@@ -487,7 +487,7 @@ class Jai(BaseJai):
         max_workers : bool
             Number of workers to use to parallelize the process. If None, use all workers. `Defaults to None.`
         batch_size : int
-            Size of batches to send the data. `Default is 16384`.
+            Size of batches to send the data. `Default is 2**20 (1.048.576)`.
 
         Return
         ------
@@ -569,7 +569,7 @@ class Jai(BaseJai):
         data,
         predict_proba: bool = False,
         as_frame: bool = False,
-        batch_size: int = 16384,
+        batch_size: int = 2**20,
         max_workers: Optional[int] = None,
     ):
         """
@@ -585,7 +585,7 @@ class Jai(BaseJai):
             Whether or not to return the probabilities of each prediction is
             it's a classification. `Default is False`.
         batch_size : int
-            Size of batches to send the data. `Default is 16384`.
+            Size of batches to send the data. `Default is 2**20 (1.048.576)`.
         max_workers : bool
             Number of workers to use to parallelize the process. If None, use all workers. `Defaults to None.`
 
@@ -691,7 +691,7 @@ class Jai(BaseJai):
         name: str,
         data,
         db_type: str,
-        batch_size: int = 16384,
+        batch_size: int = 2**20,
         max_insert_workers: Optional[int] = None,
         frequency_seconds: int = 1,
         verbose: int = 1,
@@ -711,7 +711,7 @@ class Jai(BaseJai):
             {RecommendationSystem, Supervised, SelfSupervised, Text,
             FastText, TextEdit, Image}
         batch_size : int
-            Size of batch to insert the data.`Default is 16384 (2**14)`.
+            Size of batch to insert the data.`Default is 2**20 (1.048.576)`.
         max_insert_workers : int
             Number of workers to use in the insert data process. `Default is None`.
         frequency_seconds : int
@@ -875,7 +875,7 @@ class Jai(BaseJai):
         )
 
     def add_data(
-        self, name: str, data, batch_size: int = 16384, frequency_seconds: int = 1
+        self, name: str, data, batch_size: int = 2**20, frequency_seconds: int = 1
     ):
         """
         Insert raw data and extract their latent representation.
@@ -891,7 +891,7 @@ class Jai(BaseJai):
         data : pandas.DataFrame or pandas.Series
             Data to be inserted and used for training.
         batch_size : int
-            Size of batch to send the data. `Default is 16384`.
+            Size of batch to send the data. `Default is 2**20 (1.048.576)`.
         frequency_seconds : int
             Time in between each check of status. `Default is 10`.
 
@@ -931,7 +931,7 @@ class Jai(BaseJai):
         return insert_responses, add_data_response
 
     def append(
-        self, name: str, data, batch_size: int = 16384, frequency_seconds: int = 1
+        self, name: str, data, batch_size: int = 2**20, frequency_seconds: int = 1
     ):
         """
         Another name for add_data
@@ -966,7 +966,9 @@ class Jai(BaseJai):
         if dtype not in [
             PossibleDtypes.selfsupervised,
             PossibleDtypes.supervised,
+            PossibleDtypes.linear,
             PossibleDtypes.recommendation_system,
+            PossibleDtypes.linear,
         ]:
             return None
 
@@ -1165,7 +1167,7 @@ class Jai(BaseJai):
         name: str,
         data,
         db_type="TextEdit",
-        batch_size: int = 16384,
+        batch_size: int = 2**20,
         frequency_seconds: int = 1,
         hyperparams=None,
         overwrite=False,
@@ -1229,7 +1231,7 @@ class Jai(BaseJai):
         data_left,
         data_right,
         top_k: int = 100,
-        batch_size: int = 16384,
+        batch_size: int = 2**20,
         threshold: float = None,
         original_data: bool = False,
         db_type="TextEdit",
@@ -1307,7 +1309,7 @@ class Jai(BaseJai):
         name: str,
         data,
         top_k: int = 20,
-        batch_size: int = 16384,
+        batch_size: int = 2**20,
         threshold: float = None,
         return_self: bool = True,
         original_data: bool = False,
@@ -1392,7 +1394,7 @@ class Jai(BaseJai):
         name: str,
         data,
         column: str,
-        batch_size: int = 16384,
+        batch_size: int = 2**20,
         db_type="TextEdit",
         **kwargs,
     ):
@@ -1549,7 +1551,7 @@ class Jai(BaseJai):
         self,
         name: str,
         data,
-        batch_size: int = 16384,
+        batch_size: int = 2**20,
         columns_ref: list = None,
         db_type="TextEdit",
         **kwargs,
@@ -1770,7 +1772,7 @@ class Jai(BaseJai):
         self,
         data,
         name,
-        batch_size: int = 10000,
+        batch_size: int = 2**20,
         overwrite: bool = False,
         append: bool = False,
     ):
@@ -1784,7 +1786,7 @@ class Jai(BaseJai):
         name : str
             String with the name of a database in your JAI environment.
         batch_size : int, optional
-            Size of batch to send the data.
+            Size of batch to send the data. `Default is 2**20 (1.048.576)`.
         overwrite : bool, optional
             If True, then the vector database is always recriated. Default is False.
         append : bool, optional

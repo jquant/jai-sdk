@@ -43,7 +43,7 @@ class Query(TaskBase):
     batch_size : int
         Size of the batch to split data sent to the API. It won't change results,
         but a value too small could increase the total process time and a value too large could
-        exceed the data limit of the request. Defaults to 16384.
+        exceed the data limit of the request. Defaults to 2**20 (1.048.576).
 
     """
 
@@ -55,7 +55,7 @@ class Query(TaskBase):
         env_var: str = "JAI_AUTH",
         verbose: int = 1,
         safe_mode: bool = False,
-        batch_size: int = 16384,
+        batch_size: int = 2**20,
     ):
         super(Query, self).__init__(
             name=name,

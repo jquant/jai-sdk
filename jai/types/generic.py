@@ -10,6 +10,7 @@ class PossibleDtypes(str, Enum):
     supervised = "Supervised"
     text = "Text"
     edit = "TextEdit"
+    linear = "Linear"
     recommendation = "Recommendation"
     recommendation_system = "RecommendationSystem"
     vector = "Vector"

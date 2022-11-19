@@ -114,7 +114,7 @@ class Vectors(TaskBase):
     def insert_vectors(
         self,
         data,
-        batch_size: int = 10000,
+        batch_size: int = 2**20,
         overwrite: bool = False,
         append: bool = False,
     ):
@@ -128,7 +128,7 @@ class Vectors(TaskBase):
         name : str
             String with the name of a database in your JAI environment.
         batch_size : int, optional
-            Size of batch to send the data.
+            Size of batch to send the data. Defaults to 2**20 (1.048.576).
         overwrite : bool, optional
             If True, then the vector database is always recriated. Default is False.
         append : bool, optional

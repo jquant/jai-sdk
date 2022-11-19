@@ -5,20 +5,38 @@ import requests
 from decouple import UndefinedValueError, config
 
 
-def get_auth_key(email: str, firstName: str, lastName: str, company: str = ""):
+def get_auth_key(firstName: str,
+                 lastName: str = "",
+                 email: str = "",
+                 work_email: str = "",
+                 phone: str = "",
+                 company: str = "",
+                 company_size: str = "",
+                 jobtitle: str = "",
+                 code_skills: str = ""):
     """
     Request an auth key to use JAI-SDK with.
 
     Args
     ----------
-    `email`: str
-        A valid email address where the auth key will be sent to.
     `firstName`: str
         User's first name.
     `lastName`: str
         User's last name.
+    `email`: str
+        A valid email address where the auth key will be sent to.
+    `work_email`: str
+        A valid business email address where the auth key will be sent to.
+    `phone`: str
+        Phone number.
     `company`: str
         User's company.
+    `company_size`: str
+        User's company size.
+    `jobtitle`: str
+        User's job title.
+    `coding`: str
+        If the user has experience coding.
 
     Return
     ----------
@@ -32,12 +50,18 @@ def get_auth_key(email: str, firstName: str, lastName: str, company: str = ""):
     >>> print(r.status_code) # This should be 201
     >>> print(r.json())
     """
+
     url = "https://mycelia.azure-api.net/clone"
     body = {
-        "email": email,
         "firstName": firstName,
         "lastName": lastName,
+        "email": email,
+        "workEmail": work_email,
+        "phone": phone,
         "company": company,
+        "companySize": str(company_size),
+        "jobtitle": jobtitle,
+        "codeSkills": code_skills
     }
     response = requests.put(url + "/auth", json=body)
     print(response.json())
@@ -58,7 +82,8 @@ def set_authentication(auth_key: str, env_var: str = "JAI_AUTH"):
     >>> set_authentication("xXxxxXXxXXxXXxXXxXXxXXxXXxxx")
     """
     if env_var in os.environ:
-        warnings.warn(f"Overwriting environment variable `{env_var}`.", stacklevel=2)
+        warnings.warn(f"Overwriting environment variable `{env_var}`.",
+                      stacklevel=2)
 
     os.environ[env_var] = auth_key
 

@@ -137,6 +137,6 @@ Images are processed using torchvision pretrained models.
     >>> j.fit(name, data, db_type='Image')
 
 .. note::
-    The method :code:`fit` has a default :code:`batch_size=16384`, which will result in a total of :code:`ceil(n_samples/batch_size) + n + 5` requests, where :code:`n = ceil(training_time/frequency_seconds)` is a variable number depending on the time it takes to finish the setup.
+    The method :code:`fit` has a default :code:`batch_size=2**20`, which will result in a total of :code:`ceil(n_samples/batch_size) + n + 5` requests, where :code:`n = ceil(training_time/frequency_seconds)` is a variable number depending on the time it takes to finish the setup.
     We do NOT recommend changing the :code:`batch_size` default value as it could reduce the performance of the API. 
     As for the :code:`frequency_seconds`, it could be changed affecting only the frequecy of the progress bar's updates. If :code:`frequency_seconds < 1`, then there will be no progress bar printed, requiring the user to interpret the response from :code:`j.status`.
