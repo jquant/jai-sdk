@@ -23,6 +23,7 @@ class TaskBase(BaseJai):
         safe_mode: bool = False,
     ):
         self._init_values = {
+            "auth_key": auth_key,
             "environment": environment,
             "env_var": env_var,
             "verbose": verbose,
