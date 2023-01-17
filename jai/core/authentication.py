@@ -5,15 +5,17 @@ import requests
 from decouple import UndefinedValueError, config
 
 
-def get_auth_key(firstName: str,
-                 lastName: str = "",
-                 email: str = "",
-                 work_email: str = "",
-                 phone: str = "",
-                 company: str = "",
-                 company_size: str = "",
-                 jobtitle: str = "",
-                 code_skills: str = ""):
+def get_auth_key(
+    firstName: str,
+    lastName: str = "",
+    email: str = "",
+    work_email: str = "",
+    phone: str = "",
+    company: str = "",
+    company_size: str = "",
+    jobtitle: str = "",
+    code_skills: str = "",
+):
     """
     Request an auth key to use JAI-SDK with.
 
@@ -61,7 +63,7 @@ def get_auth_key(firstName: str,
         "company": company,
         "companySize": str(company_size),
         "jobtitle": jobtitle,
-        "codeSkills": code_skills
+        "codeSkills": code_skills,
     }
     response = requests.put(url + "/auth", json=body)
     print(response.json())
@@ -82,8 +84,7 @@ def set_authentication(auth_key: str, env_var: str = "JAI_AUTH"):
     >>> set_authentication("xXxxxXXxXXxXXxXXxXXxXXxXXxxx")
     """
     if env_var in os.environ:
-        warnings.warn(f"Overwriting environment variable `{env_var}`.",
-                      stacklevel=2)
+        warnings.warn(f"Overwriting environment variable `{env_var}`.", stacklevel=2)
 
     os.environ[env_var] = auth_key
 
