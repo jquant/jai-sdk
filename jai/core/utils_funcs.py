@@ -85,6 +85,8 @@ def data2json(
         PossibleDtypes.text,
         PossibleDtypes.fasttext,
         PossibleDtypes.image,
+        PossibleDtypes.clip_image,
+        PossibleDtypes.clip_text,
     ]:
 
         if isinstance(data, (set, list, tuple, np.ndarray)):
@@ -93,67 +95,61 @@ def data2json(
             )
         elif isinstance(data, pd.Series):
             return series2json(data)
-        elif isinstance(data, pd.DataFrame):
-            if data.shape[1] == 1:
+        elif not isinstance(data, pd.DataFrame):
+            raise NotImplementedError(
+                f"type `{data.__class__.__name__}` is not accepted.\n{one_column}"
+            )
+        if data.shape[1] == 1:
+            c = data.columns[0]
+            return series2json(data[c])
+        elif data.shape[1] == 2:
+            if "id" in data.columns:
+                data = data.set_index("id")
                 c = data.columns[0]
                 return series2json(data[c])
-            elif data.shape[1] == 2:
-                if "id" in data.columns:
-                    data = data.set_index("id")
-                    c = data.columns[0]
-                    return series2json(data[c])
-                elif has_filter:
-                    return df2json(data)
-            elif data.shape[1] == 3:
-                if "id" in data.columns and has_filter:
-                    return df2json(data.set_index("id"))
-            raise ValueError(one_column)
-        raise NotImplementedError(
-            f"type `{data.__class__.__name__}` is not accepted.\n{one_column}"
-        )
-    elif dtype in [PossibleDtypes.recommendation, PossibleDtypes.recommendation_system]:
-        if isinstance(data, pd.DataFrame):
-            return df2json(data)
-        raise NotImplementedError(
-            f"type `{data.__class__.__name__}` is not implemented, use pd.DataFrame instead."
-        )
-    elif dtype == PossibleDtypes.selfsupervised:
-        if isinstance(data, pd.DataFrame):
-            count_except_id = (data.columns != "id").sum()
-            if count_except_id >= 2:
+            elif has_filter:
                 return df2json(data)
-
-            raise ValueError(
-                f"Data must be a DataFrame with at least 2 columns other than `id`. Current column(s):\n{data.columns.tolist()}"
-            )
-        raise NotImplementedError(
-            f"type `{data.__class__.__name__}` is not implemented, use pd.DataFrame instead."
-        )
-    elif dtype == PossibleDtypes.supervised:
-        if isinstance(data, pd.DataFrame):
-            count_except_id = (data.columns != "id").sum()
-            if count_except_id >= 2 - predict:
-                return df2json(data)
-
-            raise ValueError(
-                f"Data must be a DataFrame with at least {2 - predict} column(s) other than `id`. Current column(s):\n{data.columns.tolist()}"
-            )
-        raise NotImplementedError(
-            f"type `{data.__class__.__name__}` is not implemented, use pd.DataFrame instead."
-        )
+        elif data.shape[1] == 3:
+            if "id" in data.columns and has_filter:
+                return df2json(data.set_index("id"))
+        raise ValueError(one_column)
     elif dtype == "Unsupervised":
         raise ValueError(
             f"`Unsupervised` type has been replaced with `{PossibleDtypes.selfsupervised}`."
         )
-    elif dtype == PossibleDtypes.vector:
-        if isinstance(data, pd.DataFrame):
-            count_except_id = (data.columns != "id").sum()
-            if count_except_id >= 2:
-                return df2json(data)
 
+    if not isinstance(data, pd.DataFrame):
+        raise NotImplementedError(
+            f"type `{data.__class__.__name__}` is not implemented, use pd.DataFrame instead."
+        )
+
+    if dtype in [PossibleDtypes.recommendation, PossibleDtypes.recommendation_system]:
+        return df2json(data)
+    elif dtype == PossibleDtypes.selfsupervised:
+        count_except_id = (data.columns != "id").sum()
+        if count_except_id < 2:
             raise ValueError(
                 f"Data must be a DataFrame with at least 2 columns other than `id`. Current column(s):\n{data.columns.tolist()}"
             )
+        return df2json(data)
+
+    elif dtype == PossibleDtypes.supervised:
+        count_except_id = (data.columns != "id").sum()
+        if count_except_id < 2 - predict:
+            raise ValueError(
+                f"Data must be a DataFrame with at least {2 - predict} column(s) other than `id`. Current column(s):\n{data.columns.tolist()}"
+            )
+        return df2json(data)
+    elif dtype == PossibleDtypes.clip:
+        return df2json(data)
+
+    elif dtype == PossibleDtypes.vector:
+        count_except_id = (data.columns != "id").sum()
+        if count_except_id < 2:
+            raise ValueError(
+                f"Data must be a DataFrame with at least 2 columns other than `id`. Current column(s):\n{data.columns.tolist()}"
+            )
+        return df2json(data)
 
     raise ValueError(f"dtype {dtype} not recognized.")
 
