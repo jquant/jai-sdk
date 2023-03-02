@@ -247,6 +247,9 @@ def hyperparams_validation(dtype: str):
                 "maxl",
             ]
         )
+    elif dtype == PossibleDtypes.clip:
+        possible.extend(["model_name", "batch_size"])
+        must.extend(["text_collection", "image_collection"])
 
     return (possible, must)
 
@@ -296,6 +299,8 @@ def features_process_validation(dtype: str):
         PossibleDtypes.recommendation_system,
     ]:
         possible.extend(["scaler", "embedding_dim", "fill_value", "min_freq"])
+    elif dtype in PossibleDtypes.clip:
+        pass
     return (possible, must)
 
 
