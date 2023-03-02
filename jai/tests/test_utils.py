@@ -62,7 +62,6 @@ def test_df2json(col1, col2, ids):
 )
 @pytest.mark.parametrize("dtype", ["series", "df", "df_id"])
 def test_data2json(setup_dataframe, setup_img_data, dtype, col_name, db_type):
-
     if db_type == "Text":
         train, _ = setup_dataframe
         data = train.rename(columns={"PassengerId": "id", "Name": col_name}).set_index(
@@ -92,7 +91,6 @@ def test_data2json(setup_dataframe, setup_img_data, dtype, col_name, db_type):
 )
 @pytest.mark.parametrize("filter_name", ["Pclass"])
 def test_data2json_filters(setup_dataframe, col_name, filter_name, db_type):
-
     train, _ = setup_dataframe
     train = train.rename(
         columns={
