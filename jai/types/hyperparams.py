@@ -40,7 +40,7 @@ class VisionModels(Enum):
 
 # Subclass [BaseImage]
 class VisionHyperparams(BaseModel):
-    model_name: VisionModels = "resnet50"
+    model_name: str = "resnet50"
     mode: Union[int, VisionModes] = "classifier"
     resize_H: int = Field(224, desciption="height of image resizing", ge=224)
     resize_W: int = Field(224, desciption="width of image resizing", ge=224)
