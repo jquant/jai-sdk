@@ -11,7 +11,6 @@ __all__ = ["build_name", "data2json", "resolve_db_type"]
 
 
 def get_pcores(max_insert_workers: Optional[int] = None):
-
     if max_insert_workers is None:
         pcores = psutil.cpu_count(logical=False)
     elif not isinstance(max_insert_workers, int):
@@ -88,7 +87,6 @@ def data2json(
         PossibleDtypes.clip_image,
         PossibleDtypes.clip_text,
     ]:
-
         if isinstance(data, (set, list, tuple, np.ndarray)):
             raise TypeError(
                 "dtypes `set`, `list`, `tuple`, `np.ndarray` have been deprecated. Use pd.Series instead."
@@ -238,7 +236,6 @@ def print_args(response_kwargs, input_kwargs, verbose: int = 1):
             continue
 
         if isinstance(input, dict) and isinstance(value, dict):
-
             intersection = common_items(input, value)
             if not input.keys() == intersection.keys():
                 warn_list.append(f"argument: `{key}`; values: ({input} != {value})")
