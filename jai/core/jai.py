@@ -57,7 +57,6 @@ class Jai(BaseJai):
         env_var: str = "JAI_AUTH",
         safe_mode: bool = False,
     ):
-
         super(Jai, self).__init__(
             auth_key=auth_key,
             environment=environment,
@@ -764,7 +763,6 @@ class Jai(BaseJai):
                 )
 
         if isinstance(data, (pd.Series, pd.DataFrame)):
-
             # make sure our data has the correct type and is free of NAs
             data = check_dtype_and_clean(data=data, db_type=db_type)
 
@@ -785,10 +783,8 @@ class Jai(BaseJai):
             )
 
         elif isinstance(data, dict):
-
             # loop insert
             for key, value in data.items():
-
                 # make sure our data has the correct type and is free of NAs
                 value = check_dtype_and_clean(data=value, db_type=db_type)
 
@@ -1747,7 +1743,6 @@ class Jai(BaseJai):
                 **kwargs,
             )
         else:
-
             drop_cols = []
             for col in cat.columns:
                 id_col = "id_" + col

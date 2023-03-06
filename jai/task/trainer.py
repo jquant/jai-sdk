@@ -78,7 +78,6 @@ class Trainer(TaskBase):
         verbose: int = 1,
         safe_mode: bool = False,
     ):
-
         super(Trainer, self).__init__(
             name=name,
             auth_key=auth_key,
@@ -336,7 +335,6 @@ class Trainer(TaskBase):
 
             # loop insert data
             for name, value in data.items():
-
                 # make sure our data has the correct type and is free of NAs
                 value = check_dtype_and_clean(data=value, db_type=self.db_type)
 

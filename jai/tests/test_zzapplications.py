@@ -27,7 +27,6 @@ def setup_dataframe():
 @pytest.mark.parametrize("safe_mode", [True])
 @pytest.mark.parametrize("name", ["test_embedding"])
 def test_embedding(safe_mode, name, setup_dataframe):
-
     train, test = setup_dataframe
     train = (
         train.rename(columns={"PassengerId": "id"}).set_index("id")["Name"].iloc[:10]
@@ -55,7 +54,6 @@ def test_embedding(safe_mode, name, setup_dataframe):
 @pytest.mark.parametrize("safe_mode", [True])
 @pytest.mark.parametrize("name", ["test_fill"])
 def test_fill(safe_mode, name, setup_dataframe):
-
     train, test = setup_dataframe
     train = train.set_index("PassengerId").iloc[:10]
     test = test.set_index("PassengerId").iloc[:10]
@@ -85,7 +83,6 @@ def test_fill(safe_mode, name, setup_dataframe):
 @pytest.mark.parametrize("safe_mode", [True])
 @pytest.mark.parametrize("name", ["test_sanity"])
 def test_sanity(safe_mode, name, setup_dataframe):
-
     train, test = setup_dataframe
     train = train.set_index("PassengerId").iloc[:50]
     test = test.set_index("PassengerId").iloc[:50]
@@ -113,7 +110,6 @@ def test_sanity(safe_mode, name, setup_dataframe):
 @pytest.mark.parametrize("safe_mode", [True])
 @pytest.mark.parametrize("name", ["test_match"])
 def test_match(safe_mode, name):
-
     A = [
         "Apple",
         "Watermelon",
@@ -162,7 +158,6 @@ def test_match(safe_mode, name):
 @pytest.mark.parametrize("safe_mode", [True])
 @pytest.mark.parametrize("name", ["test_resolution"])
 def test_resolution(safe_mode, name):
-
     data = [
         "Apple",
         "Watermelon",

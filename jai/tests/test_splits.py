@@ -92,7 +92,6 @@ from jai.utilities.splits import split, split_recommendation
     ],
 )
 def test_split(param, gab_bases, gab):
-
     df = pd.DataFrame(
         {
             "col1": [0, 1, 2, 3, 4],

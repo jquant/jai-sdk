@@ -24,7 +24,6 @@ def setup_dataframe():
 @pytest.mark.parametrize("safe_mode", [True])
 @pytest.mark.parametrize("name", [("test_insert_vector")])
 def test_insert_vectors(safe_mode, name, setup_dataframe):
-
     data, _ = setup_dataframe
     data = (
         data.drop(columns="Cabin")
@@ -72,7 +71,6 @@ def test_insert_vectors(safe_mode, name, setup_dataframe):
 @pytest.mark.parametrize("safe_mode", [True])
 @pytest.mark.parametrize("name", [("test_insert_vector")])
 def test_append_vectors(safe_mode, name, setup_dataframe):
-
     data, _ = setup_dataframe
     data = data.drop(columns=["PassengerId", "Cabin"]).dropna().reset_index(drop=True)
     data = data.select_dtypes(exclude="object")
@@ -97,7 +95,6 @@ def test_append_vectors(safe_mode, name, setup_dataframe):
     "name, pretrained", [("test_insert_vector_ss", "test_insert_vector")]
 )
 def test_pretrained_with_vectors(safe_mode, name, pretrained, setup_dataframe):
-
     data, _ = setup_dataframe
     data = data.drop(columns=["PassengerId", "Cabin"]).dropna().reset_index(drop=True)
     data = data.select_dtypes(exclude="object")

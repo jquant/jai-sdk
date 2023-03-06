@@ -1894,7 +1894,6 @@ class BaseJai(RequestJai):
 
         dict_futures = {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
-
             for i, b in enumerate(range(0, len(data), batch_size)):
                 _batch = data.iloc[b : b + batch_size]
                 data_json = data2json(

@@ -4,6 +4,9 @@ __all__ = ["Mode", "PossibleDtypes"]
 
 
 class PossibleDtypes(str, Enum):
+    clip = "Clip"
+    clip_text = "ClipText"
+    clip_image = "ClipImage"
     image = "Image"
     fasttext = "FastText"
     selfsupervised = "SelfSupervised"
