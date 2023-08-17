@@ -3,7 +3,7 @@ import json
 import warnings
 from copy import copy
 from io import BytesIO
-from typing import Any, Dict, List, Optional, overload
+from typing import Any, Dict, List, Optional, Union, overload
 
 import numpy as np
 import psutil
@@ -1032,7 +1032,7 @@ class BaseJai(RequestJai):
         response = self._get__status()
         status = self._check_status_code(response)
         if self.safe_mode:
-            return check_response(Dict[str, StatusResponse], status, as_dict=True)
+            return check_response(StatusResponse, status, as_dict=True)
         return status
 
     def _delete_status(self, name: str):
@@ -1082,7 +1082,7 @@ class BaseJai(RequestJai):
         id_item: list,
         top_k: int = 5,
         orient: str = "nested",
-        filters=None,
+        filters: Optional[Union[str, List[str]]] = None,
     ):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given an id.
@@ -1124,7 +1124,12 @@ class BaseJai(RequestJai):
         return res["similarity"]
 
     def _similar_json(
-        self, name: str, data_json, top_k: int = 5, orient: str = "nested", filters=None
+        self,
+        name: str,
+        data_json,
+        top_k: int = 5,
+        orient: str = "nested",
+        filters: Optional[Union[str, List[str]]] = None,
     ):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given a JSON data entry.
