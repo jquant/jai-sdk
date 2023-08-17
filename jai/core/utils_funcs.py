@@ -1,5 +1,5 @@
 import warnings
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -290,7 +290,7 @@ def print_args(response_kwargs, input_kwargs, verbose: int = 1):
         )
 
 
-def check_filters(data: pd.DataFrame, features: Dict[str, Dict]):
+def check_filters(data: Union[pd.DataFrame, pd.Series], features: Dict[str, Dict]):
     """
     It returns `True` if any of the columns in the dataframe have a `dtype` of `filter` defined
     on features.

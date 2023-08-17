@@ -1,9 +1,9 @@
-import concurrent
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import warnings
 from copy import copy
 from io import BytesIO
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, overload
 
 import numpy as np
 import psutil
@@ -12,9 +12,8 @@ from decouple import config
 from pydantic import HttpUrl
 from tqdm.auto import tqdm
 
-from ..core.utils_funcs import data2json, get_pcores
+from ..core.utils_funcs import data2json
 from ..core.validations import check_response
-from ..types.generic import Mode
 from ..types.linear import SchedulerType, TrainMode
 from ..types.responses import (
     AddDataResponse,
@@ -24,6 +23,7 @@ from ..types.responses import (
     FlatResponse,
     InfoResponse,
     InfoSizeResponse,
+    SizeResponse,
     InsertDataResponse,
     InsertVectorResponse,
     LinearFitResponse,
@@ -68,7 +68,7 @@ class RequestJai(object):
 
     def __init__(
         self,
-        auth_key: str = None,
+        auth_key: Optional[str] = None,
         environment: str = "default",
         env_var: str = "JAI_AUTH",
         url_var: str = "JAI_URL",
@@ -348,7 +348,7 @@ class RequestJai(object):
         header["Content-Type"] = "application/json"
         return requests.put(url, headers=header, data=data_json)
 
-    def _get__ids(self, name: str, mode: Mode = "simple"):
+    def _get__ids(self, name: str, mode: str = "simple"):
         """
         Get id information of a given database.
 
@@ -387,6 +387,22 @@ class RequestJai(object):
         """
         return requests.get(self.url + f"/validation/{name}", headers=self.headers)
 
+    def _get__size(self, name: str):
+        """
+        Get the size of a given database.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Return
+        ------
+        response : dict
+            Dictionary with the size of the given database.
+        """
+        return requests.get(self.url + f"/size?name={name}", headers=self.headers)
+
     def _patch__rename(self, original_name: str, new_name: str):
         """
         Change name of a database in your environment.
@@ -397,7 +413,10 @@ class RequestJai(object):
         )
 
     def _post__update_database(
-        self, name: str, display_name: str = None, project: str = None
+        self,
+        name: str,
+        display_name: Optional[str] = None,
+        project: Optional[str] = None,
     ):
         if display_name is None and project is None:
             raise ValueError("must pass one of `displayName` or `project`")
@@ -413,7 +432,7 @@ class RequestJai(object):
         self,
         original_name: str,
         to_environment: str,
-        new_name: str = None,
+        new_name: Optional[str] = None,
         from_environment: str = "default",
     ):
         """
@@ -434,7 +453,7 @@ class RequestJai(object):
         database_name: str,
         owner_id: str,
         owner_email: str,
-        import_name: str = None,
+        import_name: Optional[str] = None,
     ):
         """
         Import a database from a públic environment.
@@ -488,12 +507,12 @@ class RequestJai(object):
         db_type: str,
         hyperparams=None,
         features=None,
-        num_process: dict = None,
-        cat_process: dict = None,
-        datetime_process: dict = None,
-        pretrained_bases: list = None,
-        label: dict = None,
-        split: dict = None,
+        num_process: Optional[dict] = None,
+        cat_process: Optional[dict] = None,
+        datetime_process: Optional[dict] = None,
+        pretrained_bases: Optional[list] = None,
+        label: Optional[dict] = None,
+        split: Optional[dict] = None,
     ):
         body = {
             "db_type": db_type,
@@ -559,7 +578,7 @@ class RequestJai(object):
             self.url + f"/report/{name}?verbose={verbose}", headers=self.headers
         )
 
-    def _get__temp_ids(self, name: str, mode: Mode = "complete"):
+    def _get__temp_ids(self, name: str, mode: str = "complete"):
         """
         Get id information of a RAW database (i.e., before training). This is a protected method
 
@@ -738,8 +757,8 @@ class RequestJai(object):
         l2: float = 0.0,
         scheduler_type: str = "constant",
         scheduler_argument: Optional[float] = None,
-        model_parameters: dict = None,
-        pretrained_bases: list = None,
+        model_parameters: Optional[dict] = None,
+        pretrained_bases: Optional[list] = None,
         overwrite: bool = False,
     ):
         """
@@ -896,7 +915,7 @@ class BaseJai(RequestJai):
 
     def __init__(
         self,
-        auth_key: str = None,
+        auth_key: Optional[str] = None,
         environment: str = "default",
         env_var: str = "JAI_AUTH",
         url_var: str = "JAI_URL",
@@ -978,7 +997,17 @@ class BaseJai(RequestJai):
             return environments
         return envs
 
-    def _info(self, mode="complete", get_size=True):
+    @overload
+    def _info(self, mode: str = "names", get_size: bool = True) -> List[str]:
+        ...
+
+    @overload
+    def _info(
+        self, mode: str = "complete", get_size: bool = True
+    ) -> List[Dict[str, Any]]:
+        ...
+
+    def _info(self, mode: str = "complete", get_size: bool = True):
         """
         Get name and type of each database in your environment.
         """
@@ -996,7 +1025,7 @@ class BaseJai(RequestJai):
                 info = check_response(InfoResponse, info, list_of=True)
         return info
 
-    def _status(self):
+    def _status(self) -> Dict[str, Dict[str, Any]]:
         """
         Get the status of your JAI environment when training.
         """
@@ -1258,7 +1287,7 @@ class BaseJai(RequestJai):
             pred = check_response(PredictResponse, pred, list_of=True)
         return pred
 
-    def _ids(self, name: str, mode: Mode = "simple"):
+    def _ids(self, name: str, mode: str = "simple") -> List[Any]:
         """
         Get id information of a given database.
 
@@ -1307,6 +1336,26 @@ class BaseJai(RequestJai):
             valid = check_response(ValidResponse, valid).dict()
         return valid["value"]
 
+    def _size(self, name: str):
+        """
+        Get the size of a given database.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+
+        Return
+        ------
+        response : dict
+            Dictionary with the size of the given database.
+        """
+        response = self._get__size(name=name)
+        size = self._check_status_code(response)
+        if self.safe_mode:
+            size = check_response(SizeResponse, size).dict()
+        return size
+
     def _rename(self, original_name: str, new_name: str):
         """
         Change name of a database in your environment.
@@ -1321,7 +1370,7 @@ class BaseJai(RequestJai):
         self,
         original_name: str,
         to_environment: str,
-        new_name: str = None,
+        new_name: Optional[str] = None,
         from_environment: str = "default",
     ):
         """
@@ -1343,7 +1392,7 @@ class BaseJai(RequestJai):
         database_name: str,
         owner_id: str,
         owner_email: str,
-        import_name: str = None,
+        import_name: Optional[str] = None,
     ):
         """
         Import a database from a públic environment.
@@ -1413,12 +1462,12 @@ class BaseJai(RequestJai):
         db_type: str,
         hyperparams=None,
         features=None,
-        num_process: dict = None,
-        cat_process: dict = None,
-        datetime_process: dict = None,
-        pretrained_bases: list = None,
-        label: dict = None,
-        split: dict = None,
+        num_process: Optional[dict] = None,
+        cat_process: Optional[dict] = None,
+        datetime_process: Optional[dict] = None,
+        pretrained_bases: Optional[list] = None,
+        label: Optional[dict] = None,
+        split: Optional[dict] = None,
     ):
         response = self._put__check_parameters(
             db_type=db_type,
@@ -1464,7 +1513,10 @@ class BaseJai(RequestJai):
         return setup_response
 
     def _update_database(
-        self, name: str, display_name: str = None, project: str = None
+        self,
+        name: str,
+        display_name: Optional[str] = None,
+        project: Optional[str] = None,
     ):
         response = self._post__update_database(
             name=name, display_name=display_name, project=project
@@ -1506,7 +1558,7 @@ class BaseJai(RequestJai):
                 report = check_response(Report1Response, report).dict(by_alias=True)
         return report
 
-    def _temp_ids(self, name: str, mode: Mode = "complete"):
+    def _temp_ids(self, name: str, mode: str = "complete"):
         """
         Get id information of a RAW database (i.e., before training). This is a protected method
 
@@ -1718,8 +1770,8 @@ class BaseJai(RequestJai):
         l2: float = 0.1,
         scheduler_type: str = "constant",
         scheduler_argument: Optional[float] = None,
-        model_parameters: dict = None,
-        pretrained_bases: list = None,
+        model_parameters: Optional[dict] = None,
+        pretrained_bases: Optional[list] = None,
         overwrite: bool = False,
     ):
         """
@@ -1893,7 +1945,7 @@ class BaseJai(RequestJai):
             pcores = 1
 
         dict_futures = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+        with ThreadPoolExecutor(max_workers=pcores) as executor:
             for i, b in enumerate(range(0, len(data), batch_size)):
                 _batch = data.iloc[b : b + batch_size]
                 data_json = data2json(
@@ -1904,7 +1956,7 @@ class BaseJai(RequestJai):
 
             with tqdm(total=len(dict_futures), desc="Insert Data") as pbar:
                 insert_responses = {}
-                for future in concurrent.futures.as_completed(dict_futures):
+                for future in as_completed(dict_futures):
                     arg = dict_futures[future]
                     insert_res = future.result()
                     insert_responses[arg] = insert_res

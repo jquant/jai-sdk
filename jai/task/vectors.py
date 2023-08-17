@@ -1,5 +1,6 @@
 from fnmatch import fnmatch
 
+from typing import Optional
 from pandas.api.types import is_numeric_dtype
 from tqdm import trange
 
@@ -54,7 +55,7 @@ class Vectors(TaskBase):
     def __init__(
         self,
         name: str,
-        auth_key: str = None,
+        auth_key: Optional[str] = None,
         environment: str = "default",
         env_var: str = "JAI_AUTH",
         verbose: int = 1,
