@@ -2,7 +2,7 @@ import json
 import time
 from collections.abc import Iterable
 from fnmatch import fnmatch
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Union
 
 import matplotlib.pyplot as plt
 import numpy as np

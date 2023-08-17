@@ -1,18 +1,14 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from io import BytesIO
 from typing import Any, Dict, List, Optional, Union
 
 
 import numpy as np
 import pandas as pd
-import requests
-from pydantic import HttpUrl
 from tqdm.auto import tqdm
 
 from jai.utilities import predict2df
 
 from ..core.utils_funcs import data2json, get_pcores
-from ..types.generic import Mode
 from ..types.responses import FieldsResponse
 from .base import TaskBase
 
