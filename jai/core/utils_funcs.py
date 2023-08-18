@@ -226,14 +226,15 @@ def print_args(response_kwargs, input_kwargs, verbose: int = 1):
     warn_list = []
     print("\nRecognized fit arguments:")
     for key in input_kwargs.keys():
+        if key == "overwrite":
+            continue
         value = response_kwargs.get(key, None)
         input = input_kwargs.get(key, None)
 
-        if key == "split" and input is not None:
-            value = response_kwargs["hyperparams"]["split"]
-
         if input is None:
             continue
+        elif key == "split":
+            value = response_kwargs["hyperparams"]["split"]
 
         if isinstance(input, dict) and isinstance(value, dict):
             intersection = common_items(input, value)

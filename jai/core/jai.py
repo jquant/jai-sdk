@@ -723,6 +723,7 @@ class Jai(BaseJai):
         max_insert_workers: Optional[int] = None,
         frequency_seconds: int = 1,
         verbose: int = 1,
+        overwrite: bool = False,
         **kwargs,
     ):
         """
@@ -781,7 +782,6 @@ class Jai(BaseJai):
             "Description": "Training of database chosen_name has started."
         }
         """
-        overwrite = kwargs.get("overwrite", False)
         if name in self.names:
             if overwrite:
                 self.delete_database(name)
@@ -848,7 +848,7 @@ class Jai(BaseJai):
         setup_response = self._setup(name, body, overwrite)
         print_args(
             {k: json.loads(v) for k, v in setup_response["kwargs"].items()},
-            dict(db_type=db_type, **kwargs),
+            dict(db_type=db_type, overwrite=overwrite, **kwargs),
             verbose=verbose,
         )
 
@@ -877,7 +877,7 @@ class Jai(BaseJai):
         self,
         original_name: str,
         to_environment: str,
-        new_name: str = None,
+        new_name: Optional[str] = None,
         from_environment: str = "default",
     ):
         return self._transfer(
