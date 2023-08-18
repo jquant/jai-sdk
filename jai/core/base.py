@@ -156,7 +156,7 @@ class RequestJai(object):
         id_item: list,
         top_k: int = 5,
         orient: str = "nested",
-        filters=None,
+        filters: Optional[List[str]] = None,
     ):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given an id.
@@ -194,7 +194,12 @@ class RequestJai(object):
         return requests.put(url, headers=self.headers, json=id_item)
 
     def _put__similar_json(
-        self, name: str, data_json, top_k: int = 5, orient: str = "nested", filters=None
+        self,
+        name: str,
+        data_json,
+        top_k: int = 5,
+        orient: str = "nested",
+        filters: Optional[List[str]] = None,
     ):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given a JSON data entry.
@@ -237,7 +242,7 @@ class RequestJai(object):
         id_item: list,
         top_k: int = 5,
         orient: str = "nested",
-        filters=None,
+        filters: Optional[List[str]] = None,
     ):
         """
         Creates a list of dicts, with the index and distance of the k items
@@ -285,7 +290,12 @@ class RequestJai(object):
         )
 
     def _put__recommendation_json(
-        self, name: str, data_json, top_k: int = 5, orient: str = "nested", filters=None
+        self,
+        name: str,
+        data_json,
+        top_k: int = 5,
+        orient: str = "nested",
+        filters: Optional[List[str]] = None,
     ):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given a JSON data entry.
@@ -1082,7 +1092,7 @@ class BaseJai(RequestJai):
         id_item: list,
         top_k: int = 5,
         orient: str = "nested",
-        filters: Optional[Union[str, List[str]]] = None,
+        filters: Optional[List[str]] = None,
     ):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given an id.
@@ -1129,7 +1139,7 @@ class BaseJai(RequestJai):
         data_json,
         top_k: int = 5,
         orient: str = "nested",
-        filters: Optional[Union[str, List[str]]] = None,
+        filters: Optional[List[str]] = None,
     ):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given a JSON data entry.
@@ -1178,7 +1188,7 @@ class BaseJai(RequestJai):
         id_item: list,
         top_k: int = 5,
         orient: str = "nested",
-        filters=None,
+        filters: Optional[List[str]] = None,
     ):
         """
         Creates a list of dicts, with the index and distance of the k items
@@ -1221,7 +1231,12 @@ class BaseJai(RequestJai):
         return rec["recommendation"]
 
     def _recommendation_json(
-        self, name: str, data_json, top_k: int = 5, orient: str = "nested", filters=None
+        self,
+        name: str,
+        data_json,
+        top_k: int = 5,
+        orient: str = "nested",
+        filters: Optional[List[str]] = None,
     ):
         """
         Creates a list of dicts, with the index and distance of the k items most similars given a JSON data entry.

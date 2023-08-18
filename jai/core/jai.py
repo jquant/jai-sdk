@@ -363,7 +363,7 @@ class Jai(BaseJai):
         data: Union[list, np.ndarray, pd.Index, pd.Series, pd.DataFrame],
         top_k: int = 5,
         orient: str = "nested",
-        filters: Optional[Union[str, List[str]]] = None,
+        filters: Optional[List[str]] = None,
         max_workers: Optional[int] = None,
         batch_size: int = 2**20,
     ):
@@ -468,7 +468,7 @@ class Jai(BaseJai):
         data: Union[list, np.ndarray, pd.Index, pd.Series, pd.DataFrame],
         top_k: int = 5,
         orient: str = "nested",
-        filters: List[str] = None,
+        filters: Optional[List[str]] = None,
         max_workers: Optional[int] = None,
         batch_size: int = 2**20,
     ):
