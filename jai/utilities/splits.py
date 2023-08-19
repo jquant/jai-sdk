@@ -1,12 +1,17 @@
 import warnings
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 import pandas as pd
 
 __all__ = ["split", "split_recommendation"]
 
 
-def split(dataframe, columns, sort: bool = False, prefix: str = "id_"):
+def split(
+    dataframe: pd.DataFrame,
+    columns: Union[str, List[str], Dict[str, Optional[str]]],
+    sort: bool = False,
+    prefix: str = "id_",
+):
     """
     Split columns from dataframe returning a dataframe with the unique values
     for each specified column and replacing the original column with the
@@ -45,7 +50,7 @@ def split(dataframe, columns, sort: bool = False, prefix: str = "id_"):
     elif isinstance(columns, list):
         columns = {col: None for col in columns}
 
-    na_columns = dataframe.isna().any(0).loc[columns.keys()]
+    na_columns = dataframe.isna().any(axis=0).loc[columns.keys()]
     if na_columns.any():
         warnings.warn(
             f"Empty values will be represented with -1 as id values and cause\
@@ -80,9 +85,9 @@ def split(dataframe, columns, sort: bool = False, prefix: str = "id_"):
 
 
 def split_recommendation(
-    dataframe,
+    dataframe: pd.DataFrame,
     split_config: Dict[str, List[str]],
-    columns: str,
+    columns: Union[str, List[str], Dict[str, Optional[str]]],
     as_index: Union[bool, Dict[str, str]] = False,
     sort: bool = False,
     prefix: str = "id_",
@@ -137,6 +142,9 @@ def split_recommendation(
     >>> processed = predict2df(results)
     >>> pd.DataFrame(processed)
     """
+    if as_index and isinstance(as_index, bool):
+        raise ValueError("as_index must be a dict if True")
+
     pretrained_bases, df_split = split(dataframe, columns, sort=sort, prefix=prefix)
 
     main_bases = {}

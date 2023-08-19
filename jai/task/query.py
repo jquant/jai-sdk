@@ -1,17 +1,13 @@
-import concurrent
-from io import BytesIO
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
-import requests
-from pydantic import HttpUrl
 from tqdm.auto import tqdm
 
 from jai.utilities import predict2df
 
 from ..core.utils_funcs import data2json, get_pcores
-from ..types.generic import Mode
 from ..types.responses import FieldsResponse
 from .base import TaskBase
 
@@ -50,7 +46,7 @@ class Query(TaskBase):
     def __init__(
         self,
         name: str,
-        auth_key: str = None,
+        auth_key: Optional[str] = None,
         environment: str = "default",
         env_var: str = "JAI_AUTH",
         verbose: int = 1,
@@ -72,7 +68,7 @@ class Query(TaskBase):
                 f"Unable to instantiate Query object because collection with name `{name}` does not exist."
             )
 
-    def check_features(self, columns: List[str], name: str = None):
+    def check_features(self, columns: List[str], name: Optional[str] = None):
         """
         It checks if the columns you want to use in your model match the expected from the API.
 
@@ -113,7 +109,7 @@ class Query(TaskBase):
     def _generate_batch(
         self,
         data: Union[list, np.ndarray, pd.Index, pd.Series, pd.DataFrame],
-        desc: str = None,
+        desc: Optional[str] = None,
     ):
         """
         Breaks data into batches to avoid exceeding data transmission on requests.
@@ -187,7 +183,7 @@ class Query(TaskBase):
         data: Union[list, np.ndarray, pd.Index, pd.Series, pd.DataFrame],
         top_k: int = 5,
         orient: str = "nested",
-        filters: List[str] = None,
+        filters: Optional[List[str]] = None,
         max_workers: Optional[int] = None,
     ):
         """
@@ -223,7 +219,7 @@ class Query(TaskBase):
         pcores = get_pcores(max_workers)
 
         dict_futures = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+        with ThreadPoolExecutor(max_workers=pcores) as executor:
             for i, (is_id, _batch) in enumerate(
                 self._generate_batch(data, desc=description)
             ):
@@ -249,7 +245,7 @@ class Query(TaskBase):
 
             with tqdm(total=len(dict_futures), desc=description) as pbar:
                 results = []
-                for future in concurrent.futures.as_completed(dict_futures):
+                for future in as_completed(dict_futures):
                     res = future.result()
                     results.extend(res)
                     pbar.update(1)
@@ -261,7 +257,7 @@ class Query(TaskBase):
         data: Union[list, np.ndarray, pd.Index, pd.Series, pd.DataFrame],
         top_k: int = 5,
         orient: str = "nested",
-        filters: List[str] = None,
+        filters: Optional[List[str]] = None,
         max_workers: Optional[int] = None,
     ):
         """
@@ -297,7 +293,7 @@ class Query(TaskBase):
         pcores = get_pcores(max_workers)
 
         dict_futures = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+        with ThreadPoolExecutor(max_workers=pcores) as executor:
             for i, (is_id, _batch) in enumerate(
                 self._generate_batch(data, desc=description)
             ):
@@ -323,7 +319,7 @@ class Query(TaskBase):
 
             with tqdm(total=len(dict_futures), desc=description) as pbar:
                 results = []
-                for future in concurrent.futures.as_completed(dict_futures):
+                for future in as_completed(dict_futures):
                     res = future.result()
                     results.extend(res)
                     pbar.update(1)
@@ -370,7 +366,7 @@ class Query(TaskBase):
         pcores = get_pcores(max_workers)
 
         dict_futures = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+        with ThreadPoolExecutor(max_workers=pcores) as executor:
             for i, (_, _batch) in enumerate(
                 self._generate_batch(data, desc=description)
             ):
@@ -381,7 +377,7 @@ class Query(TaskBase):
 
             with tqdm(total=len(dict_futures), desc=description) as pbar:
                 results = []
-                for future in concurrent.futures.as_completed(dict_futures):
+                for future in as_completed(dict_futures):
                     res = future.result()
                     results.extend(res)
                     pbar.update(1)
@@ -450,7 +446,7 @@ class Query(TaskBase):
         """
         return self._filters(self.name)
 
-    def ids(self, mode: Mode = "complete"):
+    def ids(self, mode: str = "complete"):
         """
         Get id information of a given database.
 

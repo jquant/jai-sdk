@@ -61,7 +61,7 @@ class LinearModel(TaskBase):
         self,
         name: str,
         task: str,
-        auth_key: str = None,
+        auth_key: Optional[str] = None,
         environment: str = "default",
         env_var: str = "JAI_AUTH",
         verbose: int = 1,
@@ -101,11 +101,11 @@ class LinearModel(TaskBase):
 
     def set_parameters(
         self,
-        learning_rate: Optional[float] = 0.01,
+        learning_rate: float = 0.01,
         l2: float = 0.0,
         scheduler_type: str = "constant",
         scheduler_argument: Optional[float] = None,
-        model_parameters: dict = None,
+        model_parameters: Optional[dict] = None,
     ):
         if self.task == RegressionTasks.regression:
             p = RegressionHyperparams(
@@ -150,7 +150,7 @@ class LinearModel(TaskBase):
         self,
         X: pd.DataFrame,
         y: pd.Series,
-        pretrained_bases: list = None,
+        pretrained_bases: Optional[list] = None,
         overwrite: bool = False,
         frequency_seconds: int = 1,
     ):

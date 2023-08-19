@@ -1,3 +1,5 @@
+from typing import Optional
+
 from ..core.base import BaseJai
 
 __all__ = ["TaskBase"]
@@ -16,7 +18,7 @@ class TaskBase(BaseJai):
     def __init__(
         self,
         name: str,
-        auth_key: str = None,
+        auth_key: Optional[str] = None,
         environment: str = "default",
         env_var: str = "JAI_AUTH",
         verbose: int = 1,

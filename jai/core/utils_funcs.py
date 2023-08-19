@@ -1,5 +1,5 @@
 import warnings
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -226,14 +226,15 @@ def print_args(response_kwargs, input_kwargs, verbose: int = 1):
     warn_list = []
     print("\nRecognized fit arguments:")
     for key in input_kwargs.keys():
+        if key == "overwrite":
+            continue
         value = response_kwargs.get(key, None)
         input = input_kwargs.get(key, None)
 
-        if key == "split" and input is not None:
-            value = response_kwargs["hyperparams"]["split"]
-
         if input is None:
             continue
+        elif key == "split":
+            value = response_kwargs["hyperparams"]["split"]
 
         if isinstance(input, dict) and isinstance(value, dict):
             intersection = common_items(input, value)
@@ -290,7 +291,7 @@ def print_args(response_kwargs, input_kwargs, verbose: int = 1):
         )
 
 
-def check_filters(data: pd.DataFrame, features: Dict[str, Dict]):
+def check_filters(data: Union[pd.DataFrame, pd.Series], features: Dict[str, Dict]):
     """
     It returns `True` if any of the columns in the dataframe have a `dtype` of `filter` defined
     on features.

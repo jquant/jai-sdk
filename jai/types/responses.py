@@ -37,6 +37,18 @@ class InfoResponse(BaseModel):
     parents: List[str]
 
 
+class SizeResponse(BaseModel):
+    name: str
+    displayName: str
+    owner: str
+    project: str
+    type: str
+    version: str
+    parents: List[str]
+    size: int
+    embedding_dimension: int
+
+
 class InfoSizeResponse(BaseModel):
     name: str
     displayName: str

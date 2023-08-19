@@ -2,7 +2,7 @@ import json
 import time
 from collections.abc import Iterable
 from fnmatch import fnmatch
-from typing import Any, Dict, List
+from typing import Dict, List, Optional, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -72,7 +72,7 @@ class Trainer(TaskBase):
     def __init__(
         self,
         name: str,
-        auth_key: str = None,
+        auth_key: Optional[str] = None,
         environment: str = "default",
         env_var: str = "JAI_AUTH",
         verbose: int = 1,
@@ -105,7 +105,9 @@ class Trainer(TaskBase):
         Returns:
           A dictionary of the InsertParams class.
         """
-        self._insert_parameters = InsertParams(**value).dict()
+        if isinstance(value, dict):
+            value = InsertParams(**value)
+        self._insert_parameters = value.dict()
 
     @property
     def fit_parameters(self):
@@ -115,7 +117,12 @@ class Trainer(TaskBase):
             )
         return self._fit_parameters
 
-    def update_database(self, name: str, display_name: str = None, project: str = None):
+    def update_database(
+        self,
+        name: str,
+        display_name: Optional[str] = None,
+        project: Optional[str] = None,
+    ):
         return self._update_database(
             name=name, display_name=display_name, project=project
         )
@@ -123,14 +130,14 @@ class Trainer(TaskBase):
     def set_parameters(
         self,
         db_type: str,
-        hyperparams: Dict[str, Dict] = None,
-        features: Dict[str, Dict] = None,
-        num_process: dict = None,
-        cat_process: dict = None,
-        datetime_process: dict = None,
-        pretrained_bases: list = None,
-        label: dict = None,
-        split: dict = None,
+        hyperparams: Optional[Dict[str, Dict]] = None,
+        features: Optional[Dict[str, Dict]] = None,
+        num_process: Optional[Dict] = None,
+        cat_process: Optional[Dict] = None,
+        datetime_process: Optional[Dict] = None,
+        pretrained_bases: Optional[List] = None,
+        label: Optional[Dict] = None,
+        split: Optional[Dict] = None,
         verbose: int = 1,
     ):
         """
@@ -184,7 +191,9 @@ class Trainer(TaskBase):
 
         print_args(self.fit_parameters, self._input_kwargs, verbose=verbose)
 
-    def _check_pretrained_bases(self, data: pd.DataFrame, pretrained_bases: List):
+    def _check_pretrained_bases(
+        self, data: Union[pd.DataFrame, Dict[str, pd.DataFrame]], pretrained_bases: List
+    ):
         """
         Processes the following checks:
         - If RecommendationSystem:
@@ -241,6 +250,10 @@ class Trainer(TaskBase):
                         flat_ids = np.unique(list(flatten_sample(df[column])))
                         ids = self._ids(parent_name, mode="complete")
                         break
+                else:
+                    raise KeyError(
+                        f"Column `{column}` not found in any of the dataframes."
+                    )
 
             inverted_in = np.isin(flat_ids, ids, invert=True)
             if inverted_in.sum() > 0:
@@ -663,7 +676,7 @@ class Trainer(TaskBase):
         """
         return self._delete_database(self.name)
 
-    def get_query(self, name: str = None):
+    def get_query(self, name: Optional[str] = None):
         """
         This method returns a new `Query` object with the same initial values as the current `Trainer`
         object
