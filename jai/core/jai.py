@@ -1,8 +1,8 @@
-import concurrent
 import json
 import secrets
 import time
 from fnmatch import fnmatch
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Optional, Union
 
 import matplotlib.pyplot as plt
@@ -52,7 +52,7 @@ class Jai(BaseJai):
 
     def __init__(
         self,
-        auth_key: str = None,
+        auth_key: Optional[str] = None,
         environment: str = "default",
         env_var: str = "JAI_AUTH",
         safe_mode: bool = False,
@@ -347,7 +347,12 @@ class Jai(BaseJai):
         """
         return self._filters(name)
 
-    def update_database(self, name: str, display_name: str = None, project: str = None):
+    def update_database(
+        self,
+        name: str,
+        display_name: Optional[str] = None,
+        project: Optional[str] = None,
+    ):
         return self._update_database(
             name=name, display_name=display_name, project=project
         )
@@ -358,7 +363,7 @@ class Jai(BaseJai):
         data: Union[list, np.ndarray, pd.Index, pd.Series, pd.DataFrame],
         top_k: int = 5,
         orient: str = "nested",
-        filters: List[str] = None,
+        filters: Optional[List[str]] = None,
         max_workers: Optional[int] = None,
         batch_size: int = 2**20,
     ):
@@ -423,7 +428,7 @@ class Jai(BaseJai):
             )
 
         dict_futures = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+        with ThreadPoolExecutor(max_workers=pcores) as executor:
             for i, b in enumerate(range(0, len(data), batch_size)):
                 if is_id:
                     _batch = data[b : b + batch_size].tolist()
@@ -451,7 +456,7 @@ class Jai(BaseJai):
 
             with tqdm(total=len(dict_futures), desc=description) as pbar:
                 results = []
-                for future in concurrent.futures.as_completed(dict_futures):
+                for future in as_completed(dict_futures):
                     res = future.result()
                     results.extend(res)
                     pbar.update(1)
@@ -463,7 +468,7 @@ class Jai(BaseJai):
         data: Union[list, np.ndarray, pd.Index, pd.Series, pd.DataFrame],
         top_k: int = 5,
         orient: str = "nested",
-        filters: List[str] = None,
+        filters: Optional[List[str]] = None,
         max_workers: Optional[int] = None,
         batch_size: int = 2**20,
     ):
@@ -528,7 +533,7 @@ class Jai(BaseJai):
             )
 
         dict_futures = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+        with ThreadPoolExecutor(max_workers=pcores) as executor:
             for i, b in enumerate(range(0, len(data), batch_size)):
                 if is_id:
                     _batch = data[b : b + batch_size].tolist()
@@ -556,7 +561,7 @@ class Jai(BaseJai):
 
             with tqdm(total=len(dict_futures), desc=description) as pbar:
                 results = []
-                for future in concurrent.futures.as_completed(dict_futures):
+                for future in as_completed(dict_futures):
                     res = future.result()
                     results.extend(res)
                     pbar.update(1)
@@ -618,7 +623,7 @@ class Jai(BaseJai):
         description = "Predict"
         pcores = get_pcores(max_workers)
         dict_futures = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+        with ThreadPoolExecutor(max_workers=pcores) as executor:
             for i, b in enumerate(range(0, len(data), batch_size)):
                 _batch = data2json(
                     data.iloc[b : b + batch_size], dtype=dtype, predict=True
@@ -630,14 +635,14 @@ class Jai(BaseJai):
 
             with tqdm(total=len(dict_futures), desc=description) as pbar:
                 results = []
-                for future in concurrent.futures.as_completed(dict_futures):
+                for future in as_completed(dict_futures):
                     res = future.result()
                     results.extend(res)
                     pbar.update(1)
 
         return predict2df(results) if as_frame else results
 
-    def ids(self, name: str, mode: Mode = "simple"):
+    def ids(self, name: str, mode: str = "simple"):
         """
         Get id information of a given database.
 
@@ -685,6 +690,30 @@ class Jai(BaseJai):
         """
         return self._is_valid(name)
 
+    def size(self, name: str):
+        """
+        Get the size of a given database.
+
+        Args
+        ----
+        `name`: str
+            String with the name of a database in your JAI environment.
+
+        Return
+        ------
+        response: dict
+            Size of the database.
+
+        Example
+        -------
+        >>> name = 'chosen_name'
+        >>> j = Jai()
+        >>> size = j.size(name)
+        """
+        if not self.is_valid(name):
+            raise ValueError(f"Database {name} does not exist in your environment.")
+        return self._size(name)
+
     def setup(
         self,
         name: str,
@@ -694,6 +723,7 @@ class Jai(BaseJai):
         max_insert_workers: Optional[int] = None,
         frequency_seconds: int = 1,
         verbose: int = 1,
+        overwrite: bool = False,
         **kwargs,
     ):
         """
@@ -752,7 +782,6 @@ class Jai(BaseJai):
             "Description": "Training of database chosen_name has started."
         }
         """
-        overwrite = kwargs.get("overwrite", False)
         if name in self.names:
             if overwrite:
                 self.delete_database(name)
@@ -783,6 +812,8 @@ class Jai(BaseJai):
             )
 
         elif isinstance(data, dict):
+            if len(data) == 0:
+                raise ValueError("Dictionary of data is empty.")
             # loop insert
             for key, value in data.items():
                 # make sure our data has the correct type and is free of NAs
@@ -817,7 +848,7 @@ class Jai(BaseJai):
         setup_response = self._setup(name, body, overwrite)
         print_args(
             {k: json.loads(v) for k, v in setup_response["kwargs"].items()},
-            dict(db_type=db_type, **kwargs),
+            dict(db_type=db_type, overwrite=overwrite, **kwargs),
             verbose=verbose,
         )
 
@@ -846,7 +877,7 @@ class Jai(BaseJai):
         self,
         original_name: str,
         to_environment: str,
-        new_name: str = None,
+        new_name: Optional[str] = None,
         from_environment: str = "default",
     ):
         return self._transfer(
@@ -861,7 +892,7 @@ class Jai(BaseJai):
         database_name: str,
         owner_id: str,
         owner_email: str,
-        import_name: str = None,
+        import_name: Optional[str] = None,
     ):
         return self._import_database(
             database_name=database_name,
@@ -1228,7 +1259,7 @@ class Jai(BaseJai):
         data_right,
         top_k: int = 100,
         batch_size: int = 2**20,
-        threshold: float = None,
+        threshold: Optional[float] = None,
         original_data: bool = False,
         db_type="TextEdit",
         hyperparams=None,
@@ -1306,7 +1337,7 @@ class Jai(BaseJai):
         data,
         top_k: int = 20,
         batch_size: int = 2**20,
-        threshold: float = None,
+        threshold: Optional[float] = None,
         return_self: bool = True,
         original_data: bool = False,
         db_type="TextEdit",
@@ -1548,7 +1579,7 @@ class Jai(BaseJai):
         name: str,
         data,
         batch_size: int = 2**20,
-        columns_ref: list = None,
+        columns_ref: Optional[List[str]] = None,
         db_type="TextEdit",
         **kwargs,
     ):

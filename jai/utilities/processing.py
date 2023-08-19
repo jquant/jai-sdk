@@ -1,5 +1,6 @@
 import warnings
 from copy import deepcopy
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -88,7 +89,10 @@ def find_threshold(results, sample_size=0.1, quantile=0.05):
 
 
 def filter_similar(
-    results, threshold: float = None, return_self: bool = True, skip_null: bool = True
+    results,
+    threshold: Optional[float] = None,
+    return_self: bool = True,
+    skip_null: bool = True,
 ):
     """
     Process the output from the similar methods.

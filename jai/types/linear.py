@@ -1,13 +1,8 @@
 import sys
 from enum import Enum
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel, Field
-
-if sys.version < "3.8":
-    from typing_extensions import Literal
-else:
-    from typing import Literal
 
 
 class RegressionTasks(str, Enum):

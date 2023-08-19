@@ -99,7 +99,7 @@ def test_filter_text(safe_mode, name, dtype, setup_dataframe):
     result = query.similar(sample)
     assert isinstance(result, list), "similar data result failed"
 
-    result = query.similar(sample, filters="Q")
+    result = query.similar(sample, filters=["Q"])
     assert isinstance(result, list), "similar data result failed"
 
     result = query.similar(sample, orient="flat")

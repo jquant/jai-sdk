@@ -1,3 +1,4 @@
+from typing import Optional
 import pandas as pd
 
 from ..core.base import BaseJai
@@ -30,7 +31,7 @@ class Explorer(BaseJai):
 
     def __init__(
         self,
-        auth_key: str = None,
+        auth_key: Optional[str] = None,
         environment: str = "default",
         env_var: str = "JAI_AUTH",
         safe_mode: bool = False,
@@ -171,7 +172,7 @@ class Explorer(BaseJai):
         self,
         original_name: str,
         to_environment: str,
-        new_name: str = None,
+        new_name: Optional[str] = None,
         from_environment: str = "default",
     ):
         """
@@ -211,7 +212,7 @@ class Explorer(BaseJai):
         database_name: str,
         owner_id: str,
         owner_email: str,
-        import_name: str = None,
+        import_name: Optional[str] = None,
     ):
         """
         It imports a database from another user/environment.

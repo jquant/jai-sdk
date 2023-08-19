@@ -1,5 +1,5 @@
 import warnings
-from typing import List
+from typing import Any, Dict, List, Union, Type, overload, TypeVar
 
 import numpy as np
 import pandas as pd
@@ -8,10 +8,41 @@ from pydantic import ValidationError, parse_obj_as
 from ..types.generic import PossibleDtypes
 from .exceptions import DeprecatedError, ParamError
 
+T = TypeVar("T")
+
+
+def _check_dict_model(
+    model: Type, obj: Dict[str, Dict[str, Any]]
+) -> Dict[str, Dict[str, Any]]:
+    return {k: v.dict() for k, v in parse_obj_as(Dict[str, model], obj).items()}
+
+
+def _check_list_model(model: Type, obj: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    return [i.dict() for i in parse_obj_as(List[model], obj)]
+
+
+@overload
+def check_response(model: Type[T], obj) -> T:
+    ...
+
+
+@overload
+def check_response(model, obj, *, as_dict: bool = True) -> Dict[str, Dict[str, Any]]:
+    ...
+
+
+@overload
+def check_response(model, obj, *, list_of: bool = True) -> List[Dict[str, Any]]:
+    ...
+
 
 def check_response(
-    model, obj, list_of: bool = False, as_list: bool = False, as_dict: bool = False
-):
+    model: Type[T],
+    obj,
+    *,
+    list_of: bool = False,
+    as_dict: bool = False,
+) -> Union[T, List[Dict[str, Any]], Dict[str, Dict[str, Any]]]:
     """
     Checks if response from API follows the expected structure.
 
@@ -20,8 +51,6 @@ def check_response(
         obj (_type_): the response from API.
         list_of (bool, optional): If the obj follows the structure of
         a list of model defined in `model`. Defaults to False.
-        as_list (bool, optional): If the obj follows the structure of
-        a list. Defaults to False.
         as_dict (bool, optional): If the obj follows the structure of
         a dict. Defaults to False.
 
@@ -33,8 +62,8 @@ def check_response(
     Returns:
         The response values as expected.
     """
-    if sum([list_of, as_list, as_dict]) > 1:
-        raise ValueError("Can't use `list_of`, `as_list` and `as_dict` simultaneously.")
+    if sum([list_of, as_dict]) > 1:
+        raise ValueError("Can't use `list_of`,  and `as_dict` simultaneously.")
 
     if model is None:
         warnings.warn(
@@ -45,11 +74,9 @@ def check_response(
 
     try:
         if list_of:
-            return [i.dict() for i in parse_obj_as(List[model], obj)]
-        elif as_list:
-            return [i.dict() for i in parse_obj_as(model, obj)]
+            return _check_list_model(model, obj)
         elif as_dict:
-            return {k: v.dict() for k, v in parse_obj_as(model, obj).items()}
+            return _check_dict_model(model, obj)
         return parse_obj_as(model, obj)
 
     except ValidationError:
