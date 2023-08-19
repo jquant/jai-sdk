@@ -179,3 +179,14 @@ class LinearLearnResponse(BaseModel):
 class LinearPredictResponse(BaseModel):
     id: Any
     predict: Union[float, str]
+
+
+class VectorResponse(BaseModel):
+    id: Any
+    vector: List[float]
+
+
+class EmbeddingResponse(BaseModel):
+    id: Union[int, str] = Field(..., description="The id of the embedding.")
+    embedding: List[float] = Field(..., description="The embedding of the image.")
+    dimension: int = Field(..., description="The dimension of the embedding.")

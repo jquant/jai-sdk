@@ -1,5 +1,3 @@
-
-
 Earlier versions
 ================
 
@@ -9,9 +7,6 @@ Jai class
 ---------
 
 This class contains the implementation of most tasks possible using the Jai API, including:
-
-
-
 
 
 Base class

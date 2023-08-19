@@ -4,6 +4,7 @@ from copy import deepcopy
 import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm
+from typing import Optional
 
 from ._utils import multikeysort
 
@@ -88,7 +89,10 @@ def find_threshold(results, sample_size=0.1, quantile=0.05):
 
 
 def filter_similar(
-    results, threshold: float = None, return_self: bool = True, skip_null: bool = True
+    results,
+    threshold: Optional[float] = None,
+    return_self: bool = True,
+    skip_null: bool = True,
 ):
     """
     Process the output from the similar methods.

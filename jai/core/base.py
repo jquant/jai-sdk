@@ -1,6 +1,6 @@
-import concurrent
 import json
 import warnings
+from concurrent.futures import as_completed, ThreadPoolExecutor
 from copy import copy
 from io import BytesIO
 from typing import Any, Dict, List, Optional
@@ -12,13 +12,14 @@ from decouple import config
 from pydantic import HttpUrl
 from tqdm.auto import tqdm
 
-from ..core.utils_funcs import data2json, get_pcores
+from ..core.utils_funcs import data2json
 from ..core.validations import check_response
 from ..types.generic import Mode
 from ..types.linear import SchedulerType, TrainMode
 from ..types.responses import (
     AddDataResponse,
     DescribeResponse,
+    EmbeddingResponse,
     EnvironmentsResponse,
     FieldsResponse,
     FlatResponse,
@@ -38,9 +39,11 @@ from ..types.responses import (
     StatusResponse,
     UserResponse,
     ValidResponse,
+    VectorResponse,
 )
 from .authentication import get_authentication
 from .exceptions import DeprecatedError, ParamError, ValidationError
+
 
 __all__ = ["BaseJai", "RequestJai"]
 
@@ -68,7 +71,7 @@ class RequestJai(object):
 
     def __init__(
         self,
-        auth_key: str = None,
+        auth_key: Optional[str] = None,
         environment: str = "default",
         env_var: str = "JAI_AUTH",
         url_var: str = "JAI_URL",
@@ -397,7 +400,10 @@ class RequestJai(object):
         )
 
     def _post__update_database(
-        self, name: str, display_name: str = None, project: str = None
+        self,
+        name: str,
+        display_name: Optional[str] = None,
+        project: Optional[str] = None,
     ):
         if display_name is None and project is None:
             raise ValueError("must pass one of `displayName` or `project`")
@@ -413,7 +419,7 @@ class RequestJai(object):
         self,
         original_name: str,
         to_environment: str,
-        new_name: str = None,
+        new_name: Optional[str] = None,
         from_environment: str = "default",
     ):
         """
@@ -434,7 +440,7 @@ class RequestJai(object):
         database_name: str,
         owner_id: str,
         owner_email: str,
-        import_name: str = None,
+        import_name: Optional[str] = None,
     ):
         """
         Import a database from a públic environment.
@@ -488,12 +494,12 @@ class RequestJai(object):
         db_type: str,
         hyperparams=None,
         features=None,
-        num_process: dict = None,
-        cat_process: dict = None,
-        datetime_process: dict = None,
-        pretrained_bases: list = None,
-        label: dict = None,
-        split: dict = None,
+        num_process: Optional[dict] = None,
+        cat_process: Optional[dict] = None,
+        datetime_process: Optional[dict] = None,
+        pretrained_bases: Optional[list] = None,
+        label: Optional[dict] = None,
+        split: Optional[dict] = None,
     ):
         body = {
             "db_type": db_type,
@@ -595,6 +601,27 @@ class RequestJai(object):
             Dictionary with table fields.
         """
         return requests.get(self.url + f"/fields/{name}", headers=self.headers)
+
+    def _get__vector(self, name: str, ids: list):
+        """
+        Get the vector representation of a given list of ids.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+        ids : list
+            List of ids to get the vector representation.
+
+        Return
+        ------
+        response : dict
+            Dictionary with the vector representation of the given ids.
+        """
+        query_ids = "&".join([f"id={i}" for i in ids])
+        return requests.get(
+            self.url + f"/vector/{name}?{query_ids}", headers=self.headers
+        )
 
     def _get__describe(self, name: str):
         """
@@ -706,6 +733,116 @@ class RequestJai(object):
         """
         return requests.delete(self.url + f"/database/{name}", headers=self.headers)
 
+    def _post__collection_embedding(self, name: str, data_dict: list):
+        """
+        Insert data in dictionary format. This is a protected method.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+        data_dict : dict
+            Data in dictionary format.
+
+        Return
+        ------
+        response : dict
+            Dictionary with the API response.
+        """
+        return requests.post(
+            self.url + f"/embedding/collection/{name}",
+            headers=self.headers,
+            json=data_dict,
+        )
+
+    def _post__image_embedding(self, data_dict: list, model: dict):
+        """
+        Insert data in dictionary format. This is a protected method.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+        data_dict : dict
+            Data in dictionary format.
+
+        Return
+        ------
+        response : dict
+            Dictionary with the API response.
+        """
+        return requests.post(
+            self.url + f"/embedding/pretrained/image",
+            headers=self.headers,
+            json={"data": data_dict, "model": model},
+        )
+
+    def _post__text_embedding(self, data_dict: list, model: dict):
+        """
+        Insert data in dictionary format. This is a protected method.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+        data_dict : dict
+            Data in dictionary format.
+
+        Return
+        ------
+        response : dict
+            Dictionary with the API response.
+        """
+        return requests.post(
+            self.url + f"/embedding/pretrained/text",
+            headers=self.headers,
+            json={"data": data_dict, "model": model},
+        )
+
+    def _post__clip_image_embedding(self, data_dict: list, model: dict):
+        """
+        Insert data in dictionary format. This is a protected method.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+        data_dict : dict
+            Data in dictionary format.
+
+        Return
+        ------
+        response : dict
+            Dictionary with the API response.
+        """
+        return requests.post(
+            self.url + f"/embedding/pretrained/clip/image",
+            headers=self.headers,
+            json={"data": data_dict, "model": model},
+        )
+
+    def _post__clip_text_embedding(self, data_dict: list, model: dict):
+        """
+        Insert data in dictionary format. This is a protected method.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+        data_dict : dict
+            Data in dictionary format.
+
+        Return
+        ------
+        response : dict
+            Dictionary with the API response.
+        """
+        return requests.post(
+            self.url + f"/embedding/pretrained/clip/text",
+            headers=self.headers,
+            json={"data": data_dict, "model": model},
+        )
+
     def _post__insert_vectors_json(self, name: str, data_json, overwrite: bool = False):
         """
         Insert data in JSON format. This is a protected method.
@@ -738,8 +875,8 @@ class RequestJai(object):
         l2: float = 0.0,
         scheduler_type: str = "constant",
         scheduler_argument: Optional[float] = None,
-        model_parameters: dict = None,
-        pretrained_bases: list = None,
+        model_parameters: Optional[dict] = None,
+        pretrained_bases: Optional[list] = None,
         overwrite: bool = False,
     ):
         """
@@ -896,7 +1033,7 @@ class BaseJai(RequestJai):
 
     def __init__(
         self,
-        auth_key: str = None,
+        auth_key: Optional[str] = None,
         environment: str = "default",
         env_var: str = "JAI_AUTH",
         url_var: str = "JAI_URL",
@@ -996,7 +1133,7 @@ class BaseJai(RequestJai):
                 info = check_response(InfoResponse, info, list_of=True)
         return info
 
-    def _status(self):
+    def _status(self) -> dict:
         """
         Get the status of your JAI environment when training.
         """
@@ -1321,7 +1458,7 @@ class BaseJai(RequestJai):
         self,
         original_name: str,
         to_environment: str,
-        new_name: str = None,
+        new_name: Optional[str] = None,
         from_environment: str = "default",
     ):
         """
@@ -1343,7 +1480,7 @@ class BaseJai(RequestJai):
         database_name: str,
         owner_id: str,
         owner_email: str,
-        import_name: str = None,
+        import_name: Optional[str] = None,
     ):
         """
         Import a database from a públic environment.
@@ -1375,10 +1512,7 @@ class BaseJai(RequestJai):
             Dictionary with the API response.
         """
         response = self._patch__append(name=name)
-        add_data_response = self._check_status_code(
-            response,
-            code=202,
-        )
+        add_data_response = self._check_status_code(response, code=202)
         if self.safe_mode:
             add_data_response = check_response(AddDataResponse, add_data_response)
         return add_data_response
@@ -1400,10 +1534,7 @@ class BaseJai(RequestJai):
             Dictionary with the API response.
         """
         response = self._post__insert_json(name=name, data_json=data_json)
-        insert_res = self._check_status_code(
-            response,
-            code=202,
-        )
+        insert_res = self._check_status_code(response, code=202)
         if self.safe_mode:
             insert_res = check_response(InsertDataResponse, insert_res)
         return insert_res
@@ -1413,12 +1544,12 @@ class BaseJai(RequestJai):
         db_type: str,
         hyperparams=None,
         features=None,
-        num_process: dict = None,
-        cat_process: dict = None,
-        datetime_process: dict = None,
-        pretrained_bases: list = None,
-        label: dict = None,
-        split: dict = None,
+        num_process: Optional[dict] = None,
+        cat_process: Optional[dict] = None,
+        datetime_process: Optional[dict] = None,
+        pretrained_bases: Optional[list] = None,
+        label: Optional[dict] = None,
+        split: Optional[dict] = None,
     ):
         response = self._put__check_parameters(
             db_type=db_type,
@@ -1455,16 +1586,16 @@ class BaseJai(RequestJai):
             Dictionary with the API response.
         """
         response = self._post__setup(name=name, body=body, overwrite=overwrite)
-        setup_response = self._check_status_code(
-            response,
-            code=202,
-        )
+        setup_response = self._check_status_code(response, code=202)
         if self.safe_mode:
             setup_response = check_response(SetupResponse, setup_response).dict()
         return setup_response
 
     def _update_database(
-        self, name: str, display_name: str = None, project: str = None
+        self,
+        name: str,
+        display_name: Optional[str] = None,
+        project: Optional[str] = None,
     ):
         response = self._post__update_database(
             name=name, display_name=display_name, project=project
@@ -1494,9 +1625,7 @@ class BaseJai(RequestJai):
 
         """
         response = self._get__report(name=name, verbose=verbose)
-        report = self._check_status_code(
-            response,
-        )
+        report = self._check_status_code(response)
         if self.safe_mode:
             if verbose >= 2:
                 report = check_response(Report2Response, report).dict(by_alias=True)
@@ -1524,9 +1653,7 @@ class BaseJai(RequestJai):
             ('simple'/'summarized') of the given database.
         """
         response = self._get__temp_ids(name=name, mode=mode)
-        inserted_ids = self._check_status_code(
-            response,
-        )
+        inserted_ids = self._check_status_code(response)
         if self.safe_mode:
             inserted_ids = check_response(List[str], inserted_ids)
         return inserted_ids
@@ -1546,12 +1673,32 @@ class BaseJai(RequestJai):
             Dictionary with table fields.
         """
         response = self._get__fields(name=name)
-        fields = self._check_status_code(
-            response,
-        )
+        fields = self._check_status_code(response)
         if self.safe_mode:
             return check_response(FieldsResponse, fields, list_of=True)
         return fields
+
+    def _get_vector(self, name: str, ids: list):
+        """
+        Get the vector representation of a specific database.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+        ids : list
+            List of ids to get the vector representation.
+
+        Return
+        ------
+        response : dict
+            Dictionary with vector representation.
+        """
+        response = self._get__vector(name=name, ids=ids)
+        description = self._check_status_code(response)
+        if self.safe_mode:
+            description = check_response(VectorResponse, description, as_list=True)
+        return description
 
     def _describe(self, name: str):
         """
@@ -1568,9 +1715,7 @@ class BaseJai(RequestJai):
             Dictionary with database description.
         """
         response = self._get__describe(name=name)
-        description = self._check_status_code(
-            response,
-        )
+        description = self._check_status_code(response)
         if self.safe_mode:
             description = check_response(DescribeResponse, description).dict()
             description = {k: v for k, v in description.items() if v is not None}
@@ -1700,12 +1845,55 @@ class BaseJai(RequestJai):
         response = self._post__insert_vectors_json(
             name=name, data_json=data_json, overwrite=overwrite
         )
-        response = self._check_status_code(
-            response,
-            code=201,
-        )
+        response = self._check_status_code(response, code=201)
         if self.safe_mode:
             response = check_response(InsertVectorResponse, response)
+        return response
+
+    def _embedding(self, name: str, data_dict: list):
+        response = self._post__collection_embedding(name=name, data_dict=data_dict)
+        response = self._check_status_code(response)
+        if self.safe_mode:
+            response = check_response(EmbeddingResponse, response, as_list=True)
+        return response
+
+    def _image_embedding(self, data_dict: list, model_name: str, weights: str):
+        response = self._post__image_embedding(
+            data_dict=data_dict, model={"model_name": model_name, "weights": weights}
+        )
+        response = self._check_status_code(response)
+        if self.safe_mode:
+            response = check_response(EmbeddingResponse, response, as_list=True)
+        return response
+
+    def _text_embedding(self, data_dict: list, model_name: str, max_length: str):
+        response = self._post__text_embedding(
+            data_dict=data_dict,
+            model={"nlp_model": model_name, "max_length": max_length},
+        )
+        response = self._check_status_code(response)
+        if self.safe_mode:
+            response = check_response(EmbeddingResponse, response, as_list=True)
+        return response
+
+    def _clip_image_embedding(self, data_dict: list, model_name: str):
+        response = self._post__clip_image_embedding(
+            data_dict=data_dict,
+            model={"model_name": model_name},
+        )
+        response = self._check_status_code(response)
+        if self.safe_mode:
+            response = check_response(EmbeddingResponse, response, as_list=True)
+        return response
+
+    def _clip_text_embedding(self, data_dict: list, model_name: str):
+        response = self._post__clip_text_embedding(
+            data_dict=data_dict,
+            model={"model_name": model_name},
+        )
+        response = self._check_status_code(response)
+        if self.safe_mode:
+            response = check_response(EmbeddingResponse, response, as_list=True)
         return response
 
     def _linear_train(
@@ -1718,8 +1906,8 @@ class BaseJai(RequestJai):
         l2: float = 0.1,
         scheduler_type: str = "constant",
         scheduler_argument: Optional[float] = None,
-        model_parameters: dict = None,
-        pretrained_bases: list = None,
+        model_parameters: Optional[dict] = None,
+        pretrained_bases: Optional[list] = None,
         overwrite: bool = False,
     ):
         """
@@ -1893,7 +2081,7 @@ class BaseJai(RequestJai):
             pcores = 1
 
         dict_futures = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+        with ThreadPoolExecutor(max_workers=pcores) as executor:
             for i, b in enumerate(range(0, len(data), batch_size)):
                 _batch = data.iloc[b : b + batch_size]
                 data_json = data2json(
@@ -1904,7 +2092,7 @@ class BaseJai(RequestJai):
 
             with tqdm(total=len(dict_futures), desc="Insert Data") as pbar:
                 insert_responses = {}
-                for future in concurrent.futures.as_completed(dict_futures):
+                for future in as_completed(dict_futures):
                     arg = dict_futures[future]
                     insert_res = future.result()
                     insert_responses[arg] = insert_res

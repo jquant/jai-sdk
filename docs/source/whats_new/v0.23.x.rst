@@ -1,0 +1,53 @@
+Version 0.22.0
+==============
+
+Release date: **23/09/2022**
+
+
+- Upgraded dependencies
+- Image collection now accepts VIT models
+
+Now models aren't limited to a set of models from the `torchvision` library. If the model name is not in the set of models, then we'll try to load it as a VIT model.
+For example, if you want to use the `google/vit-base-patch16-224` model, you can do the following:
+
+.. code-block:: python
+
+    >>> j.fit(name, data, db_type='Image', hyperparams={'model_name': 'google/vit-base-patch16-224'})
+
+- Added new collection type `Clip` 
+
+A new collection type `Clip` has been added. This collection will create 3 new collections on setup.
+- one unpopulated collection of type `Clip` for mapping.
+- one populated collection of type `ClipImage` for the image data.
+- one populated collection of type `ClipText` for the text data.
+
+To create a new `Clip` collection, you can use the following command:
+
+.. code-block:: python
+    
+    >>> j.fit(
+            clip_name,
+            {
+                text_name: text_data,
+                image_name: image_data,
+            },
+            "Clip",
+            hyperparams={
+                "text_collection": text_name,
+                "image_collection": image_name,
+            },
+        )
+
+To query similar data from the populated collections use this command:
+
+.. code-block:: python
+
+    j.similar(text_name, text_data)
+    j.similar(image_name, image_data)
+
+You can also query the cross-similarity (recommendation) between the two collections:
+
+.. code-block:: python
+
+    j.recommendation(text_name, image_data)
+    j.recommendation(image_name, text_data)

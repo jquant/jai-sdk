@@ -89,7 +89,7 @@ def set_authentication(auth_key: str, env_var: str = "JAI_AUTH"):
     os.environ[env_var] = auth_key
 
 
-def get_authentication(env_var: str = "JAI_AUTH"):
+def get_authentication(env_var: str = "JAI_AUTH") -> str:
     """
     Returns the authentication key if defined.
     See :ref:`Configuring your auth key <source/overview/set_authentication:how to configure your auth key>`.

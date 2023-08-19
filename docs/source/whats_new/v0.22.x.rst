@@ -1,0 +1,71 @@
+Version 0.22.0
+==============
+
+Release date: **23/09/2022**
+
+Backwards Incompatible Change
+-----------------------------
+
+- Adjust for new info structure
+  The `.info` method has been changed.  New info now contains the following keys:
+
+.. code-block:: python
+
+    name: str
+    displayName: str
+    owner: str
+    project: str
+    type: str
+    version: str
+    parents: List[str]   
+    size: int # when get_size=True
+    embedding_dimension: int # when get_size=True
+
+
+Good Practices
+--------------
+- Importing `tqdm` with `from tqdm.auto import tqdm`
+  This should normalize the progress bar when using jupyter notebooks.
+
+New Features
+------------
+
+- new method `update_database` to change information (`displayName` and `project`) of the database
+
+Version 0.22.1
+==============
+
+Release date: **25/09/2022**
+
+- Fixed a bug in `delete_ids` method.
+
+
+Version 0.22.2
+==============
+
+Release date: **27/09/2022**
+
+Highlights
+----------
+
+- Linear model input changes.
+Edited the Linear Model adding flexibiliy to change parameters on training and learning.
+
+Version 0.22.3
+==============
+
+Release date: **18/11/2022**
+
+Improvements
+------------
+
+- Linear on Celery
+- Added more parameters on sign up
+
+
+Version 0.22.4
+==============
+
+Release date: **17/01/2023**
+
+Fixed bug on setting the authentication key on Task classes.

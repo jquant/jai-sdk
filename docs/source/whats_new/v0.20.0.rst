@@ -1,7 +1,7 @@
 Version 0.20.0
 ==============
 
-Release date: **07/07/2020**
+Release date: **07/07/2022**
 
 The release 0.20.0 contains a new structure of classes to apply Jai that aim at a more accessible and intuitive way of using the SDK for both new and experienced users.
 

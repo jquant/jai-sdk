@@ -1,7 +1,7 @@
-import concurrent
 import json
 import secrets
 import time
+from concurrent.futures import as_completed, ThreadPoolExecutor
 from fnmatch import fnmatch
 from typing import List, Optional, Union
 
@@ -52,7 +52,7 @@ class Jai(BaseJai):
 
     def __init__(
         self,
-        auth_key: str = None,
+        auth_key: Optional[str] = None,
         environment: str = "default",
         env_var: str = "JAI_AUTH",
         safe_mode: bool = False,
@@ -82,7 +82,7 @@ class Jai(BaseJai):
         return self._info(mode="names")
 
     @property
-    def info(self):
+    def info(self) -> pd.DataFrame:
         """
         Get name and type of each database in your environment.
 
@@ -113,7 +113,7 @@ class Jai(BaseJai):
             return df_info
         return df_info.sort_values(by="name")
 
-    def status(self, max_tries=5, patience=5):
+    def status(self, max_tries=5, patience=5) -> dict:
         """
         Get the status of your JAI environment when training.
 
@@ -266,6 +266,62 @@ class Jai(BaseJai):
         """
         return self._fields(name)
 
+    def get_vector(self, name: str, ids: list):
+        """
+        Get the vector representation of a specific database.
+
+        Args
+        ----
+        name : str
+            String with the name of a database in your JAI environment.
+        ids : list
+            List of ids to get the vector representation.
+
+        Return
+        ------
+        response : dict
+            Dictionary with vector representation.
+        """
+        return self._get_vector(name=name, ids=ids)
+
+    def image_embed(
+        self,
+        data,
+        model_name: str = "resnet50",
+        weights:str="DEFAULT",
+        max_workers: Optional[int] = None,
+        batch_size: int = 2**20,
+    ):
+        description = "Embedding images..."
+
+        pcores = get_pcores(max_workers)
+        if not isinstance(data, (pd.Series, pd.DataFrame)):
+            raise ValueError(
+                "Data must be `list`, `np.array`, `pd.Index`, `pd.Series` or `pd.DataFrame`"
+            )
+
+        dict_futures = {}
+        with ThreadPoolExecutor(max_workers=pcores) as executor:
+            for i, b in enumerate(range(0, len(data), batch_size)):
+                _batch = data2json(
+                    data.iloc[b : b + batch_size], dtype="Image", predict=True
+                )
+                task = executor.submit(
+                    self._image_embedding,
+                    _batch,
+                    model_name=model_name,
+                    weights=weights,
+                )
+                dict_futures[task] = i
+
+            with tqdm(total=len(dict_futures), desc=description) as pbar:
+                results = []
+                for future in as_completed(dict_futures):
+                    res = future.result()
+                    results.extend(res)
+                    pbar.update(1)
+        return results
+
     def describe(self, name: str):
         """
         Get the database hyperparameters and parameters of a specific database.
@@ -347,7 +403,12 @@ class Jai(BaseJai):
         """
         return self._filters(name)
 
-    def update_database(self, name: str, display_name: str = None, project: str = None):
+    def update_database(
+        self,
+        name: str,
+        display_name: Optional[str] = None,
+        project: Optional[str] = None,
+    ):
         return self._update_database(
             name=name, display_name=display_name, project=project
         )
@@ -358,7 +419,7 @@ class Jai(BaseJai):
         data: Union[list, np.ndarray, pd.Index, pd.Series, pd.DataFrame],
         top_k: int = 5,
         orient: str = "nested",
-        filters: List[str] = None,
+        filters: Optional[List[str]] = None,
         max_workers: Optional[int] = None,
         batch_size: int = 2**20,
     ):
@@ -413,19 +474,15 @@ class Jai(BaseJai):
         if isinstance(data, list):
             data = np.array(data)
 
-        if isinstance(data, (np.ndarray, pd.Index)):
-            is_id = True
-        elif isinstance(data, (pd.Series, pd.DataFrame)):
-            is_id = False
-        else:
+        if not isinstance(data, (np.ndarray, pd.Index, pd.Series, pd.DataFrame)):
             raise ValueError(
                 "Data must be `list`, `np.array`, `pd.Index`, `pd.Series` or `pd.DataFrame`"
             )
 
         dict_futures = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+        with ThreadPoolExecutor(max_workers=pcores) as executor:
             for i, b in enumerate(range(0, len(data), batch_size)):
-                if is_id:
+                if isinstance(data, (np.ndarray, pd.Index)):
                     _batch = data[b : b + batch_size].tolist()
                     task = executor.submit(
                         self._similar_id,
@@ -435,7 +492,7 @@ class Jai(BaseJai):
                         orient=orient,
                         filters=filters,
                     )
-                else:
+                elif isinstance(data, (pd.Series, pd.DataFrame)):
                     _batch = data2json(
                         data.iloc[b : b + batch_size], dtype=dtype, predict=True
                     )
@@ -451,7 +508,7 @@ class Jai(BaseJai):
 
             with tqdm(total=len(dict_futures), desc=description) as pbar:
                 results = []
-                for future in concurrent.futures.as_completed(dict_futures):
+                for future in as_completed(dict_futures):
                     res = future.result()
                     results.extend(res)
                     pbar.update(1)
@@ -463,7 +520,7 @@ class Jai(BaseJai):
         data: Union[list, np.ndarray, pd.Index, pd.Series, pd.DataFrame],
         top_k: int = 5,
         orient: str = "nested",
-        filters: List[str] = None,
+        filters: Optional[List[str]] = None,
         max_workers: Optional[int] = None,
         batch_size: int = 2**20,
     ):
@@ -518,19 +575,15 @@ class Jai(BaseJai):
         if isinstance(data, list):
             data = np.array(data)
 
-        if isinstance(data, (np.ndarray, pd.Index)):
-            is_id = True
-        elif isinstance(data, (pd.Series, pd.DataFrame)):
-            is_id = False
-        else:
+        if not isinstance(data, (np.ndarray, pd.Index, pd.Series, pd.DataFrame)):
             raise ValueError(
                 "Data must be `list`, `np.array`, `pd.Index`, `pd.Series` or `pd.DataFrame`"
             )
 
         dict_futures = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+        with ThreadPoolExecutor(max_workers=pcores) as executor:
             for i, b in enumerate(range(0, len(data), batch_size)):
-                if is_id:
+                if isinstance(data, (np.ndarray, pd.Index)):
                     _batch = data[b : b + batch_size].tolist()
                     task = executor.submit(
                         self._recommendation_id,
@@ -540,7 +593,7 @@ class Jai(BaseJai):
                         orient=orient,
                         filters=filters,
                     )
-                else:
+                elif isinstance(data, (pd.Series, pd.DataFrame)):
                     _batch = data2json(
                         data.iloc[b : b + batch_size], dtype=dtype, predict=True
                     )
@@ -556,7 +609,7 @@ class Jai(BaseJai):
 
             with tqdm(total=len(dict_futures), desc=description) as pbar:
                 results = []
-                for future in concurrent.futures.as_completed(dict_futures):
+                for future in as_completed(dict_futures):
                     res = future.result()
                     results.extend(res)
                     pbar.update(1)
@@ -618,7 +671,7 @@ class Jai(BaseJai):
         description = "Predict"
         pcores = get_pcores(max_workers)
         dict_futures = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=pcores) as executor:
+        with ThreadPoolExecutor(max_workers=pcores) as executor:
             for i, b in enumerate(range(0, len(data), batch_size)):
                 _batch = data2json(
                     data.iloc[b : b + batch_size], dtype=dtype, predict=True
@@ -630,7 +683,7 @@ class Jai(BaseJai):
 
             with tqdm(total=len(dict_futures), desc=description) as pbar:
                 results = []
-                for future in concurrent.futures.as_completed(dict_futures):
+                for future in as_completed(dict_futures):
                     res = future.result()
                     results.extend(res)
                     pbar.update(1)
@@ -784,6 +837,7 @@ class Jai(BaseJai):
 
         elif isinstance(data, dict):
             # loop insert
+            insert_responses = {}
             for key, value in data.items():
                 # make sure our data has the correct type and is free of NAs
                 value = check_dtype_and_clean(data=value, db_type=db_type)
@@ -793,7 +847,7 @@ class Jai(BaseJai):
 
                 # insert data
                 self._delete_raw_data(key)
-                insert_responses = self._insert_data(
+                responses = self._insert_data(
                     data=value,
                     name=key,
                     db_type=db_type,
@@ -807,6 +861,7 @@ class Jai(BaseJai):
                     max_insert_workers=max_insert_workers,
                     predict=False,
                 )
+                insert_responses.update(responses)
         else:
             ValueError(
                 "Data must be a pd.Series, pd.Dataframe or a dictionary of pd.DataFrames."
@@ -846,7 +901,7 @@ class Jai(BaseJai):
         self,
         original_name: str,
         to_environment: str,
-        new_name: str = None,
+        new_name: Optional[str] = None,
         from_environment: str = "default",
     ):
         return self._transfer(
@@ -861,7 +916,7 @@ class Jai(BaseJai):
         database_name: str,
         owner_id: str,
         owner_email: str,
-        import_name: str = None,
+        import_name: Optional[str] = None,
     ):
         return self._import_database(
             database_name=database_name,
@@ -1148,7 +1203,7 @@ class Jai(BaseJai):
         if len(df) == 0:
             return
 
-        bases_to_del = df.loc[df["name"] == name, "dependencies"].values[0]
+        bases_to_del = df.loc[df["name"] == name, "dependencies"].to_numpy()[0]
         bases_to_del.append(name)
         total = len(bases_to_del)
         for i, base in enumerate(bases_to_del):
@@ -1228,7 +1283,7 @@ class Jai(BaseJai):
         data_right,
         top_k: int = 100,
         batch_size: int = 2**20,
-        threshold: float = None,
+        threshold: Optional[float] = None,
         original_data: bool = False,
         db_type="TextEdit",
         hyperparams=None,
@@ -1306,7 +1361,7 @@ class Jai(BaseJai):
         data,
         top_k: int = 20,
         batch_size: int = 2**20,
-        threshold: float = None,
+        threshold: Optional[float] = None,
         return_self: bool = True,
         original_data: bool = False,
         db_type="TextEdit",
@@ -1548,7 +1603,7 @@ class Jai(BaseJai):
         name: str,
         data,
         batch_size: int = 2**20,
-        columns_ref: list = None,
+        columns_ref: Optional[list] = None,
         db_type="TextEdit",
         **kwargs,
     ):

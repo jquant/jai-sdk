@@ -1,0 +1,19 @@
+Version 0.21.0
+==============
+
+Release date: **17/09/2022**
+
+
+Highlights
+----------
+
+- readded auth key usage on object instantiation:
+
+.. code-block:: python
+
+    j = Jai(auth_key)
+
+
+Backwards Incompatible Change
+-----------------------------
+- Added `displayName`, `owner` and `project` attributes to describe response
