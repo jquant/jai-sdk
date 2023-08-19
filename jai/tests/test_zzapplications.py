@@ -66,7 +66,7 @@ def test_fill(safe_mode, name, setup_dataframe):
         if n.startswith(name):
             j.delete_database(n)
 
-    x = j.fill(name, data, column="Survived")
+    x = j.fill(name, data, column="Survived", overwrite=True)
     assert j.is_valid(name), f"valid name {name} after train fill"
     assert j.ids(name) == ["15 items from 1 to 896"], "wrong ids values sanity"
 
