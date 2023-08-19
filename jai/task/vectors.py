@@ -1,6 +1,6 @@
 from fnmatch import fnmatch
-
 from typing import Optional
+
 from pandas.api.types import is_numeric_dtype
 from tqdm import trange
 

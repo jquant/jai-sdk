@@ -1,6 +1,6 @@
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import warnings
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from copy import copy
 from io import BytesIO
 from typing import Any, Dict, List, Optional, Union, overload
@@ -23,7 +23,6 @@ from ..types.responses import (
     FlatResponse,
     InfoResponse,
     InfoSizeResponse,
-    SizeResponse,
     InsertDataResponse,
     InsertVectorResponse,
     LinearFitResponse,
@@ -35,6 +34,7 @@ from ..types.responses import (
     Report2Response,
     SetupResponse,
     SimilarNestedResponse,
+    SizeResponse,
     StatusResponse,
     UserResponse,
     ValidResponse,

@@ -1,8 +1,8 @@
 import json
 import secrets
 import time
-from fnmatch import fnmatch
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from fnmatch import fnmatch
 from typing import List, Optional, Union
 
 import matplotlib.pyplot as plt

@@ -1,4 +1,5 @@
 from typing import Optional
+
 from ..core.base import BaseJai
 
 __all__ = ["TaskBase"]
