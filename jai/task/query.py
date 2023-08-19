@@ -1,7 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Dict, List, Optional, Union
 
-
 import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm
