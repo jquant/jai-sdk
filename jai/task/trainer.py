@@ -2,7 +2,7 @@ import json
 import time
 from collections.abc import Iterable
 from fnmatch import fnmatch
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -474,7 +474,9 @@ class Trainer(TaskBase):
             raise ValueError(f"No status found for `{self.name}`")
         return all_status[self.name]
 
-    def report(self, verbose: int = 2, return_report: bool = False):
+    def report(
+        self, verbose: int = 2, return_report: bool = False
+    ) -> Optional[Dict[str, Any]]:
         """
         Get a report about the training model.
 

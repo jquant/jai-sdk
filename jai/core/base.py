@@ -989,7 +989,7 @@ class BaseJai(RequestJai):
         response = self._get__user()
         user = self._check_status_code(response)
         if self.safe_mode:
-            return check_response(UserResponse, user).dict()
+            return check_response(UserResponse, user).model_dump()
         return user
 
     def _environments(self):
@@ -1130,7 +1130,7 @@ class BaseJai(RequestJai):
                 res = check_response(FlatResponse, res, list_of=True)
             return res
         if self.safe_mode:
-            res = check_response(SimilarNestedResponse, res).dict()
+            res = check_response(SimilarNestedResponse, res).model_dump()
         return res["similarity"]
 
     def _similar_json(
@@ -1179,7 +1179,7 @@ class BaseJai(RequestJai):
                 sim = check_response(FlatResponse, sim, list_of=True)
             return sim
         if self.safe_mode:
-            sim = check_response(SimilarNestedResponse, sim).dict()
+            sim = check_response(SimilarNestedResponse, sim).model_dump()
         return sim["similarity"]
 
     def _recommendation_id(
@@ -1227,7 +1227,7 @@ class BaseJai(RequestJai):
                 rec = check_response(FlatResponse, rec, list_of=True)
             return rec
         if self.safe_mode:
-            rec = check_response(RecNestedResponse, rec).dict()
+            rec = check_response(RecNestedResponse, rec).model_dump()
         return rec["recommendation"]
 
     def _recommendation_json(
@@ -1275,7 +1275,7 @@ class BaseJai(RequestJai):
                 rec = check_response(FlatResponse, rec, list_of=True)
             return rec
         if self.safe_mode:
-            rec = check_response(RecNestedResponse, rec).dict()
+            rec = check_response(RecNestedResponse, rec).model_dump()
         return rec["recommendation"]
 
     def _predict(self, name: str, data_json, predict_proba: bool = False):
@@ -1353,7 +1353,7 @@ class BaseJai(RequestJai):
         response = self._get__validation(name=name)
         valid = self._check_status_code(response)
         if self.safe_mode:
-            valid = check_response(ValidResponse, valid).dict()
+            valid = check_response(ValidResponse, valid).model_dump()
         return valid["value"]
 
     def _size(self, name: str):
@@ -1373,7 +1373,7 @@ class BaseJai(RequestJai):
         response = self._get__size(name=name)
         size = self._check_status_code(response)
         if self.safe_mode:
-            size = check_response(SizeResponse, size).dict()
+            size = check_response(SizeResponse, size).model_dump()
         return size
 
     def _rename(self, original_name: str, new_name: str):
@@ -1529,7 +1529,7 @@ class BaseJai(RequestJai):
             code=202,
         )
         if self.safe_mode:
-            setup_response = check_response(SetupResponse, setup_response).dict()
+            setup_response = check_response(SetupResponse, setup_response).model_dump()
         return setup_response
 
     def _update_database(
@@ -1571,11 +1571,17 @@ class BaseJai(RequestJai):
         )
         if self.safe_mode:
             if verbose >= 2:
-                report = check_response(Report2Response, report).dict(by_alias=True)
+                report = check_response(Report2Response, report).model_dump(
+                    by_alias=True
+                )
             elif verbose == 1:
-                report = check_response(Report1Response, report).dict(by_alias=True)
+                report = check_response(Report1Response, report).model_dump(
+                    by_alias=True
+                )
             else:
-                report = check_response(Report1Response, report).dict(by_alias=True)
+                report = check_response(Report1Response, report).model_dump(
+                    by_alias=True
+                )
         return report
 
     def _temp_ids(self, name: str, mode: str = "complete"):
@@ -1644,7 +1650,7 @@ class BaseJai(RequestJai):
             response,
         )
         if self.safe_mode:
-            description = check_response(DescribeResponse, description).dict()
+            description = check_response(DescribeResponse, description).model_dump()
             description = {k: v for k, v in description.items() if v is not None}
         return description
 
@@ -1777,7 +1783,7 @@ class BaseJai(RequestJai):
             code=201,
         )
         if self.safe_mode:
-            response = check_response(InsertVectorResponse, response)
+            response = check_response(InsertVectorResponse, response).model_dump()
         return response
 
     def _linear_train(
@@ -1830,7 +1836,9 @@ class BaseJai(RequestJai):
         )
         response = self._check_status_code(response)
         if self.safe_mode:
-            response = check_response(LinearFitResponse, response).dict(by_alias=True)
+            response = check_response(LinearFitResponse, response).model_dump(
+                by_alias=True
+            )
 
         return response
 
@@ -1887,7 +1895,7 @@ class BaseJai(RequestJai):
         )
         response = self._check_status_code(response)
         if self.safe_mode:
-            response = check_response(LinearLearnResponse, response).dict()
+            response = check_response(LinearLearnResponse, response).model_dump()
 
         return response
 

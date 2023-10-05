@@ -70,11 +70,11 @@ class DescribeResponse(BaseModel):
     state: str
     version: str
     has_filter: bool
-    twin_base: Optional[str]
-    dimension: Optional[int]
+    twin_base: Optional[str] = None
+    dimension: Optional[int] = None
     features: List[Dict]  # TODO: future improvement
-    model_hyperparams: Optional[Dict]  # TODO: future improvement
-    trainer_hyperparams: Optional[Dict]  # TODO: future improvement
+    model_hyperparams: Optional[Dict] = None  # TODO: future improvement
+    trainer_hyperparams: Optional[Dict] = None  # TODO: future improvement
 
 
 class FieldsDescription(BaseModel):

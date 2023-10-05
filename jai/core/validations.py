@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Type, TypeVar, Union, overload
 
 import numpy as np
 import pandas as pd
-from pydantic import ValidationError, parse_obj_as
+from pydantic import ValidationError, TypeAdapter
 
 from ..types.generic import PossibleDtypes
 from .exceptions import DeprecatedError, ParamError
@@ -14,11 +14,14 @@ T = TypeVar("T")
 def _check_dict_model(
     model: Type, obj: Dict[str, Dict[str, Any]]
 ) -> Dict[str, Dict[str, Any]]:
-    return {k: v.dict() for k, v in parse_obj_as(Dict[str, model], obj).items()}
+    return {
+        k: v.dict()
+        for k, v in TypeAdapter(Dict[str, model]).validate_python(obj).items()
+    }
 
 
 def _check_list_model(model: Type, obj: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    return [i.dict() for i in parse_obj_as(List[model], obj)]
+    return [i.dict() for i in TypeAdapter(List[model]).validate_python(obj)]
 
 
 @overload
@@ -77,7 +80,7 @@ def check_response(
             return _check_list_model(model, obj)
         elif as_dict:
             return _check_dict_model(model, obj)
-        return parse_obj_as(model, obj)
+        return TypeAdapter(model).validate_python(obj)
 
     except ValidationError:
         raise ValueError(
