@@ -1,6 +1,5 @@
-import sys
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Optional, Union
 
 from pydantic import BaseModel, Field
 
@@ -36,6 +35,6 @@ class VisionModels(Enum):
 # Subclass [BaseImage]
 class VisionHyperparams(BaseModel):
     model_name: str = "resnet50"
-    mode: Union[int, VisionModes] = "classifier"
-    resize_H: int = Field(224, desciption="height of image resizing", ge=224)
-    resize_W: int = Field(224, desciption="width of image resizing", ge=224)
+    mode: Union[int, VisionModes] = VisionModes.classifier
+    resize_H: int = Field(224, description="height of image resizing", ge=224)
+    resize_W: int = Field(224, description="width of image resizing", ge=224)

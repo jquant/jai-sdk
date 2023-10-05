@@ -3,7 +3,7 @@ from base64 import b64decode, b64encode
 from io import BytesIO
 from itertools import chain
 from pathlib import Path
-from typing import List, Tuple, Union
+from typing import List, Tuple, Optional, Union
 
 import pandas as pd
 from PIL import Image
@@ -24,9 +24,9 @@ def decode_image(encoded_string):
 
 def read_image(
     folder: Union[Path, List[Path]],
-    resize: Tuple[int, int] = None,
+    resize: Optional[Tuple[int, int]] = None,
     handle_errors: str = "ignore",
-    id_pattern: str = None,
+    id_pattern: Optional[str] = None,
     extensions: List = [".png", ".jpg", ".jpeg"],
 ):
     """

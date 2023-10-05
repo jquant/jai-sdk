@@ -50,7 +50,7 @@ def split(
     elif isinstance(columns, list):
         columns = {col: None for col in columns}
 
-    na_columns = dataframe.isna().any(axis=0).loc[columns.keys()]
+    na_columns = dataframe.isna().any(axis=0).loc[list(columns.keys())]
     if na_columns.any():
         warnings.warn(
             f"Empty values will be represented with -1 as id values and cause\

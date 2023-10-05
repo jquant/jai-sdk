@@ -251,7 +251,7 @@ class Explorer(BaseJai):
             import_name=import_name,
         )
 
-    def delete_ids(self, ids):
+    def delete_ids(self, name: str, ids):
         """
         Delete the specified ids from database.
 
@@ -272,9 +272,9 @@ class Explorer(BaseJai):
         >>> trainer = Trainer(name)
         >>> trainer.delete_ids([0, 1])
         """
-        return self._delete_ids(self.name, ids)
+        return self._delete_ids(name, ids)
 
-    def delete_raw_data(self):
+    def delete_raw_data(self, name: str):
         """
         Delete raw data. It is good practice to do this after training a model.
 
@@ -291,9 +291,9 @@ class Explorer(BaseJai):
         >>> trainer.delete_raw_data()
 
         """
-        return self._delete_raw_data(self.name)
+        return self._delete_raw_data(name)
 
-    def delete_database(self):
+    def delete_database(self, name: str):
         """
         Delete a database and everything that goes with it (I thank you all).
 
@@ -314,4 +314,4 @@ class Explorer(BaseJai):
         >>> trainer = Trainer(name)
         >>> trainer.delete_database()
         """
-        return self._delete_database(self.name)
+        return self._delete_database(name)
