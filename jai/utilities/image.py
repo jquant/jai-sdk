@@ -3,7 +3,7 @@ from base64 import b64decode, b64encode
 from io import BytesIO
 from itertools import chain
 from pathlib import Path
-from typing import List, Tuple, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 import pandas as pd
 from PIL import Image

@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Type, TypeVar, Union, overload
 
 import numpy as np
 import pandas as pd
-from pydantic import ValidationError, TypeAdapter
+from pydantic import TypeAdapter, ValidationError
 
 from ..types.generic import PossibleDtypes
 from .exceptions import DeprecatedError, ParamError
